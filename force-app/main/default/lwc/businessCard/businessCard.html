@@ -1,0 +1,34 @@
+<template>
+    <div class="business-card" onclick={handleCardClick}>
+        <!-- Featured Image Section -->
+        <div class="featured-image-section">
+            <img src={featuredImageUrl} alt={business.name} class="featured-image" onerror={handleImageError} />
+            <!-- Category Tag -->
+            <div class="category-tag">{business.category}</div>
+            <!-- Logo Overlay -->
+            <div class="logo-overlay">
+                <img src={logoUrl} alt={business.name} class="business-logo" onerror={handleLogoError} />
+            </div>
+        </div>
+
+        <!-- Business Info Section -->
+        <div class="business-info">
+            <h3 class="business-name">{business.name}</h3>
+            
+            <!-- Location -->
+            <div class="location-info">
+                <lightning-icon icon-name="utility:location" size="xx-small" class="location-icon"></lightning-icon>
+                <span class="location-text">{business.location}</span>
+            </div>
+
+            <!-- Owner with ALUMNI icon -->
+            <div class="owner-info">
+                <div class="alumni-icon-small">
+                    <div class="cap-small-icon"></div>
+                    <span class="alumni-text-small">ALUMNI</span>
+                </div>
+                <span class="owner-name">{business.ownerName}</span>
+            </div>
+        </div>
+    </div>
+</template>

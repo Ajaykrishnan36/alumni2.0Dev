@@ -1,0 +1,147 @@
+.groups-feed-container {
+    padding-bottom: 2rem;
+}
+
+.feed-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #1A1A1A;
+}
+
+.create-post-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #E5E5E5;
+}
+
+.card-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.input-wrapper {
+    background: #F8F9FA;
+    border-radius: 8px;
+    padding: 0.75rem;
+    border: 1px solid #E5E5E5;
+}
+
+.post-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+.post-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.post-header {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.author-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.header-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+}
+
+.author-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.2rem;
+}
+
+.author-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.post-time {
+    font-size: 0.75rem;
+    color: #999;
+}
+
+.posted-in {
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.post-content {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: #333;
+}
+
+.post-tags {
+    color: #4A90E2;
+    margin-top: 0.5rem;
+}
+
+.post-image-wrapper {
+    margin: 0 -1.5rem 1rem -1.5rem;
+    /* Break out of padding if desired, or keep inside */
+    /* Let's keep inside but full width relative to content */
+    margin: 0 0 1rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.post-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.post-actions {
+    display: flex;
+    gap: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+    margin-bottom: 0.5rem;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    color: #4A90E2;
+}
+
+.post-stats {
+    font-size: 0.75rem;
+    color: #999;
+    padding-top: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+}

@@ -1,0 +1,70 @@
+<template>
+    <section class="comments">
+        <div class="comment-composer">
+            <input
+                type="text"
+                class="comment-input"
+                placeholder="Write a comment"
+                value={newCommentBody}
+                maxlength="4000"
+                oninput={handleInput}
+                onkeydown={handleKeyDown} />
+            <button
+                type="button"
+                class="comment-send"
+                onclick={handleSubmit}
+                disabled={submitDisabled}
+                aria-label="Send comment">
+                <lightning-icon icon-name="utility:send" size="x-small"></lightning-icon>
+            </button>
+        </div>
+
+        <template if:true={hasComments}>
+            <ul class="comment-list">
+                <template for:each={comments} for:item="c">
+                    <li key={c.commentId} class="comment-item">
+                        <div class="comment-avatar-wrap">
+                            <template if:true={c.authorPhotoUrl}>
+                                <img src={c.authorPhotoUrl} alt={c.authorName} class="comment-avatar" />
+                            </template>
+                            <template if:false={c.authorPhotoUrl}>
+                                <div class="comment-avatar comment-avatar-fallback"></div>
+                            </template>
+                        </div>
+                        <div class="comment-bubble">
+                            <div class="comment-head">
+                                <span class="comment-name">{c.authorName}</span>
+                                <template if:true={c.authorBatch}>
+                                    <span class="comment-batch">{c.authorBatch}</span>
+                                </template>
+                                <template if:true={c.canDelete}>
+                                    <button
+                                        type="button"
+                                        class="comment-delete"
+                                        data-id={c.commentId}
+                                        onclick={handleDelete}
+                                        aria-label="Delete comment">
+                                        <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                    </button>
+                                </template>
+                            </div>
+                            <p class="comment-body">{c.body}</p>
+                        </div>
+                    </li>
+                </template>
+            </ul>
+        </template>
+
+        <template if:true={isLoading}>
+            <div class="loading-row">
+                <lightning-spinner alternative-text="Loading comments" size="x-small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={hasMore}>
+            <button type="button" class="load-more-comments" onclick={handleLoadMore} disabled={isLoading}>
+                Load more comments
+            </button>
+        </template>
+    </section>
+</template>

@@ -1,0 +1,255 @@
+:host {
+    display: block;
+    width: 100%;
+    font-family: 'General Sans', sans-serif;
+}
+
+.custom-phone-input-container {
+    position: relative;
+    width: 100%;
+    /* transparent so the field (and its error state) sits cleanly on the card,
+       matching the other inputs — no grey box behind it */
+    background: transparent;
+    z-index: auto;
+}
+
+.phone-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    min-height: 32px;
+    border: 1px solid #D8D8D8;
+    border-radius: 8px;
+    background: #ffffff;
+    /* Clip the inner white selector/input to the rounded corners so the
+       background doesn't poke out past the border radius */
+    overflow: hidden;
+    transition: border-color 0.2s ease;
+    /* Ensure wrapper doesn't create stacking context that interferes with dropdown */
+    z-index: auto;
+}
+
+.phone-input-wrapper:focus-within {
+    border-color: var(--primary-color);
+    outline: none;
+}
+
+/* Error styling - matching registerPage pattern (#C02B2B) */
+.phone-number-input:invalid {
+    border-color: #C02B2B;
+}
+
+.phone-number-input:invalid:focus {
+    border-color: #C02B2B;
+    outline: none;
+}
+
+/* Error border on wrapper when input is invalid - matching registerPage */
+.phone-input-wrapper.error-state {
+    border-color: #C02B2B;
+}
+
+.phone-input-wrapper.error-state:focus-within {
+    border-color: #C02B2B;
+    outline: none;
+}
+
+.country-selector {
+    display: flex;
+    align-items: center;
+    padding: 0.3rem 0.75rem;
+    padding-left: 16px;
+    cursor: pointer;
+    user-select: none;
+    border-right: 1px solid #D8D8D8;
+    background: #ffffff;
+    flex-shrink: 0;
+    position: relative;
+    /* Low z-index - selector should be below dropdown when open */
+    z-index: 1;
+    border-bottom-left-radius: 8px;
+    border-top-left-radius: 8px;
+}
+
+.country-selector:hover {
+    background-color: #F6F8FB;
+}
+
+.flag-icon {
+    width: 20px;
+    height: 15px;
+    object-fit: cover;
+    border-radius: 2px;
+    margin-right: 8px;
+    display: block;
+    flex-shrink: 0;
+}
+
+.dial-code {
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    font-family: 'General Sans', sans-serif;
+    margin-right: 6px;
+    white-space: nowrap;
+}
+
+.dropdown-arrow {
+    width: 12px;
+    height: 12px;
+    color: #6b7280;
+    flex-shrink: 0;
+    margin-left: 4px;
+}
+
+.phone-number-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: #373A45;
+    background: #ffffff;
+    font-family: 'General Sans', sans-serif;
+    min-width: 0;
+    border-bottom-right-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.phone-number-input::placeholder {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    font-weight: 400;
+    opacity: 1;
+}
+
+.phone-number-input:disabled {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.country-dropdown {
+    /* Use fixed positioning to escape all stacking contexts */
+    position: fixed;
+    /* Position will be calculated dynamically in JS via inline styles */
+    background: #ffffff;
+    border: 1px solid #D8D8D8;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* High z-index consistent with SLDS popovers - ensures dropdown is above all form elements */
+    z-index: 9000;
+    max-height: 300px;
+    width: 0; /* Will be set dynamically */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Solid opaque background so nothing shows through */
+    opacity: 1;
+}
+
+.country-search-wrapper {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.country-search {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #D8D8D8;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'General Sans', sans-serif;
+    outline: none;
+}
+
+.country-search:focus {
+    border-color: var(--primary-color);
+}
+
+.country-list {
+    overflow-y: auto;
+    max-height: 250px;
+    background: #ffffff;
+}
+
+.country-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: 'General Sans', sans-serif;
+    font-size: 14px;
+    color: #111827;
+    transition: background-color 0.15s ease;
+}
+
+.country-item:hover,
+.country-item[data-selected="true"] {
+    background-color: #f3f4f6;
+}
+
+.country-flag {
+    width: 20px;
+    height: 15px;
+    object-fit: cover;
+    border-radius: 2px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+
+.country-name {
+    flex: 1;
+    font-size: 14px;
+    color: #111827;
+}
+
+.country-dial-code {
+    font-size: 14px;
+    color: #6b7280;
+    margin-left: 8px;
+    font-weight: 500;
+}
+
+.error-message {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #C02B2B;
+    font-family: 'General Sans', sans-serif !important;
+    padding-left: 4px;
+    animation: fadeIn 0.2s ease-in;
+    position: relative;
+    /* Low z-index - error messages should never overlap dropdowns */
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Handle flag loading errors */
+.flag-icon[src=""],
+.country-flag[src=""] {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .country-dropdown {
+        max-height: 250px;
+    }
+    
+    .country-list {
+        max-height: 200px;
+    }
+}

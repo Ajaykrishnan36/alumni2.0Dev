@@ -1,0 +1,1759 @@
+/* Step Content */
+.step-content {
+    margin: 0 auto;
+    padding: 0;
+}
+
+/* Step 3: Schedule Setup */
+.date-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.date-tab {
+    background: #E8EBF3;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    color: #2c3e50;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    margin-right: 0.5rem;
+}
+
+.date-tab:hover {
+    background: #d1d8e8;
+}
+
+.date-tab.active {
+    background: var(--primary-color) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px rgba(0, 56, 122, 0.3) !important;
+}
+
+.sessions-section {
+    margin-bottom: 2rem;
+}
+
+.sessions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 1rem 0;
+    padding: 0 0.5rem;
+}
+
+.sessions-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #373A45;
+    margin: 0;
+}
+
+.btn-add-session {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-session:hover {
+    background: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(48, 97, 255, 0.3);
+}
+
+.btn-add-session svg {
+    width: 16px;
+    height: 16px;
+}
+
+.btn-add-session-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-session-icon:hover {
+    background: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(48, 97, 255, 0.3);
+}
+
+.btn-add-session-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Empty Session State */
+.empty-session-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    min-height: 300px;
+}
+
+.empty-state-message {
+    font-size: 1rem;
+    color: #373A45;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+.btn-add-session-primary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-session-primary:hover {
+    background: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(48, 97, 255, 0.3);
+}
+
+.btn-add-session-primary svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Session Card */
+.session-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.session-card-new {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.session-card-new:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.session-card-figma {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.session-card-figma:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.session-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #E5E7EB;
+    background: #FAFBFC;
+}
+
+.session-card-header-figma {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.25rem;
+    background: #FAFBFC;
+    border-bottom: 1px solid #E5E7EB;
+    cursor: pointer;
+}
+
+.session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.session-number {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.session-number-figma {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #373A45;
+}
+
+.session-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.session-actions-new {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.session-actions-figma {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-icon.edit {
+    color: #3498db;
+}
+
+.btn-icon.edit:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+.btn-icon.delete {
+    color: #e74c3c;
+}
+
+.btn-icon.delete:hover {
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.btn-icon-new {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #6B7280;
+}
+
+.btn-icon-new:hover {
+    background: #F3F4F6;
+    color: #374151;
+}
+
+.btn-icon-new.edit:hover {
+    color: var(--primary-color);
+}
+
+.btn-icon-new.delete:hover {
+    color: #DC2626;
+}
+
+.btn-icon-new svg {
+    width: 16px;
+    height: 16px;
+}
+
+.btn-icon-figma {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #6B7280;
+}
+
+.btn-icon-figma:hover {
+    background: #F3F4F6;
+}
+
+.btn-icon-figma.delete:hover {
+    color: #DC2626;
+}
+
+.btn-icon-figma.collapse:hover {
+    color: var(--primary-color);
+}
+
+.btn-icon-figma svg {
+    width: 16px;
+    height: 16px;
+}
+
+.session-card-content {
+    padding: 1rem 1.25rem;
+}
+
+.session-card-content-figma {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #E5E7EB;
+}
+
+.session-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.session-info-new {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.session-info-figma {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.session-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.session-detail-new {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.session-detail-figma {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+}
+
+.detail-label {
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.detail-label-new {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6B7280;
+    min-width: 120px;
+}
+
+.detail-label-figma {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6B7280;
+    min-width: 120px;
+}
+
+.detail-value {
+    font-size: 1rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.detail-value-new {
+    font-size: 0.875rem;
+    color: #111827;
+    flex: 1;
+}
+
+.detail-value-figma {
+    font-size: 0.875rem;
+    color: #111827;
+    flex: 1;
+}
+
+.session-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 0.5rem 0;
+}
+
+.session-time {
+    color: #6c757d;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
+}
+
+.session-speaker {
+    color: #495057;
+    margin: 0.25rem 0;
+    font-size: 0.875rem;
+}
+
+.speakers-list-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.speaker-tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: #EEF2FF;
+    color: var(--primary-color);
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+/* Session Form */
+.session-form {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.session-form.in-place-edit {
+    background: white;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+.session-form-new {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.session-form-figma {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.session-form-header {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.session-form-header-figma {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.session-form h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 1rem 0;
+}
+
+.form-row-new {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row-figma-row1 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row-figma-row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-row-figma-row3 {
+    margin-bottom: 1.5rem;
+}
+
+.form-group-new {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group-figma {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group-title {
+    /* Session title takes left side */
+}
+
+.form-group-brochure {
+    /* Upload brochure takes right side */
+}
+
+.form-group-start-time {
+    /* Start time takes left side */
+}
+
+.form-group-end-time {
+    /* End time takes right side */
+}
+
+.form-group-agenda {
+    width: 100%;
+}
+
+.form-group-agenda textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 100px;
+    transition: all 0.2s ease;
+}
+
+.form-group-agenda textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(48, 97, 255, 0.1);
+}
+
+.form-group-new label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-group-figma label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.form-control-new {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.form-control-new:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(48, 97, 255, 0.1);
+}
+
+.time-range {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #ffffff;
+}
+
+.time-range-new {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.time-input-new {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.875rem;
+}
+
+.time-separator {
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.time-separator-new {
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.time-input-wrapper-figma {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.time-input-figma {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.time-input-figma:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(48, 97, 255, 0.1);
+}
+
+.time-icon-figma {
+    position: absolute;
+    right: 0.75rem;
+    color: #6B7280;
+    pointer-events: none;
+}
+
+.session-form-figma input[type="text"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.session-form-figma input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(48, 97, 255, 0.1);
+}
+
+.border-remove {
+    border: none !important;
+}
+
+.border-remove:focus {
+    box-shadow: none !important;
+}
+
+.border-none {
+    border: 1px solid #ffffff !important;
+}
+
+/* Speakers Section */
+.speakers-section {
+    margin-bottom: 2rem;
+}
+
+.speakers-section-new {
+    margin-top: 1.5rem;
+}
+
+.speakers-container-new {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.speakers-header-wrapper-new {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.btn-add-speaker-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: #F0F4FF;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-add-speaker-icon:hover {
+    background: var(--primary-color);
+    color: #ffffff;
+}
+
+.speakers-content-box-new {
+    background: #F6F8FB;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 1rem;
+}
+
+.speakers-placeholder-text-new {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: #6B7280;
+    margin: 0;
+    text-align: center;
+}
+
+.btn-add-speaker-primary-new {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-speaker-primary-new:hover {
+    background: var(--primary-color);
+}
+
+.btn-add-speaker-primary-new svg {
+    width: 16px;
+    height: 16px;
+    fill: white;
+}
+
+.email-invite-checkbox-new {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.email-invite-checkbox-new input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.checkbox-label-new {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #373A45;
+    cursor: pointer;
+}
+
+.speaker-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.speaker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.speaker-number {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.speaker-info {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.speaker-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.speaker-form {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.speaker-form.in-place-edit {
+    background: white;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.speaker-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.speaker-form-actions-new {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E5E7EB;
+}
+
+.speaker-form-actions-new small {
+    color: #6B7280;
+    font-size: 0.8125rem;
+}
+
+.speaker-form-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.speaker-form-buttons-new {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.speakers-header-new {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.speakers-label-new {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #373A45;
+    margin: 0;
+    cursor: default;
+}
+
+.btn-add-speaker-new {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-speaker-new:hover {
+    background: var(--primary-color);
+}
+
+.btn-add-speaker-new svg {
+    width: 16px;
+    height: 16px;
+}
+
+.add-speaker {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.speaker-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0;
+}
+
+.speaker-actions small {
+    color: #6c757d;
+}
+
+.session-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1rem 0;
+}
+
+.session-actions small {
+    color: #6c757d;
+}
+
+.session-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.session-form-buttons-new {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.btn-secondary-new {
+    padding: 0.75rem 1.5rem;
+    background: white;
+    width: 100px;
+    color: #6B7280;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary-new:hover {
+    background: #F6F8FB;
+    border-color: #9CA3AF;
+}
+
+.btn-primary-new {
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    width: 100px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary-new:hover {
+    background: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(48, 97, 255, 0.3);
+}
+
+.radio-group {
+    display: flex;
+    gap: 2rem;
+}
+
+.radio-group-new {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.5rem;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.radio-label-new {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.radio-label input[type="radio"] {
+    display: none;
+}
+
+.radio-label-new input[type="radio"] {
+    display: none;
+}
+
+.radio-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #dee2e6;
+    border-radius: 50%;
+    position: relative;
+    transition: border-color 0.3s ease;
+}
+
+.radio-custom-new {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #D1D5DB;
+    border-radius: 50%;
+    position: relative;
+    transition: border-color 0.3s ease;
+}
+
+.radio-label input[type="radio"]:checked+.radio-custom {
+    border-color: #3498db;
+}
+
+.radio-label-new input[type="radio"]:checked + .radio-custom-new {
+    border-color: var(--primary-color);
+}
+
+.radio-label input[type="radio"]:checked+.radio-custom::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: #3498db;
+    border-radius: 50%;
+}
+
+.radio-label-new input[type="radio"]:checked + .radio-custom-new::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+/* Location Details Section */
+.location-details-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #E5E7EB;
+}
+
+.location-details-header {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 1rem;
+}
+
+/* Location Fields Row - Side by side for Hybrid mode */
+.location-fields-row-new {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.location-field-half {
+    flex: 1;
+    margin-top: 0 !important;
+}
+
+/* Event Link Input with Icon */
+.event-link-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.event-link-input-wrapper .form-control-new {
+    padding-right: 2.5rem;
+}
+
+.event-link-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #585A64;
+}
+
+/* Mobile Responsive for Location Fields */
+@media (max-width: 768px) {
+    .location-fields-row-new {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .location-field-half {
+        margin-top: 1rem !important;
+    }
+    
+    .location-field-half:first-child {
+        margin-top: 0 !important;
+    }
+}
+
+/* File Upload Styles */
+.file-upload-container-new {
+    width: 100%;
+}
+
+.file-upload-new {
+    position: relative;
+    width: 100%;
+}
+
+.file-upload-new input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.file-upload-label-new {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px dashed #D1D5DB;
+    border-radius: 8px;
+    background: #FAFBFC;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #6B7280;
+}
+
+.file-upload-label-new:hover {
+    border-color: var(--primary-color);
+    background: #F6F8FB;
+    color: var(--primary-color);
+}
+
+.file-upload-label-new svg {
+    width: 16px;
+    height: 16px;
+}
+
+.file-preview-new {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    background: white;
+}
+
+.file-info-new {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.file-icon-new {
+    width: 16px;
+    height: 16px;
+    color: #6B7280;
+}
+
+.file-name-new {
+    font-size: 0.875rem;
+    color: #374151;
+}
+
+.file-actions-new {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.file-action-btn-new {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #6B7280;
+}
+
+.file-action-btn-new:hover {
+    background: #F3F4F6;
+}
+
+.file-action-btn-new.change:hover {
+    color: var(--primary-color);
+}
+
+.file-action-btn-new.remove:hover {
+    color: #DC2626;
+}
+
+.file-upload-container-figma {
+    width: 100%;
+}
+
+.file-upload-figma {
+    position: relative;
+    width: 100%;
+}
+
+.file-upload-figma input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.file-input-hidden {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.file-upload-label-figma {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px dashed #D1D5DB;
+    border-radius: 8px;
+    background: #FAFBFC;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #6B7280;
+}
+
+.file-upload-label-figma:hover {
+    border-color: var(--primary-color);
+    background: #F6F8FB;
+    color: var(--primary-color);
+}
+
+.file-upload-label-figma svg {
+    width: 16px;
+    height: 16px;
+}
+
+.file-preview-figma {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border: 1px solid #D1D5DB;
+    border-radius: 8px;
+    background: white;
+}
+
+.file-info-figma {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.file-icon-figma {
+    width: 16px;
+    height: 16px;
+    color: #6B7280;
+}
+
+.file-name-figma {
+    font-size: 0.875rem;
+    color: var(--primary-color, #374151);
+}
+
+.file-actions-figma {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.file-action-btn-figma {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #6B7280;
+}
+
+.file-action-btn-figma:hover {
+    background: #F3F4F6;
+}
+
+.file-action-btn-figma.change:hover {
+    color: var(--primary-color);
+}
+
+.file-action-btn-figma.remove:hover {
+    color: #DC2626;
+}
+
+.file-action-btn-figma svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Speakers Table */
+.speakers-table-container {
+    margin-top: 1rem;
+    overflow-x: auto;
+}
+
+.speakers-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.speakers-table thead {
+    background: #F6F8FB;
+}
+
+.speakers-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.speakers-table td {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #111827;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.speakers-table tbody tr:hover {
+    background: #F6F8FB;
+}
+
+.speakers-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.speaker-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+.speaker-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.speaker-description-cell {
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.speaker-action-buttons {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-icon-table {
+    background: transparent;
+    border: none;
+    padding: 0.375rem;
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #6B7280;
+}
+
+.btn-icon-table:hover {
+    background: #F3F4F6;
+}
+
+.btn-icon-table.edit:hover {
+    color: var(--primary-color);
+}
+
+.btn-icon-table.delete:hover {
+    color: #DC2626;
+}
+
+.btn-icon-table svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Form Inputs */
+.form-input {
+    padding: 12px;
+    height: 48px;
+    border-radius: 8px;
+    border: 0.5px solid #B2B3B7;
+    width: 100%;
+    font-size: 0.875rem;
+}
+
+.form-input::placeholder {
+    color: #8C8E94;
+    font-weight: 400;
+}
+
+.form-control {
+    padding: 0.93rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    width: 100%;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-control::placeholder {
+    color: #adb5bd;
+}
+
+.form-control.error {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.error-message {
+    color: #EF4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.error-icon {
+    width: 14px;
+    height: 14px;
+    color: #EF4444;
+}
+
+.required-asterisk {
+    color: #EF4444;
+    margin-left: 0.25rem;
+    font-weight: 600;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .date-tabs {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .date-tab {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        white-space: nowrap;
+        background: #F3F4F6;
+        color: #374151;
+        font-weight: 500;
+        border: 1px solid #E5E7EB;
+    }
+
+    .date-tab.active {
+        background: linear-gradient(to right, #1E40AF 0%, var(--primary-color) 100%);
+        color: white;
+        border-color: transparent;
+        font-weight: 600;
+    }
+
+    .sessions-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .form-row-new {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .form-row-figma-row1,
+    .form-row-figma-row2 {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .session-card-new,
+    .session-card-figma {
+        margin-bottom: 0.75rem;
+    }
+
+    .session-card-header,
+    .session-card-header-figma {
+        padding: 0.75rem 1rem;
+    }
+
+    .session-card-content,
+    .session-card-content-figma {
+        padding: 0.75rem 1rem;
+    }
+
+    .speakers-table {
+        font-size: 0.8125rem;
+    }
+
+    .speakers-table th,
+    .speakers-table td {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .session-form-new,
+    .session-form-figma {
+        padding: 1rem;
+    }
+
+    .session-form-actions-new {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .session-form-buttons-new {
+        width: 100%;
+    }
+
+    .btn-secondary-new,
+    .btn-primary-new {
+        flex: 1;
+    }
+
+    .session-card,
+    .speaker-card {
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin: 1rem;
+        margin-bottom: 1rem;
+        background: white;
+        border: 1px solid #E5E7EB;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .session-header,
+    .speaker-header {
+        margin-bottom: 1.25rem;
+        padding-bottom: 0.875rem;
+        border-bottom: 1px solid #E5E7EB;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .session-number,
+    .speaker-number {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+
+    .session-actions,
+    .speaker-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .btn-icon {
+        padding: 0.5rem;
+        border-radius: 6px;
+        background: #F3F4F6;
+        border: 1px solid #E5E7EB;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .btn-icon.edit {
+        color: var(--primary-color);
+        background: #EFF6FF;
+        border-color: var(--primary-color);
+    }
+
+    .btn-icon.edit:hover {
+        background: var(--primary-color);
+        border-color: #93C5FD;
+    }
+
+    .btn-icon.delete {
+        color: #EF4444;
+        background: #FEF2F2;
+        border-color: #FECACA;
+    }
+
+    .btn-icon.delete:hover {
+        background: #FECACA;
+        border-color: #F87171;
+    }
+
+    .detail-label {
+        font-size: 0.8125rem;
+        margin-bottom: 0.25rem;
+        color: #6B7280;
+        font-weight: 500;
+    }
+
+    .detail-value {
+        font-size: 0.9375rem;
+        color: #111827;
+        font-weight: 500;
+    }
+
+    .session-info,
+    .speaker-info {
+        gap: 1rem;
+    }
+
+    .session-form,
+    .speaker-form {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .speaker-form-actions,
+    .session-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+    }
+
+    .speaker-form-buttons,
+    .session-buttons {
+        gap: 0.75rem;
+    }
+
+    .speaker-form-buttons .btn,
+    .session-buttons .btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+    .speaker-form-actions small,
+    .session-actions small {
+        font-size: 0.75rem;
+        color: #6B7280;
+        margin-bottom: 0.5rem;
+    }
+
+    .add-speaker,
+    .add-session {
+        margin: 1rem;
+        padding: 0.875rem;
+        font-size: 0.9375rem;
+        border-radius: 10px;
+        background: white;
+        color: white;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+}
+.speaker-email-cell {
+    font-size: 0.75rem;
+    color: #6B7280;
+    margin-top: 2px;
+}

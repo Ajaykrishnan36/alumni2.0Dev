@@ -1,0 +1,18 @@
+<template>
+    <div class="slds-form-element">
+        <template if:true={label}>
+            <label class="slds-form-element__label" for="searchInput">{label}</label>
+        </template>
+        <div class="slds-form-element__control">
+            <lightning-input
+                id="searchInput"
+                type="search"
+                variant="label-hidden"
+                placeholder={placeholder}
+                value={value}
+                onchange={handleChange}
+                disabled={disabled}
+            ></lightning-input>
+        </div>
+    </div>
+</template>

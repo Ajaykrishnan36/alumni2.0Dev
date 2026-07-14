@@ -1,0 +1,90 @@
+/* Light-DOM child styles — kenHomeVideoCardV2 (matches preview .video-card) */
+.video-card, .video-card * { box-sizing: border-box; }
+.video-card button { font-family: inherit; cursor: pointer; border: 0; }
+
+.video-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #0f172a;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+}
+.video-card__bg {
+    position: absolute;
+    inset: 0;
+    background: url("https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80") center/cover;
+    opacity: 0.7;
+}
+.video-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(46,16,101,0.2) 0%, rgba(46,16,101,0.85) 100%);
+    z-index: 1;
+}
+.video-card__chip {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(139,92,246,0.92);
+    color: #fff;
+    font-size: clamp(0.6875rem, 0.5vw + 0.3rem, 0.75rem) !important;
+    line-height: 1.5;
+    font-weight: 400 !important;
+    letter-spacing: 0.5px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    z-index: 2;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+.video-card__play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #fff;
+    color: #6d28d9;
+    font-size: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    cursor: pointer;
+    z-index: 2;
+    transition: transform .2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+.video-card__play:hover { transform: translate(-50%,-50%) scale(1.08); }
+.video-card__foot {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: clamp(1rem, 1.5vw + 0.5rem, 1.5rem) !important;
+    z-index: 2;
+    color: #fff;
+    min-width: 0;
+}
+.video-card__title {
+    font-size: clamp(0.875rem, 1vw + 0.3rem, 1rem) !important;
+    font-weight: 600;
+    line-height: 1.4;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+.video-card__sub {
+    font-size: clamp(0.6875rem, 0.5vw + 0.3rem, 0.75rem) !important;
+    font-weight: 400 !important;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.85);
+    margin-top: 0.125rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}

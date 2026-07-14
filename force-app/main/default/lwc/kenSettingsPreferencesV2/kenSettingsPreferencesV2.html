@@ -1,0 +1,23 @@
+<template lwc:render-mode="light">
+    <div class="card">
+        <h2 class="card__title">Preferences</h2>
+        <div class="grid">
+            <div class="field"><label>Theme</label>
+                <select data-field="theme" value={prefs.theme} onchange={handleField}>
+                    <option>Light</option><option>Dark</option><option>System</option>
+                </select></div>
+            <div class="field"><label>Language</label>
+                <select data-field="language" value={prefs.language} onchange={handleField}>
+                    <option>English</option><option>हिंदी</option><option>தமிழ்</option>
+                </select></div>
+            <div class="field"><label>Timezone</label>
+                <select data-field="timezone" value={prefs.timezone} onchange={handleField}>
+                    <option>Asia/Kolkata</option><option>Asia/Singapore</option><option>America/New_York</option><option>Europe/London</option>
+                </select></div>
+        </div>
+        <div class="actions">
+            <button class="btn btn--outline" onclick={handleCancel}>Cancel</button>
+            <button class="btn btn--primary" onclick={handleSave}>Save Changes</button>
+        </div>
+    </div>
+</template>

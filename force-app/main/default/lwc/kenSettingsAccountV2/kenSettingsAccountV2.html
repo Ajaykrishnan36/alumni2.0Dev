@@ -1,0 +1,8 @@
+<template lwc:render-mode="light">
+    <div class="card">
+        <h2 class="card__title">Account</h2>
+        <div class="row"><span>Change password</span><button class="btn btn--outline" onclick={handleChangePass}>Change</button></div>
+        <div class="row"><span>Two-factor authentication</span><button class="btn btn--primary" onclick={handleToggle2FA}>Toggle</button></div>
+        <div class="row row--danger"><span>Delete account</span><button class="btn btn--danger" onclick={handleDelete}>Delete</button></div>
+    </div>
+</template>

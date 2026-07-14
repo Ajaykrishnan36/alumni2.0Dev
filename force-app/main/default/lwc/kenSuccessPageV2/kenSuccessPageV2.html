@@ -1,0 +1,26 @@
+<template>
+    <div class="overlay">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="reg-success-title">
+            <!-- Verified badge -->
+            <div class="badge" aria-hidden="true">
+                <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Scalloped/seal shape -->
+                    <path d="M60 6 L70 14 L82 10 L86 22 L98 24 L96 36 L106 44 L98 54 L106 64 L96 72 L98 84 L86 86 L82 98 L70 94 L60 102 L50 94 L38 98 L34 86 L22 84 L24 72 L14 64 L22 54 L14 44 L24 36 L22 24 L34 22 L38 10 L50 14 Z"
+                          fill="#10B981"/>
+                    <path d="M44 60 L55 71 L78 48"
+                          stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                </svg>
+                <!-- Sparkle accents -->
+                <span class="sparkle sparkle--tl"></span>
+                <span class="sparkle sparkle--tr"></span>
+                <span class="sparkle sparkle--bl"></span>
+                <span class="sparkle sparkle--br"></span>
+            </div>
+
+            <h2 id="reg-success-title" class="modal__title">{title}</h2>
+            <p class="modal__message">{message}</p>
+
+            <button type="button" class="modal__cta" onclick={handleCta}>{ctaLabel}</button>
+        </div>
+    </div>
+</template>

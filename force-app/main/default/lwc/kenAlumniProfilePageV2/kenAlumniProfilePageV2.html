@@ -1,0 +1,140 @@
+<template>
+    <template lwc:if={decorated}>
+        <section class="pf-page">
+            <div class="pf-topbar">
+                <button type="button" class="pf-back" onclick={handleBack} title="Back">
+                    <span class="pf-back__arrow">&larr;</span>
+                    <span>Back</span>
+                </button>
+            </div>
+
+            <div class="pf-card">
+                <template lwc:if={decorated.isMentor}>
+                    <span class="hero-mentor-pill">Mentor</span>
+                </template>
+                <div class="pf__cover"></div>
+                <div class="pf__head">
+                    <div class="pf__avatar" style={decorated.heroAvatarStyle}>{decorated.initial}</div>
+                    <div class="pf__id">
+                        <h2 class="pf__name">
+                            <span>{decorated.name}</span>
+                            <template lwc:if={decorated.showWilling}>
+                                <c-ken-alumni-badge-v2 label="Willing to help" tone="help"></c-ken-alumni-badge-v2>
+                            </template>
+                        </h2>
+                        <p class="pf__role">{decorated.roleLine}</p>
+                        <p class="pf__meta">
+                            <span>{decorated.cityLine}</span>
+                            <span>{decorated.statsIcon}</span>
+                        </p>
+                    </div>
+                    <div class="pf__head-actions">
+                        <button type="button" class="pf__btn outline pf__btn--icon" onclick={handleMessage} disabled={decorated.cannotChat} title={decorated.chatTitle}>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                            </svg>
+                            <span>{decorated.chatLabel}</span>
+                        </button>
+                        <button type="button" class={decorated.connectBtnClass} onclick={handleConnect}>
+                            <span>{decorated.connectIcon}</span>
+                            <span>{decorated.connectLabel}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pf-body-grid">
+                    <div class="pf-body-main">
+                        <div class="sec">
+                            <h3>About</h3>
+                            <p>{decorated.bio1}</p>
+                            <p class="sec__p2">{decorated.bio2}</p>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Expertise</h3>
+                            <div class="skills">
+                                <template for:each={decorated.expertise} for:item="s">
+                                    <span key={s.label} class="skill" style={s.style}>{s.label}</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Experience</h3>
+                            <template lwc:if={hasWork}>
+                                <template for:each={decorated.work} for:item="w">
+                                    <div key={w.title} class="tl">
+                                        <div class="tl__logo">{w.logo}</div>
+                                        <div class="tl__b">
+                                            <p class="tl__t">{w.title}</p>
+                                            <p class="tl__c">{w.sub}</p>
+                                            <p class="tl__d">{w.date}</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template lwc:else>
+                                <p class="sec__empty">No experience added yet.</p>
+                            </template>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Education</h3>
+                            <template lwc:if={hasEducation}>
+                                <template for:each={decorated.education} for:item="e">
+                                    <div key={e.title} class="tl">
+                                        <div class="tl__logo">{e.logo}</div>
+                                        <div class="tl__b">
+                                            <p class="tl__t">{e.title}</p>
+                                            <p class="tl__c">{e.sub}</p>
+                                            <p class="tl__d">{e.date}</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </template>
+                            <template lwc:else>
+                                <p class="sec__empty">No education added yet.</p>
+                            </template>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Recent activity</h3>
+                            <template lwc:if={hasActivity}>
+                                <template for:each={decorated.recentActivity} for:item="r">
+                                    <div key={r.text} class="ra">
+                                        <span class="ra__ic">{r.icon}</span>
+                                        <span class="ra__t">{r.text}</span>
+                                        <span class="ra__w">{r.when}</span>
+                                    </div>
+                                </template>
+                            </template>
+                            <template lwc:else>
+                                <p class="sec__empty">No recent activity to show.</p>
+                            </template>
+                        </div>
+                    </div>
+
+                    <aside class="pf-body-side">
+                        <div class="sec">
+                            <h3>Mutual connections</h3>
+                            <template lwc:if={hasMutual}>
+                                <div class="mc-grid">
+                                    <template for:each={decorated.mutualConnections} for:item="m">
+                                        <div key={m.name} class="mc-cell">
+                                            <span class="mc__av" style={m.style}>{m.initial}</span>
+                                            <p class="mc__n">{m.name}</p>
+                                            <p class="mc__r">{m.role}</p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <p class="sec__empty">No mutual connections yet.</p>
+                            </template>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </section>
+    </template>
+</template>

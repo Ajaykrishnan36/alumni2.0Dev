@@ -1,0 +1,107 @@
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,0.55);display:flex;align-items:flex-start;justify-content:center;z-index:9999;padding:32px 24px;overflow-y:auto}
+.modal{background:#fff;border-radius:8px;width:100%;max-width:720px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.25);margin:auto 0}
+.modal-cover{height:180px;background-size:cover;background-position:center;position:relative}
+.modal-cover-tags{position:absolute;top:14px;left:14px;display:flex;gap:6px}
+.modal-close{position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,0.95);cursor:pointer;font-size:18px;color:#373A45}
+.modal-body{padding:20px 24px 16px;max-height:60vh;overflow-y:auto}
+.modal-footer{display:flex;gap:8px;padding:14px 24px 20px;align-items:center;border-top:1px solid #F1F5F9;flex-wrap:wrap}
+.modal-title{font-size:20px;font-weight:700;margin:0 0 4px;color:#111827}
+.modal-desc{font-size:14px;color:#5F6271;margin:0 0 16px;line-height:1.5}
+.modal-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:4px}
+.ms-label{font-size:9.5px;font-weight:700;letter-spacing:0.8px;color:#9DA0A8}
+.ms-val{font-size:18px;font-weight:700;color:#111827}
+.ms-sub{font-size:11px;color:#5F6271}
+.sec-h{font-size:13px;font-weight:700;color:#111827;margin:16px 0 6px}
+.modal-p{font-size:13px;color:#5F6271;margin:0 0 6px;line-height:1.55}
+.opp-bar{height:6px;background:#F1F5F9;border-radius:999px;overflow:hidden;margin-bottom:12px}
+.opp-bar--lg{height:8px;margin:8px 0 16px}
+.opp-bar-fill{height:100%;width:var(--opp-w,0%);border-radius:999px}
+.opp-bar-fill--green{background:#19A974}
+.alloc-row{margin-bottom:10px}
+.alloc-head-row{display:flex;justify-content:space-between;font-size:12px;font-weight:500;color:#373A45;margin-bottom:4px}
+.alloc-bar{height:6px;background:#F1F5F9;border-radius:999px;overflow:hidden}
+.alloc-bar-fill{height:100%;background:#3061FF;width:var(--alloc-w,0%)}
+.update-list{display:flex;flex-direction:column;gap:12px}
+.update-row{background:#F6F8FB;border-radius:4px;padding:12px 14px}
+.update-date{font-size:10px;font-weight:700;letter-spacing:1px;color:#9DA0A8;margin-bottom:4px}
+.update-headline{font-size:13px;font-weight:600;color:#111827;margin-bottom:4px}
+.update-body{font-size:12px;color:#5F6271;line-height:1.5}
+.opp-category{font-size:10px;font-weight:600;padding:4px 10px;border-radius:999px}
+.cat-scholarships{background:#F5F3FF;color:#6D28D9}
+.cat-infrastructure{background:#F0F9FF;color:#0369A1}
+.cat-campus{background:#ECFDF5;color:#047857}
+.cat-batch{background:#FFFBEB;color:#92400E}
+.cat-student-support{background:#FFF1F2;color:#BE123C}
+.opp-approved{background:rgba(255,255,255,0.95);color:#5F6271;font-size:10px;font-weight:600;padding:4px 8px;border-radius:999px}
+.btn{font-weight:500;font-size:13px;padding:10px 18px;border-radius:4px;cursor:pointer;border:1px solid transparent;font-family:inherit}
+.btn--dark{background:#111827;color:#fff}
+.btn--ghost{background:#fff;border-color:#E5E6E8;color:#373A45}
+
+/* ============================================================
+ * TYPOGRAPHY REFINEMENT — premium type scale + numeric tracking
+ * Targets the actual class names in this modal:
+ *   .modal              — root panel
+ *   .modal-title        — main campaign title
+ *   .ms-label           — section subheaders ("The story", "Why this matters")
+ *   .modal-p, .modal-desc — body paragraphs
+ *   .modal-stats        — metric value blocks
+ * ============================================================ */
+
+/* 1. Base font family + smoothing on the modal root */
+.modal {
+    font-family: 'Inter', 'General Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* 2. Campaign title — bold, crisp, tight tracking */
+.modal-title {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.2 !important;
+    margin: 0 0 8px !important;
+}
+
+/* 3. Section subheaders ("The story", "Why this matters", "Allocation") */
+.ms-label,
+.alloc-head-row,
+.modal h3,
+.modal h4 {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #1F2937 !important;
+    letter-spacing: -0.01em !important;
+    margin-bottom: 6px !important;
+    text-transform: none !important;
+}
+
+/* 4. Body paragraphs — sophisticated muted gray, readable line-height */
+.modal-desc,
+.modal-p,
+.modal p {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: #4B5563 !important;
+    line-height: 1.5 !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* 5. Metric values — tabular-nums for clean numeric alignment, tight tracking */
+.modal-stats,
+.modal-stats strong,
+.ms-block,
+.ms-block strong,
+.alloc-row strong {
+    font-variant-numeric: tabular-nums !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.03em !important;
+    color: #111827 !important;
+}
+.modal-stats .ms-label,
+.ms-block .ms-label {
+    font-weight: 500 !important;
+    color: #6B7280 !important;
+    letter-spacing: 0 !important;
+}

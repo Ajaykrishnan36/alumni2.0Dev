@@ -1,0 +1,52 @@
+<template>
+    <div class={sidebarClass}>
+        <div class="sidenav">
+            <div class="profile-section" onclick={navigateToHomePage}>
+                <div class="profile-picture-container" onclick={navigateToMyProfile}>
+                    <img src={profilePhotoUrl}
+                         alt="Profile Picture"
+                         class="profile-picture"
+                         onerror={handleImageError} />
+                </div>
+                <h2 class="profile-name">{studentName}</h2>
+                <template if:true={graduationYear}>
+                    <p class="profile-batch">Batch - {graduationYear}</p>
+                </template>
+            </div>
+
+            <ul class="menu-items-list">
+                <template for:each={regularMenuItems} for:item="item">
+                    <li key={item.id} class="menu-item-wrapper">
+                        <c-ken-nav-item
+                            item={item}
+                            is-selected={item.isSelected}
+                            class="full-width"
+                            onitemselect={handleItemSelect}
+                            onsubmenuselect={handleSubMenuSelect}>
+                        </c-ken-nav-item>
+                    </li>
+                </template>
+            </ul>
+
+            <div class="powered-by-section">
+                <div class="powered-by-button">
+                    <span class="powered-by-text">Powered by</span>
+                    <img src={sideLogoUrl} alt="ken42" class="ken42-icon" />
+                </div>
+            </div>
+
+            <div class="logout-section">
+                <template for:each={logoutMenuItems} for:item="item">
+                    <c-ken-nav-item
+                        key={item.id}
+                        item={item}
+                        is-selected={item.isSelected}
+                        class="full-width"
+                        onitemselect={handleItemSelect}
+                        onsubmenuselect={handleSubMenuSelect}>
+                    </c-ken-nav-item>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

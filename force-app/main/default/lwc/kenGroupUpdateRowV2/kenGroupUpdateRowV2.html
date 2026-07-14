@@ -1,0 +1,31 @@
+<template>
+    <template lwc:if={update}>
+        <article class="update" onclick={handleClick}>
+            <div class="update__head">
+                <div class="update__user">
+                    <div class="update__avatar">{initial}</div>
+                    <div class="update__meta">
+                        <span class="update__name">{update.author}</span>
+                        <span class="update__group">Posted in {update.groupName}</span>
+                    </div>
+                </div>
+                <span class="update__time">{update.time}</span>
+            </div>
+            <h3 class="update__title">{update.title}</h3>
+            <p class="update__text">{update.text}</p>
+            <div class="update__tags">
+                <template for:each={tagItems} for:item="t">
+                    <span key={t.id}>{t.label}</span>
+                </template>
+            </div>
+            <template lwc:if={hasImage}>
+                <div class="update__image"></div>
+            </template>
+            <div class="update__foot">
+                <span>&#128172; {commentsLabel}</span>
+                <span>&#128077; Like</span>
+                <span>&#8599; Share</span>
+            </div>
+        </article>
+    </template>
+</template>

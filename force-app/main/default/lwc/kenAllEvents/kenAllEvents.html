@@ -1,0 +1,246 @@
+<template>
+    <div class="all-events-container">
+        <!-- Persistent search/filter bar. Rendered exactly ONCE and never inside a
+             toggling template, so the input keeps focus while typing (typing used
+             to flip the section conditionals and destroy the focused input). -->
+        <div class="section-header page-search-header">
+            <div class="filter-chips desktop-view" if:true={showResultsView}>
+                <template for:each={activeFilters} for:item="filter">
+                    <div key={filter.id} class="filter-chip">
+                        <span class="chip-text">{filter.label}: {filter.value}</span>
+                        <button class="chip-close" onclick={removeFilter} data-filter-id={filter.id}>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            <span class="mobile-events-title" if:true={showResultsView}>Events ({filteredEventsCount})</span>
+            <div class="events-search-bar">
+                <div class="search-input-wrap">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+                            stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search" value={searchTerm} oninput={handleSearchChange} />
+                    <button class="search-clear" if:true={hasSearch} onclick={clearSearch} title="Clear search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 6L6 18M6 6L18 18" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+                <button class="filter-button search-filter-button" onclick={openFilterModal} data-filter-btn="true">
+                    <svg class="filter-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 15.75C9 15.5511 9.07902 15.3603 9.21967 15.2197C9.36032 15.079 9.55109 15 9.75 15H14.25C14.4489 15 14.6397 15.079 14.7803 15.2197C14.921 15.3603 15 15.5511 15 15.75C15 15.9489 14.921 16.1397 14.7803 16.2803C14.6397 16.421 14.4489 16.5 14.25 16.5H9.75C9.55109 16.5 9.36032 16.421 9.21967 16.2803C9.07902 16.1397 9 15.9489 9 15.75ZM6 11.25C6 11.0511 6.07902 10.8603 6.21967 10.7197C6.36032 10.579 6.55109 10.5 6.75 10.5H17.25C17.4489 10.5 17.6397 10.579 17.7803 10.7197C17.921 10.8603 18 11.0511 18 11.25C18 11.4489 17.921 11.6397 17.7803 11.7803C17.6397 11.921 17.4489 12 17.25 12H6.75C6.55109 12 6.36032 11.921 6.21967 11.7803C6.07902 11.6397 6 11.4489 6 11.25ZM3 6.75C3 6.55109 3.07902 6.36032 3.21967 6.21967C3.36032 6.07902 3.55109 6 3.75 6H20.25C20.4489 6 20.6397 6.07902 20.7803 6.21967C20.921 6.36032 21 6.55109 21 6.75C21 6.94891 20.921 7.13968 20.7803 7.28033C20.6397 7.42098 20.4489 7.5 20.25 7.5H3.75C3.55109 7.5 3.36032 7.42098 3.21967 7.28033C3.07902 7.13968 3 6.94891 3 6.75Z" fill="currentColor"/>
+                    </svg>
+                    <span class="filter-text">Filters</span>
+                    <span class="filter-count" if:true={hasActiveFilters}>{activeFiltersCount}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- No data empty state - when no filters and no featured/upcoming events -->
+        <div class="empty-state-section" if:true={showNoDataEmptyState}>
+            <div class="empty-state">
+                <img src={SurveyEmptyImageUrl} alt="No events found" class="empty-state-image" />
+                <span class="empty-state-message">No events found</span>
+            </div>
+        </div>
+
+        <!-- Featured Events Section - Hidden when filters are applied or no featured events -->
+        <div class="featured-events-section" if:true={showFeaturedEvents}>
+            <div class="section-header">
+                <div class="section-title">Featured events ({featuredEventsCount})</div>
+            </div>
+            <div class="events-grid">
+                <template for:each={featuredEvents} for:item="event">
+                    <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.id}>
+                        <div class="event-image-container">
+                            <img src={event.imageUrl} alt={event.title} class="event-image" />
+                            <div class="card-badge-row">
+                                <div class="event-type-badge">
+                                    <span class="badge-text">{event.eventType}</span>
+                                </div>
+                                <div class="created-by-badge">
+                                    <span class="badge-text">{event.createdBy}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-content">
+                            <div class="event-title">{event.title}</div>
+                            <div class="event-details">
+                                <!-- <div class="event-date-time">
+                                    {event.formattedDateRange}, {event.formattedTimeRange}
+                                </div> -->
+                                <div class="event-location">
+                                    <!-- <div class="location-content">
+                                        {event.location}
+                                    </div> -->
+                                    <div class="event-date-time">
+                                        {event.formattedDateRange}
+                                    </div>
+                                    <div class="event-arrow">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"
+                                                fill="white" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Upcoming Events Section - Hidden when filters are applied or no upcoming events -->
+        <div class="upcoming-events-section" if:true={showUpcomingEvents}>
+            <div class="section-header">
+                <div class="section-title">Upcoming events ({upcomingEventsCount})</div>
+            </div>
+            <div class="events-grid">
+                <template for:each={upcomingEvents} for:item="event">
+                    <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.id}>
+                        <div class="event-image-container">
+                            <img src={event.imageUrl} alt={event.title} class="event-image" />
+                            <div class="card-badge-row">
+                                <div class="event-type-badge">
+                                    <span class="badge-text">{event.eventType}</span>
+                                </div>
+                                <div class="created-by-badge">
+                                    <span class="badge-text">{event.createdBy}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="event-content">
+                            <div class="event-title">{event.title}</div>
+                            <div class="event-details">
+                                <!-- <div class="event-date-time">
+                                    {event.formattedDateRange}, {event.formattedTimeRange}
+                                </div> -->
+                                <div class="event-location">
+                                    <!-- <div class="location-content">
+                                        {event.location}
+                                    </div> -->
+                                    <div class="event-date-time">
+                                        {event.formattedDateRange}
+                                    </div>
+                                    <div class="event-arrow">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"
+                                                fill="white" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Filtered Events Section - Shown when a search or filter is active; empty state when no results -->
+        <div class="filtered-events-section filtered-events-section-flex" if:true={showResultsView}>
+            <template if:true={showNoFilterResultsEmptyState}>
+                <div class="empty-state-section filtered-empty">
+                    <div class="empty-state">
+                        <img src={SurveyEmptyImageUrl} alt="No events match your filters" class="empty-state-image" />
+                        <span class="empty-state-message">No events match your filters</span>
+                    </div>
+                </div>
+            </template>
+            <template if:false={showNoFilterResultsEmptyState}>
+                <div class="events-grid">
+                    <template for:each={filteredEvents} for:item="event">
+                        <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.id}>
+                            <div class="event-image-container">
+                                <img src={event.imageUrl} alt={event.title} class="event-image" />
+                                <div class="card-badge-row">
+                                    <div class="event-type-badge">
+                                        <span class="badge-text">{event.eventType}</span>
+                                    </div>
+                                    <div class="created-by-badge">
+                                        <span class="badge-text">{event.createdBy}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="event-content">
+                                <div class="event-title">{event.title}</div>
+                                <div class="event-details">
+                                    <div class="event-location">
+                                        <div class="event-date-time">
+                                            {event.formattedDateRange}
+                                        </div>
+                                        <div class="event-arrow">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"
+                                                    fill="white" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+    <!-- <template if:true={isMobile}>
+        <c-ken-bottom-navigation-mobile></c-ken-bottom-navigation-mobile>
+    </template> -->
+    </div>
+
+    <!-- Filters popup — same pattern as other modules (kenSurveys, kenSurveysList) -->
+    <template if:true={showFilterModal}>
+        <div class="filters-overlay" onclick={closeFilterModal}></div>
+        <div class="filters-popup" onclick={stopPropagation} style={computedPopupStyle}>
+            <div class="filters-header">
+                <h3 class="filters-title">Filters</h3>
+            </div>
+            <div class="filters-body">
+                <div class="filter-field-group">
+                    <label class="filter-label">Event type</label>
+                    <select class="filter-select" onchange={handleFilterChange} data-field="eventType">
+                        <option value="" selected={isEventTypeEmpty}>Select event type</option>
+                        <option value="One-day" selected={isEventTypeOneDay}>One-day</option>
+                        <option value="Multi-day" selected={isEventTypeMultiDay}>Multi-day</option>
+                    </select>
+                </div>
+                <div class="filter-field-group">
+                    <label class="filter-label">Created by</label>
+                    <select class="filter-select" onchange={handleFilterChange} data-field="createdBy">
+                        <option value="" selected={isCreatedByEmpty}>Select created by</option>
+                        <option value={adminCreatedByLabel} selected={isCreatedByAdmin}>{adminCreatedByLabel}</option>
+                        <option value="By Alumni" selected={isCreatedByAlumni}>By Alumni</option>
+                    </select>
+                </div>
+                <div class="filter-field-group">
+                    <label class="filter-label">Title</label>
+                    <input type="text" class="filter-input" placeholder="Search by title"
+                        oninput={handleFilterChange} onchange={handleFilterChange} data-field="title" value={filterData.title} />
+                </div>
+                <div class="filter-field-group">
+                    <label class="filter-label">Start date</label>
+                    <input type="date" class="filter-input" onchange={handleFilterChange}
+                        data-field="startDate" value={filterData.startDate} />
+                </div>
+                <div class="filter-field-group">
+                    <label class="filter-label">End date</label>
+                    <input type="date" class="filter-input" onchange={handleFilterChange}
+                        data-field="endDate" value={filterData.endDate} />
+                </div>
+            </div>
+            <div class="filters-actions">
+                <button class="filter-reset-btn" onclick={handleClearFilters}>Reset</button>
+                <button class="filter-apply-btn" onclick={applyFilters}>Apply</button>
+            </div>
+        </div>
+    </template>
+</template>

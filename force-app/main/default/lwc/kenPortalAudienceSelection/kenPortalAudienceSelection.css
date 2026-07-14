@@ -1,0 +1,814 @@
+.page {
+    background: #ffffff;
+    /* Consistent full width so the card doesn't resize per "Select By" tab. */
+    width: 100%;
+    /* Fill the wizard's scrollable step area exactly (height chain comes from the parents) so the
+       card itself never scrolls — only the middle and right columns scroll internally. This keeps
+       the stepper, the left "Select By" nav, and the footer fixed. No min-height:100vh (it caused a
+       big dead space below the card when embedded). */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.step-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+.step-title-step2 {
+    color: #373A45;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 140%;
+    letter-spacing: 0%;
+}
+
+.step-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 24px 0;
+}
+
+.header {
+    background: #f7f9fb;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.stepBadge {
+    background: #f3f3f3;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    color: #444;
+    align-self: center;
+}
+
+.barTrack {
+    height: 0.25rem;
+    background: #e5e5e5;
+    border-radius: 999px;
+    overflow: hidden;
+}
+.barFill {
+    height: 100%;
+    width: 100%;
+    background: #2e844a; /* green */
+}
+
+.mainCard {
+    border-radius: 0.75rem;
+    border-color: #e6e9ef;
+    padding: 0;
+    /* Same width on every tab — don't shrink-wrap to the middle column's content. */
+    width: 100%;
+    box-sizing: border-box;
+    /* Fill the remaining height under the title and clip, so the columns (not the card) scroll. */
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(20, 28, 42, 0.06);
+}
+
+/* The column row fills the card height so each column can stretch and scroll on its own. */
+.mainCard > .slds-grid {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.leftCol {
+    border-right: 1px solid #eee;
+    background: #ffffff;
+    /* Fill the column row height; scroll only when content can't fit (e.g. zoomed in) so the last
+       "Select By" option (Saved Audience) is reachable instead of being clipped. */
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.rightCol {
+    border-left: 1px solid #eee;
+    background: #ffffff;
+    /* Match the middle column's height (its .rolePanel min-height) so the panel is
+       full height like the other columns, and stretch taller when the middle column
+       grows. A real min-height floor is used because the flex grid does not reliably
+       stretch this column on its own. */
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    /* Fill the column row's height (set by the flex chain) and let the selected-audience panel
+       scroll inside this column rather than growing the card. */
+    min-height: 0;
+}
+
+.rightCol > c-ken-audience-selected-panel {
+    /* Fill the column; the panel scrolls its own body internally so its Save
+       footer stays pinned at the bottom of the column. */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.middleCol {
+    background: #ffffff;
+    /* The center column (Role details / Groups / Individuals / Saved) is a scroll region: it fills
+       the column row's height and scrolls its own content, so the card height stays fixed. */
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.rolePanel {
+    min-height: 34rem;
+}
+
+.templateAction {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+}
+
+.templateAction lightning-button {
+    --sds-c-button-outline-brand-color-border: var(--primary-color);
+    --sds-c-button-outline-brand-text-color: var(--primary-color);
+    --sds-c-button-outline-brand-color-background: transparent;
+}
+
+.tabHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.tabHeader.compact {
+    margin-bottom: 0.75rem;
+}
+
+.sectionTitle {
+    color: #373A45;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 140%;
+    letter-spacing: 0%;
+    margin-bottom: 0.2rem;
+}
+
+.sectionSubtitle {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 140%;
+    letter-spacing: 0%;
+    color: #373A45;
+    margin-bottom: 1rem;
+}
+
+.saveLink {
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.saveLink:hover {
+    text-decoration: underline;
+}
+
+.modeCard {
+    border: 1px solid #e5e5e5;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    cursor: pointer;
+    background: #f7f9fc;
+    min-height: 7.5rem;
+}
+.modeCard:hover {
+    background: #f1f4f9;
+}
+.modeCardActive {
+    border-color: var(--primary-color);
+    /* background: #eef4ff; */
+    box-shadow: 0 0 0 1px rgba(47, 104, 255, 0.08);
+}
+
+.modeRow {
+    row-gap: 0.85rem;
+}
+
+.modeRadio {
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    border: 2px solid #cfd6e4;
+    background: #ffffff;
+    display: inline-block;
+    position: relative;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    margin-right: 0.6rem;
+}
+
+.modeRadioChecked {
+    border-color: var(--primary-color);
+}
+
+.modeRadioChecked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    border-radius: 50%;
+    background: var(--primary-color);
+}
+
+.add-all-button {
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    border-radius: 0.25rem;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-all-button:hover {
+    background-color: transparent;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #edf0f5;
+}
+
+.roleTabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.roleTab {
+    border: 1px solid #cfd6e4;
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font-weight: 500;
+    font-size: 14px;
+    color: #373A45;
+    background: #ffffff;
+}
+
+.roleTabActive {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    background: #f2f6ff;
+    box-shadow: inset 0 0 0 1px rgba(47, 104, 255, 0.12);
+}
+
+.searchRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #cfd6e4;
+    border-radius: 0.75rem;
+    padding: 0.6rem 0.9rem;
+    background: #ffffff;
+}
+
+.searchIcon {
+    color: #6a7280;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.95rem;
+    color: #1f2430;
+    background: transparent;
+}
+
+.advancedToggle {
+    margin-top: 0.75rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.advancedToggle:hover {
+    text-decoration: underline;
+}
+
+.advancedPanel {
+    margin-top: 0.75rem;
+    padding: 1rem;
+    border-radius: 0.85rem;
+    background: #f7f9fb;
+}
+
+.resultGrid {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: 0.75rem;
+}
+
+.resultCard {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.9rem;
+    border-radius: 0.9rem;
+    background: #f7f9fb;
+    border: 1px solid #edf0f5;
+}
+
+.resultDetails {
+    min-width: 0;
+}
+
+.resultName {
+    font-weight: 600;
+    color: #1f2430;
+}
+
+.resultMeta {
+    font-size: 0.8rem;
+    color: #6a7280;
+    margin-top: 0.2rem;
+}
+
+.resultTag {
+    align-self: start;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    background: #e9edf5;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.selectButton {
+    border: 1px solid var(--primary-color);
+    background: #ffffff;
+    color: var(--primary-color);
+    border-radius: 0.6rem;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.selectButtonSelected {
+    background: #e6f3eb;
+    border-color: #3da762;
+    color: #3da762;
+}
+
+.emptyState {
+    margin-top: 2rem;
+    padding: 2.5rem;
+    border-radius: 0.85rem;
+    background: #f7f9fb;
+    text-align: center;
+}
+
+.emptyTitle {
+    font-weight: 600;
+    color: #5b6270;
+}
+
+.groupGrid {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 0.9rem;
+}
+
+.groupCard {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.95rem 1rem;
+    border-radius: 0.9rem;
+    background: #f7f9fb;
+    border: 1px solid #edf0f5;
+}
+
+.groupDetails {
+    min-width: 0;
+}
+
+.groupName {
+    font-weight: 600;
+    color: #1f2430;
+}
+
+.groupMeta {
+    font-size: 0.8rem;
+    color: #6a7280;
+    margin-top: 0.2rem;
+}
+
+.savedGrid {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: 0.9rem;
+}
+
+.savedCard {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.95rem 1rem;
+    border-radius: 0.9rem;
+    background: #f7f9fb;
+    border: 1px solid #edf0f5;
+}
+
+.savedName {
+    font-weight: 600;
+    color: #1f2430;
+}
+
+.savedMeta {
+    font-size: 0.8rem;
+    color: #6a7280;
+    margin-top: 0.2rem;
+}
+
+.savedRoles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.45rem;
+}
+
+.savedRolePill {
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    background: #eef2fb;
+    color: #2f4b8f;
+}
+
+.reviewButton {
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+    border-radius: 0.75rem;
+    padding: 0.35rem 0.9rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.reviewButton:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: transparent;
+}
+
+.savedModal,
+.segmentationModal {
+    max-width: 500px;
+    width: 90%;
+    border-radius: 12px;
+}
+
+.segmentationModal .slds-modal__header h2 {
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 140%;
+    letter-spacing: 0%;
+    color: #373A45;
+}
+
+.savedModalTitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2430;
+    margin-bottom: 1rem;
+}
+
+.savedSection {
+    padding: 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid #edf0f5;
+    background: #f7f9fb;
+    margin-bottom: 1rem;
+}
+
+.savedSectionTitle {
+    font-weight: 600;
+    color: #1f2430;
+    margin-bottom: 0.6rem;
+}
+
+.savedRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.savedRowName {
+    font-weight: 600;
+    color: #1f2430;
+}
+
+.savedRowMeta {
+    font-size: 0.8rem;
+    color: #6a7280;
+}
+
+.savedCustomCard {
+    padding: 0.85rem;
+    border-radius: 0.8rem;
+    background: #ffffff;
+    border: 1px solid #edf0f5;
+    margin-top: 0.6rem;
+}
+
+.savedCustomHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.savedModalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.modalFooter {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.modalFooter .cancelButton,
+.segmentationModal .modalFooter .cancelButton {
+    padding: 0.5rem 1rem;
+    background-color: var(--secondary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 0.25rem;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modalFooter .cancelButton:hover,
+.segmentationModal .modalFooter .cancelButton:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.modalFooter .saveButton,
+.segmentationModal .modalFooter .saveButton {
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 0.25rem;
+    color: #ffffff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modalFooter .saveButton:hover,
+.segmentationModal .modalFooter .saveButton:hover {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #ffffff;
+}
+
+.savedModalFooter lightning-button[variant="neutral"] {
+    --sds-c-button-neutral-color-border: var(--primary-color);
+    --sds-c-button-neutral-text-color: var(--primary-color);
+    --sds-c-button-neutral-color-background: #ffffff;
+    --sds-c-button-neutral-color-background-hover: #ffffff;
+}
+
+.savedModalFooter lightning-button[variant="brand"] {
+    --sds-c-button-brand-color-background: var(--primary-color);
+    --sds-c-button-brand-color-background-hover: var(--primary-color);
+    --sds-c-button-brand-color-border: var(--primary-color);
+}
+
+.criteriaList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.criteriaItem {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.criteriaLabel {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #4a5568;
+}
+
+.criteriaPills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.criteriaPill {
+    background: #eef2ff;
+    color: var(--primary-color);
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+@media (max-width: 64rem) {
+    .mainCard .slds-grid {
+        flex-wrap: wrap;
+    }
+
+    .leftCol,
+    .middleCol,
+    .rightCol {
+        flex: 1 1 100%;
+        max-width: 100%;
+        border: none;
+        /* Stacked single-column layout: use normal page flow instead of three nested scroll areas. */
+        max-height: none;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .templateAction {
+        justify-content: flex-start;
+        padding: 0.75rem 1rem 1rem;
+    }
+
+    .rolePanel {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 48rem) {
+    .mainCard {
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: 0;
+    }
+
+    .modeRow .slds-col {
+        flex: 1 1 100%;
+        max-width: 100%;
+        margin-bottom: 0.5rem;
+    }
+
+    .modeCard {
+        min-height: auto;
+    }
+
+    .searchRow {
+        padding: 0.55rem 0.75rem;
+    }
+
+    .resultGrid,
+    .groupGrid,
+    .savedGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .savedCard,
+    .groupCard,
+    .resultCard {
+        grid-template-columns: 1fr;
+        align-items: start;
+    }
+
+    .savedCard {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .savedRow {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    .savedCustomHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    /* Save Segmentation Modal & Saved Modal Mobile */
+    .segmentationModal,
+    .savedModal {
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: 0 auto;
+        border-radius: 12px !important;
+    }
+
+    .segmentationModal .slds-modal__header,
+    .savedModal .slds-modal__header {
+        padding: 12px;
+    }
+
+    .segmentationModal .slds-modal__content,
+    .savedModal .slds-modal__content {
+        padding: 16px;
+    }
+
+    .segmentationModal .modalFooter,
+    .savedModalFooter {
+        flex-direction: row;
+        padding: 12px;
+        gap: 12px;
+        flex-wrap: nowrap; 
+    }
+    
+    .segmentationModal .modalFooter button,
+    .savedModalFooter lightning-button {
+        flex: 1;
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+@media screen and (max-width: 1280px) and (max-height: 600px) {
+    .rolePanel {
+        min-height: 18rem;
+        padding: 0.75rem;
+    }
+
+    .mainCard {
+        max-height: calc(100vh - 160px);
+        overflow-y: auto;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+    }
+
+    .step-title {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+    
+    .step-subtitle {
+        font-size: 13px;
+        margin-bottom: 12px;
+    }
+    
+    .modeCard {
+        padding: 0.75rem;
+        min-height: 6rem;
+    }
+    
+    .modeCard .slds-text-heading_small {
+        font-size: 0.9rem;
+    }
+    
+    .add-all-button {
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .slds-m-top_large {
+        margin-top: 1rem !important;
+    }
+}

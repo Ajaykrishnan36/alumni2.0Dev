@@ -1,0 +1,88 @@
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,0.55);display:flex;align-items:flex-start;justify-content:center;z-index:9999;padding:32px 24px;overflow-y:auto}
+.modal{background:#fff;border-radius:8px;width:100%;max-width:600px;overflow:hidden;margin:auto 0}
+.give-progress{height:4px;background:#F1F5F9}
+.give-progress-fill{height:100%;background:#111827;width:var(--prog,25%)}
+.modal-head-row{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 24px 8px;gap:12px}
+.give-step-label{font-size:10.5px;font-weight:700;letter-spacing:1px;color:#9DA0A8;margin-bottom:4px}
+.give-sub{font-size:13px;color:#5F6271}
+.modal-close{width:32px;height:32px;border-radius:50%;border:0;background:transparent;cursor:pointer;font-size:18px;color:#373A45}
+.modal-body{padding:20px 24px 16px;max-height:60vh;overflow-y:auto}
+.modal-footer{display:flex;gap:8px;padding:14px 24px 20px;border-top:1px solid #F1F5F9}
+.step-h{font-size:15px;font-weight:700;margin:8px 0 14px;color:#111827}
+.step-h--mt{margin-top:22px}
+.give-types{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.give-type{background:#fff;border:1px solid #E5E6E8;border-radius:6px;padding:14px;cursor:pointer;text-align:left;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-family:inherit;position:relative}
+.give-type-icon{font-size:18px;grid-row:span 2;font-weight:700}
+.give-type-label{font-size:13px;font-weight:600;color:#111827}
+.give-type-desc{font-size:11.5px;color:#5F6271;grid-column:2 / 4}
+.give-type--active{border-color:#111827;background:#F6F8FB}
+.rec-pill{background:#E6F7EF;color:#19A974;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:999px}
+.amount-pills{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.amount-pill{flex:1;background:#fff;border:1px solid #E5E6E8;border-radius:6px;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;font-family:inherit;min-width:80px}
+.amount-pill--active{background:#111827;color:#fff;border-color:#111827}
+.text-input{width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #E5E6E8;border-radius:6px;font-family:inherit;font-size:13px;margin-bottom:10px}
+.field-label{display:block;font-size:11.5px;font-weight:600;color:#5F6271;margin:6px 0}
+.vis-row{display:flex;gap:12px;background:#fff;border:1px solid #E5E6E8;border-radius:6px;padding:12px 14px;cursor:pointer;font-family:inherit;text-align:left;width:100%;margin-bottom:8px}
+.vis-content{display:flex;flex-direction:column;gap:2px}
+.vis-title{font-size:13px;font-weight:600;color:#111827}
+.vis-desc{font-size:11.5px;color:#5F6271}
+.vis-row--active{border-color:#111827;background:#F6F8FB}
+.review-table{background:#F6F8FB;border-radius:6px;padding:4px 14px;margin-bottom:14px}
+.review-row{display:flex;justify-content:space-between;padding:10px 0;font-size:13px;color:#5F6271;border-bottom:1px solid #E5E6E8}
+.review-row:last-child{border-bottom:0}
+.review-row strong{color:#111827}
+.success-block{display:flex;flex-direction:column;align-items:center;text-align:center;padding:16px 0 8px}
+.success-check{width:56px;height:56px;border-radius:50%;background:#E6F7EF;color:#19A974;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;margin-bottom:14px}
+.success-title{font-size:20px;font-weight:700;margin:0 0 8px;color:#111827}
+.success-text{font-size:13px;color:#5F6271;max-width:420px;line-height:1.5;margin:0 0 14px}
+.success-towards{background:#F6F8FB;border-radius:4px;padding:8px 14px;font-size:12px;color:#373A45}
+.btn{font-weight:500;font-size:13px;padding:10px 18px;border-radius:4px;cursor:pointer;border:1px solid transparent;font-family:inherit}
+.btn--dark{background:#111827;color:#fff}
+.btn--ghost{background:#fff;border-color:#E5E6E8;color:#373A45}
+
+/* ============================================================
+ * TYPOGRAPHY REFINEMENT — premium type scale + numeric tracking
+ * Tailored to kenGiveNowWizardV2's actual class names.
+ * ============================================================ */
+.modal {
+    font-family: 'Inter', 'General Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+.modal .modal-title {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1.2 !important;
+    margin: 0 0 8px !important;
+}
+.modal .field-label,
+.modal .give-step-label,
+.modal .give-type-label,
+.modal h3,
+.modal h4 {
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #1F2937 !important;
+    letter-spacing: -0.01em !important;
+    margin-bottom: 6px !important;
+    text-transform: none !important;
+}
+.modal .give-sub,
+.modal .give-type-desc,
+.modal p {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: #4B5563 !important;
+    line-height: 1.5 !important;
+    letter-spacing: 0.01em !important;
+}
+.modal .amount-pills,
+.modal .amount-pills button,
+.modal .give-progress {
+    font-variant-numeric: tabular-nums !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.03em !important;
+    color: #111827 !important;
+}

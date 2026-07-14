@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- navigationMenu.js-meta.xml -->
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata" fqn="navigationMenu">
+    <apiVersion>52.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Navigation Menu</masterLabel>
+    <description>Custom Navigation Menu</description>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="linkSetMasterLabel"
+                type="String"
+                default="Default Navigation"
+                label="Navigation Link Set Name"
+                description="The NavigationLinkSet.MasterLabel of the Navigation Menu LinkSet for this network site. Used to look up the DeveloperName."/>
+            <property name="addHomeMenuItem"
+                type="Boolean"
+                default="false"
+                label="Add Home menu item"
+                description="Include the Home menu item"/>
+            <property name="includeImageUrls"
+                type="Boolean"
+                default="false"
+                label="Retrieve image URLs"
+                description="Include image URLs in the data. Useful for a Tile Menu component with images. Ensure all relevant users have permission to access Document object."/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

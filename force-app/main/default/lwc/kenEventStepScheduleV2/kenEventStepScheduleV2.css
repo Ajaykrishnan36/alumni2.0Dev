@@ -1,0 +1,25 @@
+:host { display: block; }
+h2 { font-weight: 700; font-size: 20px; margin: 0 0 14px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; row-gap: 16px; }
+@media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.field label { font-weight: 500; font-size: 12px; color: #373A45; }
+.field input { width: 100%; height: 44px; padding: 8px 12px; border: 1px solid #E5E6E8; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: #fff; box-sizing: border-box; }
+.toggle-row { display: flex; justify-content: space-between; padding: 14px 16px; background: #F6F8FB; border: 1px solid #E5E6E8; border-radius: 8px; margin-top: 10px; font-weight: 600; font-size: 13px; align-items: center; }
+.switch { width: 40px; height: 22px; background: #C2C5CC; border: 0; border-radius: 12px; cursor: pointer; position: relative; padding: 0; }
+.switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform 0.18s; }
+.switch--on { background: #19A974; }
+.switch--on::after { transform: translateX(18px); }
+.day-breakdown { margin-top: 18px; }
+.day-breakdown__title { font-weight: 700; font-size: 15px; margin: 0 0 4px; color: #1a1a2e; }
+.day-breakdown__hint { font-size: 12px; color: #6b7280; margin: 0 0 12px; }
+.day-card { border: 1px solid #E5E6E8; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; background: #fff; }
+.day-card__head { font-weight: 600; font-size: 13px; color: #373A45; margin-bottom: 10px; }
+.day-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.day-chip { display: inline-flex; align-items: center; gap: 6px; background: #EEF2FF; color: #3061FF; border-radius: 16px; padding: 4px 10px; font-size: 12px; font-weight: 500; }
+.day-chip__x { border: 0; background: transparent; color: #3061FF; font-size: 15px; line-height: 1; cursor: pointer; padding: 0; }
+.day-add { display: flex; gap: 8px; align-items: center; }
+.day-add__input { flex: 1; height: 38px; padding: 6px 12px; border: 1px solid #E5E6E8; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: #fff; box-sizing: border-box; }
+.day-add__btn { height: 38px; padding: 0 16px; border: 1px solid #3061FF; background: #3061FF; color: #fff; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.day-breakdown--prompt{display:flex;align-items:center;gap:10px;background:#F4F7FF;border:1px solid #B5C5FF;border-radius:10px;padding:12px 16px;margin-top:14px;}
+.day-breakdown--prompt p{margin:0;font-size:13px;color:#373A45;}

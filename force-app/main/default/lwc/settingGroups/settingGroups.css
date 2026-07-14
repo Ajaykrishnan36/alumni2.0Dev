@@ -1,0 +1,87 @@
+:host {
+    display: block;
+    color: #1a1a1a;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.card {
+    background-color: #f5f7fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.form-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 600px;
+    /* Limit width as it looks like single column left aligned in the big card */
+}
+
+.field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Radio Group */
+.radio-group-custom {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+}
+
+.radio-option input[type="radio"] {
+    margin-right: 6px;
+    accent-color: #2f61d5;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.radio-option label {
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+
+/* Toggle Row */
+.toggle-row {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+    width: 300px;
+    /* Fixed width for this toggle row based on look? Or maybe full width? image shows it smaller width than full container */
+}
+
+/* Checkbox Group */
+.checkbox-group {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}

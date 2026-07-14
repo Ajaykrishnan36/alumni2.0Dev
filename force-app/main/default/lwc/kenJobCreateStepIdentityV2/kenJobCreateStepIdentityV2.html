@@ -1,0 +1,52 @@
+<template>
+    <div>
+        <h3>Identity</h3>
+        <div class="fields-grid">
+            <div class="field">
+                <label>Job ID</label>
+                <input value={jobId} disabled/>
+            </div>
+            <div class="field">
+                <label>Job Title<span class="req">*</span></label>
+                <input data-field="jobTitle" value={jobTitle} oninput={handleField} placeholder="Eg: Software Engineer"/>
+            </div>
+            <div class="field">
+                <label>Employer<span class="req">*</span></label>
+                <input data-field="employer" value={employer} oninput={handleField} list="employer-options" placeholder="Type or choose employer"/>
+                <datalist id="employer-options">
+                    <option value="Acme Corp"></option>
+                    <option value="Paypal"></option>
+                    <option value="Google"></option>
+                    <option value="Infosys"></option>
+                </datalist>
+            </div>
+            <div class="field">
+                <label>Location</label>
+                <input data-field="location" value={location} oninput={handleField} placeholder="Eg: Bengaluru, India / Remote"/>
+            </div>
+            <div class="field">
+                <label>Placement Cycle<span class="req">*</span></label>
+                <select data-field="placementCycle" value={placementCycle} onchange={handleField}>
+                    <option value="">Select placement cycle</option>
+                    <option value="Summer Internship 2026">Summer Internship 2026</option>
+                    <option value="Final Placement 2026">Final Placement 2026</option>
+                    <option value="Off-Campus / Lateral">Off-Campus / Lateral</option>
+                    <option value="Not Applicable">Not Applicable</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Posted By</label>
+                <input data-field="postedBy" value={postedBy} oninput={handleField} placeholder="Enter name"/>
+            </div>
+            <div class="field">
+                <label>Status<span class="req">*</span></label>
+                <select data-field="statusField" value={statusField} onchange={handleField}>
+                    <option value="">Select</option>
+                    <option value="Active">Active</option>
+                    <option value="Draft">Draft</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</template>

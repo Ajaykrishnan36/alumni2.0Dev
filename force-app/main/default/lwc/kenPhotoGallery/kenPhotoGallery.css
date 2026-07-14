@@ -1,0 +1,454 @@
+.photo-gallery-container {
+    width: 100%;
+    height: calc(100vh - var(--portal-header-height, 160px));
+    min-height: calc(100vh - var(--portal-header-height, 160px));
+    padding: 24px;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+        sans-serif;
+}
+
+/* Tabs Card */
+.tabs-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 0 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Content Card */
+.content-card {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Navigation Tabs Section */
+.nav-tabs-section {
+    margin-bottom: 40px;
+    padding-bottom: 0;
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 32px;
+    border-bottom: 1px solid #e5e5e5;
+    margin: 0;
+}
+
+.nav-tabs button {
+    background: none;
+    border: none;
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: 400;
+    color: #6b7280;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+}
+
+.nav-tabs button:hover {
+    color: var(--primary-color);
+}
+
+.nav-tabs button.active {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.nav-tabs button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+}
+
+/* Title and Controls Row */
+.title-controls-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+/* Title Section */
+.title-section {
+    flex: 0 0 auto;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+/* Controls Section */
+.controls-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    flex: 0 0 auto;
+}
+
+/* Search Container */
+.search-container {
+    display: flex;
+    align-items: center;
+    background-color: #F6F8FB;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 12px;
+    gap: 8px;
+    min-width: 280px;
+}
+
+.search-icon {
+    color: #6b7280;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    outline: none;
+    font-size: 14px;
+    color: #111827;
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.mic-icon {
+    color: #6b7280;
+    cursor: pointer;
+}
+
+/* Sort Container */
+.sort-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sort-dropdown-wrapper {
+    position: relative;
+}
+
+.sort-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background-color: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.sort-button:hover {
+    background-color: #e5e7eb;
+}
+
+.sort-label {
+    font-weight: 400;
+}
+
+.sort-icon {
+    color: #6b7280;
+}
+
+.sort-arrow {
+    color: #6b7280;
+}
+
+.sort-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 1000;
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.sort-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.sort-dropdown-item:hover {
+    background-color: #F6F8FB;
+}
+
+.sort-option-label {
+    flex: 1;
+}
+
+.sort-check-icon {
+    --slds-c-icon-color-foreground-default: var(--primary-color);
+    margin-left: 8px;
+}
+
+.view-icon {
+    color: #6b7280;
+    cursor: pointer;
+}
+
+.add-photos-button,
+.create-album-button {
+    --slds-c-button-brand-color-background: var(--primary-color);
+    --slds-c-button-brand-color-background-hover: var(--primary-color);
+}
+
+.sort-combobox {
+    min-width: 150px;
+}
+
+/* Photo Grid */
+.photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    margin-top: 0;
+}
+
+.photo-grid-item {
+    width: 100%;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 64px 0;
+    color: #6b7280;
+    font-size: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .photo-gallery-container {
+        padding: 16px;
+    }
+
+    .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .header-right {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .search-container {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+}
+
+/* Album Grid */
+.album-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-auto-rows: min-content;
+    align-content: start;
+    gap: 24px;
+    margin-top: 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.album-grid-item {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .album-grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
+}
+
+/* Success Modal */
+.success-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.success-modal-container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 48px 64px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    min-width: 400px;
+    max-width: 500px;
+}
+
+.success-modal-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.success-icon-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.success-check-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+.success-message {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .success-modal-container {
+        min-width: 300px;
+        padding: 32px 40px;
+    }
+
+    .success-icon-circle {
+        width: 64px;
+        height: 64px;
+    }
+
+    .success-message {
+        font-size: 20px;
+    }
+}
+
+/* Delete Confirmation Modal */
+.delete-confirm-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.delete-confirm-modal-container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    min-width: 400px;
+    max-width: 500px;
+}
+
+.delete-confirm-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.delete-confirm-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    text-align: center;
+}
+
+.delete-confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.cancel-delete-button {
+    --slds-c-button-neutral-color-background: #ffffff;
+    --slds-c-button-neutral-color-background-hover: #F6F8FB;
+    --slds-c-button-text-color: var(--primary-color);
+    --slds-c-button-neutral-color-border: var(--primary-color);
+    min-width: 150px;
+}
+
+.confirm-delete-button {
+    --slds-c-button-destructive-color-background: #dc2626;
+    --slds-c-button-destructive-color-background-hover: #b91c1c;
+    min-width: 150px;
+}
+
+@media (max-width: 768px) {
+    .delete-confirm-modal-container {
+        min-width: 300px;
+        padding: 24px;
+    }
+
+    .delete-confirm-title {
+        font-size: 18px;
+    }
+
+    .delete-confirm-actions {
+        flex-direction: column;
+    }
+
+    .cancel-delete-button,
+    .confirm-delete-button {
+        width: 100%;
+    }
+}

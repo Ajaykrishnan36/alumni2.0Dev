@@ -1,0 +1,145 @@
+<template>
+    <lightning-accordion>
+            <lightning-accordion-section 
+                label={eventFields.eventName} 
+                class="slds-accordion__section" 
+                style="background-color: white; margin-bottom: 10px;">
+                
+                <div class="slds-grid slds-p-around_small">
+                    <!-- Image Container -->
+                    <div class="slds-col slds-size_small">
+                        <img src={eventFields.eventCoverImage} class="slds-image" style="max-width: 200px; height: auto;" />
+                    </div>
+
+                    <!-- Event Details Container -->
+                    <div class="slds-col slds-size_auto slds-p-left_medium">
+                        <!--<div><strong>Event Name:</strong> {event.eventName}</div>-->
+                        <p><strong>Event Type:</strong> {eventFields.eventType}</p>
+                        <p><strong>Event StartDate:</strong> {eventFields.eventStartDate}</p>
+                        <p><strong>Event EndDate:</strong> {eventFields.eventEndDate}</p>
+                        <p><strong>Event Participants:</strong> {eventFields.eventParticipants}</p>
+                        <p><strong>Event Description:</strong> {eventFields.eventDescription}</p>
+                        <template if:true={eventFields.eventFee}>
+                            <p><strong>Event Fee:</strong> {eventFields.eventFee}</p>
+                        </template>
+                        <template if:true={eventFields.noFee}>
+                            <p><strong>No Fee:</strong> {eventFields.noFee}</p>
+                        </template>
+                    </div>
+                </div>
+            </lightning-accordion-section>
+    </lightning-accordion>
+    <!--<div class="EventContainer" 
+        style="display: flex;
+        flex-direction: row;
+        border: 1px black;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        justify-content: flex-start;
+        align-items: flex-start;
+        gap: 20px; /* Adjust gap for closer spacing */
+        padding: 20px;">
+        
+        <div class="image-preview" style="max-width: 200px;">
+            <img src={eventFields.eventCoverImage} style="width: 100%; height: 80%;"/>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div><strong>Event Name:</strong> {eventFields.eventName}</div>
+            <template if:true={eventFields.eventFee}>
+                <p><strong>Event Fee:</strong> {eventFields.eventFee}</p>
+            </template>
+            <template if:true={eventFields.noFee}>
+                <p><strong>No Fee:</strong> {eventFields.noFee}</p>
+            </template>
+            <div><strong>Event Fee:</strong> {eventFields.eventFee}</div>
+            <div><strong>Event NoFee:</strong> {eventFields.noFee}</div>
+        </div>
+        
+    </div>-->
+    <br><br>
+
+    <!-- Loop through each session -->
+    <lightning-accordion>
+        <template for:each={sessions} for:item="session">
+            <lightning-accordion-section 
+                key={session.Id} 
+                label={session.Name} 
+                class="slds-accordion__section" 
+                style="background-color: white; margin-bottom: 10px;">
+                
+                <div class="slds-grid slds-p-around_small">
+                    <!-- Image Container -->
+                    <div class="slds-col slds-size_small">
+                        <img src={session.Session_Broucher__c} class="slds-image" style="max-width: 150px; height: auto;" />
+                    </div>
+
+                    <!-- Session Details Container -->
+                    <div class="slds-col slds-size_auto slds-p-left_medium">
+                        <p><strong>Agenda:</strong> {session.What_to_Expect_From_Event__c}</p>
+                        <p><strong>Start Time:</strong> {session.Start_Time__c}</p>
+                        <p><strong>End Time:</strong> {session.End_Time__c}</p>
+                        <template if:true={session.Session_Fee__c}>
+                            <p><strong>Session Fee:</strong> {session.Session_Fee__c}</p>
+                        </template>
+                        <template if:true={session.No_Fee__c}>
+                            <p><strong>No Fee:</strong> {session.No_Fee__c}</p>
+                        </template>
+                    </div>
+                </div>
+            </lightning-accordion-section>
+        </template>
+    </lightning-accordion>
+   <!--<template for:each={sessions} for:item="session">
+        
+        <div key={session.Id} 
+            class="session-container" 
+            style="display: flex;
+            flex-direction: row;
+            border: 1px black;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            justify-content: flex-start;
+            align-items: flex-start;
+            gap: 20px;
+            padding: 20px;">
+            
+            <div class="image-preview" style="max-width: 150px;">
+                <img src={session.Session_Broucher__c} style="width: 100%; height: auto;"/>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <p><strong>Session Title:</strong> {session.Name}</p>
+                <p><strong>Start Time:</strong> {session.Start_Time__c}</p>
+                <p><strong>End Time:</strong> {session.End_Time__c}</p>
+                <template if:true={session.Session_Fee__c}>
+                    <p><strong>Session Fee:</strong> {session.Session_Fee__c}</p>
+                </template>
+                <template if:true={session.No_Fee__c}>
+                    <p><strong>No Fee:</strong> {session.No_Fee__c}</p>
+                </template>
+               
+            </div>
+            
+        </div>
+    </template>--> 
+
+    <!-- Button container with Previous, Cancel, and Save buttons -->
+    <div class="slds-grid slds-wrap slds-p-around_small slds-grid_align-spread">
+        <!-- Previous button on the left -->
+        <div class="slds-p-horizontal_small">
+            <lightning-button class="slds-m-right_small" name="previous" label="Previous" onclick={handlePrevious}></lightning-button>
+        </div>
+
+        <!-- Cancel and Save buttons next to Previous button -->
+        <div class="slds-button-group slds-p-horizontal_small" role="group">
+            <!--<lightning-button class="slds-p-around_xx-small" name="cancel" label="Cancel" onclick={handleCancel}></lightning-button>-->
+            <lightning-button class="slds-p-around_xx-small" variant="brand" name="Submit" label="Okay" onclick={handleSummary}></lightning-button>
+        </div>
+    </div>
+    
+</template>

@@ -1,0 +1,8 @@
+:host { display: block; }
+.filter-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.search { display: flex; align-items: center; background: #fff; border: 1px solid #E5E6E8; border-radius: 8px; padding: 6px 12px; min-width: 240px; }
+.search input { border: 0; outline: 0; flex: 1; font-family: inherit; font-size: 13px; background: transparent; color: #373A45; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { padding: 6px 14px; border-radius: 999px; border: 1px solid #E5E6E8; background: #fff; font-family: inherit; font-weight: 500; font-size: 12px; cursor: pointer; color: #5A5D68; }
+.chip:hover { border-color: #B5C5FF; color: #3061FF; }
+.chip--active { background: #3061FF; color: #fff; border-color: #3061FF; }

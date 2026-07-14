@@ -1,0 +1,63 @@
+<template>
+    <h2>7. Summary</h2>
+    <p class="muted">Review your event before submitting. Use <strong>Edit</strong> to jump back to any section.</p>
+
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3>Event Setup</h3>
+            <button type="button" class="summary-edit" data-step="1" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-pair"><p>Title</p><p>{eventTitle}</p></div>
+        <div class="kv-pair"><p>Category</p><p>{category}</p></div>
+        <div class="kv-pair"><p>Type</p><p>{eventType}</p></div>
+        <div class="kv-pair"><p>Language</p><p>{language}</p></div>
+        <div class="kv-pair"><p>Host Type</p><p>{hostType}</p></div>
+        <div class="kv-pair"><p>{venueLabel}</p><p>{venueOrLink}</p></div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3>Schedule</h3>
+            <button type="button" class="summary-edit" data-step="2" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-pair"><p>When</p><p>{scheduleText}</p></div>
+        <div class="kv-pair"><p>Multi-day</p><p>{multiDayText}</p></div>
+        <template lwc:if={hasDaySchedules}>
+            <template for:each={daySchedulesView} for:item="d">
+                <div key={d.key} class="kv-pair"><p>{d.label}</p><p>{d.speakers}</p></div>
+            </template>
+        </template>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3>Pre-Event Survey</h3>
+            <button type="button" class="summary-edit" data-step="3" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-pair"><p>Survey</p><p>{surveyText}</p></div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3>Fee</h3>
+            <button type="button" class="summary-edit" data-step="4" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-pair"><p>Pricing</p><p>{feeText}</p></div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3>Feedback Form</h3>
+            <button type="button" class="summary-edit" data-step="5" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-pair"><p>Post-event feedback</p><p>{feedbackText}</p></div>
+    </div>
+
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3>Target Audience</h3>
+            <button type="button" class="summary-edit" data-step="6" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-pair"><p>Audience</p><p>{audienceText}</p></div>
+    </div>
+</template>

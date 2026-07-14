@@ -1,0 +1,55 @@
+<template>
+    <div class="fb-card">
+        <div class="fb-head">
+            <p class="fb-title">{title}</p>
+            <template if:true={hasResponses}>
+                <span class="fb-count">{total}</span>
+                <button type="button" class="fb-download" onclick={handleDownloadCsv} title="Download responses as CSV">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="7 10 12 15 17 10" />
+                        <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    <span>Download CSV</span>
+                </button>
+            </template>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="fb-loading">
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={error}>
+            <p class="fb-empty">{error}</p>
+        </template>
+
+        <template if:false={error}>
+            <template if:true={hasResponses}>
+                <template for:each={respondents} for:item="r">
+                    <div key={r.key} class="fb-respondent">
+                        <div class="fb-respondent-head">
+                            <span class="fb-respondent-name">{r.respondentName}</span>
+                            <template if:true={r.submittedDate}>
+                                <lightning-formatted-date-time value={r.submittedDate} year="numeric"
+                                    month="short" day="2-digit" class="fb-date"></lightning-formatted-date-time>
+                            </template>
+                        </div>
+                        <template for:each={r.answers} for:item="a">
+                            <div key={a.key} class="fb-qa">
+                                <p class="fb-q">{a.question}</p>
+                                <p class="fb-a">{a.answer}</p>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </template>
+
+            <template if:false={hasResponses}>
+                <p class="fb-empty">No feedback has been submitted yet.</p>
+            </template>
+        </template>
+    </div>
+</template>

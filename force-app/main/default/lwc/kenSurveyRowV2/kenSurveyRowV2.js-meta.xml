@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 - Survey Row</masterLabel>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordId" type="String" label="Record Id"/>
+            <property name="title" type="String" label="Survey Title"/>
+            <property name="status" type="String" label="Status"/>
+            <property name="totalQuestions" type="Integer" label="Total Questions" default="0"/>
+            <property name="responses" type="String" label="Responses Text"/>
+            <property name="periodStart" type="String" label="Period Start"/>
+            <property name="periodEnd" type="String" label="Period End"/>
+            <property name="period" type="String" label="Period Label (combined)"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

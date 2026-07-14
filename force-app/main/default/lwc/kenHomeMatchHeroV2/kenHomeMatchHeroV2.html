@@ -1,0 +1,23 @@
+<template lwc:render-mode="light">
+    <div class="h-card aotm">
+
+        <!-- LEFT COLUMN — pinned 200px photo + floating award chip -->
+        <div class="aotm__image-wrapper">
+            <div class="aotm__image" style={imgStyle}></div>
+            <span class="aotm__img-chip">&#127942; Award &middot; Alumni of the Month</span>
+        </div>
+
+        <!-- RIGHT COLUMN — eyebrow, title, meta, quote, CTAs -->
+        <div class="aotm__content-wrapper">
+            <div class="aotm__eye">{eyebrow}</div>
+            <div class="aotm__name">{title}</div>
+            <div class="aotm__meta">{meta}</div>
+            <div class="aotm__quote">{quote}</div>
+            <div class="aotm__ctas">
+                <button class="aotm__btn aotm__btn--dark" onclick={handleContinue}>{ctaLabel} &rarr;</button>
+                <button class="aotm__btn aotm__btn--out" onclick={handleNominate}>{secondaryCtaLabel}</button>
+            </div>
+        </div>
+
+    </div>
+</template>

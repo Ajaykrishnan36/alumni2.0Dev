@@ -1,0 +1,168 @@
+<template>
+    <div class="dashboard">
+
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="dash-header-top">
+                <div>
+                    <h1 class="dash-title">Case Management Dashboard</h1>
+                    <p class="dash-subtitle">Track service requests, resolutions, and support trends</p>
+                </div>
+                <div class="dash-actions">
+                    <button class="create-btn" onclick={handleCreateCase}>Create Case</button>
+                    <button class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
+                        <template if:true={isRefreshing}>
+                            <span class="btn-spinner"></span>Refreshing...
+                        </template>
+                        <template if:false={isRefreshing}>
+                            &#x21BB; Refresh
+                        </template>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Year</label>
+                    <select class="filter-select" data-field="filterYear" onchange={handleFilterChange}>
+                        <option value="All">All Years</option>
+                        <template for:each={yearOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" data-field="filterStatus" onchange={handleFilterChange}>
+                        <option value="All">All Statuses</option>
+                        <template for:each={statusOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <button class="clear-btn" onclick={clearFilters}>&#x2715; Clear</button>
+            </div>
+        </div>
+
+        <!-- Summary Stat Cards -->
+        <div class="stat-row">
+            <div class="stat-card stat-card-clickable" data-type="total" onclick={handleStatCardClick} title="Click to view all cases">
+                <div class="stat-icon-wrap stat-teal">&#128203;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{stats.total}</div>
+                    <div class="stat-label">Total Cases</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="open" onclick={handleStatCardClick} title="Click to view open cases">
+                <div class="stat-icon-wrap stat-orange">&#x1F504;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{stats.openCases}</div>
+                    <div class="stat-label">Open Cases</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="closed" onclick={handleStatCardClick} title="Click to view closed cases">
+                <div class="stat-icon-wrap stat-green">&#x2705;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{stats.closedCases}</div>
+                    <div class="stat-label">Closed Cases</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="cancelled" onclick={handleStatCardClick} title="Click to view cancelled/rejected cases">
+                <div class="stat-icon-wrap stat-red">&#x1F6AB;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{stats.cancelled}</div>
+                    <div class="stat-label">Cancelled / Rejected</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Status, Cases by Portal, Monthly Trend -->
+        <div class="grid grid-3">
+            <c-ken-donut-chart
+                title="Cases by Status"
+                description="Breakdown of all cases by current status"
+                data={casesByStatusData}
+                is-loading={loadingByStatus}
+                dimension="status"
+                chart-type="donut"
+                show-export
+                ondrilldown={handleDrilldown}
+                onexportcsv={handleStatusExportCsv}
+            ></c-ken-donut-chart>
+
+            <c-ken-donut-chart
+                title="Cases by Target Audience"
+                description="Cases breakdown by target audience"
+                data={casesByTargetAudienceData}
+                is-loading={loadingByTargetAudience}
+                dimension="targetAudience"
+                chart-type="donut"
+                show-export
+                ondrilldown={handleDrilldown}
+                onexportcsv={handleAllCasesExportCsv}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Monthly Trend"
+                description="Number of cases created per month"
+                data={caseTrendData}
+                is-loading={loadingTrend}
+                dimension="trend"
+                chart-type="line"
+                show-export
+                ondrilldown={handleDrilldown}
+                onexportcsv={handleAllCasesExportCsv}
+            ></c-ken-bar-chart>
+        </div>
+
+        <!-- Row 2: Top Services, Top Service Offerings, Top Submitters -->
+        <div class="grid grid-3">
+            <c-ken-bar-chart
+                title="Top Services"
+                description="Services with the highest case volume"
+                data={topServicesData}
+                is-loading={loadingTopServices}
+                dimension="service"
+                chart-type="horizontal"
+                show-export
+                ondrilldown={handleDrilldown}
+                onexportcsv={handleAllCasesExportCsv}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Top Service Offerings"
+                description="Service offerings with the most cases"
+                data={topOfferingsData}
+                is-loading={loadingTopOfferings}
+                dimension="offering"
+                chart-type="horizontal"
+                show-export
+                ondrilldown={handleDrilldown}
+                onexportcsv={handleAllCasesExportCsv}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Top Submitters"
+                description="Accounts with the most submitted cases"
+                data={topSubmittersData}
+                is-loading={loadingTopSubmitters}
+                dimension="submitter"
+                chart-type="table"
+                show-export
+                ondrilldown={handleDrilldown}
+                onexportcsv={handleAllCasesExportCsv}
+            ></c-ken-bar-chart>
+        </div>
+
+    </div>
+
+    <!-- Drill-down Modal -->
+    <c-ken-case-list-modal
+        is-open={modalOpen}
+        title={modalTitle}
+        case-list={modalCases}
+        is-loading={modalLoading}
+        onclose={handleModalClose}
+    ></c-ken-case-list-modal>
+</template>

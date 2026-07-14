@@ -1,0 +1,250 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="events" has-rail={showRail}>
+        <div class="ev-page">
+
+            <template lwc:if={toastVisible}>
+                <div class="ev-toast">{toastMsg}</div>
+            </template>
+
+            <!-- ===== MAIN BOARD ===== -->
+            <template lwc:if={viewState.isMainBoard}>
+                <section class="page">
+                    <header class="page__head">
+                        <div>
+                            <h1 class="page__title">Events</h1>
+                            <p class="page__subtitle">Don't miss what's happening in your community</p>
+                        </div>
+                        <button type="button" class="btn btn--primary" onclick={handleHostEvent}>+ Host an Event</button>
+                    </header>
+
+                    <div class="toolbar">
+                        <c-ken-events-tabs-v2 active-tab={activeTab} ontabchange={handleTabChange}></c-ken-events-tabs-v2>
+                    </div>
+
+                    <c-ken-events-filter-bar-v2 active-category={activeCategory} category-options={categoryOptions} oncategorychange={handleCategoryChange}></c-ken-events-filter-bar-v2>
+
+                    <!-- QA Bug #129: free-text search across events -->
+                    <div class="events-search" style="margin: 12px 0;">
+                        <input type="text" class="events-search__input"
+                            style="width: 100%; box-sizing: border-box; padding: 10px 14px;
+                                   font-size: 14px; border: 1px solid #d1d5db; border-radius: 8px;
+                                   background: #fff;"
+                            placeholder="Search events by title, category, venue, or host…"
+                            value={searchTerm} oninput={handleEventsSearch} />
+                    </div>
+
+                    <!-- All Events -->
+                    <template lwc:if={isTabAll}>
+                        <template lwc:if={isLoading}>
+                            <div class="empty-feed">Loading events...</div>
+                        </template>
+                        <template lwc:elseif={hasEvents}>
+                            <section class="section">
+                                <div class="section__head">
+                                    <h2 class="section__title">Featured Events ({featuredCount})</h2>
+                                    <a class="section__link" role="button" tabindex="0" onclick={handleGoToUpcoming}>View All →</a>
+                                </div>
+                                <div class="featured">
+                                    <template for:each={featuredEvents} for:item="e">
+                                        <c-ken-event-featured-card-v2 key={e.id} record-id={e.id} title={e.title} date={e.date} time={e.time} location={e.loc} category={e.category} going={e.going} image={e.image} hero-grad={e.heroGrad} oneventclick={handleEventClick}></c-ken-event-featured-card-v2>
+                                    </template>
+                                </div>
+                            </section>
+
+                            <section class="section" style="margin-top:14px">
+                                <div class="section__head">
+                                    <h2 class="section__title">Upcoming Events ({upcomingCount})</h2>
+                                    <a class="section__link" role="button" tabindex="0" onclick={handleGoToUpcoming}>View All →</a>
+                                </div>
+                                <div class="up-list">
+                                    <template for:each={upcomingEvents} for:item="e">
+                                        <c-ken-event-card-v2 key={e.id} record-id={e.id} title={e.title} date={e.date} time={e.time} location={e.loc} category={e.category} going={e.going} organizer={e.organizer} image={e.image} hero-grad={e.heroGrad} is-happening-now={e.isHappeningNow} show-join-now={e.showJoinNow} meeting-link={e.meetingLink} oneventclick={handleEventClick}></c-ken-event-card-v2>
+                                    </template>
+                                </div>
+                            </section>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-feed">No upcoming events yet.</div>
+                        </template>
+                    </template>
+
+                    <!-- My Events -->
+                    <template lwc:if={isTabMine}>
+                        <section class="section">
+                            <div class="section__head">
+                                <h2 class="section__title">My Registered Events ({myCount})</h2>
+                            </div>
+                            <template lwc:if={isLoadingMine}>
+                                <div class="empty-feed">Loading your events...</div>
+                            </template>
+                            <template lwc:elseif={showMyEmpty}>
+                                <div class="empty empty--card">
+                                    <div class="empty__icon">🎟️</div>
+                                    <h3 class="empty__title">No upcoming registrations</h3>
+                                    <p class="empty__copy">Browse events to register and they will show up here.</p>
+                                    <button type="button" class="btn btn--primary" onclick={handleGoToUpcoming}>Browse All Events</button>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="up-list">
+                                    <template for:each={myEvents} for:item="e">
+                                        <c-ken-event-card-v2 key={e.id} record-id={e.id} title={e.title} date={e.date} time={e.time} location={e.loc} category={e.category} status={e.status} image={e.image} hero-grad={e.heroGrad} is-mine is-happening-now={e.isHappeningNow} show-join-now={e.showJoinNow} meeting-link={e.meetingLink} oneventclick={handleEventClick}></c-ken-event-card-v2>
+                                    </template>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+
+                    <!-- Past Events -->
+                    <template lwc:if={isTabPast}>
+                        <section class="section">
+                            <div class="section__head">
+                                <h2 class="section__title">Past Events ({pastCount})</h2>
+                            </div>
+                            <template lwc:if={isLoadingPast}>
+                                <div class="empty-feed">Loading past events...</div>
+                            </template>
+                            <template lwc:elseif={showPastEmpty}>
+                                <div class="empty empty--card">
+                                    <div class="empty__icon">📅</div>
+                                    <h3 class="empty__title">No past events to show</h3>
+                                    <p class="empty__copy">Your event history will appear here once you attend.</p>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="up-list">
+                                    <template for:each={pastEvents} for:item="e">
+                                        <c-ken-event-card-v2 key={e.id} record-id={e.id} title={e.title} date={e.date} time={e.time} location={e.loc} category={e.category} image={e.image} hero-grad={e.heroGrad} is-past oneventclick={handleEventClick}></c-ken-event-card-v2>
+                                    </template>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+
+                    <!-- Hosted Events -->
+                    <template lwc:if={isTabHosted}>
+                        <section class="section">
+                            <div class="section__head">
+                                <h2 class="section__title">Hosted Events ({hostedCount})</h2>
+                            </div>
+                            <template lwc:if={isLoadingHosted}>
+                                <div class="empty-feed">Loading hosted events...</div>
+                            </template>
+                            <template lwc:elseif={showHostedEmpty}>
+                                <div class="empty empty--card">
+                                    <div class="empty__icon">🎤</div>
+                                    <h3 class="empty__title">You haven't hosted any events yet</h3>
+                                    <p class="empty__copy">Share your expertise with the alumni community.</p>
+                                    <button type="button" class="btn btn--primary" onclick={handleHostEvent}>+ Host an Event</button>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <!-- UPCOMING -->
+                                <template lwc:if={hasHostedUpcoming}>
+                                    <h3 class="hosted-cat hosted-cat--upcoming">Upcoming Events ({hostedUpcoming.length})</h3>
+                                    <div class="up-list">
+                                        <template for:each={hostedUpcoming} for:item="e">
+                                            <div key={e.id} class="hosted-row">
+                                                <c-ken-event-card-v2 record-id={e.id} title={e.title} date={e.date} time={e.time} location={e.loc} category={e.category} image={e.image} hero-grad={e.heroGrad} is-happening-now={e.isHappeningNow} show-join-now={e.showJoinNow} meeting-link={e.meetingLink} oneventclick={handleEventClick}></c-ken-event-card-v2>
+                                                <p class="host-info">{e.hostInfo}</p>
+                                                <div class="host-actions">
+                                                    <button type="button" class="btn btn--outline" data-id={e.id} onclick={handleViewDetailsEvent}>View Details</button>
+                                                    <button type="button" class="btn btn--outline" data-id={e.id} onclick={handleCancelEvent}>Cancel</button>
+                                                    <button type="button" class="btn btn--danger-outline" data-id={e.id} onclick={handleDeleteEvent}>Delete</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- CANCELLED -->
+                                <template lwc:if={hasHostedCancelled}>
+                                    <h3 class="hosted-cat hosted-cat--cancelled">Cancelled Events ({hostedCancelled.length})</h3>
+                                    <div class="up-list">
+                                        <template for:each={hostedCancelled} for:item="e">
+                                            <div key={e.id} class="hosted-row hosted-row--muted">
+                                                <c-ken-event-card-v2 record-id={e.id} title={e.title} date={e.date} time={e.time} location={e.loc} category={e.category} image={e.image} hero-grad={e.heroGrad} is-happening-now={e.isHappeningNow} show-join-now={e.showJoinNow} meeting-link={e.meetingLink} oneventclick={handleEventClick}></c-ken-event-card-v2>
+                                                <p class="host-info">{e.hostInfo}</p>
+                                                <div class="host-actions">
+                                                    <button type="button" class="btn btn--outline" data-id={e.id} onclick={handleViewDetailsEvent}>View Details</button>
+                                                    <button type="button" class="btn btn--danger-outline" data-id={e.id} onclick={handleDeleteEvent}>Delete</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- COMPLETED -->
+                                <template lwc:if={hasHostedCompleted}>
+                                    <h3 class="hosted-cat hosted-cat--completed">Completed Events ({hostedCompleted.length})</h3>
+                                    <div class="up-list">
+                                        <template for:each={hostedCompleted} for:item="e">
+                                            <div key={e.id} class="hosted-row">
+                                                <c-ken-event-card-v2 record-id={e.id} title={e.title} date={e.date} time={e.time} location={e.loc} category={e.category} image={e.image} hero-grad={e.heroGrad} is-happening-now={e.isHappeningNow} show-join-now={e.showJoinNow} meeting-link={e.meetingLink} oneventclick={handleEventClick}></c-ken-event-card-v2>
+                                                <p class="host-info">{e.hostInfo}</p>
+                                                <div class="host-actions">
+                                                    <button type="button" class="btn btn--outline" data-id={e.id} onclick={handleViewDetailsEvent}>View Details</button>
+                                                    <button type="button" class="btn btn--danger-outline" data-id={e.id} onclick={handleDeleteEvent}>Delete</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </template>
+                        </section>
+                    </template>
+                </section>
+            </template>
+
+            <!-- ===== INLINE EVENT DETAIL ===== -->
+            <template lwc:if={viewState.isEventDetail}>
+                <c-ken-event-detail-page-v2
+                    event={selectedEvent}
+                    is-host-view={isSelectedEventHosted}
+                    eligible-audience={selectedEligibleAudienceForView}
+                    onback={handleBackToBoard}
+                    onrsvp={handleRsvpFromDetail}
+                    onviewregistration={handleViewRegistration}
+                    onviewquestionnaire={handleViewQuestionnaire}
+                    oncancelevent={handleCancelEvent}
+                    ondeleteevent={handleDeleteEvent}>
+                </c-ken-event-detail-page-v2>
+            </template>
+
+            <!-- ===== INLINE REGISTRATION SUMMARY ===== -->
+            <template lwc:if={viewState.isRegistrationSummary}>
+                <c-ken-event-registration-summary-v2
+                    registration={selectedRegistration}
+                    event={selectedEvent}
+                    onback={handleBackToDetail}
+                    oncancelregistration={handleCancelRegistration}>
+                </c-ken-event-registration-summary-v2>
+            </template>
+
+            <!-- ===== INLINE QUESTIONNAIRE ===== -->
+            <template lwc:if={viewState.isQuestionnaire}>
+                <c-ken-event-questionnaire-v2
+                    survey={selectedSurvey}
+                    event={selectedEvent}
+                    onback={handleBackToDetail}>
+                </c-ken-event-questionnaire-v2>
+            </template>
+
+            <!-- ===== RSVP WIZARD (stays as full-screen flow) ===== -->
+            <template lwc:if={viewState.isRsvp}>
+                <c-ken-event-rsvp-wizard-v2 event-id={selectedEventId} event-title={selectedEventTitle} onclose={handleBackToDetail} onsubmit={handleRsvpSubmit}></c-ken-event-rsvp-wizard-v2>
+            </template>
+
+            <!-- ===== HOST WIZARD (stays as full-screen flow) ===== -->
+            <template lwc:if={viewState.isHost}>
+                <c-ken-event-host-wizard-v2 onclose={handleClose} onsubmit={handleHostSubmit} onsavedraft={handleHostSaveDraft} onsaveexit={handleHostSaveExit}></c-ken-event-host-wizard-v2>
+            </template>
+
+        </div>
+
+        <!-- Rail slot -->
+        <template lwc:if={showRail}>
+            <c-ken-events-rail-v2 slot="rail" registered-events={registeredMini} hosted-events={hostedEvents} onhostevent={handleHostEvent} onviewallregistered={handleViewAllRegistered} onviewallhosted={handleViewAllHosted} onhostedclick={handleHostedClick}></c-ken-events-rail-v2>
+        </template>
+    </c-ken42-alumni-shell-v2>
+</template>

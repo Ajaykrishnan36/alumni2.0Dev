@@ -1,0 +1,20 @@
+<template>
+    <article class={cardClass} onclick={handleRowClick}>
+        <span class={pillClass}>{pillLabel}</span>
+        <div class="row__main">
+            <h3 class="row__title">{title}</h3>
+            <p class="row__sub">Survey Period: <b>{periodLabel}</b></p>
+        </div>
+        <div class="row__col">
+            <p class="col__label">Total Questions</p>
+            <p class="col__val">{questionsCount}</p>
+        </div>
+        <div class="row__col">
+            <p class="col__label">Responses</p>
+            <p class="col__val">{responsesText}</p>
+        </div>
+        <!-- QA Bug #119: surface Edit alongside View Details -->
+        <button type="button" class="btn btn--secondary" onclick={handleView}>View Details</button>
+        <button type="button" class="btn btn--secondary" onclick={handleEdit}>Edit</button>
+    </article>
+</template>

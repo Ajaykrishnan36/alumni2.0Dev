@@ -1,0 +1,17 @@
+<template>
+    <lightning-card title="Upload Category Image" icon-name="utility:image">
+        <div class="slds-p-around_medium slds-align_absolute-center slds-is-relative">
+            <template if:true={isUploading}>
+                <lightning-spinner alternative-text="Uploading" size="small"></lightning-spinner>
+            </template>
+            <img src={previewUrl} alt="Category" class="category-image-preview"/>
+        </div>
+        <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+            <lightning-input type="file" label="Select Image" accept="image/*" onchange={handleFileChange}></lightning-input>
+        </div>
+        <div class="slds-card__footer slds-grid slds-grid_align-end">
+            <lightning-button label="Cancel" variant="neutral" onclick={handleCancel} class="slds-m-right_small"></lightning-button>
+            <lightning-button label={uploadButtonLabel} variant="brand" onclick={handleUpload} disabled={isUploadDisabled}></lightning-button>
+        </div>
+    </lightning-card>
+</template>

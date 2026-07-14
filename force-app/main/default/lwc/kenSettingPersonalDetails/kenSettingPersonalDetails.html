@@ -1,0 +1,125 @@
+<template>
+    <div class="personal-details-container">
+        <h1 class="header-title">Personal Details</h1>
+
+        <template if:true={error}>
+            <div class="error-banner">{error}</div>
+        </template>
+
+        <template if:true={isLoading}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={isSaving}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Saving" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <!-- Basic Details Card -->
+            <div class="card">
+                <h2 class="section-title">Basic Details</h2>
+
+                <div class="profile-pic-section">
+                    <div class="profile-pic-wrapper">
+                        <img src={profilePic} alt="Profile" class="profile-img">
+                        <button class="edit-pic-btn" onclick={handleEditPicture}>
+                            <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                        </button>
+                    </div>
+                    <div class="pic-info">
+                        <h3>Edit profile picture</h3>
+                        <p>PNG or JPG (Max 5 MB)</p>
+                    </div>
+                </div>
+
+                <div class="basic-details-form">
+                    <div class="form-group half-width">
+                        <label class="field-label">First Name</label>
+                        <input type="text" class="text-input" value={firstName} data-field="firstName" oninput={handleFieldChange} />
+                    </div>
+                    <div class="form-group half-width">
+                        <label class="field-label">Last Name</label>
+                        <input type="text" class="text-input" value={lastName} data-field="lastName" oninput={handleFieldChange} />
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label class="field-label">Email</label>
+                        <div class="input-wrapper disabled-wrapper">
+                            <input type="email" class="text-input" value={maskedEmail} disabled />
+                            <button class="input-suffix-text-btn" onclick={handleRequestEmailChange}>Request to Change</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label class="field-label">Phone Number</label>
+                        <div class="input-wrapper disabled-wrapper">
+                            <input type="text" class="text-input" value={maskedPhone} disabled />
+                            <button class="input-suffix-text-btn" onclick={handleRequestPhoneChange}>Request to Change</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label class="field-label">Current City</label>
+                        <input type="text" class="text-input" value={city} data-field="city" oninput={handleFieldChange} />
+                    </div>
+                    <div class="form-group half-width">
+                        <label class="field-label">Country of Residence</label>
+                        <input type="text" class="text-input" value={country} data-field="country" oninput={handleFieldChange} />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Personalize Based on Interest Card -->
+            <div class="card">
+                <h2 class="section-title">Personalize Based on Interest</h2>
+
+                <div class="interests-grid">
+                    <template for:each={interests} for:item="interest">
+                        <div key={interest.id} class="interest-card" onclick={toggleInterest} data-id={interest.id}>
+                            <img src={interest.img} alt="" class="interest-bg-img" />
+                            <div class="interest-overlay"></div>
+                            <div class="interest-checkbox-container">
+                                <div class={interest.checkboxClass}>
+                                    <lightning-icon icon-name="utility:check" size="xx-small" if:true={interest.selected}></lightning-icon>
+                                </div>
+                                <span class="interest-label">{interest.label}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Social Media Card -->
+            <div class="card">
+                <h2 class="section-title">Social Media</h2>
+
+                <div class="basic-details-form">
+                    <div class="form-group half-width">
+                        <label class="field-label">Linkedin Profile Link</label>
+                        <input type="text" class="text-input" value={linkedin} data-field="linkedin" oninput={handleFieldChange} />
+                    </div>
+                    <div class="form-group half-width">
+                        <label class="field-label">Twitter (X) Profile Link</label>
+                        <input type="text" class="text-input" value={twitter} data-field="twitter" oninput={handleFieldChange} />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="footer-actions">
+                <button class="btn btn-outline" onclick={handleDiscard} disabled={isSaving}>Discard Changes</button>
+                <button class="btn btn-primary" onclick={handleSave} disabled={isSaving}>Save Changes</button>
+            </div>
+        </template>
+    </div>
+
+    <c-ken-status-popup visible={showSuccessPopup} message={successPopupMessage} variant="success"></c-ken-status-popup>
+
+    <template if:true={showNeedHelpModal}>
+        <c-ken-need-help-modal onclose={handleNeedHelpClose} onsubmit={handleNeedHelpSubmit}></c-ken-need-help-modal>
+    </template>
+</template>

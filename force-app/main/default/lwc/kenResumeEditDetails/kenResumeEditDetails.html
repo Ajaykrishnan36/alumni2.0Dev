@@ -1,0 +1,199 @@
+<template>
+    <div class="edit-details">
+        <h2 class="step-heading">2. Edit Details</h2>
+
+        <!-- Personal Form (inline) -->
+        <div class="personal-form">
+            <div class="edit-details-top">
+                <button type="button" class="upload-photo-box" onclick={handlePhotoClick}>
+                    <img src={displayPhotoUrl} alt="Profile" class="upload-photo-img" />
+                    <span class="upload-photo-text">{photoActionLabel}</span>
+                </button>
+                <input type="file" accept="image/png,image/jpeg,image/jpg" class="hidden-file-input" onchange={handlePhotoChange} />
+                <div class="edit-form-grid">
+                    <div class="form-field">
+                        <label class="field-label">First Name<span class="required">*</span></label>
+                        <lightning-input type="text" value={firstName} placeholder="First name" data-field="firstName" variant="label-hidden" onchange={handleFieldChange}></lightning-input>
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label">Last Name<span class="required">*</span></label>
+                        <lightning-input type="text" value={lastName} placeholder="Last name" data-field="lastName" variant="label-hidden" onchange={handleFieldChange}></lightning-input>
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label">Gender<span class="required">*</span></label>
+                        <lightning-combobox value={gender} options={genderOptions} variant="label-hidden" data-field="gender" onchange={handleFieldChange}></lightning-combobox>
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label">Phone<span class="required">*</span></label>
+                        <lightning-input type="tel" value={phone} placeholder="Phone" data-field="phone" variant="label-hidden" onchange={handleFieldChange}></lightning-input>
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label">Email ID<span class="required">*</span></label>
+                        <lightning-input type="email" value={email} placeholder="Email" data-field="email" variant="label-hidden" onchange={handleFieldChange}></lightning-input>
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label">City<span class="required">*</span></label>
+                        <lightning-input type="text" value={city} placeholder="City" data-field="city" variant="label-hidden" onchange={handleFieldChange}></lightning-input>
+                    </div>
+                    <div class="form-field">
+                        <label class="field-label">Country<span class="required">*</span></label>
+                        <lightning-input type="text" value={country} placeholder="Country" data-field="country" variant="label-hidden" onchange={handleFieldChange}></lightning-input>
+                    </div>
+                </div>
+            </div>
+            <div class="form-field summary-field">
+                <label class="field-label">Professional Summary</label>
+                <lightning-textarea name="summary" value={summaryVal} placeholder="What were your key responsibilities?" data-field="summary" variant="label-hidden" onchange={handleFieldChange} rows="4"></lightning-textarea>
+            </div>
+        </div>
+
+        <!-- Education (inline + modal) -->
+        <div class="section-block">
+            <div class="section-header">
+                <h3 class="section-title">Education</h3>
+                <button type="button" class="btn-add-circle" onclick={handleEducationAddClick} title="Add education">
+                    <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                </button>
+            </div>
+            <div class="section-cards">
+                <template for:each={educationList} for:item="edu">
+                    <div key={edu.id} class="info-card">
+                        <div class="info-card-body">
+                            <div class="info-card-title">{edu.degree}</div>
+                            <div class="info-card-sub">{edu.school}</div>
+                            <div class="info-card-meta">{edu.yearRange}<template if:true={edu.gpa}> | {edu.gpa}</template></div>
+                        </div>
+                        <div class="info-card-actions">
+                            <button type="button" class="info-card-edit" onclick={handleEducationEdit} data-id={edu.id}>Edit</button>
+                            <button type="button" class="info-card-delete" onclick={handleEducationRemove} data-id={edu.id} aria-label="Delete">&#215;</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Work Experience (inline + career modal) -->
+        <div class="section-block">
+            <div class="section-header">
+                <h3 class="section-title">Work Experience</h3>
+                <button type="button" class="btn-add-circle" onclick={handleExperienceAdd} title="Add experience">
+                    <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                </button>
+            </div>
+            <div class="section-cards">
+                <template for:each={experienceList} for:item="exp">
+                    <div key={exp.id} class="info-card info-card-experience">
+                        <div class="info-card-body">
+                            <div class="info-card-title">{exp.title}</div>
+                            <div class="info-card-sub">{exp.company}<template if:true={exp.employmentType}> | {exp.employmentType}</template></div>
+                            <template if:true={exp.location}><div class="info-card-meta">{exp.location}</div></template>
+                            <div class="info-card-date-tag">{exp.dateLabel}</div>
+                            <template if:true={exp.description}>
+                                <div class="info-card-desc" lwc:dom="manual" data-exp-id={exp.id}></div>
+                            </template>
+                        </div>
+                        <div class="info-card-actions">
+                            <button type="button" class="info-card-edit" onclick={handleExperienceEdit} data-id={exp.id}>Edit</button>
+                            <button type="button" class="info-card-delete" onclick={handleExperienceRemove} data-id={exp.id} aria-label="Delete">&#215;</button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <template if:true={showCareerModal}>
+            <c-ken-career-information-modal
+                career-data={careerDataForModal}
+                modal-title-override={careerModalTitle}
+                onsave={handleCareerSave}
+                onclose={handleCareerClose}
+            ></c-ken-career-information-modal>
+        </template>
+
+        <!-- Skills (inline) -->
+        <div class="section-block">
+            <div class="section-header">
+                <h3 class="section-title">Skills</h3>
+                <div class="skill-add-row">
+                    <input type="text" class="skill-input" placeholder="Add skill" value={skillInput} oninput={handleSkillInputChange} onkeydown={handleSkillKeydown} />
+                    <button type="button" class="btn-add-circle btn-add-primary" onclick={handleAddSkill} title="Add skill">
+                        <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="skill-tags">
+                <template for:each={skillsList} for:item="skill">
+                    <span key={skill} class="skill-tag">
+                        {skill}
+                        <button type="button" class="skill-tag-remove" onclick={handleRemoveSkill} data-skill={skill} aria-label="Remove">&#215;</button>
+                    </span>
+                </template>
+            </div>
+        </div>
+
+        <!-- Add Section (inline) -->
+        <div class="section-block add-section-block">
+            <div class="section-header">
+                <h3 class="section-title">Add Section</h3>
+                <button type="button" class="btn-add-circle" onclick={handleAddSection} data-name="Custom section" title="Add custom section">
+                    <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                </button>
+            </div>
+            <div class="add-section-buttons">
+                <button type="button" class="add-section-btn" onclick={handleAddSection} data-name="Custom section">+ Custom section</button>
+                <button type="button" class="add-section-btn" onclick={handleAddSection} data-name="Extra curricular activities">+ Extra curricular activities</button>
+                <button type="button" class="add-section-btn" onclick={handleAddSection} data-name="Hobbies">+ Hobbies</button>
+                <button type="button" class="add-section-btn" onclick={handleAddSection} data-name="Internships">+ Internships</button>
+                <button type="button" class="add-section-btn" onclick={handleAddSection} data-name="References">+ References</button>
+                <button type="button" class="add-section-btn" onclick={handleAddSection} data-name="Languages">+ Languages</button>
+                <button type="button" class="add-section-btn add-section-btn-primary" onclick={handleCreateCoverLetter}>Create cover letter</button>
+            </div>
+        </div>
+
+        <!-- Education Modal (inline) -->
+        <template if:true={educationModalOpen}>
+            <section role="dialog" tabindex="-1" class="edu-modal-overlay" aria-modal="true">
+                <div class="edu-modal-container">
+                    <header class="edu-modal-header">
+                        <h2 class="edu-modal-title">{educationModalTitle}</h2>
+                        <button type="button" class="edu-modal-close" onclick={handleEducationModalClose} aria-label="Close">&#215;</button>
+                    </header>
+                    <div class="edu-modal-body">
+                        <div class="form-row">
+                            <div class="form-field full-width">
+                                <label class="field-label">Degree / Qualification<span class="required">*</span></label>
+                                <lightning-input type="text" value={eduDegree} placeholder="e.g., B Tech" data-field="degree" variant="label-hidden" onchange={handleEduModalChange}></lightning-input>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field full-width">
+                                <label class="field-label">School / Institution<span class="required">*</span></label>
+                                <lightning-input type="text" value={eduSchool} placeholder="e.g., University" data-field="school" variant="label-hidden" onchange={handleEduModalChange}></lightning-input>
+                            </div>
+                        </div>
+                        <div class="form-row two-col">
+                            <div class="form-field">
+                                <label class="field-label">Start Year</label>
+                                <lightning-combobox value={eduStartYear} options={yearOptions} variant="label-hidden" data-field="startYear" onchange={handleEduModalChange}></lightning-combobox>
+                            </div>
+                            <div class="form-field">
+                                <label class="field-label">End Year</label>
+                                <lightning-combobox value={eduEndYear} options={yearOptions} variant="label-hidden" data-field="endYear" onchange={handleEduModalChange}></lightning-combobox>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-field full-width">
+                                <label class="field-label">GPA / Percentage</label>
+                                <lightning-input type="text" value={eduGpa} placeholder="e.g., 7.5" data-field="gpa" variant="label-hidden" onchange={handleEduModalChange}></lightning-input>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="edu-modal-footer">
+                        <button type="button" class="btn-secondary" onclick={handleEducationModalClose}>Cancel</button>
+                        <button type="button" class="btn-primary" onclick={handleEducationModalSave}>Save</button>
+                    </footer>
+                </div>
+                <div class="edu-modal-backdrop" onclick={handleEducationModalClose}></div>
+            </section>
+        </template>
+    </div>
+</template>

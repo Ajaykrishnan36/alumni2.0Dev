@@ -1,0 +1,42 @@
+<template>
+    <div class="categories-section">
+        <div class="section-header">
+            <h2 class="section-title">Donate for a Cause</h2>
+            <button class="view-all-btn" type="button" onclick={handleViewAll}>
+                View All Campaigns
+            </button>
+        </div>
+
+        <div class="categories-grid">
+            <template for:each={categories} for:item="cat">
+                <article
+                    key={cat.id}
+                    class="category-card"
+                    data-id={cat.id}
+                    onclick={handleCardClick}
+                >
+                    <div class="card-image-wrap">
+                        <img
+                            src={cat.image}
+                            alt={cat.title}
+                            class="card-image"
+                            onerror={handleImgError}
+                        />
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">{cat.title}</h3>
+                        <template if:true={cat.description}>
+                            <p class="card-desc">{cat.description}</p>
+                        </template>
+                        <div class="card-explore">
+                            <span>Explore</span>
+                            <svg class="explore-arrow" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                                <path d="M4 10h12M11 5l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </article>
+            </template>
+        </div>
+    </div>
+</template>

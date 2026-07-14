@@ -1,0 +1,18 @@
+<template>
+    <div class="pillRow">
+        <template for:each={rolesWithState} for:item="r">
+            <button
+                key={r.value}
+                type="button"
+                class={r.className}
+                data-value={r.value}
+                onclick={handleRoleClick}
+            >
+                <span>{r.label}</span>
+                <template if:true={r.count}>
+                    <span class="countPill">{r.count}</span>
+                </template>
+            </button>
+        </template>
+    </div>
+</template>

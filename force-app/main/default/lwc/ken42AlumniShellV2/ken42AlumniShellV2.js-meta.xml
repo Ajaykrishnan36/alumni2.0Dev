@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 - Shell (child)</masterLabel>
+    <description>Child shell wrapper LWC: dark sidebar + topbar + DEV bar with a slot for page content. Included internally by V2 page LWCs.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="userFirstName" type="String" label="User First Name" default=""/>
+            <property name="userLastName" type="String" label="User Last Name" default=""/>
+            <property name="userBatch" type="String" label="User Batch" default=""/>
+            <property name="userInstitution" type="String" label="Institution Name" default=""/>
+            <property name="activeNav" type="String" label="Active Nav" default="home"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

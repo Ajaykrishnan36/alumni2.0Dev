@@ -1,0 +1,161 @@
+<template>
+    <div class="summary-step">
+        <!-- Event Setup -->
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <h3 class="summary-card-title">Event Setup</h3>
+                <button class="summary-edit-link" data-step="1" onclick={handleEdit}>Edit Details</button>
+            </div>
+            <div class="summary-grid">
+                <div class="summary-field">
+                    <div class="summary-label">Event Title</div>
+                    <div class="summary-value">{data.eventTitle}</div>
+                </div>
+                <div class="summary-field">
+                    <div class="summary-label">Category</div>
+                    <div class="summary-value">{data.category}</div>
+                </div>
+                <div class="summary-field">
+                    <div class="summary-label">Language of Delivery</div>
+                    <div class="summary-value">{data.language}</div>
+                </div>
+                <div class="summary-field">
+                    <div class="summary-label">Brochure for the Event</div>
+                    <template if:true={data.hasBrochure}>
+                        <div class="summary-value summary-link">
+                            <lightning-icon icon-name="utility:download" size="x-small" class="summary-dl-icon"></lightning-icon>
+                            <span>{data.brochureFileName}</span>
+                        </div>
+                    </template>
+                    <template if:false={data.hasBrochure}>
+                        <div class="summary-value">—</div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Target Audience -->
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <h3 class="summary-card-title">Target Audience</h3>
+                <button class="summary-edit-link" data-step="2" onclick={handleEdit}>Edit Details</button>
+            </div>
+            <template for:each={data.audienceGroups} for:item="grp">
+                <div key={grp.key} class="audience-group">
+                    <div class="audience-group-name">{grp.name}</div>
+                    <div class="audience-chips">
+                        <span class="chip chip-primary">{grp.type}</span>
+                        <span class="chip chip-muted">{grp.memberLabel}</span>
+                    </div>
+                </div>
+            </template>
+            <template if:false={data.audienceGroups.length}>
+                <div class="summary-value">—</div>
+            </template>
+        </div>
+
+        <!-- Dates Selected -->
+        <div class="summary-card">
+            <div class="summary-card-header">
+                <h3 class="summary-card-title">Dates Selected</h3>
+                <button class="summary-edit-link" data-step="3" onclick={handleEdit}>Edit Details</button>
+            </div>
+            <div class="summary-chips-row">
+                <template for:each={data.dates} for:item="d">
+                    <span key={d.key} class="chip chip-soft">{d.display}</span>
+                </template>
+            </div>
+        </div>
+
+        <!-- Pre Event Surveys -->
+        <template if:true={showPreSurveyCard}>
+            <div class="summary-card">
+                <div class="summary-card-header">
+                    <h3 class="summary-card-title">Pre Event Surveys</h3>
+                    <button class="summary-edit-link" data-step="4" onclick={handleEdit}>Edit Details</button>
+                </div>
+                <div class="summary-grid">
+                    <div class="summary-field">
+                        <div class="summary-label">Offer Meals to Attendees</div>
+                        <template if:true={hasMealLines}>
+                            <template for:each={data.mealLines} for:item="line">
+                                <div key={line.key} class="summary-value">
+                                    <strong>{line.date}</strong> ({line.meals})
+                                </div>
+                            </template>
+                        </template>
+                        <template if:false={hasMealLines}>
+                            <div class="summary-value">—</div>
+                        </template>
+                    </div>
+                    <div class="summary-field">
+                        <div class="summary-label">Custom Survey</div>
+                        <template if:true={hasCustomSurvey}>
+                            <div class="summary-value">{data.customSurveyCount} Questions</div>
+                        </template>
+                        <template if:false={hasCustomSurvey}>
+                            <div class="summary-value">—</div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Session Details -->
+        <div class="summary-card">
+            <div class="session-details-header">
+                <h3 class="summary-card-title">Session Details</h3>
+            </div>
+            <div class={sessionHeaderClass}>
+                <div class="session-col session-col-main">
+                    <div class="session-col-title">Day &amp; Session Details</div>
+                    <button class="summary-edit-link" data-step="3" onclick={handleEdit}>Edit Session</button>
+                </div>
+                <template if:true={showFees}>
+                    <div class="session-col">
+                        <div class="session-col-title">Price</div>
+                        <button class="summary-edit-link" data-step="5" onclick={handleEdit}>Edit Fees</button>
+                    </div>
+                </template>
+                <div class="session-col">
+                    <div class="session-col-title">Feedback</div>
+                    <button class="summary-edit-link" data-step="6" onclick={handleEdit}>Edit Feedback</button>
+                </div>
+            </div>
+
+            <template for:each={data.sessionDays} for:item="day">
+                <div key={day.key} class="session-day-block">
+                    <div class="session-day-date">{day.date}</div>
+                    <template for:each={day.sessions} for:item="sess">
+                        <div key={sess.key} class={sessionRowClass}>
+                            <div class="session-col session-col-main">
+                                <div class="session-sub-label">{sess.sessionLabel}</div>
+                                <div class="session-title">{sess.title}</div>
+                            </div>
+                            <template if:true={showFees}>
+                                <div class="session-col session-price">{sess.price}</div>
+                            </template>
+                            <div class="session-col session-feedback">{sess.feedback}</div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <template if:true={data.showMealFee}>
+                <div class="session-row session-meal-row">
+                    <div class="session-col session-col-main session-title">Meal Fees</div>
+                    <div class="session-col session-price">{data.mealFeeDisplay}</div>
+                    <div class="session-col"></div>
+                </div>
+            </template>
+
+            <template if:true={showFees}>
+                <div class="session-total-row">
+                    <div class="session-col session-col-main session-total-label">Total Event Cost</div>
+                    <div class="session-col session-total-value">{data.totalDisplay}</div>
+                    <div class="session-col"></div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

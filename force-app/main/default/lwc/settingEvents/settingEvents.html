@@ -1,0 +1,93 @@
+<template>
+    <div class="events-container">
+        <h1 class="header-title">Events</h1>
+
+        <div class="card events-card-content">
+            <h2 class="section-title">Preferences</h2>
+
+            <div class="events-grid">
+                <!-- Left Column -->
+                <div class="column">
+                    <!-- Invite Permissions -->
+                    <div class="form-group">
+                        <label class="field-label">Who can invite me to events</label>
+                        <div class="radio-group-custom">
+                            <div class="radio-option">
+                                <input type="radio" id="everyone" name="invite" checked />
+                                <label for="everyone">Everyone</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="alumni" name="invite" />
+                                <label for="alumni">Only other alumni</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="admin" name="invite" />
+                                <label for="admin">Only admin</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reminder Dropdown (Custom Multi-select) -->
+                    <div class="form-group">
+                        <label class="field-label">When should we remind you about an event?</label>
+                        <div class="dropdown-wrapper">
+                            <div class="dropdown-trigger" onclick={toggleDropdown}>
+                                <span>{reminderText}</span>
+                                <lightning-icon icon-name="utility:down" size="x-small"
+                                    class="dropdown-icon"></lightning-icon>
+                            </div>
+                            <template lwc:if={showDropdown}>
+                                <div class="dropdown-menu">
+                                    <div class="dropdown-item">
+                                        <lightning-input type="checkbox" label="One week before the event"
+                                            onchange={handleReminderSelect} data-value="week"></lightning-input>
+                                    </div>
+                                    <div class="dropdown-item">
+                                        <lightning-input type="checkbox" label="One day before the event"
+                                            onchange={handleReminderSelect} data-value="day"></lightning-input>
+                                    </div>
+                                    <div class="dropdown-item">
+                                        <lightning-input type="checkbox" label="One hour before the event"
+                                            onchange={handleReminderSelect} data-value="hour"></lightning-input>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Updates Toggle -->
+                    <div class="form-group updates-group">
+                        <label class="field-label">Receive updates and changes related to events you've been invited
+                            to</label>
+                        <div class="toggle-row">
+                            <span>Turn on updates</span>
+                            <lightning-input type="toggle" variant="label-hidden" message-toggle-active=""
+                                message-toggle-inactive="">
+                            </lightning-input>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="column">
+                    <!-- Calendar Integration -->
+                    <div class="form-group">
+                        <label class="field-label">Calendar integration</label>
+                        <div class="card-like-input">
+                            <span>Integrate with personal calendar</span>
+                            <lightning-input type="toggle" variant="label-hidden" message-toggle-active=""
+                                message-toggle-inactive="">
+                            </lightning-input>
+                        </div>
+                    </div>
+
+                    <!-- Email Input -->
+                    <div class="form-group">
+                        <label class="field-label">Personal email ID</label>
+                        <input type="email" placeholder="Enter email ID" class="custom-input" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

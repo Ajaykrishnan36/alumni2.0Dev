@@ -1,0 +1,42 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="home">
+        <div class="notif-page">
+            <header class="notif-head">
+                <h1 class="notif-title">Notifications</h1>
+                <div class="notif-tabs">
+                    <template for:each={tabs} for:item="t">
+                        <button key={t.key} class={t.cls} data-key={t.key}>{t.label}</button>
+                    </template>
+                </div>
+                <button class="notif-mark-all">Mark all as read</button>
+            </header>
+
+            <div class="notif-list">
+                <template lwc:if={isLoading}>
+                    <p class="notif-headline">Loading notifications...</p>
+                </template>
+                <template lwc:elseif={hasNotifications}>
+                    <template for:each={rows} for:item="r">
+                        <div key={r.key} class={r.rowClass}>
+                            <div class={r.thumbClass}>{r.initial}</div>
+                            <div class="notif-body">
+                                <div class="notif-meta">
+                                    <span class={r.pillClass}>{r.tag}</span>
+                                    <span class="notif-time">{r.time}</span>
+                                </div>
+                                <div class="notif-headline">{r.headline}</div>
+                                <a class="notif-cta" href="#">{r.cta}</a>
+                            </div>
+                            <template lwc:if={r.isUnread}>
+                                <span class="notif-unread-dot" title="Unread"></span>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <p class="notif-headline">No notifications yet.</p>
+                </template>
+            </div>
+        </div>
+    </c-ken42-alumni-shell-v2>
+</template>

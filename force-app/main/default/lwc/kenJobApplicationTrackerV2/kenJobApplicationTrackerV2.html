@@ -1,0 +1,58 @@
+<template>
+    <div class="tracker">
+        <template lwc:if={loading}>
+            <div class="muted">Loading your application timeline…</div>
+        </template>
+
+        <template lwc:elseif={errorMsg}>
+            <div class="err">{errorMsg}</div>
+        </template>
+
+        <template lwc:else>
+            <template lwc:if={hasSteps}>
+                <!-- Horizontal process stepper -->
+                <div class="stepper">
+                    <template for:each={displaySteps} for:item="s">
+                        <div key={s.id} class={s.cssClass}>
+                            <div class="stp__dot">{s.num}</div>
+                            <div class="stp__label">{s.label}</div>
+                            <div class="stp__state">{s.state}</div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Active step details card -->
+                <template lwc:if={hasActive}>
+                    <div class="card">
+                        <div class="card__hd">
+                            <span class="badge">Current step</span>
+                            <h3>{activeLabel}</h3>
+                        </div>
+
+                        <template lwc:if={isOnlineMeeting}>
+                            <div class="meet">
+                                <div class="meet__info">
+                                    <p class="meet__mode">Online interview</p>
+                                    <p class="meet__win">{windowLabel}</p>
+                                </div>
+                                <button class="btn-join" onclick={handleJoin} disabled={joinDisabled}>
+                                    Join Meeting
+                                </button>
+                            </div>
+                            <p class="hint">The join button unlocks 15 minutes before the scheduled
+                                start (server time) and closes when the session ends.</p>
+                        </template>
+
+                        <template lwc:else>
+                            <p class="muted">This step does not have an online meeting link.</p>
+                        </template>
+                    </div>
+                </template>
+            </template>
+
+            <template lwc:else>
+                <div class="muted">No timeline steps yet for this application.</div>
+            </template>
+        </template>
+    </div>
+</template>

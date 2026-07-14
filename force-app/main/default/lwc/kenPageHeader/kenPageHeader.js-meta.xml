@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property
+                name="headerLabel"
+                type="String"
+                label="Override Header Label"
+                description="Optional: set a fixed label instead of the navigation label."
+                default=""
+                translatable="true"
+            />
+            <property
+                name="linkSetMasterLabel"
+                type="String"
+                label="Navigation Menu (Master Label)"
+                description="Master Label of the navigation menu to use for the dynamic title."
+                default="Default Navigation"
+                translatable="true"
+            />
+            <property
+                name="parentPageName"
+                type="String"
+                label="Breadcrumb Parent Label"
+                default="Home"
+                translatable="true"
+            />
+            <property
+                name="parentPageUrl"
+                type="String"
+                label="Breadcrumb Parent URL"
+                description="Optional link for the parent breadcrumb item."
+                default=""
+                translatable="true"
+            />
+            <property
+                name="childPageName"
+                type="String"
+                label="Breadcrumb Child Label"
+                description="Defaults to the header label if left blank."
+                default=""
+                translatable="true"
+            />
+            <property
+                name="childPageUrl"
+                type="String"
+                label="Breadcrumb Child URL"
+                description="Optional link for the child breadcrumb item."
+                default=""
+                translatable="true"
+            />
+            <property
+                name="settingsPageApiName"
+                type="String"
+                label="Settings Page API Name"
+                description="API name of the Settings community page (e.g. settings__c)."
+                default="settings__c"
+            />
+            <property
+                name="calendarPageApiName"
+                type="String"
+                label="Calendar/Schedule Page API Name"
+                description="API name of the Calendar community page (e.g. Calendar__c)."
+                default="Calendar__c"
+            />
+            <property
+                name="chatPageApiName"
+                type="String"
+                label="Chat Page API Name"
+                description="API name of the Chat community page (e.g. chat__c). Leave blank to use /chat URL path."
+                default=""
+            />
+            <property
+                name="parentPageApiName"
+                type="String"
+                label="Parent Page API Name"
+                description="API name of the parent community page."
+                default=""
+            />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

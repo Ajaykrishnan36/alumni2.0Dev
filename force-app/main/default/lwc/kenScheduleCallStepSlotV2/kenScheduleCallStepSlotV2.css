@@ -1,0 +1,12 @@
+:host { display: block; }
+.fld { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.fld label { font-weight: 600; font-size: 13px; color: #373A45; }
+.fld input { border: 1px solid #E5E6E8; border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: 14px; outline: none; box-sizing: border-box; }
+.date-input { display: flex; align-items: center; gap: 8px; border: 1px solid #E5E6E8; border-radius: 8px; padding: 10px 12px; }
+.date-input__icon { font-size: 14px; color: #9DA0A8; }
+.date-input input { border: 0; outline: none; flex: 1; font-family: inherit; font-size: 14px; background: transparent; padding: 0; }
+.slots { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.dur { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+.slot { padding: 9px 12px; text-align: center; border: 1px solid #E5E6E8; border-radius: 8px; font-weight: 500; font-size: 13px; cursor: pointer; background: #fff; color: #373A45; font-family: inherit; }
+.slot--on { background: #3061FF; color: #fff; border-color: #3061FF; }
+.slot--off { opacity: 0.4; cursor: not-allowed; background: #F6F8FB; }

@@ -1,0 +1,59 @@
+<template>
+    <div class="mobile-list-container">
+        <header class="mobile-list-header">
+            <button type="button" class="back-btn" onclick={handleBack} aria-label="Back">
+                <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+            </button>
+            <h2 class="mobile-list-title">{activeTabLabel}</h2>
+        </header>
+
+        <div class="mobile-list-controls">
+            <c-ken-search-bar placeholder="Search" onsearch={handleSearch}></c-ken-search-bar>
+            <div class="mobile-filter-buttons">
+                <div class="sort-by-wrapper">
+                    <button type="button" class="filter-btn" onclick={handleSortToggle} aria-haspopup="listbox" aria-expanded={isSortOpen}>
+                        <span>Sort by</span>
+                        <lightning-icon icon-name="utility:down" size="xx-small" class="dropdown-icon"></lightning-icon>
+                    </button>
+                    <template if:true={isSortOpen}>
+                        <div class="sort-dropdown" role="listbox">
+                            <button type="button" class="sort-option" data-value="clear" onclick={handleSortSelect}>Clear</button>
+                            <button type="button" class="sort-option" data-value="a-z" onclick={handleSortSelect}>A–Z</button>
+                            <button type="button" class="sort-option" data-value="z-a" onclick={handleSortSelect}>Z–A</button>
+                        </div>
+                    </template>
+                </div>
+                <button type="button" class="filter-btn" data-filter-btn="true" onclick={handleFiltersClick}>
+                    <lightning-icon icon-name="utility:filterList" size="x-small" class="filter-icon"></lightning-icon>
+                    <span>Filters</span>
+                    <lightning-icon icon-name="utility:down" size="xx-small" class="dropdown-icon"></lightning-icon>
+                </button>
+            </div>
+        </div>
+
+        <div class="mobile-alumni-grid">
+            <template for:each={alumni} for:item="item">
+                <c-ken-alumni-card
+                    key={item.id}
+                    record-id={item.id}
+                    name={item.name}
+                    title={item.title}
+                    company={item.company}
+                    expertise={item.industry}
+                    graduation-year={item.graduationYear}
+                    education={item.education}
+                    location={item.location}
+                    batch={item.batch}
+                    profile-image={item.profileImage}
+                    willing-to-help={item.willingToHelp}
+                    is-mentor={item.isMentor}
+                    is-my-mentor={item.isMyMentor}
+                    is-online={item.isOnline}
+                    presence-status={item.presenceStatus}
+                    compact={isCompact}
+                    onprofileclick={handleProfileClick}
+                ></c-ken-alumni-card>
+            </template>
+        </div>
+    </div>
+</template>

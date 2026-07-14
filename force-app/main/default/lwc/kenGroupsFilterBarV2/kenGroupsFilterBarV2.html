@@ -1,0 +1,12 @@
+<template>
+    <div class="filter-bar">
+        <div class="search">
+            <input type="text" placeholder="Search groups..." oninput={handleSearch}/>
+        </div>
+        <div class="chips">
+            <template for:each={chips} for:item="c">
+                <button key={c.id} type="button" class={c.cssClass} data-id={c.id} onclick={handleCategory}>{c.label}</button>
+            </template>
+        </div>
+    </div>
+</template>

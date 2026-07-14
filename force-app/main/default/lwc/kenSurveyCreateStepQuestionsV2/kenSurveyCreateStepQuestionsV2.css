@@ -1,0 +1,12 @@
+:host { display: block; }
+.q-row { background: #fff; border: 1px solid #E5E6E8; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+.q-row__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.q-row__num { font-weight: 600; font-size: 11px; color: #3061FF; text-transform: uppercase; }
+.q-row__del { background: transparent; border: 0; color: #8E9099; cursor: pointer; font-size: 18px; }
+.q-grid { display: grid; grid-template-columns: 160px 1fr; gap: 10px; }
+.q-row select, .q-row input { width: 100%; padding: 8px 10px; border: 1px solid #E5E6E8; border-radius: 6px; font-family: inherit; font-size: 13px; box-sizing: border-box; }
+.opts { margin-top: 10px; display: flex; flex-direction: column; gap: 6px; }
+.opt-input { display: flex; align-items: center; gap: 10px; }
+.opt-input__dot { width: 14px; height: 14px; border: 1.5px solid #B2B3B7; border-radius: 50%; flex-shrink: 0; }
+.add-opt { align-self: flex-start; background: transparent; border: 0; color: #3061FF; font-weight: 500; font-size: 12px; cursor: pointer; padding: 4px 0; font-family: inherit; }
+.add-q-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background: #F5F8FF; border: 1.5px dashed #B5C5FF; border-radius: 10px; color: #3061FF; font-weight: 600; font-size: 13px; cursor: pointer; font-family: inherit; margin-top: 4px; }

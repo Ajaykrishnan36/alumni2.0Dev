@@ -1,0 +1,23 @@
+<template>
+    <article class="upcard" onclick={handleClick}>
+        <div class="upcard__img" style={coverStyle}>
+            <span class={catClass}>{badgeLabel}</span>
+            <template lwc:if={isHappeningNowBool}>
+                <span class="upcard__live">● Happening Now</span>
+            </template>
+        </div>
+        <div class="upcard__body">
+            <h3 class="upcard__title">{title}</h3>
+            <div class="upcard__meta">
+                <span>📅 {displayDate}</span>
+                <span>📍 {displayLocation}</span>
+                <template lwc:if={isPastBool}>
+                    <span class="upcard__highlight">View Highlights →</span>
+                </template>
+            </div>
+            <template lwc:if={showJoinNowBool}>
+                <button type="button" class="upcard__join" onclick={handleJoin}>● Join Now</button>
+            </template>
+        </div>
+    </article>
+</template>

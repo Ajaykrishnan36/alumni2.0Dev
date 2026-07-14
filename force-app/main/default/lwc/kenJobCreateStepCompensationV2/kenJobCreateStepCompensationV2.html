@@ -1,0 +1,39 @@
+<template>
+    <div>
+        <h3>Compensation & Logistics</h3>
+        <div class="field" style="margin-top:14px">
+            <label>Salary Range <span class="optional-hint">(optional — but if you enter one, both Min and Max are required and Max must be ≥ Min)</span></label>
+            <div class="salary-row">
+                <input data-field="salaryMin" value={salaryMin} oninput={handleField} placeholder="Min (e.g. 8,00,000)"/>
+                <input data-field="salaryMax" value={salaryMax} oninput={handleField} placeholder="Max (e.g. 14,00,000)"/>
+                <select data-field="currency" value={currency} onchange={handleField}>
+                    <option value="INR">INR (₹)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div>
+        <h3>Benefits</h3>
+        <div class="benefits" style="margin-top:14px">
+            <label class="check"><input type="checkbox" data-field="benefitHealth" checked={benefitHealth} onchange={handleField}/> Health insurance</label>
+            <label class="check"><input type="checkbox" data-field="benefitRemote" checked={benefitRemote} onchange={handleField}/> Remote</label>
+            <label class="check"><input type="checkbox" data-field="benefitFlex" checked={benefitFlex} onchange={handleField}/> Flexible hours</label>
+            <label class="check"><input type="checkbox" data-field="benefitStock" checked={benefitStock} onchange={handleField}/> Stock options</label>
+            <label class="check"><input type="checkbox" data-field="benefitLeave" checked={benefitLeave} onchange={handleField}/> Paid leave</label>
+            <label class="check"><input type="checkbox" data-field="benefitTraining" checked={benefitTraining} onchange={handleField}/> Training budget</label>
+        </div>
+    </div>
+    <div class="fields-grid">
+        <div class="field">
+            <label>Application Deadline<span class="req">*</span></label>
+            <input type="date" data-field="deadline" value={deadline} min={todayStr} oninput={handleField}/>
+        </div>
+        <div class="field">
+            <label>Number of Openings<span class="req">*</span></label>
+            <input type="number" data-field="openings" value={openings} oninput={handleField} min="1"/>
+        </div>
+    </div>
+</template>

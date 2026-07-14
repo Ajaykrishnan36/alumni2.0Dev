@@ -1,0 +1,187 @@
+<template>
+    <div class="page">
+        <!-- LEFT: Brand / hero panel -->
+        <aside class="hero" style={heroStyle}>
+            <div class="hero__brand">
+                <img src={poweredByLogo} class="hero__logo" alt="Kenverse" />
+                <h1 class="hero__institute">{institutionName}</h1>
+            </div>
+
+            <div class="hero__bottom">
+                <div class="hero__scrollbar"></div>
+                <p class="hero__eyebrow">Experience Connections</p>
+                <h2 class="hero__title">That Elevate Your Journey</h2>
+                <p class="hero__tagline">Connect &bull; Collaborate &bull; Give Back</p>
+            </div>
+        </aside>
+
+        <!-- RIGHT: Form card -->
+        <section class="card">
+            <!-- Institution logo chip -->
+            <div class="card__logo">
+                <template lwc:if={institutionLogoUrl}>
+                    <img src={institutionLogoUrl} alt="Institution Logo" />
+                </template>
+                <template lwc:else>
+                    <span>Institution Logo</span>
+                </template>
+            </div>
+
+            <!-- ===== SUBMITTED STATE — Stage 3 (after OTP verified) ===== -->
+            <template lwc:if={isStageSubmitted}>
+                <div class="success">
+                    <div class="success__ico" aria-hidden="true">&#10003;</div>
+                    <h2 class="card__title">Request submitted for review</h2>
+                    <p class="card__subtitle success__msg">
+                        Thanks! Your registration for&nbsp;<strong>{form.email}</strong>&nbsp;has been submitted for review. Once an administrator approves it, we'll email you a secure link and temporary password to complete your onboarding.
+                    </p>
+                    <p class="login-link">
+                        Already approved?
+                        <a href="#login" onclick={handleLoginClick}>Login</a>
+                    </p>
+                </div>
+            </template>
+
+            <!-- ===== OTP STATE — Stage 2 (between form and submitted) ===== -->
+            <template lwc:elseif={isStageOtp}>
+                <div class="otp-wrap" style="display:flex;flex-direction:column;gap:18px;">
+                    <h2 class="card__title">Verify your email</h2>
+                    <p class="card__subtitle">
+                        We sent a 6-digit code to <strong>{maskedEmail}</strong>.
+                        Enter it below to continue. Code expires in 10 minutes.
+                    </p>
+
+                    <template lwc:if={otpError}>
+                        <div class="server-error" role="alert" style="background:#fdecea;color:#b3261e;border:1px solid #f5c2c0;padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;">{otpError}</div>
+                    </template>
+
+                    <form class="otp-form" onsubmit={handleOtpSubmit}>
+                        <div class="otp-row" onpaste={handleOtpPaste}
+                             style="display:flex;gap:10px;justify-content:center;margin:8px 0 4px;">
+                            <template for:each={otpBoxes} for:item="b">
+                                <input key={b.key}
+                                    type="text" inputmode="numeric" autocomplete="one-time-code"
+                                    maxlength="1" data-idx={b.idx} value={b.value}
+                                    oninput={handleOtpInput} onkeydown={handleOtpKeyDown}
+                                    style="width:48px;height:56px;text-align:center;font-size:24px;font-weight:600;
+                                           border:1.5px solid #d1d5db;border-radius:10px;background:#fff;
+                                           color:#1a1a2e;outline:none;"
+                                    aria-label="Digit"/>
+                            </template>
+                        </div>
+
+                        <div class="otp-actions"
+                             style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px;">
+                            <button type="button" class="link-btn" onclick={handleResendOtp}
+                                disabled={resendDisabled}
+                                style="background:none;border:none;color:#4f46e5;font-weight:600;font-size:13px;cursor:pointer;padding:0;">
+                                {resendLabel}
+                            </button>
+                            <button type="button" class="link-btn" onclick={handleEditEmail}
+                                style="background:none;border:none;color:#6b7280;font-weight:500;font-size:13px;cursor:pointer;padding:0;">
+                                Wrong email? Edit
+                            </button>
+                        </div>
+
+                        <button type="submit" class="btn-primary" disabled={otpSubmitDisabled}
+                            style="margin-top:10px;width:100%;padding:12px 16px;font-size:15px;font-weight:600;
+                                   background:#4f46e5;color:#fff;border:none;border-radius:8px;cursor:pointer;
+                                   line-height:1;">
+                            {otpSubmitLabel}
+                        </button>
+                    </form>
+
+                    <p class="login-link" style="margin-top:8px;">
+                        Already have an account?
+                        <a href="#login" onclick={handleLoginClick}>Login</a>
+                    </p>
+                </div>
+            </template>
+
+            <!-- ===== FORM STATE — Stage 1 ===== -->
+            <template lwc:else>
+                <h2 class="card__title">Request Access</h2>
+                <p class="card__subtitle">All details must be filled as per institution records. <span class="req-note">Fields marked <span class="req">*</span> are required.</span></p>
+
+                <template lwc:if={serverError}>
+                    <div class="server-error" role="alert">{serverError}</div>
+                </template>
+
+                <form class="form" onsubmit={handleSubmit}>
+                    <div class="field">
+                        <label for="firstName">First Name<span class="req">*</span></label>
+                        <input id="firstName" data-field="firstName" type="text" class={firstNameClass}
+                            placeholder="Enter first name" value={form.firstName} oninput={handleInput} />
+                        <template lwc:if={errors.firstName}><p class="err">{errors.firstName}</p></template>
+                    </div>
+
+                    <div class="field">
+                        <label for="lastName">Last Name<span class="req">*</span></label>
+                        <input id="lastName" data-field="lastName" type="text" class={lastNameClass}
+                            placeholder="Enter last name" value={form.lastName} oninput={handleInput} />
+                        <template lwc:if={errors.lastName}><p class="err">{errors.lastName}</p></template>
+                    </div>
+
+                    <div class="field">
+                        <label for="email">Email<span class="req">*</span></label>
+                        <input id="email" data-field="email" type="email" class={emailClass}
+                            placeholder="Enter email ID" value={form.email} oninput={handleInput} />
+                        <template lwc:if={errors.email}><p class="err">{errors.email}</p></template>
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">Phone Number<span class="req">*</span></label>
+                        <div class={phoneWrapClass}>
+                            <select class="phone__code" data-field="countryCode" value={form.countryCode} onchange={handleInput}>
+                                <template for:each={countryCodeOptions} for:item="opt">
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                </template>
+                            </select>
+                            <span class="phone__divider"></span>
+                            <input id="phone" data-field="phone" type="tel" inputmode="numeric"
+                                placeholder="00000-00000" value={form.phone} oninput={handleInput} />
+                        </div>
+                        <template lwc:if={errors.phone}><p class="err">{errors.phone}</p></template>
+                    </div>
+
+                    <div class="field">
+                        <label for="universityRegNumber">University Registration Number<span class="req">*</span></label>
+                        <input id="universityRegNumber" data-field="universityRegNumber" type="text" class={regClass}
+                            placeholder="Enter registration number" value={form.universityRegNumber} oninput={handleInput} />
+                        <template lwc:if={errors.universityRegNumber}><p class="err">{errors.universityRegNumber}</p></template>
+                    </div>
+
+                    <div class="field">
+                        <label for="graduationYear">Year of Graduation<span class="req">*</span></label>
+                        <select id="graduationYear" class={yearClass} data-field="graduationYear"
+                            value={form.graduationYear} onchange={handleInput}>
+                            <template for:each={yearOptions} for:item="opt">
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            </template>
+                        </select>
+                        <template lwc:if={errors.graduationYear}><p class="err">{errors.graduationYear}</p></template>
+                    </div>
+
+                    <div class="field">
+                        <label for="linkedinUrl">LinkedIn URL</label>
+                        <input id="linkedinUrl" data-field="linkedinUrl" type="url" class={linkedinClass}
+                            placeholder="https://linkedin.com/in/your-profile" value={form.linkedinUrl} oninput={handleInput} />
+                        <template lwc:if={errors.linkedinUrl}><p class="err">{errors.linkedinUrl}</p></template>
+                    </div>
+
+                    <button type="submit" class="submit" disabled={isSubmitting}>{submitLabel}</button>
+                </form>
+
+                <p class="login-link">
+                    Already a member?
+                    <a href="#login" onclick={handleLoginClick}>Login</a>
+                </p>
+            </template>
+
+            <div class="powered-by">
+                <span>Powered by</span>
+                <img src={poweredByLogo} alt="Kenverse" />
+            </div>
+        </section>
+    </div>
+</template>

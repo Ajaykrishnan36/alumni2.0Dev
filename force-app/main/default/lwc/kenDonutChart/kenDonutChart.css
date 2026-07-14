@@ -1,0 +1,78 @@
+:host { display: block; }
+.chart-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.08); height: 100%; display: flex; flex-direction: column; position: relative; }
+.card-header { margin-bottom: 14px; }
+.card-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.card-title { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #1e293b; }
+.card-desc { margin: 0; font-size: 12px; color: #64748b; line-height: 1.4; }
+.chart-export-btn { flex-shrink: 0; background: #fff; border: 1px solid #e2e8f0; color: #475569; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.chart-export-btn:hover { border-color: #5b3bff; color: #5b3bff; }
+.chart-body { display: flex; gap: 16px; align-items: center; flex: 1; }
+.svg-wrap { flex-shrink: 0; width: 120px; height: 120px; }
+.donut-svg { width: 100%; height: 100%; }
+.slice { transition: opacity .15s, transform .15s; cursor: pointer; transform-origin: 60px 60px; }
+.slice:hover { opacity: .85; transform: scale(1.04); }
+.center-val { font-size: 14px; font-weight: 700; fill: #1e293b; }
+.center-lbl { font-size: 8px; fill: #64748b; }
+.legend { list-style: none; margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.legend-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.clickable { cursor: pointer; border-radius: 4px; padding: 2px 4px; transition: background .15s; }
+.clickable:hover { background: #f1f5f9; }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.leg-label { flex: 1; color: #334155; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 110px; }
+.leg-count { font-weight: 600; color: #1e293b; min-width: 28px; text-align: right; }
+.leg-pct { color: #64748b; min-width: 36px; text-align: right; }
+.loading-state { display: flex; justify-content: center; align-items: center; height: 120px; }
+.spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { text-align: center; color: #94a3b8; padding: 32px 0; font-size: 13px; }
+.funnel-wrap { flex-shrink: 0; width: 120px; height: 160px; }
+.funnel-svg  { width: 100%; height: 100%; }
+.funnel-group { cursor: pointer; }
+.funnel-seg  { transition: opacity .15s; }
+.funnel-group:hover .funnel-seg { opacity: .8; }
+.slice-group { cursor: pointer; }
+.slice-group .slice { transition: opacity .15s, transform .15s; transform-origin: 60px 60px; }
+.slice-group:hover .slice { opacity: .85; transform: scale(1.04); }
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+.tip-box {
+    position: absolute;
+    background: #1e293b;
+    color: #f8fafc;
+    border-radius: 10px;
+    padding: 10px 14px;
+    pointer-events: none;
+    z-index: 200;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.08);
+}
+.tip-label { font-size: 11px; font-weight: 700; color: #cbd5e1; margin-bottom: 4px; letter-spacing: .2px; }
+.tip-row { display: flex; align-items: baseline; gap: 6px; }
+.tip-val { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+.tip-pct { font-size: 12px; color: #64748b; font-weight: 500; }
+
+/* ── Ken42 Admin Home theme ─────────────────────────────────── */
+:host {
+    --ken-brand: #F06F4F;
+    --ken-brand-strong: #E8602C;
+    --ken-border: #E5E7EB;
+    --ken-text: #111827;
+    --ken-muted: #6B7280;
+    --ken-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+    display: block;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+}
+
+.chart-card {
+    border: 1px solid var(--ken-border);
+    border-radius: 8px;
+    box-shadow: var(--ken-shadow);
+    padding: 18px;
+}
+.card-title, .center-val, .leg-count { color: var(--ken-text); fill: var(--ken-text); }
+.card-desc, .center-lbl, .leg-pct { color: var(--ken-muted); fill: var(--ken-muted); }
+.clickable:hover { background: #FFF6F2; }
+.spinner { border-top-color: var(--ken-brand); }
+.tip-box { background: var(--ken-text); border-radius: 8px; }
+.tip-val { color: #fff; }

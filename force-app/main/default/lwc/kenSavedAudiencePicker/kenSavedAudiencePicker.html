@@ -1,0 +1,121 @@
+<template>
+    <div class="saved-audience-section">
+        <template if:false={hideHeader}>
+            <div class="saved-audience-header">
+                <div class="saved-audience-header-left">
+                    <h3 class="saved-audience-title">Saved Audience</h3>
+                    <p class="saved-audience-helper">Add previously saved audience.</p>
+                </div>
+                <button type="button" class="btn-add-new-audience" onclick={handleAddNewAudience}>{addNewLabel}</button>
+            </div>
+        </template>
+
+        <div class="target-audience-search-row">
+            <lightning-icon icon-name="utility:search" size="x-small" class="target-audience-search-icon"></lightning-icon>
+            <input
+                type="search"
+                class="target-audience-search-input"
+                placeholder="Search by name, email, ID or phone number"
+                value={savedAudienceSearchTerm}
+                oninput={handleSavedAudienceSearchInput}
+            />
+        </div>
+
+        <template if:true={savedAudienceLoading}>
+            <div class="target-audience-loading">
+                <lightning-spinner alternative-text="Loading..." size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={savedAudienceLoading}>
+            <template if:true={hasSavedAudiencesList}>
+                <div class="target-audience-cards">
+                    <template for:each={savedAudiencesList} for:item="aud">
+                        <article key={aud.id} class="target-audience-card">
+                            <div class="target-audience-card-content">
+                                <div class="target-audience-card-name">{aud.name}</div>
+                                <div class="target-audience-card-meta">{aud.memberLabel}</div>
+                            </div>
+                            <button
+                                type="button"
+                                class="btn-review-add"
+                                data-id={aud.id}
+                                onclick={handleReviewSavedAudience}
+                            >
+                                Review &amp; Add
+                            </button>
+                        </article>
+                    </template>
+                </div>
+            </template>
+            <template if:true={showSavedAudienceEmptyState}>
+                <div class="target-audience-empty">
+                    <div class="target-audience-empty-title">No saved audiences found</div>
+                </div>
+            </template>
+        </template>
+    </div>
+
+    <!-- Review Saved Audience & Add modal -->
+    <template if:true={showSavedReviewModal}>
+        <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+            <div class="slds-modal__container saved-review-modal">
+                <header class="slds-modal__header saved-review-modal-header">
+                    <h2 class="slds-text-heading_medium">Review Saved Audience &amp; Add</h2>
+                    <button type="button" class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={closeSavedReviewModal}>
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="#585A64"/>
+                        </svg>
+                    </button>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium saved-review-modal-content">
+                    <div class="saved-review-modal-title">{savedReviewModalName}</div>
+
+                    <template if:true={hasSavedReviewItems}>
+                        <div class="saved-review-group-section">
+                            <div class="saved-review-group-content">
+                                <template for:each={savedReviewItems} for:item="item">
+                                    <div key={item.id} class="saved-review-row">
+                                        <div class="saved-review-row-name">{item.displayTitle}</div>
+                                        <div class="saved-review-row-tags">
+                                            <template if:true={item.roleLabel}>
+                                                <span class="saved-review-tag saved-review-tag-primary">{item.roleLabel}</span>
+                                            </template>
+                                            <template if:true={item.membersLabel}>
+                                                <span class="saved-review-tag saved-review-tag-secondary">{item.membersLabel}</span>
+                                            </template>
+                                        </div>
+                                        <template if:true={item.hasCriteria}>
+                                            <div class="saved-review-filter-criteria">
+                                                <template for:each={item.criteria} for:item="c">
+                                                    <div key={c.label} class="saved-review-filter-criteria-section">
+                                                        <label class="saved-review-filter-criteria-label">{c.label}</label>
+                                                        <div class="saved-review-filter-criteria-tags">
+                                                            <template for:each={c.values} for:item="v">
+                                                                <span key={v} class="saved-review-tag saved-review-tag-secondary">{v}</span>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    <template if:false={hasSavedReviewItems}>
+                        <div class="saved-review-empty">No audience details to show.</div>
+                    </template>
+                </div>
+                <footer class="slds-modal__footer saved-review-modal-footer">
+                    <div class="saved-review-footer-buttons">
+                        <button type="button" class="saved-review-cancel-btn" onclick={closeSavedReviewModal}>Cancel</button>
+                        <button type="button" class="saved-review-add-btn" onclick={handleAddSavedAudienceFromModal}>Add Audience</button>
+                    </div>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

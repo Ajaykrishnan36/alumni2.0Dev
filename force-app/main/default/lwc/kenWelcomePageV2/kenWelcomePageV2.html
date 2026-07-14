@@ -1,0 +1,121 @@
+<template>
+    <div class="page">
+        <!-- LEFT — sticky text panel -->
+        <section class="left">
+            <div class="left__logo">
+                <template lwc:if={institutionLogoUrl}>
+                    <img src={institutionLogoUrl} alt="Institution Logo" />
+                </template>
+                <template lwc:else>
+                    <span>Institution Logo</span>
+                </template>
+            </div>
+
+            <div class="left__content">
+                <p class="left__eyebrow">Experience Connection</p>
+                <h1 class="left__title">{welcomeTitle}</h1>
+                <span class="left__accent"></span>
+                <p class="left__desc">Stay connected, grow professionally, and explore opportunities within a vibrant global alumni community.</p>
+            </div>
+
+            <div class="left__footer">
+                <span>Powered by</span>
+                <span class="left__brand">Alumni 2.0</span>
+            </div>
+        </section>
+
+        <!-- RIGHT — slide -->
+        <section class="right">
+            <button type="button" class="skip" onclick={handleSkip}>Skip</button>
+
+            <div class="slide">
+                <div class="slide__visual">
+                    <!-- Mentor illustration -->
+                    <template lwc:if={isMentor}>
+                        <div class="vis-mentor">
+                            <div class="vis-mentor__card vis-mentor__card--a">
+                                <span class="avatar avatar--lg" style="background:#E8B4D6;color:#FFFFFF;">T</span>
+                                <p class="vis-mentor__name">Tanya J</p>
+                                <p class="vis-mentor__role">Product Designer</p>
+                                <p class="vis-mentor__loc">📍 Pune, India</p>
+                            </div>
+                            <div class="vis-mentor__card vis-mentor__card--b">
+                                <span class="avatar avatar--lg" style="background:#1A1A1A;color:#FFFFFF;">S</span>
+                                <p class="vis-mentor__name">Sandra R</p>
+                                <p class="vis-mentor__role">Executive</p>
+                                <p class="vis-mentor__loc">📍 Pune, India</p>
+                            </div>
+                            <div class="vis-mentor__calls">
+                                <p class="vis-mentor__calls-title">Call Requests</p>
+                                <div class="vis-mentor__call">
+                                    <span class="avatar" style="background:#67A1C8;color:#FFFFFF;">T</span>
+                                    <div class="vis-mentor__call-info">
+                                        <p class="vis-mentor__call-name">Thomas V</p>
+                                        <p class="vis-mentor__call-time">12 May, 2025 at 01:20 pm</p>
+                                    </div>
+                                    <div class="vis-mentor__call-actions">
+                                        <button class="vis-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#373A45" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                        <button class="vis-icon-btn vis-icon-btn--dark"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></button>
+                                    </div>
+                                </div>
+                                <p class="vis-mentor__view">View details</p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Network illustration -->
+                    <template lwc:if={isNetwork}>
+                        <div class="vis-network">
+                            <span class="net-dot net-dot--1"></span>
+                            <span class="net-dot net-dot--2"></span>
+                            <span class="net-dot net-dot--3"></span>
+                            <span class="net-dot net-dot--4"></span>
+                            <span class="net-dot net-dot--5"></span>
+                            <span class="net-dot net-dot--center">You</span>
+                            <svg class="net-lines" viewBox="0 0 300 300">
+                                <line x1="150" y1="150" x2="60" y2="60" stroke="#3061FF" stroke-opacity="0.4" stroke-width="2"/>
+                                <line x1="150" y1="150" x2="240" y2="60" stroke="#3061FF" stroke-opacity="0.4" stroke-width="2"/>
+                                <line x1="150" y1="150" x2="60" y2="240" stroke="#3061FF" stroke-opacity="0.4" stroke-width="2"/>
+                                <line x1="150" y1="150" x2="240" y2="240" stroke="#3061FF" stroke-opacity="0.4" stroke-width="2"/>
+                                <line x1="150" y1="150" x2="280" y2="150" stroke="#3061FF" stroke-opacity="0.4" stroke-width="2"/>
+                            </svg>
+                        </div>
+                    </template>
+
+                    <!-- Events illustration -->
+                    <template lwc:if={isEvents}>
+                        <div class="vis-events">
+                            <div class="ev-card ev-card--reunion">
+                                <p class="ev-card__label">REUNION</p>
+                                <p class="ev-card__title">Batch of 2018</p>
+                                <p class="ev-card__date">12 Oct 2025 · Bangalore</p>
+                            </div>
+                            <div class="ev-card ev-card--job">
+                                <p class="ev-card__label">JOB</p>
+                                <p class="ev-card__title">Sr. UX Designer</p>
+                                <p class="ev-card__date">PixelCraft Studios</p>
+                            </div>
+                            <div class="ev-card ev-card--fund">
+                                <p class="ev-card__label">FUNDRAISE</p>
+                                <p class="ev-card__title">Library Renovation</p>
+                                <p class="ev-card__date">₹4.2L raised</p>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <h2 class="slide__title">{currentSlide.title}</h2>
+                <p class="slide__desc">{currentSlide.description}</p>
+            </div>
+
+            <div class="footer">
+                <div class="dots" role="tablist">
+                    <template for:each={dots} for:item="d" for:index="idx">
+                        <button key={d.key} type="button" class={d.dotClass} data-index={idx} onclick={handleDot} aria-label="Go to slide"></button>
+                    </template>
+                </div>
+                <button type="button" class="continue" onclick={handleContinue}>{continueLabel}</button>
+            </div>
+        </section>
+    </div>
+</template>

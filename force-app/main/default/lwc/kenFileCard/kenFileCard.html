@@ -1,0 +1,30 @@
+<template>
+    <div class="file-card" onclick={handleCardClick}>
+        <!-- File Info - Top Section -->
+        <div class="file-header">
+            <h3 class="file-title">{fileTitle}</h3>
+            <p class="file-date">Uploaded on: {uploadedDate}</p>
+        </div>
+
+        <!-- File Type Icon - Middle Section -->
+        <div class="file-icon-wrapper">
+            <div class={fileTypeClass}>
+                <span class="file-type-text">{fileType}</span>
+            </div>
+        </div>
+
+        <!-- Uploader Info - Bottom Section -->
+        <div class="uploader-info">
+            <div class="uploader-avatar-container">
+                <img
+                    src={uploaderImageUrl}
+                    alt={uploaderName}
+                    class="uploader-avatar"
+                    data-profile-image="true"
+                    onerror={handleAvatarError}
+                />
+            </div>
+            <span class="uploader-name">{uploaderName}</span>
+        </div>
+    </div>
+</template>

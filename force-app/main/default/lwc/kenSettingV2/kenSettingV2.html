@@ -1,0 +1,125 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="home">
+        <section class="page">
+            <header class="page__head"><h1 class="page__title">Settings</h1></header>
+            <div class="layout">
+                <c-ken-settings-sidebar-v2
+                    sections={sections}
+                    onsectionchange={handleSectionChange}>
+                </c-ken-settings-sidebar-v2>
+
+                <main class="content">
+                    <template lwc:if={isLoading}>
+                        <div class="card"><p>Loading settings...</p></div>
+                    </template>
+                    <template lwc:if={isPersonal}>
+                        <c-ken-settings-personal-v2
+                            prefs={prefs}
+                            onfieldchange={handleChildField}
+                            onsave={handleSave}
+                            oncancel={handleCancel}>
+                        </c-ken-settings-personal-v2>
+                    </template>
+
+                    <template lwc:if={isPreferences}>
+                        <c-ken-settings-preferences-v2
+                            prefs={prefs}
+                            onfieldchange={handleChildField}
+                            onsave={handleSave}
+                            oncancel={handleCancel}>
+                        </c-ken-settings-preferences-v2>
+                    </template>
+
+                    <template lwc:if={isEvents}>
+                        <div class="card">
+                            <h2 class="card__title">Event Settings</h2>
+                            <label class="row"><span>Event reminders (24h before)</span><input type="checkbox" data-field="eventReminders" checked={prefs.eventReminders} onchange={handleField}/></label>
+                            <label class="row"><span>Weekly event digest</span><input type="checkbox" data-field="eventDigest" checked={prefs.eventDigest} onchange={handleField}/></label>
+                            <label class="row"><span>RSVP confirmation emails</span><input type="checkbox" data-field="eventRsvpReminder" checked={prefs.eventRsvpReminder} onchange={handleField}/></label>
+                            <div class="actions"><button class="btn btn--primary" onclick={handleSave}>Save Changes</button></div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isGroups}>
+                        <div class="card">
+                            <h2 class="card__title">Group Settings</h2>
+                            <label class="row"><span>Notify me when mentioned</span><input type="checkbox" data-field="groupMentions" checked={prefs.groupMentions} onchange={handleField}/></label>
+                            <label class="row"><span>Daily digest of group activity</span><input type="checkbox" data-field="groupDigest" checked={prefs.groupDigest} onchange={handleField}/></label>
+                            <label class="row"><span>Notify on new post in my groups</span><input type="checkbox" data-field="groupNewPost" checked={prefs.groupNewPost} onchange={handleField}/></label>
+                            <div class="actions"><button class="btn btn--primary" onclick={handleSave}>Save Changes</button></div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isMentorship}>
+                        <div class="card">
+                            <h2 class="card__title">Mentorship</h2>
+                            <label class="row"><span>Enable mentorship (visible to mentees)</span><input type="checkbox" data-field="mentorshipEnabled" checked={prefs.mentorshipEnabled} onchange={handleField}/></label>
+                            <label class="row"><span>Pause incoming requests</span><input type="checkbox" data-field="mentorshipPause" checked={prefs.mentorshipPause} onchange={handleField}/></label>
+                            <div class="field"><label>Max sessions per month</label>
+                                <select data-field="mentorshipMaxSessions" value={prefs.mentorshipMaxSessions} onchange={handleField}>
+                                    <option>2</option><option>4</option><option>6</option><option>8</option>
+                                </select></div>
+                            <div class="actions"><button class="btn btn--primary" onclick={handleSave}>Save Changes</button></div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isJobs}>
+                        <div class="card">
+                            <h2 class="card__title">Jobs</h2>
+                            <label class="row"><span>Send me weekly job alerts</span><input type="checkbox" data-field="jobAlerts" checked={prefs.jobAlerts} onchange={handleField}/></label>
+                            <div class="field"><label>Preferred roles</label><input data-field="jobRoles" value={prefs.jobRoles} oninput={handleField}/></div>
+                            <div class="field"><label>Preferred cities</label><input data-field="jobCities" value={prefs.jobCities} oninput={handleField}/></div>
+                            <div class="actions"><button class="btn btn--primary" onclick={handleSave}>Save Changes</button></div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isAccount}>
+                        <c-ken-settings-account-v2
+                            onchangepass={handleOpenChangePass}
+                            ontoggle2fa={handleEnable2FA}
+                            ondeleteaccount={handleOpenDelete}>
+                        </c-ken-settings-account-v2>
+                    </template>
+
+                    <template lwc:if={isNotifications}>
+                        <div class="card">
+                            <h2 class="card__title">Email Notifications</h2>
+                            <label class="row"><span>Upcoming events</span><input type="checkbox" data-field="emailEvents" checked={prefs.emailEvents} onchange={handleField}/></label>
+                            <label class="row"><span>New job postings</span><input type="checkbox" data-field="emailJobs" checked={prefs.emailJobs} onchange={handleField}/></label>
+                            <label class="row"><span>Monthly newsletter</span><input type="checkbox" data-field="emailNewsletters" checked={prefs.emailNewsletters} onchange={handleField}/></label>
+                            <label class="row"><span>Weekly activity digest</span><input type="checkbox" data-field="emailDigests" checked={prefs.emailDigests} onchange={handleField}/></label>
+                        </div>
+                        <div class="card">
+                            <h2 class="card__title">Push Notifications</h2>
+                            <label class="row"><span>Event reminders</span><input type="checkbox" data-field="pushEvents" checked={prefs.pushEvents} onchange={handleField}/></label>
+                            <label class="row"><span>New messages</span><input type="checkbox" data-field="pushMessages" checked={prefs.pushMessages} onchange={handleField}/></label>
+                            <label class="row"><span>Birthdays in your network</span><input type="checkbox" data-field="pushBirthdays" checked={prefs.pushBirthdays} onchange={handleField}/></label>
+                            <div class="actions"><button class="btn btn--primary" onclick={handleSave}>Save Changes</button></div>
+                        </div>
+                    </template>
+                </main>
+            </div>
+
+            <template lwc:if={showChangePass}>
+                <c-ken-settings-password-modal-v2
+                    pass-form={passForm}
+                    onclose={handleCloseChangePass}
+                    onfieldchange={handlePassFieldChild}
+                    onsubmitform={handlePassSubmit}
+                    onresetdone={handleResetDone}>
+                </c-ken-settings-password-modal-v2>
+            </template>
+
+            <template lwc:if={showDeleteConfirm}>
+                <c-ken-settings-delete-modal-v2
+                    onclose={handleCloseDelete}
+                    onconfirm={handleConfirmDelete}>
+                </c-ken-settings-delete-modal-v2>
+            </template>
+
+            <template lwc:if={toastVisible}>
+                <div class="toast">{toastMessage}</div>
+            </template>
+        </section>
+    </c-ken42-alumni-shell-v2>
+</template>

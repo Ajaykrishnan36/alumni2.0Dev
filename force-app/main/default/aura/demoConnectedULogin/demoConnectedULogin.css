@@ -1,0 +1,18 @@
+.THIS .connectedU {
+  height: 100vh;
+  margin: 0 auto;
+  overflow-x: hidden !important;
+  width: 100%;
+}
+.THIS .connectedU .loginForm {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  box-shadow: 1px 1px 15px rgba(0, 0, 0, 0.15);
+  width: fit-content;
+}
+.THIS .login {
+  background-image: url("/admissions/resource/admissionsCommunity/images/connectedU-login-background.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: bottom center;
+}

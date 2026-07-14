@@ -1,0 +1,438 @@
+/* Alumni 2.0 - LWR site chrome override */
+
+/* Hide Salesforce community chrome */
+.cTLREMSiteHeader,
+.siteforceTopBar,
+.siteforceFooterBar,
+.brandingBand,
+header[role="banner"],
+footer[role="contentinfo"],
+.cb-section_logo,
+.cTHEADER,
+.cFOOTER,
+.communityRichTextBar,
+.test-banner {
+    display: none !important;
+}
+
+/* Hide LOGIN page specific chrome */
+.cBrandingTopBar,
+.cTopBarComponent,
+.experienceCloudLoginPage > header,
+.experienceCloudLoginPage > footer,
+.loginContainerSection > .footerContainer,
+.cAreYouAnEmployee,
+a[href*="employeeLogin"],
+.communitiesLayout > header,
+.communitiesLayout > footer,
+.uiOutputRichText.embeddedServiceHelpButton,
+.embeddedServiceHelpButton,
+.siteforceServiceBody > .slds-grid > .slds-col_padded:first-child,
+.siteforceServiceBody > .slds-grid > .slds-col_padded:last-child {
+    display: none !important;
+}
+
+/* Force all root containers to be edge-to-edge */
+html, body,
+.siteforceServiceBody,
+.root,
+.forceCommunityRoot,
+.siteforceSldsBody,
+.experienceCloudRoot,
+.experienceCloudLoginPage,
+.cb-section,
+.cb-region,
+.cb-region__body,
+.cb-section_container,
+.cb-section_default,
+.cb-section_full,
+main,
+main.slds-col,
+.slds-grid,
+.slds-container_x-large,
+.slds-container_large,
+.slds-container_medium,
+.communitiesLayout,
+.loginContainerSection,
+.contentRegion,
+[data-aura-class="forceCommunityRoot"],
+[data-aura-class="forceCommunityThemeBuilder"],
+[data-aura-class="siteforceLoginBody"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    border: 0 !important;
+    background: #f1f3f7 !important;
+    box-shadow: none !important;
+    min-height: 100vh !important;
+}
+
+/* ============================================================
+ * LWR layout web-components — WIDTH enforcement.
+ * The block above only resets the legacy Aura .cb-* wrappers.
+ * This LWR site actually renders <community_layout-*> custom
+ * elements, which carry the theme's content-area max-width and
+ * pin LEFT (no auto-centering). Their parent's overflow:hidden
+ * then clips the app shell, producing dead gray space on the
+ * right. Force them edge-to-edge so the shell fills the viewport.
+ * (These tags appear in the height block below but were missing
+ * width rules — that was the bug behind the Mentorship dead space.)
+ * ============================================================ */
+community_layout-slds-flexible-layout,
+community_layout-flexible-layout,
+community_layout-section,
+community_layout-row,
+community_layout-column,
+.comm-layout-column,
+.flexible-layout,
+.region,
+.region-content,
+.cb-region__content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 1 1 100% !important;
+}
+
+/* SLDS card wrappers */
+.slds-card,
+.slds-card__body,
+.cuf-content,
+.flexipageComponent {
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* Kill horizontal overflow only — allow natural vertical scroll */
+html, body {
+    overflow-x: hidden !important;
+}
+
+body {
+    background: #f1f3f7 !important;
+    min-height: 100vh !important;
+}
+
+/* Global box-sizing — padding/border don't add to width */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+/* Safety net: shell root only (not modals/dialogs which need their own max-width) */
+.a2-app, c-ken42-alumni-shell-v2 {
+    max-width: 100%;
+}
+
+/* Shell host + grid must fill the content column edge-to-edge. The host was only
+   getting max-width (not width), and the no-rail grid was never enforced globally
+   the way .a2-app--with-rail is (see bottom of file) — so no-rail pages like
+   Mentorship had nothing forcing the 2-column track to expand. */
+c-ken42-alumni-shell-v2 {
+    display: block !important;
+    width: 100% !important;
+}
+.a2-app {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+.a2-app:not(.a2-app--with-rail) {
+    grid-template-columns: 230px minmax(0, 1fr) !important;
+}
+.a2-main {
+    min-width: 0 !important;
+}
+
+/* Modals must center within backdrop with a sensible max-width */
+.modal-backdrop {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 24px !important;
+}
+.modal {
+    width: 100% !important;
+    margin: 0 auto !important;
+}
+.modal--sm { max-width: 480px !important; }
+.modal--md { max-width: 640px !important; }
+.modal--lg { max-width: 920px !important; }
+.modal--xl { max-width: 1100px !important; }
+
+/* Force Experience Cloud wrappers to break out of fixed-width layout limits */
+.siteforceContentArea,
+.community-template-wrapper,
+.themeLayout {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+.sf-layout-container {
+    max-width: 100% !important;
+}
+
+/* App-shell mode: lock html/body to viewport so only .a2-content scrolls */
+html, body {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+}
+
+/* Allow shell host + immediate Salesforce parents to fill viewport */
+c-ken42-alumni-shell-v2,
+.siteforceContentArea,
+.community-template-wrapper,
+.themeLayout,
+.sf-layout-container,
+.cb-section,
+.cb-region {
+    height: 100vh !important;
+}
+
+/* ============================================================
+ * Scoped Header/Footer collapse — for "Scoped Header and Footer"
+ * theme layout (since UI has no "Hide theme header" checkbox)
+ * ============================================================ */
+
+/* 1. Forcefully hide the Scoped Header and Footer regions */
+.themeHeader,
+.themeFooter,
+.dxp-header,
+.dxp-footer {
+    display: none !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    visibility: hidden !important;
+}
+
+/* 2. Strip standard margins from the layout body and wrappers */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.siteforceContentArea,
+.dxp-layout-container,
+.cb-section,
+.cb-region,
+.comm-layout-column {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+/* ===== Viewport-lock for the V2 community ===== */
+/* Lock html/body + all known LWR wrappers to viewport height.       */
+/* Internal scroll lives inside .a2-content of the shell.            */
+html, body,
+webruntime-app,
+webruntime-inner-app,
+webruntime-router-container,
+community_byo-scoped-header-and-footer,
+community_layout-slds-flexible-layout,
+community_layout-section,
+community_layout-column,
+c-ken42-alumni-home-v2,
+c-ken42-alumni-shell-v2 {
+    height: 100vh !important;
+    max-height: 100vh !important;
+    overflow: hidden !important;
+}
+
+/* The <main> inside the scoped header/footer wrapper holds the routed page */
+community_byo-scoped-header-and-footer > main {
+    flex: 1 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+/* The shell's .a2-content area is where vertical scroll happens */
+c-ken42-alumni-shell-v2 .a2-app,
+c-ken42-alumni-shell-v2 .a2-main {
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+}
+c-ken42-alumni-shell-v2 .a2-content {
+    overflow-y: auto !important;
+}
+
+/* ============================================================
+ * LIGHT DOM COMPILER BYPASS — Card Density Overrides
+ * Global rules that apply outside any LWC bundle, so they can't
+ * be affected by stylesheet scoping. Match the actual class names
+ * used by kenHomeFeedRailV2, kenHomeChecklistCardV2, kenHomeQuickActionsV2.
+ * ============================================================ */
+
+/* 1. Feed Card Density */
+.feed-item { padding: 8px 0 !important; margin: 0 !important; border-bottom: 1px solid #E5E7EB !important; }
+.feed-item:last-child { border-bottom: 0 !important; padding-bottom: 0 !important; }
+.feed-item:first-child { padding-top: 0 !important; }
+.rail-card { margin-bottom: 12px !important; padding: 12px 14px !important; }
+
+/* 2. Checklist Density */
+.row-item { padding: 7px 14px !important; margin: 0 !important; border-bottom: 1px solid #E5E7EB !important; }
+.row-item:last-child { border-bottom: 0 !important; }
+
+/* 3. Quick Actions Density */
+.qa-grid { gap: 6px !important; padding: 10px 14px !important; }
+.qa-tile { padding: 9px 11px !important; gap: 3px !important; }
+.qa-tile__ico { margin: 0 0 4px 0 !important; padding: 6px !important; width: 28px !important; height: 28px !important; box-sizing: border-box !important; }
+
+/* 4. Rail Card Gap Fix */
+.home-rail { gap: 12px !important; }
+
+/* 5. Right Rail Width Enforcement (in case grid columns are overridden) */
+.a2-app--with-rail { grid-template-columns: 230px minmax(0, 1fr) 350px !important; }
+.a2-right-rail { width: 350px !important; min-width: 350px !important; max-width: 350px !important; flex-shrink: 0 !important; }
+
+/* ============================================================
+ * SESSION-TIMEOUT / SYSTEM-ERROR DIALOG — branded restyle.
+ *
+ * When the session cookie expires, Salesforce injects its own
+ * Aura "error mask" at the document level ("Your session has
+ * timed out. Try again."). It lives OUTSIDE every LWC shadow
+ * root, so no component CSS can reach it — only this global
+ * override can. Unstyled on a published LWR site, its close
+ * control balloons into a giant raw "X" overlapping the page.
+ * The rules below dim the backdrop, turn the box into a clean
+ * branded card, tame the oversized icon, and style the buttons.
+ * Selectors cover the known Aura variants (.auraMsgMask /
+ * .auraMsgBox / #auraErrorMask) so it works regardless of which
+ * the runtime emits.
+ * ============================================================ */
+
+/* 1. Backdrop — soft dim + blur instead of a flat band */
+.auraMsgMask,
+div.auraMsgMask {
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(26, 26, 46, 0.55) !important;
+    -webkit-backdrop-filter: blur(3px) !important;
+    backdrop-filter: blur(3px) !important;
+    z-index: 99998 !important;
+    display: block !important;
+}
+
+/* 2. The message box — centered, rounded, branded card */
+.auraMsgBox,
+#auraErrorMask,
+div[id^="auraError"] {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: min(92vw, 420px) !important;
+    max-width: 420px !important;
+    margin: 0 !important;
+    padding: 32px 28px 26px !important;
+    background: #ffffff !important;
+    border: 0 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 24px 60px rgba(26, 26, 46, 0.28) !important;
+    text-align: center !important;
+    font-family: "General Sans", "Inter", system-ui, sans-serif !important;
+    color: #1a1a2e !important;
+    z-index: 99999 !important;
+    overflow: hidden !important;
+}
+
+/* 3. Title + message text */
+.auraMsgBox h1,
+.auraMsgBox h2,
+.auraMsgBox h3,
+.auraMsgBox h4,
+#auraErrorMask h4,
+#auraErrorMask .title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    line-height: 1.35 !important;
+    margin: 0 0 8px !important;
+    color: #1a1a2e !important;
+}
+.auraMsgBox .desc,
+.auraMsgBox p,
+#auraErrorMask .desc {
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    color: #6b7280 !important;
+    margin: 0 0 4px !important;
+}
+
+/* 4. Tame the giant leaked icon / close glyph. Any oversized media or
+ *    close control inside the box is clamped to a small, tidy mark. */
+.auraMsgBox svg,
+.auraMsgBox img,
+.auraMsgBox .icon,
+.auraMsgBox lightning-icon,
+.auraMsgBox .slds-icon,
+#auraErrorMask svg,
+#auraErrorMask img,
+#auraErrorMask .icon {
+    width: 22px !important;
+    height: 22px !important;
+    max-width: 22px !important;
+    max-height: 22px !important;
+}
+/* The framework close affordance ("X"/"Close") — shrink + tuck to corner */
+.auraMsgBox .close,
+.auraMsgBox .closeIcon,
+.auraMsgBox a.close,
+.auraMsgBox button.close,
+#auraErrorMask .close {
+    position: absolute !important;
+    top: 12px !important;
+    right: 14px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 18px !important;
+    line-height: 28px !important;
+    color: #9ca3af !important;
+    background: transparent !important;
+    border: 0 !important;
+    cursor: pointer !important;
+    overflow: hidden !important;
+}
+
+/* 5. Action buttons — primary pill matching the app CTA */
+.auraMsgBox .buttons,
+#auraErrorMask .buttons {
+    list-style: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    margin: 20px 0 0 !important;
+    padding: 0 !important;
+}
+.auraMsgBox .buttons li { margin: 0 !important; }
+.auraMsgBox .button,
+.auraMsgBox a.button,
+.auraMsgBox button,
+#auraErrorMask .button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 120px !important;
+    padding: 11px 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    border: 0 !important;
+    background: #1a1a2e !important;
+    color: #ffffff !important;
+    text-decoration: none !important;
+    cursor: pointer !important;
+}
+.auraMsgBox .button:hover,
+#auraErrorMask .button:hover {
+    background: #2a2a4e !important;
+}

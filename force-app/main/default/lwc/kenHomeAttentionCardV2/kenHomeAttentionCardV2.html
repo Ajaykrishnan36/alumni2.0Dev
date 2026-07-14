@@ -1,0 +1,32 @@
+<template lwc:render-mode="light">
+    <div class="h-card att-sect">
+        <div class="att-head">
+            <span class="att-head-ico">&#9888;</span>
+            <span class="att-head-title">{headerTitle}</span>
+            <span class="att-head-count">{headerCount}</span>
+            <button class="att-head-all" onclick={handleAll}>All &rarr;</button>
+        </div>
+        <template lwc:if={hasItems}>
+            <div class="att-list">
+                <template for:each={decoratedItems} for:item="r">
+                    <div key={r.key} class="att-row">
+                        <span class={r.dotClass}>{r.iconText}</span>
+                        <div class="att-body">
+                            <div class="att-title">{r.title}</div>
+                            <div class="att-desc">{r.description}</div>
+                        </div>
+                        <span class={r.badgeClass}>{r.badgeLabel}</span>
+                        <button class={r.btnClass} data-id={r.id} data-url={r.targetUrl} onclick={handleRow}>{r.cta}</button>
+                    </div>
+                </template>
+            </div>
+        </template>
+        <template lwc:else>
+            <div class="att-empty">
+                <span class="att-empty-ico">&#10003;</span>
+                <div class="att-empty-title">All caught up</div>
+                <div class="att-empty-desc">No items need your attention right now.</div>
+            </div>
+        </template>
+    </div>
+</template>

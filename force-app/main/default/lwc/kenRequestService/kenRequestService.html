@@ -1,0 +1,89 @@
+<template>
+
+    <!-- ── Gate Pass Type Selector Modal ──────────────────────────────── -->
+    <template if:true={showPassTypeModal}>
+        <div class="gp-modal-overlay" onclick={handleClosePassModal}>
+            <div class="gp-modal" onclick={stopProp}>
+
+                <!-- Header -->
+                <div class="gp-modal-header">
+                    <div class="gp-modal-title-wrap">
+                        <span class="gp-modal-badge">
+                            <lightning-icon icon-name="utility:shield" size="xx-small"></lightning-icon>
+                            Gate Pass
+                        </span>
+                        <h2 class="gp-modal-title">Who needs the gate pass?</h2>
+                        <p class="gp-modal-subtitle">Select the type to continue with your request</p>
+                    </div>
+                    <button type="button" class="gp-modal-close" onclick={handleClosePassModal}>✕</button>
+                </div>
+
+                <!-- Type Selector -->
+                <template if:true={showPassTypeSelector}>
+                    <div class="gp-type-cards">
+                        <button type="button" class="gp-type-card" onclick={handleSelectStudent}>
+                            <div class="gp-type-icon gp-icon-student">
+                                <lightning-icon icon-name="standard:user" size="large" variant="inverse"></lightning-icon>
+                            </div>
+                            <h3 class="gp-type-title">Student</h3>
+                            <p class="gp-type-desc">I am the student requesting a gate pass for myself</p>
+                            <span class="gp-type-cta">Continue as Student →</span>
+                        </button>
+                        <button type="button" class="gp-type-card" onclick={handleSelectVisitor}>
+                            <div class="gp-type-icon gp-icon-visitor">
+                                <lightning-icon icon-name="standard:contact" size="large" variant="inverse"></lightning-icon>
+                            </div>
+                            <h3 class="gp-type-title">Visitor</h3>
+                            <p class="gp-type-desc">I am requesting a pass for a visitor (parent, guardian or relative)</p>
+                            <span class="gp-type-cta">Continue as Visitor →</span>
+                        </button>
+                    </div>
+                </template>
+
+                <!-- Visitor Form -->
+                <template if:true={showVisitorInModal}>
+                    <c-ken-visitor-pass-form
+                        onvisitorready={handleVisitorReady}
+                        onback={handleVisitorBackInModal}>
+                    </c-ken-visitor-pass-form>
+                </template>
+
+            </div>
+        </div>
+    </template>
+
+    <div class="request-service-container">
+        <header class="page-header">
+            <h1 class="service-header">Request for a Service</h1>
+            <c-ken-sns-breadcrumb items={crumbs}></c-ken-sns-breadcrumb>
+        </header>
+        <div class="service-container">
+            <div class="service-grid">
+                <template for:each={serviceData} for:item="service">
+                    <button key={service.id} type="button" class="service-card" onclick={handleServiceClick}
+                        data-service-id={service.serviceId} data-offering-id={service.id}>
+                        <div class="service-icon">
+                            <svg width="36" height="36" viewBox="0 0 36 36" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M20.4887 18.375L18.8237 17.505C18.6878 17.4315 18.5357 17.393 18.3812 17.393C18.2266 17.393 18.0746 17.4315 17.9387 17.505L16.2887 18.375C16.1306 18.4583 15.9524 18.4959 15.7742 18.4835C15.596 18.4711 15.4247 18.4092 15.2798 18.3047C15.1348 18.2003 15.0219 18.0575 14.9537 17.8923C14.8854 17.7272 14.8647 17.5463 14.8937 17.37L15.2087 15.525C15.2408 15.3759 15.2386 15.2214 15.2023 15.0733C15.1659 14.9252 15.0963 14.7872 14.9987 14.67L13.6637 13.365C13.5362 13.2403 13.446 13.0827 13.4032 12.9096C13.3603 12.7366 13.3665 12.555 13.421 12.3853C13.4755 12.2156 13.5762 12.0644 13.7117 11.9486C13.8473 11.8329 14.0125 11.7572 14.1887 11.73L16.0487 11.46C16.2026 11.4385 16.3488 11.3793 16.4744 11.2877C16.6 11.1961 16.7011 11.075 16.7687 10.935L17.5937 9.25502C17.6726 9.09351 17.7953 8.95742 17.9478 8.86222C18.1002 8.76702 18.2764 8.71655 18.4562 8.71655C18.6359 8.71655 18.8121 8.76702 18.9645 8.86222C19.117 8.95742 19.2397 9.09351 19.3187 9.25502L20.1437 10.935C20.2123 11.0742 20.3137 11.1947 20.4391 11.2861C20.5645 11.3775 20.7101 11.4372 20.8637 11.46L22.7237 11.73C22.8998 11.7572 23.065 11.8329 23.2006 11.9486C23.3362 12.0644 23.4368 12.2156 23.4913 12.3853C23.5458 12.555 23.552 12.7366 23.5091 12.9096C23.4663 13.0827 23.3761 13.2403 23.2487 13.365L21.9137 14.67C21.8025 14.7798 21.7198 14.9151 21.6727 15.0641C21.6257 15.2131 21.6157 15.3713 21.6437 15.525L21.9587 17.37C21.9998 17.557 21.984 17.7519 21.9135 17.9299C21.843 18.1078 21.7209 18.2606 21.5629 18.3687C21.4048 18.4767 21.2181 18.535 21.0267 18.5362C20.8353 18.5373 20.6479 18.4812 20.4887 18.375V18.375Z"
+                                    fill="#B7202E" />
+                                <path opacity="0.3"
+                                    d="M18.3905 24.1801C24.1398 24.1801 28.8005 19.5194 28.8005 13.7701C28.8005 8.02082 24.1398 3.36011 18.3905 3.36011C12.6412 3.36011 7.98047 8.02082 7.98047 13.7701C7.98047 19.5194 12.6412 24.1801 18.3905 24.1801Z"
+                                    fill="#B7202E" />
+                                <path
+                                    d="M32.7161 25.2901L27.1511 19.3801C26.2104 20.8505 24.9152 22.0607 23.3844 22.8994C21.8537 23.7382 20.1366 24.1786 18.3911 24.1801H18.1211L25.5011 32.0551C25.6919 32.248 25.9314 32.3854 26.1941 32.453C26.4568 32.5205 26.7329 32.5155 26.993 32.4385C27.2531 32.3616 27.4874 32.2155 27.6711 32.016C27.8548 31.8164 27.9809 31.5707 28.0361 31.3051L28.5011 29.2201C28.5612 28.9118 28.7166 28.6301 28.9453 28.4148C29.1741 28.1995 29.4647 28.0614 29.7761 28.0201L31.8911 27.7651C32.1512 27.7139 32.3931 27.5945 32.5922 27.4193C32.7912 27.2441 32.9402 27.0193 33.0241 26.7678C33.1079 26.5162 33.1236 26.247 33.0695 25.9874C33.0154 25.7278 32.8934 25.4872 32.7161 25.2901Z"
+                                    fill="#B7202E" />
+                                <path
+                                    d="M9.36001 18.9602L3.28501 25.5002C3.10682 25.7023 2.98635 25.9487 2.93628 26.2135C2.88621 26.4782 2.90838 26.7516 3.00047 27.0048C3.09255 27.258 3.25115 27.4818 3.45959 27.6525C3.66802 27.8233 3.91861 27.9348 4.18501 27.9752L6.30001 28.2302C6.61142 28.2715 6.90201 28.4096 7.13077 28.6249C7.35952 28.8402 7.51491 29.1219 7.57501 29.4302L7.95001 31.5002C8.01363 31.7628 8.14701 32.0034 8.33606 32.1964C8.5251 32.3895 8.76279 32.5279 9.024 32.5971C9.28522 32.6662 9.56026 32.6635 9.82006 32.5893C10.0799 32.515 10.3148 32.372 10.5 32.1752L18 24.1652C16.2387 24.0926 14.524 23.5778 13.0141 22.6681C11.5041 21.7585 10.2475 20.4833 9.36001 18.9602V18.9602Z"
+                                    fill="#B7202E" />
+                            </svg>
+                        </div>
+                        <h3 class="service-title">{service.title}</h3>
+                        <p class="service-description">{service.description}</p>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

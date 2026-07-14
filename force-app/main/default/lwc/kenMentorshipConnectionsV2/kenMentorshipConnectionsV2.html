@@ -1,0 +1,85 @@
+<template>
+    <section class="mc-card">
+        <header class="mc-head">
+            <div class="mc-head__title-row">
+                <h2 class="mc-title">Mentorship Connections</h2>
+                <span class="mc-count">({count})</span>
+            </div>
+            <div class="mc-head__controls">
+                <div class="mc-search">
+                    <span class="mc-search__icon" aria-hidden="true">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </span>
+                    <input type="search" class="mc-search__input" placeholder="Search connections" value={searchTerm} oninput={handleSearch} />
+                    <button type="button" class="mc-search__mic" aria-label="Voice search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+                <select class="mc-sort" value={sortBy} onchange={handleSort} aria-label="Sort by">
+                    <option value="name">Sort by: Name</option>
+                    <option value="role">Sort by: Role</option>
+                </select>
+                <button type="button" class={filtersButtonCls} onclick={handleFilters}
+                    aria-expanded={showFilters} aria-controls="mc-role-filter-panel">
+                    <span>Filters</span>
+                </button>
+            </div>
+            <template lwc:if={showFilters}>
+                <div id="mc-role-filter-panel" class="mc-filter-panel" role="region" aria-label="Filter connections by role">
+                    <span class="mc-filter-panel__label">Show:</span>
+                    <button type="button" class={filterAllCls} data-role="all" onclick={handleRoleFilter}>All</button>
+                    <button type="button" class={filterMentorCls} data-role="mentor" onclick={handleRoleFilter}>Mentors</button>
+                    <button type="button" class={filterMenteeCls} data-role="mentee" onclick={handleRoleFilter}>Mentees</button>
+                    <button type="button" class="mc-filter-panel__clear" onclick={handleClearRoleFilter}>Clear</button>
+                </div>
+            </template>
+        </header>
+
+        <template lwc:if={hasResults}>
+            <div class="mc-rail">
+                <template for:each={filtered} for:item="c">
+                    <button key={c.key} type="button" class="mc-card-item" data-id={c.id} data-name={c.name} onclick={handleCard}>
+                        <template lwc:if={c.isMentor}>
+                            <span class="mc-pill">Mentor</span>
+                        </template>
+                        <div class="mc-avatar" style={c.avatarStyle}>
+                            <template lwc:if={c.showInitial}>{c.initial}</template>
+                        </div>
+                        <p class="mc-name">{c.name}</p>
+                        <p class="mc-role">{c.roleCompany}</p>
+                        <template lwc:if={c.city}>
+                            <p class="mc-city">
+                                <svg class="mc-pin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                <span>{c.city}</span>
+                            </p>
+                        </template>
+                    </button>
+                </template>
+            </div>
+        </template>
+
+        <template lwc:elseif={emptyForSearch}>
+            <div class="mc-empty">
+                <p>No connections match "{searchTerm}".</p>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="mc-empty">
+                <p>No connections yet — find alumni in the Network section.</p>
+                <a class="mc-empty__link" href="/network">Go to Network &rarr;</a>
+            </div>
+        </template>
+    </section>
+</template>

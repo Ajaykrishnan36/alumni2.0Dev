@@ -1,0 +1,9 @@
+<template lwc:render-mode="light">
+    <aside class="side">
+        <template for:each={sections} for:item="s">
+            <a key={s.id} class={s.sectionClass} data-id={s.id} onclick={handleSection}>
+                <span class="side__icon">{s.icon}</span><span>{s.label}</span>
+            </a>
+        </template>
+    </aside>
+</template>

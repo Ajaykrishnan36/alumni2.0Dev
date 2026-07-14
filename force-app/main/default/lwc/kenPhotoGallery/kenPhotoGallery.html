@@ -1,0 +1,132 @@
+<template>
+    <div class="photo-gallery-container">
+        <!-- Content Card - Hide when album detail is shown -->
+        <template if:false={showAlbumDetail}>
+        <div class="content-card">
+            <!-- Title and Controls Row -->
+            <div class="title-controls-row">
+            <!-- Page Title Section -->
+            <div class="title-section">
+                <h1 class="page-title">All albums</h1>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="controls-section">
+            <!-- Search Bar -->
+            <div class="search-container">
+                <lightning-icon
+                    icon-name="utility:search"
+                    size="x-small"
+                    class="search-icon"
+                    alternative-text="Search"
+                ></lightning-icon>
+                <input
+                    type="text"
+                    class="search-input"
+                    placeholder="Search"
+                    value={searchTerm}
+                    oninput={handleSearch}
+                />
+            </div>
+
+            <!-- Sort Button -->
+            <div class="sort-container">
+                <div class="sort-dropdown-wrapper">
+                    <button class="sort-button" type="button" onclick={handleSortButtonClick}>
+                        <span class="sort-label">Sort by: {currentSortLabel}</span>
+                        <lightning-icon
+                            icon-name="utility:sort"
+                            size="x-small"
+                            class="sort-icon"
+                            alternative-text="Sort"
+                        ></lightning-icon>
+                        <lightning-icon
+                            icon-name="utility:chevrondown"
+                            size="xx-small"
+                            class="sort-arrow"
+                            alternative-text=""
+                        ></lightning-icon>
+                    </button>
+                    <template if:true={showSortDropdown}>
+                        <div class="sort-dropdown-menu">
+                            <template for:each={sortOptions} for:item="option">
+                                <div
+                                    key={option.value}
+                                    class="sort-dropdown-item"
+                                    data-value={option.value}
+                                    onclick={handleSortOptionClick}
+                                >
+                                    <span class="sort-option-label">{option.label}</span>
+                                    <template if:true={option.isSelected}>
+                                        <lightning-icon
+                                            icon-name="utility:check"
+                                            size="x-small"
+                                            class="sort-check-icon"
+                                            alternative-text="Selected"
+                                        ></lightning-icon>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <lightning-button
+                variant="brand"
+                label="Create Album"
+                icon-name="utility:add"
+                onclick={handleCreateAlbum}
+                class="create-album-button"
+            ></lightning-button>
+            </div>
+            </div>
+
+            <!-- Albums Content -->
+            <div class="album-grid">
+                <template for:each={filteredAlbums} for:item="album">
+                    <div key={album.id} class="album-grid-item">
+                        <c-ken-album-card
+                            album={album}
+                            onmenuselect={handleAlbumMenu}
+                            onalbumclick={handleAlbumClick}
+                        ></c-ken-album-card>
+                    </div>
+                </template>
+            </div>
+
+            <template if:true={hasNoAlbums}>
+                <div class="empty-state">
+                    <p>No albums found</p>
+                </div>
+            </template>
+        </div>
+        </template>
+
+        <!-- Album Detail View - Outside content card -->
+        <template if:true={showAlbumDetail}>
+            <c-ken-album-detail-view
+                album={selectedAlbum}
+                onback={handleBackFromAlbum}
+                onphotosadded={handleAlbumPhotosAdded}
+                onphotodeleted={handleAlbumPhotoDeleted}
+            ></c-ken-album-detail-view>
+        </template>
+
+        <!-- Create Album Modal -->
+        <c-ken-create-album-modal
+            show-modal={showCreateAlbumModal}
+            onclose={handleCloseCreateAlbumModal}
+            oncreate={handleAlbumCreate}
+        ></c-ken-create-album-modal>
+
+        <!-- Edit Album Link Modal -->
+        <c-ken-edit-album-link-modal
+            album={editLinkAlbum}
+            show-modal={showEditLinkModal}
+            onclose={handleCloseEditLinkModal}
+            onsave={handleSaveAlbumLink}
+        ></c-ken-edit-album-link-modal>
+    </div>
+</template>

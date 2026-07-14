@@ -1,0 +1,137 @@
+<template>
+    <div class="chart-card">
+        <div class="card-header">
+            <div class="card-header-row">
+                <div>
+                    <h3 class="card-title">{title}</h3>
+                    <p class="card-desc">{description}</p>
+                </div>
+                <template if:true={showExport}>
+                    <button class="chart-export-btn" onclick={handleExport} title="Download all cases as CSV">&#x2193; Download CSV</button>
+                </template>
+            </div>
+        </div>
+        <template if:true={isLoading}>
+            <div class="loading-state"><div class="spinner"></div></div>
+        </template>
+        <template if:false={isLoading}>
+            <template if:true={hasData}>
+                <div class="chart-body">
+
+                    <!-- Horizontal bar chart -->
+                    <template if:true={isHorizontal}>
+                        <svg viewBox={hViewBox} class="bar-svg" aria-hidden="true">
+                            <template for:each={hGridLines} for:item="g">
+                                <line key={g.id} x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} class="grid" />
+                                <text key={g.tid} x={g.tx} y={g.ty} text-anchor="middle" class="axis-num">{g.label}</text>
+                            </template>
+                            <template for:each={hBars} for:item="b">
+                                <g key={b.id} class="bar-clickable" data-idx={b.id}
+                                   onclick={handleBarClick}
+                                   onmouseenter={handleMouseEnter}
+                                   onmouseleave={handleMouseLeave}>
+                                    <rect x={b.x} y={b.y} width={b.w} height={b.h} fill={b.color} rx="3" class="bar" />
+                                    <text x={b.valX} y={b.valY} text-anchor="start" class="bar-val">{b.value}</text>
+                                    <text x={b.lblX} y={b.lblY} text-anchor="end" class="bar-lbl">{b.label}</text>
+                                </g>
+                            </template>
+                            <line x1={hAxisX} y1="10" x2={hAxisX} y2={hAxisYBottom} class="axis-line" />
+                            <line x1={hAxisX} y1={hAxisYBottom} x2={hChartRight} y2={hAxisYBottom} class="axis-line" />
+                        </svg>
+                    </template>
+
+                    <!-- Vertical bar chart -->
+                    <template if:true={isVertical}>
+                        <svg viewBox={vViewBox} class="bar-svg bar-svg-v" aria-hidden="true">
+                            <template for:each={vGridLines} for:item="g">
+                                <line key={g.id} x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} class="grid" />
+                                <text key={g.tid} x={g.tx} y={g.ty} text-anchor="end" class="axis-num">{g.label}</text>
+                            </template>
+                            <template for:each={vBars} for:item="b">
+                                <g key={b.id} class="bar-clickable" data-idx={b.id}
+                                   onclick={handleBarClick}
+                                   onmouseenter={handleMouseEnter}
+                                   onmouseleave={handleMouseLeave}>
+                                    <rect x={b.x} y={b.y} width={b.w} height={b.h} fill={b.color} rx="3" class="bar" />
+                                    <text x={b.valX} y={b.valY} text-anchor="middle" class="bar-val v-val">{b.value}</text>
+                                    <text x={b.lblX} y={b.lblY} transform={b.lblTransform} text-anchor="end" class="bar-lbl">{b.label}</text>
+                                </g>
+                            </template>
+                            <line x1={vAxisX} y1={vBaseY} x2={vAxisX2} y2={vBaseY} class="axis-line" />
+                            <line x1={vAxisX} y1="16" x2={vAxisX} y2={vBaseY} class="axis-line" />
+                        </svg>
+                    </template>
+
+                    <!-- Line chart -->
+                    <template if:true={isLine}>
+                        <svg viewBox={lineViewBox} class="bar-svg bar-svg-v" aria-hidden="true">
+                            <template for:each={lineGridLines} for:item="g">
+                                <line key={g.id} x1={g.x1} y1={g.y1} x2={g.x2} y2={g.y2} class="grid" />
+                                <text key={g.tid} x={g.tx} y={g.ty} text-anchor="end" class="axis-num">{g.label}</text>
+                            </template>
+                            <path d={lineAreaPath} class="line-area" />
+                            <path d={linePath} class="line-path" />
+                            <template for:each={linePoints} for:item="p">
+                                <g key={p.id} class="bar-clickable" data-idx={p.id}
+                                   onclick={handleBarClick}
+                                   onmouseenter={handleMouseEnter}
+                                   onmouseleave={handleMouseLeave}>
+                                    <circle cx={p.cx} cy={p.cy} r="4" fill="#2563eb" class="line-dot" />
+                                    <text x={p.valX} y={p.valY} text-anchor="middle" class="bar-val">{p.value}</text>
+                                    <text x={p.lblX} y={p.lblY} transform={p.lblTransform} text-anchor="end" class="bar-lbl">{p.label}</text>
+                                </g>
+                            </template>
+                            <line x1={vAxisX} y1={lineBaseY} x2={vAxisX2} y2={lineBaseY} class="axis-line" />
+                            <line x1={vAxisX} y1="16" x2={vAxisX} y2={lineBaseY} class="axis-line" />
+                        </svg>
+                    </template>
+
+                    <!-- Table chart -->
+                    <template if:true={isTable}>
+                        <div class="table-wrap">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-rank">#</th>
+                                        <th class="col-name">Name</th>
+                                        <th class="col-bar"></th>
+                                        <th class="col-count">Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={tableRows} for:item="row">
+                                        <tr key={row.id} class="tbl-row" data-idx={row.id} onclick={handleBarClick}>
+                                            <td class="col-rank">{row.rank}</td>
+                                            <td class="col-name">{row.label}</td>
+                                            <td class="col-bar">
+                                                <div class="bar-track">
+                                                    <div class="bar-fill" style={row.barStyle}></div>
+                                                </div>
+                                            </td>
+                                            <td class="col-count">{row.value}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+
+                </div>
+            </template>
+            <template if:false={hasData}>
+                <div class="empty-state">No data available</div>
+            </template>
+        </template>
+
+        <!-- Hover tooltip -->
+        <template if:true={tooltipVisible}>
+            <div class="tip-box" style={tooltipStyle}>
+                <div class="tip-label">{tipLabel}</div>
+                <div class="tip-row">
+                    <span class="tip-val">{tipValue}</span>
+                    <span class="tip-pct">{tipPct}%</span>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

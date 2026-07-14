@@ -1,0 +1,412 @@
+<template>
+    <div class="step-content">
+        <div class="cover-photo-section">
+            <label class="cover-photo-label">Cover Photo<span class="required-asterisk">*</span></label>
+            <template if:false={hasCoverPhoto}>
+                <div class="upload-area" onclick={handleCoverPhotoUploadScreen}>
+                    <button class="upload-button">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-right: 6px;" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M11.2929 3.29289C11.6834 2.90237 12.3166 2.90237 12.7071 3.29289L17.7071 8.29289C18.0976 8.68342 18.0976 9.31658 17.7071 9.70711C17.3166 10.0976 16.6834 10.0976 16.2929 9.70711L13 6.41421V16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16V6.41421L7.70711 9.70711C7.31658 10.0976 6.68342 10.0976 6.29289 9.70711C5.90237 9.31658 5.90237 8.68342 6.29289 8.29289L11.2929 3.29289ZM4 16C4.55228 16 5 16.4477 5 17V19C5 19.2652 5.10536 19.5196 5.29289 19.7071C5.48043 19.8946 5.73478 20 6 20H18C18.2652 20 18.5196 19.8946 18.7071 19.7071C18.8946 19.5196 19 19.2652 19 19V17C19 16.4477 19.4477 16 20 16C20.5523 16 21 16.4477 21 17V19C21 19.7957 20.6839 20.5587 20.1213 21.1213C19.5587 21.6839 18.7957 22 18 22H6C5.20435 22 4.44129 21.6839 3.87868 21.1213C3.31607 20.5587 3 19.7957 3 19V17C3 16.4477 3.44772 16 4 16Z"
+                                fill="#545454" />
+                        </svg>
+                        Choose a cover photo
+                    </button>
+                    <div style="border-top: 1px solid #B0B0B0;height: 7px;width: 100%;margin-top: 35px;"></div>
+                    <div class="upload-info">
+                        <p>Max image size: 5MB | Min width: 1024px | Image format: PNG, JPEG</p>
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={hasCoverPhoto}>
+                <div class="image-preview">
+                    <img src={eventData.coverImage} alt="Cover photo" class="cover-image" />
+                    <div class="image-actions">
+                        <button class="delete-image" onclick={handleDeleteCoverImage}>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M4.99935 15.8333C4.99935 16.75 5.74935 17.5 6.66602 17.5H13.3327C14.2493 17.5 14.9993 16.75 14.9993 15.8333V5.83333H4.99935V15.8333ZM6.66602 7.5H13.3327V15.8333H6.66602V7.5ZM12.916 3.33333L12.0827 2.5H7.91602L7.08268 3.33333H4.16602V5H15.8327V3.33333H12.916Z"
+                                    fill="#962121" />
+                            </svg>
+                        </button>
+                        <button class="change-image" onclick={handleCoverPhotoUploadScreen}>Choose a different picture</button>
+                    </div>
+                </div>
+            </template>
+
+            <input type="file" accept="image/png,image/jpeg,image/jpg" style="display: none;" onchange={handleCoverPhotoUpload} />
+            <div class="error-message" if:true={validationErrors.coverPhoto}>
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                </svg>
+                {validationErrors.coverPhoto}
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="eventTitle">Event title<span class="required-asterisk">*</span></label>
+                    <input type="text" id="eventTitle" class={eventTitleClass} placeholder="Event title will be visible in the platform"
+                        value={eventData.title} onkeyup={handleEventTitleChange} maxlength="50" />
+                    <div class="error-message" if:true={validationErrors.title}>
+                        <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                        </svg>
+                        {validationErrors.title}
+                    </div>
+                </div>
+            </div>
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="category">Category<span class="required-asterisk">*</span></label>
+                    <div class="multi-select-container" data-field="category" onclick={handleDropdownContainerClick}>
+                        <div class="multi-select-input" onclick={handleCategoryDropdownToggle}>
+                            <div class="selected-tags">
+                                <template for:each={selectedCategories} for:item="category">
+                                    <span key={category.key} class="tag">
+                                        {category.label}
+                                        <button class="tag-remove" onclick={handleRemoveCategory} data-value={category.value}>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                    </span>
+                                </template>
+                                <span class="placeholder" if:false={selectedCategories.length}>Event categories</span>
+                            </div>
+                            <div class="dropdown-arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M7 10l5 5 5-5z" fill="currentColor" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="dropdown-options" if:true={showCategoryDropdown}>
+                            <template if:false={isPicklistDataLoaded}>
+                                <div class="dropdown-option loading">
+                                    <span class="option-label">Loading categories...</span>
+                                </div>
+                            </template>
+                            <template if:true={isPicklistDataLoaded}>
+                                <template for:each={categoryOptions} for:item="option">
+                                    <div key={option.key} class="dropdown-option" onclick={handleCategorySelect} data-value={option.value}>
+                                        <span class="option-label">{option.label}</span>
+                                        <span class="option-check" if:true={option.selected}>✓</span>
+                                    </div>
+                                </template>
+                                <div class="dropdown-option no-options" if:false={categoryOptions.length}>
+                                    <span class="option-label">No categories available</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="error-message" if:true={validationErrors.category}>
+                        <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                        </svg>
+                        {validationErrors.category}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date Selection Section -->
+        <div class="date-selection-section">
+            <div class="date-selection-layout">
+                <!-- Left Column: Calendar -->
+                <div class="calendar-column">
+                    <div class="calendar-section">
+                        <div class="calendar-header">
+                            <div class="calendar-title-wrapper">
+                                <div class="calendar-title">{currentMonthYear}</div>
+                                <svg class="calendar-dropdown-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M7 10l5 5 5-5z" fill="currentColor" />
+                                </svg>
+                            </div>
+                            <div class="calendar-nav-group">
+                                <button class="calendar-nav" onclick={handlePrevMonth}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <button class="calendar-nav" onclick={handleNextMonth}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" fill="currentColor" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-weekdays">
+                                <div class="weekday">S</div>
+                                <div class="weekday">M</div>
+                                <div class="weekday">T</div>
+                                <div class="weekday">W</div>
+                                <div class="weekday">T</div>
+                                <div class="weekday">F</div>
+                                <div class="weekday">S</div>
+                            </div>
+                            <div class="calendar-days">
+                                <template for:each={calendarDays} for:item="day">
+                                    <div key={day.key} class={day.classes} onclick={handleDateClick} data-date={day.date}>
+                                        {day.day}
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Date Selection Info -->
+                <div class="date-info-column">
+                    <div class="date-selection-info">
+                        <div class="mobile-view-hide">
+                            <p class="date-instruction-heading">Please select your preferred dates for the event:</p>
+                            <ul class="date-instruction-list">
+                                <li>Choose one date if it is a single-day event.</li>
+                                <li>Choose multiple dates if it is a multi-day event.</li>
+                            </ul>
+                        </div>
+                        <div class="mobile-view-show">
+                            <p class="date-instruction-heading">Please select your preferred dates for the event:</p>
+                            <ul class="date-instruction-list">
+                                <li>Choose one date if it is a single-day event.</li>
+                                <li>Choose multiple dates if it is a multi-day event.</li>
+                            </ul>
+                        </div>
+                        <div class="selected-dates" if:true={selectedDates.length}>
+                            <p style="font-weight: 500;color: #373A45;margin-bottom: 0.5rem;font-size: 1rem;">Dates selected</p>
+                            <div class="date-pills">
+                                <template for:each={selectedDates} for:item="date">
+                                    <div key={date.key} class="date-pill">
+                                        <span class="date-text">{date.display}</span>
+                                        <button class="remove-date" onclick={handleRemoveDate} data-date={date.value}>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="error-message" if:true={validationErrors.selectedDates}>
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                </svg>
+                {validationErrors.selectedDates}
+            </div>
+        </div>
+
+        <!-- Additional Fields Section -->
+        <div class="form-grid" style="margin-top: 2rem;">
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="languageOptional">Language of Delivery (Optional)</label>
+                    <div class="multi-select-container" data-field="language" onclick={handleDropdownContainerClick}>
+                        <div class="multi-select-input" onclick={handleLanguageDropdownToggle}>
+                            <div class="selected-tags">
+                                <template for:each={selectedLanguages} for:item="language">
+                                    <span key={language.key} class="tag">
+                                        {language.label}
+                                        <button class="tag-remove" onclick={handleRemoveLanguage} data-value={language.value}>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                    </span>
+                                </template>
+                                <span class="placeholder" if:false={selectedLanguages.length}>Select languages</span>
+                            </div>
+                            <div class="dropdown-arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M7 10l5 5 5-5z" fill="currentColor" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="dropdown-options" if:true={showLanguageDropdown}>
+                            <template for:each={languageOptions} for:item="option">
+                                <div key={option.key} class="dropdown-option" onclick={handleLanguageSelect} data-value={option.value}>
+                                    <span class="option-label">{option.label}</span>
+                                    <span class="option-check" if:true={option.selected}>✓</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-column">
+                <div class="form-group">
+                    <label for="maxParticipantsOptional">Maximum Number of Participants (Optional)</label>
+                    <input type="number" id="maxParticipantsOptional" class={maxParticipantsClass} placeholder="Number of participants expected"
+                        value={eventData.maxParticipants} oninput={handleMaxParticipantsChange} pattern="[0-9]{1,5}" inputmode="numeric" maxlength="5" min="0" step="1" />
+                    <div class="error-message" if:true={validationErrors.maxParticipants}>
+                        <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                        </svg>
+                        {validationErrors.maxParticipants}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label for="brochureOptional">Upload Brochure for the Event (Optional)</label>
+            <div class="file-upload-container">
+                <template if:false={hasBrochureFile}>
+                    <div class="file-upload">
+                        <input type="file" id="brochureOptional" accept=".pdf,application/pdf" onchange={handleBrochureUpload} />
+                        <label for="brochureOptional" class="file-upload-label">
+                            <span class="upload-text">Upload brochure</span>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="upload-icon">
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M11.2929 3.29289C11.6834 2.90237 12.3166 2.90237 12.7071 3.29289L17.7071 8.29289C18.0976 8.68342 18.0976 9.31658 17.7071 9.70711C17.3166 10.0976 16.6834 10.0976 16.2929 9.70711L13 6.41421V16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16V6.41421L7.70711 9.70711C7.31658 10.0976 6.68342 10.0976 6.29289 9.70711C5.90237 9.31658 5.90237 8.68342 6.29289 8.29289L11.2929 3.29289ZM4 16C4.55228 16 5 16.4477 5 17V19C5 19.2652 5.10536 19.5196 5.29289 19.7071C5.48043 19.8946 5.73478 20 6 20H18C18.2652 20 18.5196 19.8946 18.7071 19.7071C18.8946 19.5196 19 19.2652 19 19V17C19 16.4477 19.4477 16 20 16C20.5523 16 21 16.4477 21 17V19C21 19.7957 20.6839 20.5587 20.1213 21.1213C19.5587 21.6839 18.7957 22 18 22H6C5.20435 22 4.44129 21.6839 3.87868 21.1213C3.31607 20.5587 3 19.7957 3 19V17C3 16.4477 3.44772 16 4 16Z" fill="#585A64"/>
+                            </svg>
+                        </label>
+                    </div>
+                </template>
+                <template if:true={hasBrochureFile}>
+                    <div class="file-preview">
+                        <div class="file-info">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="file-icon">
+                                <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z" stroke="currentColor" stroke-width="2" />
+                                <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" />
+                            </svg>
+                            <span class="file-name">{eventData.broucherFileName}</span>
+                        </div>
+                        <div class="file-actions">
+                            <button class="file-action-btn change" onclick={handleChangeBrochure}>
+                                <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M11.2929 4.00383C11.6834 3.61331 12.3166 3.61331 12.7071 4.00383L17.7071 9.00383C18.0976 9.39435 18.0976 10.0275 17.7071 10.418C17.3166 10.8086 16.6834 10.8086 16.2929 10.418L13 7.12515V16.7109C13 17.2632 12.5523 17.7109 12 17.7109C11.4477 17.7109 11 17.2632 11 16.7109V7.12515L7.70711 10.418C7.31658 10.8086 6.68342 10.8086 6.29289 10.418C5.90237 10.0275 5.90237 9.39435 6.29289 9.00383L11.2929 4.00383ZM4 16.7109C4.55228 16.7109 5 17.1587 5 17.7109V19.7109C5 19.9762 5.10536 20.2305 5.29289 20.418C5.48043 20.6056 5.73478 20.7109 6 20.7109H18C18.2652 20.7109 18.5196 20.6056 18.7071 20.418C18.8946 20.2305 19 19.9762 19 19.7109V17.7109C19 17.1587 19.4477 16.7109 20 16.7109C20.5523 16.7109 21 17.1587 21 17.7109V19.7109C21 20.5066 20.6839 21.2696 20.1213 21.8323C19.5587 22.3949 18.7957 22.7109 18 22.7109H6C5.20435 22.7109 4.44129 22.3949 3.87868 21.8323C3.31607 21.2696 3 20.5066 3 19.7109V17.7109C3 17.1587 3.44772 16.7109 4 16.7109Z"
+                                        fill="#B2B3B7" />
+                                </svg>
+                            </button>
+                            <button class="file-action-btn remove" onclick={handleRemoveBrochure}>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M5.00002 15.8333C5.00002 16.75 5.75002 17.5 6.66669 17.5H13.3334C14.25 17.5 15 16.75 15 15.8333V5.83333H5.00002V15.8333ZM6.66669 7.5H13.3334V15.8333H6.66669V7.5ZM12.9167 3.33333L12.0834 2.5H7.91669L7.08335 3.33333H4.16669V5H15.8334V3.33333H12.9167Z" fill="#B2B3B7" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                <input type="file" id="brochure-change-optional" accept=".pdf,application/pdf" style="display: none;" onchange={handleBrochureChangeUpload} />
+            </div>
+            <div class="error-message" if:true={validationErrors.brochure}>
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                </svg>
+                {validationErrors.brochure}
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label for="description">Description (Optional)</label>
+            <div class="rich-text-container">
+                <div id="description" class={descriptionClass} contenteditable="true" lwc:dom="manual" data-placeholder="Give a brief about the event. Max: 500 characters."
+                    oninput={handleDescriptionInput} onpaste={handleDescriptionPaste} onkeydown={handleDescriptionKeydown}></div>
+                <div class="rich-text-toolbar">
+                    <div class="toolbar-left">
+                        <button type="button" class="toolbar-btn" onclick={handleBold} title="Bold">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick={handleItalic} title="Italic">
+                            <em>I</em>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick={handleList} title="List">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" />
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- <button type="button" class="ai-write-btn">
+                        <img src={aiStarUrl} alt="AI Star" class="ai-star-icon" />
+                        <span class="ai-write-text">Continue writing with AI</span>
+                    </button> -->
+                </div>
+            </div>
+            <div class="error-message" if:true={validationErrors.description}>
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                </svg>
+                {validationErrors.description}
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 1.5rem;">
+            <label for="agenda">Agenda (Optional)</label>
+            <div class="rich-text-container">
+                <div id="agenda" class={agendaClass} contenteditable="true" lwc:dom="manual" data-placeholder="Agenda of the event. Max: 300 characters."
+                    oninput={handleAgendaInput} onpaste={handleAgendaPaste} onkeydown={handleAgendaKeydown}></div>
+                <div class="rich-text-toolbar">
+                    <div class="toolbar-left">
+                        <button type="button" class="toolbar-btn" onclick={handleBold} title="Bold">
+                            <strong>B</strong>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick={handleItalic} title="Italic">
+                            <em>I</em>
+                        </button>
+                        <button type="button" class="toolbar-btn" onclick={handleList} title="List">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18M3 12h18M3 18h18" stroke="currentColor" stroke-width="2" />
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- <button type="button" class="ai-write-btn">
+                        <img src={aiStarUrl} alt="AI Star" class="ai-star-icon" />
+                        <span class="ai-write-text">Continue writing with AI</span>
+                    </button> -->
+                </div>
+            </div>
+            <div class="error-message" if:true={validationErrors.agenda}>
+                <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                </svg>
+                {validationErrors.agenda}
+            </div>
+        </div>
+
+        <div class="form-grid" style="margin-top: 1.5rem;">
+            <div class="form-column">
+                <div class="form-group">
+                    <label>Can alumni bring guests to this event?<span class="required-asterisk">*</span></label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="canBringGuests" value="yes" checked={canBringGuestsValue} onchange={handleCanBringGuestsChange} />
+                            <span class="radio-text">Yes</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="canBringGuests" value="no" checked={canBringGuestsNoValue} onchange={handleCanBringGuestsChange} />
+                            <span class="radio-text">No</span>
+                        </label>
+                    </div>
+                    <div class="error-message" if:true={validationErrors.canBringGuests}>
+                        <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                        </svg>
+                        {validationErrors.canBringGuests}
+                    </div>
+                </div>
+            </div>
+            <div class="form-column" if:true={showMaxGuestsField}>
+                <div class="form-group">
+                    <label for="maxGuestsPerParticipant">How many guests can each participant bring?<span class="required-asterisk">*</span></label>
+                    <div class="number-stepper">
+                        <button type="button" class="stepper-btn stepper-btn-minus" onclick={handleDecrementGuests}>-</button>
+                        <input type="number" id="maxGuestsPerParticipant" class={maxGuestsClass} 
+                            value={maxGuestsPerParticipant} oninput={handleMaxGuestsChange} min="0" step="1" />
+                        <button type="button" class="stepper-btn stepper-btn-plus" onclick={handleIncrementGuests}>+</button>
+                    </div>
+                    <div class="error-message" if:true={validationErrors.maxGuestsPerParticipant}>
+                        <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor" />
+                        </svg>
+                        {validationErrors.maxGuestsPerParticipant}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

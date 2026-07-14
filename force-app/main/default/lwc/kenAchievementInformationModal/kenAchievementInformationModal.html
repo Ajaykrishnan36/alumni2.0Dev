@@ -1,0 +1,120 @@
+<template>
+    <div class="modal-overlay" onclick={handleBackdropClick}>
+        <div class="modal-container" onclick={handleModalClick}>
+            <div class="modal-header">
+                <h2 class="modal-title">{modalTitle}</h2>
+                <button type="button" class="close-button" onclick={handleClose} aria-label="Close">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-fields">
+                    <div class="form-field">
+                        <label class="field-label">Type<span class="required">*</span></label>
+                        <lightning-combobox class={typeErrorClass} options={typeOptions} value={type}
+                            data-field="type" placeholder="Choose" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                        <template if:true={errors.type}><div class="error-message">{errors.type}</div></template>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label">{config.titleLabel}<span class="required">*</span></label>
+                            <lightning-input class={titleErrorClass} type="text" value={title}
+                                placeholder={config.titlePlaceholder} data-field="title" variant="label-hidden" onchange={handleInput}></lightning-input>
+                            <template if:true={errors.title}><div class="error-message">{errors.title}</div></template>
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label">{config.orgLabel}</label>
+                            <lightning-input class="custom-input" type="text" value={organization}
+                                placeholder={config.orgPlaceholder} data-field="organization" variant="label-hidden" onchange={handleInput}></lightning-input>
+                        </div>
+                    </div>
+
+                    <template if:true={showPatentFields}>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="field-label">Application / Patent Number</label>
+                                <lightning-input class="custom-input" type="text" value={patentNumber}
+                                    placeholder="Official patent number" data-field="patentNumber" variant="label-hidden" onchange={handleInput}></lightning-input>
+                                <template if:true={errors.patentNumber}><div class="error-message">{errors.patentNumber}</div></template>
+                            </div>
+                            <div class="form-field">
+                                <label class="field-label">Status</label>
+                                <lightning-combobox class="custom-select" options={statusOptions} value={status}
+                                    data-field="status" placeholder="Select Status" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template if:true={showBooksFields}>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="field-label">Role</label>
+                                <lightning-combobox class="custom-select" options={roleOptions} value={role}
+                                    data-field="role" placeholder="Select Role" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                            </div>
+                            <div class="form-field">
+                                <label class="field-label">{referenceLabel}</label>
+                                <lightning-input class="custom-input" type="text" value={referenceUrl}
+                                    placeholder="ISBN number or book link" data-field="referenceUrl" variant="label-hidden" onchange={handleInput}></lightning-input>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template if:true={showPaperFields}>
+                        <div class="form-field">
+                            <label class="field-label">Paper Type</label>
+                            <lightning-combobox class="custom-select" options={paperTypeOptions} value={paperType}
+                                data-field="paperType" placeholder="Select type" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                        </div>
+                    </template>
+
+                    <template if:true={showPublicationFields}>
+                        <div class="form-field">
+                            <label class="field-label">{referenceLabel}</label>
+                            <lightning-input class="custom-input" type="text" value={referenceUrl}
+                                placeholder="Link to the publication" data-field="referenceUrl" variant="label-hidden" onchange={handleInput}></lightning-input>
+                        </div>
+                    </template>
+
+                    <template if:true={showCertificationFields}>
+                        <div class="form-field">
+                            <label class="field-label">{referenceLabel}</label>
+                            <lightning-input class="custom-input" type="text" value={referenceUrl}
+                                placeholder="Link to the certification" data-field="referenceUrl" variant="label-hidden" onchange={handleInput}></lightning-input>
+                        </div>
+                    </template>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label">Date</label>
+                            <div class="date-inputs">
+                                <lightning-combobox class="custom-select" options={monthOptions} value={dateMonth}
+                                    data-field="dateMonth" placeholder="Month" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                                <lightning-combobox class="custom-select" options={yearOptions} value={dateYear}
+                                    data-field="dateYear" placeholder="Year" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-field">
+                        <label class="field-label">Description (Optional)</label>
+                        <c-ken-rich-text-editor
+                            value={description}
+                            placeholder={descriptionPlaceholder}
+                            onchange={handleDescriptionChange}>
+                        </c-ken-rich-text-editor>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="cancel-button" onclick={handleClose}>Cancel</button>
+                <button type="button" class="save-button" onclick={handleSave}>Save</button>
+            </div>
+        </div>
+    </div>
+</template>

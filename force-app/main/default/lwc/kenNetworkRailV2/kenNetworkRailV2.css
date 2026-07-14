@@ -1,0 +1,2 @@
+:host { display: block; }
+.rail { display: flex; flex-direction: column; gap: 0; }

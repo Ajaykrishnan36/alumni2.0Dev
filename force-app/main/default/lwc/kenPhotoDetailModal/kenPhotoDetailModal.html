@@ -1,0 +1,77 @@
+<template>
+    <template if:true={showModal}>
+        <div class="modal-overlay" onclick={handleOverlayClick}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <!-- Close Button -->
+                <button class="close-button" type="button" onclick={handleClose}>
+                    <lightning-icon
+                        icon-name="utility:close"
+                        size="small"
+                        alternative-text="Close"
+                    ></lightning-icon>
+                </button>
+
+                <!-- Navigation Arrows -->
+                <button
+                    class="nav-arrow nav-arrow-left"
+                    type="button"
+                    onclick={handlePrevious}
+                    title="Previous photo"
+                >
+                    <lightning-icon
+                        icon-name="utility:chevronleft"
+                        size="medium"
+                        alternative-text="Previous"
+                    ></lightning-icon>
+                </button>
+                <button
+                    class="nav-arrow nav-arrow-right"
+                    type="button"
+                    onclick={handleNext}
+                    title="Next photo"
+                >
+                    <lightning-icon
+                        icon-name="utility:chevronright"
+                        size="medium"
+                        alternative-text="Next"
+                    ></lightning-icon>
+                </button>
+
+                <!-- Photo Content -->
+                <div class="modal-content">
+                    <!-- Photo Display -->
+                    <div class="photo-display">
+                        <template if:true={isImage}>
+                            <img src={photoImageUrl} alt={photoTitle} class="full-photo" />
+                        </template>
+                        <template if:false={isImage}>
+                            <a
+                                href={photoImageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="file-placeholder"
+                            >
+                                <lightning-icon icon-name="doctype:attachment" size="large"></lightning-icon>
+                                <span class="file-placeholder-text">Open {photoTitle}</span>
+                            </a>
+                        </template>
+                    </div>
+
+                    <!-- Bottom Section -->
+                    <div class="modal-footer">
+                        <div class="footer-left">
+                            <img
+                                src={profileImageUrl}
+                                alt={personName}
+                                class="footer-profile-image"
+                                data-profile-image="true"
+                            />
+                            <span class="footer-name">{personName}</span>
+                        </div>
+                        <span class="footer-filename">{photoTitle}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

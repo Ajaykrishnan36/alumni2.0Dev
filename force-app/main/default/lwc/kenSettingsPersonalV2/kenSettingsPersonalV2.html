@@ -1,0 +1,18 @@
+<template lwc:render-mode="light">
+    <div class="card">
+        <h2 class="card__title">Personal Details</h2>
+        <div class="grid">
+            <div class="field"><label>First Name</label><input data-field="firstName" value={prefs.firstName} oninput={handleField}/></div>
+            <div class="field"><label>Last Name</label><input data-field="lastName" value={prefs.lastName} oninput={handleField}/></div>
+            <div class="field"><label>Email</label><input data-field="email" value={prefs.email} oninput={handleField}/></div>
+            <div class="field"><label>Phone</label><input data-field="phone" value={prefs.phone} oninput={handleField}/></div>
+            <div class="field"><label>Batch</label><input data-field="batch" value={prefs.batch} disabled/></div>
+            <div class="field"><label>City</label><input data-field="city" value={prefs.city} oninput={handleField}/></div>
+        </div>
+        <div class="field"><label>Bio</label><textarea data-field="bio" rows="3" value={prefs.bio} oninput={handleField}></textarea></div>
+        <div class="actions">
+            <button class="btn btn--outline" onclick={handleCancel}>Cancel</button>
+            <button class="btn btn--primary" onclick={handleSave}>Save Changes</button>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,80 @@
+.bgColor{
+    background-color: #fff;
+    padding: 10px; /* You can adjust the padding as needed */
+    border-radius: 5px;
+}
+.preference-box {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+}
+.custom-input {
+    width: 90%;
+}
+.custom-input-field {
+    width: 150px; 
+    height: 40px;  
+    box-sizing: border-box;  
+}
+.custom-input-grid {
+    width: 100%;
+}
+.custom-flex-container {
+    display: flex;
+    justify-content: space-between;
+}
+.custom-flex{
+    display: flex;
+    padding-right: 20px;
+}
+.custom-flex-left{
+    padding-left: 20px; 
+}
+
+.lightning-button.brand {
+	background-color: var(--primary-color); 
+	color: #ffffff;
+	border-radius: 5px;
+}
+/* lightning file upload css*/
+.custom-file-upload {
+    display: flex;
+    justify-content: center; 
+    align-items: center;     /* Center vertically (optional, depends on your layout) */
+    flex-direction: column;  /* Stack content vertically */
+    width: 100%;             /* Ensure the parent container is 100% wide */
+}
+
+.image-preview img {
+    width: 100%;             /* Make image take 100% width of its container */
+    max-width: 400px;        /* Optionally set a maximum width to avoid oversizing */
+    height: auto;            /* Maintain aspect ratio */
+}
+
+.slds-m-around_medium {
+    display: flex;
+    flex-direction: column;
+    align-items: center;      /* Center align the content inside */
+}
+.cover-photo {
+	text-align: center;
+	margin-bottom: 2rem;
+}
+
+.cover-photo lightning-file-upload {
+	width: 100%;
+	max-width: 700px;
+	/* Control the width */
+	margin: 0 auto;
+}
+
+.cover-photo input {
+	margin: 0 auto;
+	padding: 1rem 2rem;
+	border: 1px dashed #c0c0c0;
+	/* Dashed border for file upload */
+	background-color: #ffffff;
+	cursor: pointer;
+	font-size: 1rem;
+	color: #6b6b6b;
+}

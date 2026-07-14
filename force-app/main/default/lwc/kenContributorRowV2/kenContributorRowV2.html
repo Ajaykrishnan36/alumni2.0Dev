@@ -1,0 +1,12 @@
+<template>
+    <li class="rc-row">
+        <div class="rc-avatar">{initial}</div>
+        <div class="rc-info">
+            <div class="rc-name">{name}</div>
+            <div class="rc-meta">{batch} - {campaign}</div>
+        </div>
+        <template lwc:if={hasAmount}>
+            <span class="rc-amount">{amount}</span>
+        </template>
+    </li>
+</template>

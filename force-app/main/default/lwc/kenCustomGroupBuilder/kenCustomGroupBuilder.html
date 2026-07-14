@@ -1,0 +1,139 @@
+<template>
+    <div class="builder">
+        <div class="infoBanner" role="alert">
+            <lightning-icon icon-name="utility:info" size="x-small" class="infoIcon"></lightning-icon>
+            <span>You can create multiple custom audiences. Add to Audience and then add another audience if needed.</span>
+        </div>
+
+        <!-- Show "Add Another Group" only after the first group has been saved -->
+        <template if:true={showAddAnother}>
+            <div class="addAnotherRow">
+                <button
+                    type="button"
+                    class="addAnotherButton"
+                    onclick={handleAddAnother}
+                >
+                    <lightning-icon icon-name="utility:add" size="x-small" class="addIcon"></lightning-icon>
+                    <span>{addAnotherLabel}</span>
+                </button>
+            </div>
+        </template>
+
+        <!-- Draft group form -->
+        <template if:true={draftGroup}>
+            <section class="groupCard">
+                <div class="groupHeader">
+                    <div class="groupTitle">{groupTitle}</div>
+                    <div class="groupActions">
+                        <button
+                            type="button"
+                            class="saveButton"
+                            onclick={handleSaveGroup}
+                        >{saveGroupLabel}</button>
+                    </div>
+                </div>
+                <div class="divider"></div>
+
+                <div class="slds-grid slds-wrap slds-gutters">
+                    <template for:each={fields} for:item="field">
+                        <div key={field.key} class="slds-col slds-size_1-of-1 slds-m-bottom_small">
+                            <template if:true={field.isMulti}>
+                                <c-ken-multi-select-picklist
+                                    label={field.label}
+                                    placeholder={field.placeholder}
+                                    options={field.options}
+                                    value={field.value}
+                                    onchange={handleMultiChange}
+                                    data-key={field.key}
+                                ></c-ken-multi-select-picklist>
+                            </template>
+
+                            <template if:true={field.isSearch}>
+                                <c-ken-multi-select-picklist
+                                    label={field.label}
+                                    placeholder={field.placeholder}
+                                    value={field.value}
+                                    options={field.options}
+                                    search-mode="server"
+                                    onchange={handleMultiChange}
+                                    onsearch={handleFieldSearch}
+                                    data-key={field.key}
+                                ></c-ken-multi-select-picklist>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </section>
+        </template>
+
+        <!-- Saved groups list -->
+        <template if:true={hasSavedGroups}>
+            <div class="savedGroups">
+                <div class="savedTitle">Saved Audiences</div>
+
+                <template for:each={savedGroupsWithState} for:item="g">
+                    <div key={g.id} class="savedCard">
+                        <div class="savedHeaderRow">
+                            <button
+                                type="button"
+                                class="savedToggle slds-button_reset"
+                                data-id={g.id}
+                                onclick={handleToggleSaved}
+                            >
+                                <lightning-icon
+                                    icon-name={g.chevronIcon}
+                                    size="x-small"
+                                    class="chevronIcon"
+                                ></lightning-icon>
+                                <span class="savedName">{g.displayName}</span>
+                            </button>
+                            <div class="menuWrapper" data-group-id={g.id}>
+                                <button
+                                    type="button"
+                                    class="menuTrigger slds-button slds-button_icon slds-button_icon-small"
+                                    title="Actions"
+                                    data-id={g.id}
+                                    onclick={toggleSavedMenu}
+                                    aria-haspopup="true"
+                                    aria-expanded={g.menuOpen}
+                                    aria-label="Actions menu"
+                                >
+                                    <lightning-icon icon-name="utility:threedots_vertical" size="x-small" class="editMenuIcon"></lightning-icon>
+                                </button>
+                                <template if:true={g.menuOpen}>
+                                    <div class="menuBackdrop" onclick={handleCloseSavedMenu} role="presentation"></div>
+                                    <div class="menuDropdown" role="menu">
+                                        <button type="button" class="menuItem" role="menuitem" data-id={g.id} data-action="edit" onclick={handleSavedActionClick}>Edit</button>
+                                        <button type="button" class="menuItem" role="menuitem" data-id={g.id} data-action="delete" onclick={handleSavedActionClick}>Delete</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="pillRow">
+                            <span class="pill pillPrimary">{roleLabel}</span>
+                            <span class="pill">{g.membersLabel}</span>
+                        </div>
+
+                        <template if:true={g.expanded}>
+                            <template if:true={g.hasCriteria}>
+                                <div class="criteriaList">
+                                    <template for:each={g.criteria} for:item="c">
+                                        <div key={c.label} class="criteriaItem">
+                                            <div class="criteriaLabel">{c.label}</div>
+                                            <div class="criteriaPills">
+                                                <template for:each={c.values} for:item="v">
+                                                    <span key={v} class="criteriaPill">{v}</span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

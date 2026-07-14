@@ -1,0 +1,1087 @@
+<template>
+    <main class="content">
+
+        <!-- Banner -->
+        <div class="banner">
+            <div class="banner-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <div>
+                <h1>Master Alumni Data</h1>
+                <p>One row per alumnus, merged from historical uploads, the old portal, the new portal, leads, referrals, student transitions, and staff entries.</p>
+            </div>
+        </div>
+
+        <!-- Dashboard filter banner -->
+        <template lwc:if={hasDashboardFilter}>
+            <div class="dash-filter-banner">
+                <div class="dash-filter-text">
+                    <span class="dash-filter-tag">Filtered from Dashboard</span>
+                    <span class="dash-filter-label">{dashboardFilterLabel}</span>
+                </div>
+                <button class="dash-filter-clear" onclick={handleClearDashboardFilter}>Clear filter</button>
+            </div>
+        </template>
+
+        <!-- Alumni tabs -->
+        <div class="alumni-tab-row">
+            <div class="alumni-tabs">
+                <div class={cAll} data-tab="all" onclick={handleTab}>All Master Records <span class="count">{countAll}</span></div>
+                <div class={cRecent} data-tab="recent" onclick={handleTab}>Recently Joined <span class="count">{countRecent}</span></div>
+                <div class={cRegistered} data-tab="registered" onclick={handleTab}>Registered Alumni <span class="count">{countRegistered}</span></div>
+                <div class={cUnregistered} data-tab="unregistered" onclick={handleTab}>Un-registered Alumni <span class="count">{countUnregistered}</span></div>
+                <div class={cOldPortal} data-tab="oldportal" onclick={handleTab}>Old Portal Records <span class="count">{countOldPortal}</span></div>
+                <div class={cIssues} data-tab="issues" onclick={handleTab}>Data Issues <span class="count">{countIssues}</span></div>
+                <div class={cLeads} data-tab="leads" onclick={handleTab}>Leads <span class="count">{countLeads}</span></div>
+                <div class={cReferrals} data-tab="referrals" onclick={handleTab}>Referrals <span class="count">{countReferrals}</span></div>
+            </div>
+        </div>
+
+        <!-- ALL MASTER RECORDS -->
+        <template lwc:if={isAll}>
+            <div class="alumni-desc">Every alumni identity in the master database, regardless of portal status, source, or data quality.</div>
+            <div class="filter-bar">
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number, program, batch, company, city, country, LinkedIn URL…" oninput={handleSearch}/></div>
+                <template lwc:if={showPortalDropdown}>
+                    <div class="filter-select">
+                        <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                            <span>{portalStatusLabel}</span>
+                            <svg class="ken-dd-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 9 6 6 6-6"></path></svg>
+                        </button>
+                        <template lwc:if={portalStatusOpen}>
+                            <div class="ken-dd-menu">
+                                <div class={portalStatusItemAll}     data-value=""           onclick={handlePortalStatusSelect}>All Portal Statuses</div>
+                                <div class={portalStatusItemActive}  data-value="active"     onclick={handlePortalStatusSelect}>Active on New Portal</div>
+                                <div class={portalStatusItemReg}     data-value="registered" onclick={handlePortalStatusSelect}>Registered on New Portal</div>
+                                <div class={portalStatusItemNot}     data-value="not"        onclick={handlePortalStatusSelect}>Not on Portal</div>
+                                <div class={portalStatusItemOld}     data-value="old"        onclick={handlePortalStatusSelect}>Old Portal Record</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                    <span>Filters</span>
+                    <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
+                </button>
+            </div>
+            <div class="master-label">Master Data</div>
+            <div class="master-count">{masterCountAll}</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Program &amp; Batch</th><th>Institution</th><th>Location</th><th>Role &amp; Company</th><th>Master Record</th><th>Portal</th><th>Source</th><th>Completeness</th><th>Last Updated</th></tr></thead>
+                    <tbody>
+                        <template lwc:if={isLoading}>
+                            <tr><td colspan="10" class="empty-state">Loading…</td></tr>
+                        </template>
+                        <template lwc:if={isEmpty}>
+                            <tr><td colspan="10" class="empty-state">No records match this view.</td></tr>
+                        </template>
+                        <template for:each={rows} for:item="row">
+                            <tr key={row.alumniId} data-modal={row.rowModalKind} data-name={row.name} data-alumni-id={row.alumniId} data-batch={row.batch} data-reg={row.registrationNumber} data-source={row.source} data-referred-by={row.referredByName} onclick={handleRow}>
+                                <td><div class="cell-name"><div class="avatar-circle">{row.initials}</div><div class="meta"><div class="nm">{row.name}</div><div class={row.emailClass}>{row.emailDisplay}</div></div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.program}</div><div class="l2">Class of {row.batch} · {row.registrationNumber}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.institution}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.location}</div><div class="l2">{row.country}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.role}</div><div class="l2">{row.company}</div></div></td>
+                                <td><span class={row.masterPillClass}>{row.masterRecordStatus}</span></td>
+                                <td><span class={row.portalPillClass}>{row.portalStatus}</span></td>
+                                <td><span class={row.sourcePillClass}>{row.sourceLabel}</span></td>
+                                <td><div class="complete-cell"><div class="complete-bar"><div class={row.completenessFillClass} style={row.completenessStyle}></div></div><div class="complete-val">{row.completenessLabel}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.lastUpdatedLabel}</div></div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- RECENTLY JOINED -->
+        <template lwc:if={isRecent}>
+            <div class="alumni-desc">Alumni who recently registered on the new alumni portal.</div>
+            <div class="filter-bar">
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" oninput={handleSearch}/></div>
+                <template lwc:if={showPortalDropdown}>
+                    <div class="filter-select">
+                        <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                            <span>{portalStatusLabel}</span>
+                            <svg class="ken-dd-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 9 6 6 6-6"></path></svg>
+                        </button>
+                        <template lwc:if={portalStatusOpen}>
+                            <div class="ken-dd-menu">
+                                <div class={portalStatusItemAll}     data-value=""           onclick={handlePortalStatusSelect}>All Portal Statuses</div>
+                                <div class={portalStatusItemActive}  data-value="active"     onclick={handlePortalStatusSelect}>Active on New Portal</div>
+                                <div class={portalStatusItemReg}     data-value="registered" onclick={handlePortalStatusSelect}>Registered on New Portal</div>
+                                <div class={portalStatusItemNot}     data-value="not"        onclick={handlePortalStatusSelect}>Not on Portal</div>
+                                <div class={portalStatusItemOld}     data-value="old"        onclick={handlePortalStatusSelect}>Old Portal Record</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                    <span>Filters</span>
+                    <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
+                </button>
+            </div>
+            <div class="master-label">Master Data</div>
+            <div class="master-count">{masterCountRecent}</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Program &amp; Batch</th><th>Institution</th><th>Location</th><th>Role &amp; Company</th><th>Master Record</th><th>Portal</th><th>Source</th><th>Completeness</th><th>Last Updated</th></tr></thead>
+                    <tbody>
+                        <template lwc:if={isLoading}>
+                            <tr><td colspan="10" class="empty-state">Loading…</td></tr>
+                        </template>
+                        <template lwc:if={isEmpty}>
+                            <tr><td colspan="10" class="empty-state">No records match this view.</td></tr>
+                        </template>
+                        <template for:each={rows} for:item="row">
+                            <tr key={row.alumniId} data-modal={row.rowModalKind} data-name={row.name} data-alumni-id={row.alumniId} data-batch={row.batch} data-reg={row.registrationNumber} data-source={row.source} data-referred-by={row.referredByName} onclick={handleRow}>
+                                <td><div class="cell-name"><div class="avatar-circle">{row.initials}</div><div class="meta"><div class="nm">{row.name}</div><div class={row.emailClass}>{row.emailDisplay}</div></div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.program}</div><div class="l2">Class of {row.batch} · {row.registrationNumber}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.institution}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.location}</div><div class="l2">{row.country}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.role}</div><div class="l2">{row.company}</div></div></td>
+                                <td><span class={row.masterPillClass}>{row.masterRecordStatus}</span></td>
+                                <td><span class={row.portalPillClass}>{row.portalStatus}</span></td>
+                                <td><span class={row.sourcePillClass}>{row.sourceLabel}</span></td>
+                                <td><div class="complete-cell"><div class="complete-bar"><div class={row.completenessFillClass} style={row.completenessStyle}></div></div><div class="complete-val">{row.completenessLabel}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.lastUpdatedLabel}</div></div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <div class="table-foot">
+                    <span>{showingLabel}</span>
+                </div>
+            </div>
+        </template>
+
+        <!-- REGISTERED ALUMNI -->
+        <template lwc:if={isRegistered}>
+            <div class="alumni-desc">Alumni who are registered or active on the new alumni portal.</div>
+            <div class="filter-bar">
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" oninput={handleSearch}/></div>
+                <template lwc:if={showPortalDropdown}>
+                    <div class="filter-select">
+                        <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                            <span>{portalStatusLabel}</span>
+                            <svg class="ken-dd-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 9 6 6 6-6"></path></svg>
+                        </button>
+                        <template lwc:if={portalStatusOpen}>
+                            <div class="ken-dd-menu">
+                                <div class={portalStatusItemAll}     data-value=""           onclick={handlePortalStatusSelect}>All Portal Statuses</div>
+                                <div class={portalStatusItemActive}  data-value="active"     onclick={handlePortalStatusSelect}>Active on New Portal</div>
+                                <div class={portalStatusItemReg}     data-value="registered" onclick={handlePortalStatusSelect}>Registered on New Portal</div>
+                                <div class={portalStatusItemNot}     data-value="not"        onclick={handlePortalStatusSelect}>Not on Portal</div>
+                                <div class={portalStatusItemOld}     data-value="old"        onclick={handlePortalStatusSelect}>Old Portal Record</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                    <span>Filters</span>
+                    <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
+                </button>
+            </div>
+            <div class="master-label">Master Data</div>
+            <div class="master-count">{masterCountRegistered}</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Program &amp; Batch</th><th>Institution</th><th>Location</th><th>Role &amp; Company</th><th>Master Record</th><th>Portal</th><th>Source</th><th>Completeness</th><th>Last Updated</th></tr></thead>
+                    <tbody>
+                        <template lwc:if={isLoading}>
+                            <tr><td colspan="10" class="empty-state">Loading…</td></tr>
+                        </template>
+                        <template lwc:if={isEmpty}>
+                            <tr><td colspan="10" class="empty-state">No records match this view.</td></tr>
+                        </template>
+                        <template for:each={rows} for:item="row">
+                            <tr key={row.alumniId} data-modal={row.rowModalKind} data-name={row.name} data-alumni-id={row.alumniId} data-batch={row.batch} data-reg={row.registrationNumber} data-source={row.source} data-referred-by={row.referredByName} onclick={handleRow}>
+                                <td><div class="cell-name"><div class="avatar-circle">{row.initials}</div><div class="meta"><div class="nm">{row.name}</div><div class={row.emailClass}>{row.emailDisplay}</div></div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.program}</div><div class="l2">Class of {row.batch} · {row.registrationNumber}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.institution}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.location}</div><div class="l2">{row.country}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.role}</div><div class="l2">{row.company}</div></div></td>
+                                <td><span class={row.masterPillClass}>{row.masterRecordStatus}</span></td>
+                                <td><span class={row.portalPillClass}>{row.portalStatus}</span></td>
+                                <td><span class={row.sourcePillClass}>{row.sourceLabel}</span></td>
+                                <td><div class="complete-cell"><div class="complete-bar"><div class={row.completenessFillClass} style={row.completenessStyle}></div></div><div class="complete-val">{row.completenessLabel}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.lastUpdatedLabel}</div></div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- UN-REGISTERED ALUMNI -->
+        <template lwc:if={isUnregistered}>
+            <div class="alumni-desc">Alumni whose master record exists but who have not yet completed registration on the new portal (Unregistered / Verified / no status).</div>
+            <div class="filter-bar">
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" oninput={handleSearch}/></div>
+                <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                    <span>Filters</span>
+                    <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
+                </button>
+            </div>
+            <div class="master-label">Master Data</div>
+            <div class="master-count">{masterCountUnregistered}</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Program &amp; Batch</th><th>Institution</th><th>Location</th><th>Role &amp; Company</th><th>Master Record</th><th>Portal</th><th>Source</th><th>Completeness</th><th>Last Updated</th></tr></thead>
+                    <tbody>
+                        <template lwc:if={isLoading}>
+                            <tr><td colspan="10" class="empty-state">Loading…</td></tr>
+                        </template>
+                        <template lwc:if={isEmpty}>
+                            <tr><td colspan="10" class="empty-state">No records match this view.</td></tr>
+                        </template>
+                        <template for:each={rows} for:item="row">
+                            <tr key={row.alumniId} data-modal={row.rowModalKind} data-name={row.name} data-alumni-id={row.alumniId} data-batch={row.batch} data-reg={row.registrationNumber} data-source={row.source} data-referred-by={row.referredByName} onclick={handleRow}>
+                                <td><div class="cell-name"><div class="avatar-circle">{row.initials}</div><div class="meta"><div class="nm">{row.name}</div><div class={row.emailClass}>{row.emailDisplay}</div></div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.program}</div><div class="l2">Class of {row.batch} · {row.registrationNumber}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.institution}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.location}</div><div class="l2">{row.country}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.role}</div><div class="l2">{row.company}</div></div></td>
+                                <td><span class={row.masterPillClass}>{row.masterRecordStatus}</span></td>
+                                <td><span class={row.portalPillClass}>{row.portalStatus}</span></td>
+                                <td><span class={row.sourcePillClass}>{row.sourceLabel}</span></td>
+                                <td><div class="complete-cell"><div class="complete-bar"><div class={row.completenessFillClass} style={row.completenessStyle}></div></div><div class="complete-val">{row.completenessLabel}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.lastUpdatedLabel}</div></div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- OLD PORTAL -->
+        <template lwc:if={isOldPortal}>
+            <div class="alumni-desc">Records migrated from or matched against the previous alumni portal. May or may not have registered on the new portal yet.</div>
+            <div class="filter-bar">
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" oninput={handleSearch}/></div>
+                <template lwc:if={showPortalDropdown}>
+                    <div class="filter-select">
+                        <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                            <span>{portalStatusLabel}</span>
+                            <svg class="ken-dd-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 9 6 6 6-6"></path></svg>
+                        </button>
+                        <template lwc:if={portalStatusOpen}>
+                            <div class="ken-dd-menu">
+                                <div class={portalStatusItemAll}     data-value=""           onclick={handlePortalStatusSelect}>All Portal Statuses</div>
+                                <div class={portalStatusItemActive}  data-value="active"     onclick={handlePortalStatusSelect}>Active on New Portal</div>
+                                <div class={portalStatusItemReg}     data-value="registered" onclick={handlePortalStatusSelect}>Registered on New Portal</div>
+                                <div class={portalStatusItemNot}     data-value="not"        onclick={handlePortalStatusSelect}>Not on Portal</div>
+                                <div class={portalStatusItemOld}     data-value="old"        onclick={handlePortalStatusSelect}>Old Portal Record</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                    <span>Filters</span>
+                    <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
+                </button>
+            </div>
+            <div class="master-label">Master Data</div>
+            <div class="master-count">{masterCountOldPortal}</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Program &amp; Batch</th><th>Institution</th><th>Location</th><th>Role &amp; Company</th><th>Master Record</th><th>Portal</th><th>Source</th><th>Completeness</th><th>Last Updated</th></tr></thead>
+                    <tbody>
+                        <template lwc:if={isLoading}>
+                            <tr><td colspan="10" class="empty-state">Loading…</td></tr>
+                        </template>
+                        <template lwc:if={isEmpty}>
+                            <tr><td colspan="10" class="empty-state">No records match this view.</td></tr>
+                        </template>
+                        <template for:each={rows} for:item="row">
+                            <tr key={row.alumniId} data-modal={row.rowModalKind} data-name={row.name} data-alumni-id={row.alumniId} data-batch={row.batch} data-reg={row.registrationNumber} data-source={row.source} data-referred-by={row.referredByName} onclick={handleRow}>
+                                <td><div class="cell-name"><div class="avatar-circle">{row.initials}</div><div class="meta"><div class="nm">{row.name}</div><div class={row.emailClass}>{row.emailDisplay}</div></div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.program}</div><div class="l2">Class of {row.batch} · {row.registrationNumber}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.institution}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.location}</div><div class="l2">{row.country}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.role}</div><div class="l2">{row.company}</div></div></td>
+                                <td><span class={row.masterPillClass}>{row.masterRecordStatus}</span></td>
+                                <td><span class={row.portalPillClass}>{row.portalStatus}</span></td>
+                                <td><span class={row.sourcePillClass}>{row.sourceLabel}</span></td>
+                                <td><div class="complete-cell"><div class="complete-bar"><div class={row.completenessFillClass} style={row.completenessStyle}></div></div><div class="complete-val">{row.completenessLabel}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.lastUpdatedLabel}</div></div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- DATA ISSUES -->
+        <template lwc:if={isIssues}>
+            <div class="alumni-desc">Records with missing or invalid contact details.</div>
+            <div class="filter-bar">
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" oninput={handleSearch}/></div>
+                <template lwc:if={showPortalDropdown}>
+                    <div class="filter-select">
+                        <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                            <span>{portalStatusLabel}</span>
+                            <svg class="ken-dd-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 9 6 6 6-6"></path></svg>
+                        </button>
+                        <template lwc:if={portalStatusOpen}>
+                            <div class="ken-dd-menu">
+                                <div class={portalStatusItemAll}     data-value=""           onclick={handlePortalStatusSelect}>All Portal Statuses</div>
+                                <div class={portalStatusItemActive}  data-value="active"     onclick={handlePortalStatusSelect}>Active on New Portal</div>
+                                <div class={portalStatusItemReg}     data-value="registered" onclick={handlePortalStatusSelect}>Registered on New Portal</div>
+                                <div class={portalStatusItemNot}     data-value="not"        onclick={handlePortalStatusSelect}>Not on Portal</div>
+                                <div class={portalStatusItemOld}     data-value="old"        onclick={handlePortalStatusSelect}>Old Portal Record</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                    <span>Filters</span>
+                    <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
+                </button>
+            </div>
+            <div class="issue-filter">
+                <div class="issue-filter-label">Issue Type</div>
+                <div class="issue-chips">
+                    <div class={chAll}    data-chip="all"      onclick={handleChip}>All <span class="count">{countChipAll}</span></div>
+                    <div class={chMail}   data-chip="mail"     onclick={handleChip}>Missing Email <span class="count">{countChipMail}</span></div>
+                    <div class={chPhone}  data-chip="phone"    onclick={handleChip}>Missing Phone <span class="count">{countChipPhone}</span></div>
+                    <div class={chInvMail} data-chip="invmail" onclick={handleChip}>Invalid Email <span class="count">{countChipInvMail}</span></div>
+                    <div class={chBounce} data-chip="bounce"   onclick={handleChip}>Bounced Email <span class="count">{countChipBounce}</span></div>
+                    <div class={chInvPhone} data-chip="invphone" onclick={handleChip}>Invalid Phone <span class="count">{countChipInvPhone}</span></div>
+                </div>
+            </div>
+            <div class="master-label">Master Data</div>
+            <div class="master-count">{masterCountIssues}</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Program &amp; Batch</th><th>Institution</th><th>Location</th><th>Role &amp; Company</th><th>Master Record</th><th>Portal</th><th>Source</th><th>Completeness</th><th>Last Updated</th></tr></thead>
+                    <tbody>
+                        <template lwc:if={isLoading}>
+                            <tr><td colspan="10" class="empty-state">Loading…</td></tr>
+                        </template>
+                        <template lwc:if={isEmpty}>
+                            <tr><td colspan="10" class="empty-state">No records match this view.</td></tr>
+                        </template>
+                        <template for:each={rows} for:item="row">
+                            <tr key={row.alumniId} data-modal={row.rowModalKind} data-name={row.name} data-alumni-id={row.alumniId} data-batch={row.batch} data-reg={row.registrationNumber} data-source={row.source} data-referred-by={row.referredByName} onclick={handleRow}>
+                                <td><div class="cell-name"><div class="avatar-circle">{row.initials}</div><div class="meta"><div class="nm">{row.name}</div><div class={row.emailClass}>{row.emailDisplay}</div></div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.program}</div><div class="l2">Class of {row.batch} · {row.registrationNumber}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.institution}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.location}</div><div class="l2">{row.country}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.role}</div><div class="l2">{row.company}</div></div></td>
+                                <td><span class={row.masterPillClass}>{row.masterRecordStatus}</span></td>
+                                <td><span class={row.portalPillClass}>{row.portalStatus}</span></td>
+                                <td><span class={row.sourcePillClass}>{row.sourceLabel}</span></td>
+                                <td><div class="complete-cell"><div class="complete-bar"><div class={row.completenessFillClass} style={row.completenessStyle}></div></div><div class="complete-val">{row.completenessLabel}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.lastUpdatedLabel}</div></div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </template>
+
+        <!-- LEADS -->
+        <template lwc:if={isLeads}>
+            <div class="alumni-desc">Alumni coming through campaign flows (website forms, QR codes, LinkedIn, email, "I am an alum" forms). Captured with name, graduation year, and an optional registration number — must be merged with a master record before they can be used.</div>
+            <div class="filter-bar">
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" oninput={handleSearch}/></div>
+                <template lwc:if={showPortalDropdown}>
+                    <div class="filter-select">
+                        <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                            <span>{portalStatusLabel}</span>
+                            <svg class="ken-dd-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 9 6 6 6-6"></path></svg>
+                        </button>
+                        <template lwc:if={portalStatusOpen}>
+                            <div class="ken-dd-menu">
+                                <div class={portalStatusItemAll}     data-value=""           onclick={handlePortalStatusSelect}>All Portal Statuses</div>
+                                <div class={portalStatusItemActive}  data-value="active"     onclick={handlePortalStatusSelect}>Active on New Portal</div>
+                                <div class={portalStatusItemReg}     data-value="registered" onclick={handlePortalStatusSelect}>Registered on New Portal</div>
+                                <div class={portalStatusItemNot}     data-value="not"        onclick={handlePortalStatusSelect}>Not on Portal</div>
+                                <div class={portalStatusItemOld}     data-value="old"        onclick={handlePortalStatusSelect}>Old Portal Record</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                    <span>Filters</span>
+                    <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
+                </button>
+            </div>
+            <div class="lead-action-bar">
+                <button class="btn-secondary" disabled={isConvertDisabled} onclick={handleConvertSelected}>{convertButtonLabel}</button>
+                <template lwc:if={convertSuccessMessage}>
+                    <span class="convert-success-toast">{convertSuccessMessage}</span>
+                </template>
+            </div>
+            <div class="master-label">Master Data</div>
+            <div class="master-count">{masterCountLeads}</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th class="col-check"><input type="checkbox" checked={allLeadsSelected} onclick={handleLeadCheckboxClick} onchange={handleSelectAllLeads}/></th><th>Name</th><th>Program &amp; Batch</th><th>Institution</th><th>Location</th><th>Role</th><th>Master Record</th><th>Portal</th><th>Source</th><th>Match / Merge</th><th>Completeness</th><th>Last Updated</th></tr></thead>
+                    <tbody>
+                        <template lwc:if={isLoading}>
+                            <tr><td colspan="12" class="empty-state">Loading…</td></tr>
+                        </template>
+                        <template lwc:if={isEmpty}>
+                            <tr><td colspan="12" class="empty-state">No records match this view.</td></tr>
+                        </template>
+                        <template for:each={rows} for:item="row">
+                            <tr key={row.alumniId} data-modal="lead" data-name={row.name} data-alumni-id={row.alumniId} data-batch={row.batch} data-reg={row.registrationNumber} data-email={row.email} data-source={row.source} data-existing-account={row.existingAccountId} data-existing-account-name={row.existingAccountName} data-is-new-role={row.isNewRole} onclick={handleRow}>
+                                <td class="col-check" onclick={handleLeadCheckboxClick}><input type="checkbox" data-id={row.alumniId} checked={row.selected} onchange={handleLeadSelect}/></td>
+                                <td><div class="cell-name"><div class="avatar-circle">{row.initials}</div><div class="meta"><div class="nm">{row.name}</div><div class={row.emailClass}>{row.emailDisplay}</div></div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.program}</div><div class="l2">Class of {row.batch} · {row.registrationNumber}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.institution}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.location}</div><div class="l2">{row.country}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.role}</div><div class="l2">{row.company}</div></div></td>
+                                <td><span class={row.masterPillClass}>{row.masterRecordStatus}</span></td>
+                                <td><span class={row.portalPillClass}>{row.portalStatus}</span></td>
+                                <td><span class={row.sourcePillClass}>{row.sourceLabel}</span></td>
+                                <td><span class={row.matchPillClass}>{row.matchMerge}</span></td>
+                                <td><div class="complete-cell"><div class="complete-bar"><div class={row.completenessFillClass} style={row.completenessStyle}></div></div><div class="complete-val">{row.completenessLabel}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.lastUpdatedLabel}</div></div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <div class="table-foot">
+                    <span>{showingLabel}</span>
+                </div>
+            </div>
+        </template>
+
+        <!-- REFERRALS -->
+        <template lwc:if={isReferrals}>
+            <div class="alumni-desc">Signups that came through referral links shared by registered alumni. Referrer is captured — record is not auto-verified and must be merged with a master record.</div>
+            <div class="filter-bar">
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" oninput={handleSearch}/></div>
+                <template lwc:if={showPortalDropdown}>
+                    <div class="filter-select">
+                        <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                            <span>{portalStatusLabel}</span>
+                            <svg class="ken-dd-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="m6 9 6 6 6-6"></path></svg>
+                        </button>
+                        <template lwc:if={portalStatusOpen}>
+                            <div class="ken-dd-menu">
+                                <div class={portalStatusItemAll}     data-value=""           onclick={handlePortalStatusSelect}>All Portal Statuses</div>
+                                <div class={portalStatusItemActive}  data-value="active"     onclick={handlePortalStatusSelect}>Active on New Portal</div>
+                                <div class={portalStatusItemReg}     data-value="registered" onclick={handlePortalStatusSelect}>Registered on New Portal</div>
+                                <div class={portalStatusItemNot}     data-value="not"        onclick={handlePortalStatusSelect}>Not on Portal</div>
+                                <div class={portalStatusItemOld}     data-value="old"        onclick={handlePortalStatusSelect}>Old Portal Record</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
+                    <span>Filters</span>
+                    <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
+                </button>
+            </div>
+            <div class="master-label">Master Data</div>
+            <div class="master-count">{masterCountReferrals}</div>
+            <div class="table-wrap">
+                <table class="table">
+                    <thead><tr><th>Name</th><th>Program &amp; Batch</th><th>Institution</th><th>Referred By</th><th>Location</th><th>Role &amp; Company</th><th>Master Record</th><th>Portal</th><th>Source</th><th>Completeness</th><th>Last Updated</th></tr></thead>
+                    <tbody>
+                        <template lwc:if={isLoading}>
+                            <tr><td colspan="11" class="empty-state">Loading…</td></tr>
+                        </template>
+                        <template lwc:if={isEmpty}>
+                            <tr><td colspan="11" class="empty-state">No records match this view.</td></tr>
+                        </template>
+                        <template for:each={rows} for:item="row">
+                            <tr key={row.alumniId} data-modal="referral" data-name={row.name} data-alumni-id={row.alumniId} data-batch={row.batch} data-reg={row.registrationNumber} data-email={row.email} data-source={row.source} data-referred-by={row.referredByName} onclick={handleRow}>
+                                <td><div class="cell-name"><div class="avatar-circle">{row.initials}</div><div class="meta"><div class="nm">{row.name}</div><div class={row.emailClass}>{row.emailDisplay}</div></div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.program}</div><div class="l2">Class of {row.batch} · {row.registrationNumber}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.institution}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.referredByName}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.location}</div><div class="l2">{row.country}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.role}</div><div class="l2">{row.company}</div></div></td>
+                                <td><span class={row.masterPillClass}>{row.masterRecordStatus}</span></td>
+                                <td><span class={row.portalPillClass}>{row.portalStatus}</span></td>
+                                <td><span class={row.sourcePillClass}>{row.sourceLabel}</span></td>
+                                <td><div class="complete-cell"><div class="complete-bar"><div class={row.completenessFillClass} style={row.completenessStyle}></div></div><div class="complete-val">{row.completenessLabel}</div></div></td>
+                                <td><div class="cell-stack"><div class="l1">{row.lastUpdatedLabel}</div></div></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <div class="table-foot">
+                    <span>{showingLabel}</span>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={showPagination}>
+            <div class="pagination">
+                <span class="page-info">{pageRangeLabel}</span>
+                <div class="page-controls">
+                    <button class="page-btn" disabled={isFirstPage} onclick={handlePrevPage}>← Prev</button>
+                    <span class="page-num">{pageNumberLabel}</span>
+                    <button class="page-btn" disabled={isLastPage} onclick={handleNextPage}>Next →</button>
+                </div>
+            </div>
+        </template>
+
+    </main>
+
+    <!-- ============================================================
+         FILTERS POPUP — multi-field, matches portal network filters
+         ============================================================ -->
+    <template lwc:if={showFiltersPopup}>
+        <div class="filters-overlay" onclick={handleFiltersOverlayClick}>
+            <div class="filters-popup" onclick={handleFiltersPopupClick}>
+                <h2 class="filters-title">Filters</h2>
+                <div class="filters-content">
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Institute" value={filterInstitute}
+                            options={instituteOptions} data-field="institute"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={instituteCount}><span class="filter-field-badge">{instituteCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Program" value={filterProgram}
+                            options={programOptions} data-field="program"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={programCount}><span class="filter-field-badge">{programCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Intake" value={filterIntake}
+                            options={intakeOptions} data-field="intake"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={intakeCount}><span class="filter-field-badge">{intakeCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Graduation year" value={filterGraduationYear}
+                            options={graduationYearOptions} data-field="graduationYear"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={graduationYearCount}><span class="filter-field-badge">{graduationYearCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Company" value={filterCompany}
+                            options={companyOptions} data-field="company"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={companyCount}><span class="filter-field-badge">{companyCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Role" value={filterRole}
+                            options={roleOptions} data-field="role"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={roleCount}><span class="filter-field-badge">{roleCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Domain" value={filterDomain}
+                            options={domainOptions} data-field="domain"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={domainCount}><span class="filter-field-badge">{domainCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Industry / Job function" value={filterIndustry}
+                            options={industryOptions} data-field="industry"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={industryCount}><span class="filter-field-badge">{industryCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Skill" value={filterSkill}
+                            options={skillOptions} data-field="skill"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={skillCount}><span class="filter-field-badge">{skillCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Preference" value={filterPreference}
+                            options={preferenceOptions} data-field="preference"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={preferenceCount}><span class="filter-field-badge">{preferenceCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Location / City" value={filterLocation}
+                            options={locationOptions} data-field="location"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={locationCount}><span class="filter-field-badge">{locationCount}</span></template>
+                    </div>
+                    <div class="filter-field">
+                        <c-ken-searchable-select placeholder="Country" value={filterCountry}
+                            options={countryOptions} data-field="country"
+                            onchange={handleFilterValueChange}></c-ken-searchable-select>
+                        <template lwc:if={countryCount}><span class="filter-field-badge">{countryCount}</span></template>
+                    </div>
+                    <template lwc:if={showSourceFilter}>
+                        <div class="filter-field">
+                            <c-ken-searchable-select placeholder="Source" value={filterSource}
+                                options={sourceOptions} data-field="source"
+                                onchange={handleFilterValueChange}></c-ken-searchable-select>
+                            <template lwc:if={sourceCount}><span class="filter-field-badge">{sourceCount}</span></template>
+                        </div>
+                    </template>
+                    <template lwc:if={showStatusFilter}>
+                        <div class="filter-field">
+                            <c-ken-searchable-select placeholder="Status" value={filterStatus}
+                                options={statusOptions} data-field="status"
+                                onchange={handleFilterValueChange}></c-ken-searchable-select>
+                            <template lwc:if={statusCount}><span class="filter-field-badge">{statusCount}</span></template>
+                        </div>
+                    </template>
+                </div>
+                <div class="filters-actions">
+                    <button class="reset-filters-btn" onclick={handleResetFilters}>Reset</button>
+                    <button class="apply-filters-btn" onclick={handleApplyFilters}>Apply</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ============================================================
+         MODAL: ALUMNI DETAIL (regular)
+         ============================================================ -->
+    <template lwc:if={showAlumniModal}>
+        <div class={overlayClass} onclick={handleOverlayClick}>
+            <div class="modal">
+                <div class="modal-close" onclick={handleClose}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                </div>
+                <div class="modal-scroll">
+                    <template lwc:if={detailLoading}>
+                        <div class="empty-state">Loading…</div>
+                    </template>
+                    <template lwc:if={alumniDetail}>
+                    <div class="person-header">
+                        <div class="person-avatar">{personInitials}</div>
+                        <div class="person-header-main">
+                            <h2>{detailName}</h2>
+                            <div class="person-sub">{detailSub}</div>
+                            <div class="status-chips">
+                                <template lwc:if={showVerifiedChip}>
+                                    <span class="chip-outline info">Institution Verified</span>
+                                </template>
+                                <template lwc:if={showRegisteredChip}>
+                                    <span class="chip-outline success">Registered</span>
+                                </template>
+                                <template lwc:if={showCompleteChip}>
+                                    <span class="chip-outline success">Complete</span>
+                                </template>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-view-360" onclick={handleView360}>View 360</button>
+                    </div>
+
+                    <div class="metric-row">
+                        <div class="metric-cell"><div class="metric-l">Data Completeness</div><div class="metric-v">{detailCompleteness}</div></div>
+                        <div class="metric-cell"><div class="metric-l">Engagement Score</div><div class="metric-v accent">{detailEngagement}</div></div>
+                        <div class="metric-cell"><div class="metric-l">Last Login</div><div class="metric-v">{detailLastLogin}</div></div>
+                    </div>
+
+                    <div class="modal-tabs">
+                        <div class={mtOverview}   data-mt="overview"   onclick={handleInnerTab}>Overview</div>
+                        <div class={mtEducation}  data-mt="education"  onclick={handleInnerTab}>Education</div>
+                        <div class={mtContact}    data-mt="contact"    onclick={handleInnerTab}>Contact</div>
+                        <div class={mtCareer}     data-mt="career"     onclick={handleInnerTab}>Career</div>
+                        <div class={mtPortal}     data-mt="portal"     onclick={handleInnerTab}>Portal</div>
+                        <div class={mtEngagement} data-mt="engagement" onclick={handleInnerTab}>Engagement</div>
+                        <div class={mtRequests}   data-mt="requests"   onclick={handleInnerTab}>Requests</div>
+                        <div class={mtHistory}    data-mt="history"    onclick={handleInnerTab}>Update History</div>
+                        <div class={mtActivity}   data-mt="activity"   onclick={handleInnerTab}>Activity</div>
+                    </div>
+
+                    <div class="modal-body">
+                        <template lwc:if={isOverview}>
+                            <div class="detail-card">
+                                <div class="dc-title">Identity</div>
+                                <div class="dc-grid">
+                                    <div><div class="dc-field-label">Name</div><div class="dc-field-value">{detailName}</div></div>
+                                    <div><div class="dc-field-label">Owner</div><div class="dc-field-value">Ken42 Ops</div></div>
+                                    <div><div class="dc-field-label">Batch</div><div class="dc-field-value">{detailBatch}</div></div>
+                                    <div><div class="dc-field-label">Program</div><div class="dc-field-value">{detailProgram}</div></div>
+                                </div>
+                            </div>
+                            <div class="detail-card">
+                                <div class="dc-title">Current Status</div>
+                                <div class="dc-grid">
+                                    <div><div class="dc-field-label">Company</div><div class="dc-field-value">{detailCompany}</div></div>
+                                    <div><div class="dc-field-label">Location</div><div class="dc-field-value">{detailLocation}</div></div>
+                                </div>
+                            </div>
+                            <div class="detail-card">
+                                <div class="dc-title">Record Health</div>
+                                <div class="dc-grid" style="grid-template-columns:repeat(3,1fr)">
+                                    <div><div class="dc-field-label">Source</div><div style="margin-top:4px"><span class="pill violet">{detailSource}</span></div></div>
+                                    <div><div class="dc-field-label">Verification</div><div style="margin-top:4px"><span class="pill info">Institution Verified</span></div></div>
+                                    <div><div class="dc-field-label">Portal Activation</div><div style="margin-top:4px"><span class="pill success">Registered</span></div></div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={isEducation}>
+                            <div class="detail-card">
+                                <div class="dc-title">Academic Details</div>
+                                <div class="dc-grid">
+                                    <div><div class="dc-field-label">Program</div><div class="dc-field-value">{detailProgram}</div></div>
+                                    <div><div class="dc-field-label">Department</div><div class="dc-field-value">{detailIndustry}</div></div>
+                                    <div><div class="dc-field-label">Batch / Class <span class="badge-mini">Institution Controlled</span></div><div class="dc-field-value">{detailBatch}</div></div>
+                                    <div><div class="dc-field-label">Registration Number <span class="badge-mini">Institution Controlled</span></div><div class="dc-field-value">{detailRegNumber}</div></div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={isContact}>
+                            <div class="detail-card">
+                                <div class="dc-title">Contact Information</div>
+                                <div class="dc-grid">
+                                    <div><div class="dc-field-label">Email Address</div><div class="dc-field-value">{detailEmail}</div></div>
+                                    <div><div class="dc-field-label">Phone Number</div><div class="dc-field-value">{detailPhone}</div></div>
+                                    <div style="grid-column:1/-1"><div class="dc-field-label">LinkedIn Profile</div><div class="dc-field-value link">{detailLinkedin}</div></div>
+                                </div>
+                            </div>
+                            <div class="detail-card">
+                                <div class="dc-title">Communication Preferences</div>
+                                <div class="kv-row"><span class="k">Email Visible</span><span><span class={emailVisibilityPillClass}>{emailVisibilityLabel}</span></span></div>
+                                <div class="kv-row"><span class="k">Phone Visible</span><span><span class={phoneVisibilityPillClass}>{phoneVisibilityLabel}</span></span></div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={isCareer}>
+                            <div class="detail-card">
+                                <div class="dc-title">Current Role</div>
+                                <div class="dc-grid">
+                                    <div style="grid-column:1/-1"><div class="dc-field-label">Company</div><div class="dc-field-value" style="font-size:18px;font-weight:700">{detailCompany}</div></div>
+                                    <div><div class="dc-field-label">Job Function / Title</div><div class="dc-field-value">{detailRole}</div></div>
+                                    <div><div class="dc-field-label">Industry</div><div class="dc-field-value">{detailIndustry}</div></div>
+                                    <div><div class="dc-field-label">Seniority Level</div><div class="dc-field-value">Senior</div></div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={isPortal}>
+                            <div class="detail-card">
+                                <div class="dc-title">Portal Lifecycle</div>
+                                <div class="kv-row"><span class="k">Invited Date</span><span class="v">—</span></div>
+                                <div class="kv-row"><span class="k">Link Opened</span><span class="v">—</span></div>
+                                <div class="kv-row"><span class="k">Registered Date</span><span class="v">{detailRegistrationDate}</span></div>
+                                <div class="kv-row"><span class="k">Questionnaire Status</span><span class="v">—</span></div>
+                                <div class="kv-row"><span class="k">Last Login</span><span class="v">{detailLastLogin}</span></div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={isEngagement}>
+                            <div class="detail-card">
+                                <div class="dc-title">Interests &amp; Preferences</div>
+                                <template lwc:if={hasDetailInterests}>
+                                    <div class="chips-row">
+                                        <template for:each={detailInterests} for:item="interest">
+                                            <span key={interest} class="interest-chip">{interest}</span>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="empty-state">No interests selected.</div>
+                                </template>
+                                <div class="subsec-label" style="margin-top:24px">Engagement Signals</div>
+                                <div class="chips-row">
+                                    <span class="signal-chip">{engagementScoreLabel}</span>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={isRequests}>
+                            <div class="detail-card">
+                                <div class="dc-title">Forms &amp; Requests Sent</div>
+                                <div class="empty-state">No active requests for this alumni.</div>
+                            </div>
+                        </template>
+
+                        <template lwc:if={isHistory}>
+                            <div class="detail-card">
+                                <div class="dc-title">Field Update History</div>
+                                <template lwc:if={hasHistoryRows}>
+                                    <table class="history-table">
+                                        <thead><tr><th>Date</th><th>Field</th><th>Previous Value</th><th>New Value</th><th>Source</th><th>Updated By</th></tr></thead>
+                                        <tbody>
+                                            <template for:each={historyRows} for:item="h">
+                                                <tr key={h.key}>
+                                                    <td>{h.dateLabel}</td>
+                                                    <td>{h.field}</td>
+                                                    <td class="strike">{h.previousValue}</td>
+                                                    <td class="new">{h.newValue}</td>
+                                                    <td><span class="source-tag">{h.sourceTag}</span></td>
+                                                    <td>{h.updatedBy}</td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </template>
+                                <template lwc:else>
+                                    <div class="empty-state">No tracked field changes yet.</div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template lwc:if={isActivity}>
+                            <div class="detail-card">
+                                <div class="dc-title">Activity Timeline</div>
+                                <template lwc:if={hasTimelineRows}>
+                                    <div class="timeline">
+                                        <template for:each={timelineRows} for:item="t">
+                                            <div class="tl-item" key={t.key}>
+                                                <div class="tl-title">{t.title}</div>
+                                                <div class="tl-meta"><span class="tl-tag">{t.actor}</span><span>{t.dateLabel}</span></div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="empty-state">No activity recorded yet.</div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ============================================================
+         MODAL: DATA ISSUES — fix-in-place panel
+         ============================================================ -->
+    <template lwc:if={showIssuesModal}>
+        <div class={overlayClass} onclick={handleOverlayClick}>
+            <div class="modal modal-narrow">
+                <div class="modal-scroll" style="padding:32px 36px 28px;position:relative">
+                    <div class="modal-close" onclick={handleClose}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                    </div>
+                    <div class="unmerged-eyebrow"><span class="state">DATA ISSUES</span><span class="dot"></span>FIX IN PLACE</div>
+                    <div class="person-header" style="margin-top:14px">
+                        <div class="person-avatar">{personInitials}</div>
+                        <div>
+                            <h2>{personName}</h2>
+                            <div class="person-sub">{issueDetailSub}</div>
+                            <div class="status-chips">
+                                <span class="chip-outline danger">{issuesRemainingLabel}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card" style="margin-top:18px">
+                        <div class="dc-title" style="display:flex;align-items:center;gap:8px;color:var(--c-rose-700)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="16" x2="12" y2="16.5"></line></svg>
+                            Email address
+                        </div>
+                        <template lwc:if={issueEmailMissing}>
+                            <div class="kv-row" style="color:var(--c-rose-700)"><span class="k" style="color:var(--c-rose-700)">●</span><span>Email is missing</span></div>
+                        </template>
+                        <template lwc:if={issueEmailBounced}>
+                            <div class="kv-row" style="color:var(--c-rose-700)"><span class="k" style="color:var(--c-rose-700)">●</span><span>Email has hard-bounced</span></div>
+                        </template>
+                        <input class="filter-native" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:8px;font-size:13px;margin-top:8px" placeholder="name@example.com" value={issueEmailValue} oninput={handleIssueEmailInput} />
+                        <div class="kv-row" style="margin-top:10px;justify-content:space-between">
+                            <span class="k" style="color:var(--slate-500);font-size:11.5px">{issueEmailFootnote}</span>
+                            <button class="btn-secondary" onclick={handleSaveEmail} disabled={isSavingEmail}>Save email</button>
+                        </div>
+                        <template lwc:if={issueEmailError}>
+                            <div class="kv-row" style="color:var(--c-rose-700)"><span>{issueEmailError}</span></div>
+                        </template>
+                    </div>
+
+                    <div class="detail-card" style="margin-top:14px">
+                        <div class="dc-title" style="display:flex;align-items:center;gap:8px;color:var(--c-rose-700)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="13"></line><line x1="12" y1="16" x2="12" y2="16.5"></line></svg>
+                            Phone number
+                        </div>
+                        <template lwc:if={issuePhoneMissing}>
+                            <div class="kv-row" style="color:var(--c-rose-700)"><span class="k" style="color:var(--c-rose-700)">●</span><span>Phone number is missing</span></div>
+                        </template>
+                        <input class="filter-native" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:8px;font-size:13px;margin-top:8px" placeholder="+91 98765 43210" value={issuePhoneValue} oninput={handleIssuePhoneInput} />
+                        <div class="kv-row" style="margin-top:10px;justify-content:space-between">
+                            <span class="k" style="color:var(--slate-500);font-size:11.5px">Include country code. Format will be re-validated on save.</span>
+                            <button class="btn-secondary" onclick={handleSavePhone} disabled={isSavingPhone}>Save phone</button>
+                        </div>
+                        <template lwc:if={issuePhoneError}>
+                            <div class="kv-row" style="color:var(--c-rose-700)"><span>{issuePhoneError}</span></div>
+                        </template>
+                    </div>
+
+                    <div class="merge-foot" style="margin-top:18px">
+                        <span class="merge-create" onclick={handleOpenFullProfile}>Open full profile instead</span>
+                        <span class="merge-reject">Mark as unreachable</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ============================================================
+         MODAL: LEAD UNMERGED
+         ============================================================ -->
+    <template lwc:if={showLeadModal}>
+        <div class={overlayClass} onclick={handleOverlayClick}>
+            <div class="modal modal-narrow">
+                <div class="modal-scroll" style="padding:36px 36px 32px;position:relative">
+                    <div class="modal-close" onclick={handleClose}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                    </div>
+                    <div class="unmerged-eyebrow"><span class="state">{leadEyebrowState}</span><span class="dot"></span>{leadEyebrowStatus}</div>
+                    <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-.022em">{personName}</h2>
+                    <div class="unmerged-sub">Source: {capturedSource}</div>
+
+                    <div style="margin-top:22px"></div>
+
+                    <div class="captured-card">
+                        <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--slate-700);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--slate-100)">Captured Fields</div>
+                        <div class="row">
+                            <div><div class="label">Full name</div><div class="value">{personName}</div></div>
+                            <div><div class="label">Year of graduation</div><div class="value">{capturedGradYear}</div></div>
+                            <div><div class="label">Registration number <span class="opt">(optional)</span></div><div class="value muted">{capturedRegNumber}</div></div>
+                        </div>
+                        <div class="captured-disclaimer">Leads and referrals are captured with only these fields. All other profile data — contact, career, engagement — is filled in after the record is merged with a master record (or after the alumnus completes portal onboarding).</div>
+                    </div>
+
+                    <template lwc:if={isNewRoleLead}>
+                        <div class="merge-panel">
+                            <div class="merge-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"></path></svg>
+                                New role for an existing alumnus
+                            </div>
+                            <div class="merge-desc">This isn't a new lead to merge — it's a new role / education added by an existing alumnus, already linked to their master profile. Approve to add the role, or reject it.</div>
+                            <div class="merge-item">
+                                <div class="avatar-circle">{personInitials}</div>
+                                <div class="info"><div class="nm">{capturedExistingAccountName}</div><div class="det">Existing alumnus · linked account</div></div>
+                                <button class="merge-btn" onclick={handleViewExistingProfile}>View profile</button>
+                            </div>
+                            <div class="merge-foot" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                                <span class="merge-reject" onclick={handleRejectLead}>Reject</span>
+                                <button class="merge-btn" style="background:var(--primary-color,#1f3b8f);color:#fff;border-color:transparent" onclick={handleApproveRole}>Approve role</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template lwc:else>
+                        <div class="merge-panel">
+                            <div class="merge-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 7a4 4 0 0 0 8 0M12 21V11"></path><circle cx="6" cy="20" r="2"></circle><circle cx="18" cy="20" r="2"></circle></svg>
+                                Find &amp; merge with master record
+                            </div>
+                            <div class="merge-desc">This record cannot be used until it is merged with a master alumni identity. Search across historical uploads, old-portal records, and student-transition cohorts.</div>
+                            <div class="merge-search">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                                <input value={mergeSearchTerm} oninput={handleMergeSearch} />
+                            </div>
+                            <template lwc:if={isMergeLoading}>
+                                <div class="empty-state">Searching…</div>
+                            </template>
+                            <template lwc:if={isMergeEmpty}>
+                                <div class="empty-state">No candidates found.</div>
+                            </template>
+                            <template for:each={mergeRows} for:item="cand">
+                                <div key={cand.alumniId} class="merge-item">
+                                    <div class="avatar-circle">{cand.initials}</div>
+                                    <div class="info"><div class="nm">{cand.name}</div><div class="det">{cand.detail}</div></div>
+                                    <button class="merge-btn" data-id={cand.alumniId} onclick={handleMergeCandidate}>Merge</button>
+                                </div>
+                            </template>
+                            <div class="merge-foot">
+                                <span class="merge-reject" onclick={handleRejectLead}>Reject as not an alumnus</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ============================================================
+         MODAL: REFERRAL UNMERGED
+         ============================================================ -->
+    <template lwc:if={showReferralModal}>
+        <div class={overlayClass} onclick={handleOverlayClick}>
+            <div class="modal modal-narrow">
+                <div class="modal-scroll" style="padding:36px 36px 32px;position:relative">
+                    <div class="modal-close" onclick={handleClose}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                    </div>
+                    <div class="unmerged-eyebrow"><span class="state">REFERRAL</span><span class="dot"></span>UNMERGED</div>
+                    <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-.022em">{personName}</h2>
+                    <div class="unmerged-sub">Captured via referral link · {capturedSource}</div>
+
+                    <div style="margin-top:22px"></div>
+
+                    <div class="captured-card">
+                        <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--slate-700);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--slate-100)">Captured Fields</div>
+                        <div class="row">
+                            <div><div class="label">Full name</div><div class="value">{personName}</div></div>
+                            <div><div class="label">Year of graduation</div><div class="value">{capturedGradYear}</div></div>
+                            <div><div class="label">Registration number <span class="opt">(optional)</span></div><div class="value muted">{capturedRegNumber}</div></div>
+                        </div>
+                        <div class="captured-disclaimer">Leads and referrals are captured with only these fields. All other profile data — contact, career, engagement — is filled in after the record is merged with a master record (or after the alumnus completes portal onboarding).</div>
+                    </div>
+
+                    <template lwc:if={capturedReferredBy}>
+                        <div class="referrer-card">
+                            <div class="lbl">Referred By</div>
+                            <div class="nm">{capturedReferredBy}</div>
+                        </div>
+                    </template>
+
+                    <div class="merge-panel">
+                        <div class="merge-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 7a4 4 0 0 0 8 0M12 21V11"></path><circle cx="6" cy="20" r="2"></circle><circle cx="18" cy="20" r="2"></circle></svg>
+                            Find &amp; merge with master record
+                        </div>
+                        <div class="merge-desc">This record cannot be used until it is merged with a master alumni identity. Search across historical uploads, old-portal records, and student-transition cohorts.</div>
+                        <div class="merge-search">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                            <input value={mergeSearchTerm} oninput={handleMergeSearch} />
+                        </div>
+                        <template lwc:if={isMergeLoading}>
+                            <div class="empty-state">Searching…</div>
+                        </template>
+                        <template lwc:if={isMergeEmpty}>
+                            <div class="empty-state">No candidates found.</div>
+                        </template>
+                        <template for:each={mergeRows} for:item="cand">
+                            <div key={cand.alumniId} class="merge-item">
+                                <div class="avatar-circle">{cand.initials}</div>
+                                <div class="info"><div class="nm">{cand.name}</div><div class="det">{cand.detail}</div></div>
+                                <button class="merge-btn" data-id={cand.alumniId} onclick={handleMergeCandidate}>Merge</button>
+                            </div>
+                        </template>
+                        <div class="merge-foot">
+                            <span class="merge-reject" onclick={handleRejectLead}>Reject as not an alumnus</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- ───── Alumni 360 full-screen view (replaces the row modal) ───────── -->
+    <template lwc:if={showAlumni360}>
+        <div class="alumni360-fullscreen">
+            <div class="alumni360-topbar">
+                <button type="button" class="alumni360-back" onclick={handleClose360} aria-label="Back to Master Records">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    <span>Back to Master Records</span>
+                </button>
+                <span class="alumni360-title">Alumni 360</span>
+            </div>
+            <div class="alumni360-shell">
+                <c-ken-admin-alumni360 record-id={selectedAlumniId} onclose={handleClose360}></c-ken-admin-alumni360>
+            </div>
+        </div>
+    </template>
+</template>

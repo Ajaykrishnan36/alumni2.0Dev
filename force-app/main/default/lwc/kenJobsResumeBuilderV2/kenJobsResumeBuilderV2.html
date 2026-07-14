@@ -1,0 +1,113 @@
+<template>
+    <div class="rb-overlay">
+        <div class="rb-modal">
+            <button type="button" class="rb-close" onclick={close}>&times;</button>
+            <header class="rb-head"><h2 class="rb-title">{title}</h2></header>
+
+            <template lwc:if={done}>
+                <div class="rb-success">
+                    <div class="rb-check" aria-hidden="true">&#10003;</div>
+                    <h3>Resume ready!</h3>
+                    <p>Your PDF has been generated and saved to your library.</p>
+                    <a class="rb-btn rb-btn--primary" href={downloadUrl} target="_blank" rel="noopener">Download PDF</a>
+                    <button type="button" class="rb-btn rb-btn--ghost" onclick={handleDone}>Done</button>
+                </div>
+            </template>
+            <template lwc:elseif={generating}>
+                <div class="rb-proc"><div class="rb-spin"></div><p>Generating your PDF…</p></div>
+            </template>
+            <template lwc:else>
+                <div class="rb-steps">
+                    <span class={step1cls}>1 Template</span><span class={step2cls}>2 Details</span><span class={step3cls}>3 Preview</span>
+                </div>
+
+                <template lwc:if={isStep1}>
+                    <div class="rb-body">
+                        <p class="rb-lbl">Choose a template</p>
+                        <div class="rb-tpls">
+                            <div class={nyCls} data-tpl="New York" onclick={handleTemplate}>
+                                <div class="tpl-prev tpl-prev--ny"><span></span></div><p>New York</p><small>Bold header band</small>
+                            </div>
+                            <div class={toCls} data-tpl="Toronto" onclick={handleTemplate}>
+                                <div class="tpl-prev tpl-prev--to"><span></span></div><p>Toronto</p><small>Two-column sidebar</small>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:if={isStep2}>
+                    <div class="rb-body">
+                        <p class="rb-lbl">Contact</p>
+                        <div class="rb-grid2">
+                            <label class="rb-field"><span>Resume name</span><input data-field="name" value={name} oninput={handleField} placeholder="e.g. Backend SDE"/></label>
+                            <label class="rb-field"><span>Full name *</span><input data-field="fullName" value={fullName} oninput={handleField}/></label>
+                            <label class="rb-field"><span>Headline</span><input data-field="headline" value={headline} oninput={handleField} placeholder="Software Engineer"/></label>
+                            <label class="rb-field"><span>Email</span><input data-field="email" value={email} oninput={handleField}/></label>
+                            <label class="rb-field"><span>Phone</span><input data-field="phone" value={phone} oninput={handleField}/></label>
+                            <label class="rb-field"><span>Location</span><input data-field="location" value={location} oninput={handleField}/></label>
+                        </div>
+                        <label class="rb-field"><span>Summary</span><textarea data-field="summary" value={summary} oninput={handleField}></textarea></label>
+
+                        <div class="rb-sec-h"><span>Experience</span><button type="button" class="rb-link" onclick={addExperience}>+ Add</button></div>
+                        <template for:each={experiences} for:item="x">
+                            <div key={x.key} class="rb-card">
+                                <button type="button" class="rb-card__x" data-key={x.key} onclick={removeExp}>&times;</button>
+                                <div class="rb-grid2">
+                                    <input data-key={x.key} data-f="title" value={x.title} oninput={handleExp} placeholder="Title"/>
+                                    <input data-key={x.key} data-f="company" value={x.company} oninput={handleExp} placeholder="Company"/>
+                                    <input data-key={x.key} data-f="dates" value={x.dates} oninput={handleExp} placeholder="2022 – Present"/>
+                                </div>
+                                <textarea data-key={x.key} data-f="description" value={x.description} oninput={handleExp} placeholder="What you did…"></textarea>
+                            </div>
+                        </template>
+
+                        <div class="rb-sec-h"><span>Education</span><button type="button" class="rb-link" onclick={addEducation}>+ Add</button></div>
+                        <template for:each={educations} for:item="d">
+                            <div key={d.key} class="rb-card">
+                                <button type="button" class="rb-card__x" data-key={d.key} onclick={removeEdu}>&times;</button>
+                                <div class="rb-grid2">
+                                    <input data-key={d.key} data-f="degree" value={d.degree} oninput={handleEdu} placeholder="Degree"/>
+                                    <input data-key={d.key} data-f="institution" value={d.institution} oninput={handleEdu} placeholder="Institution"/>
+                                    <input data-key={d.key} data-f="dates" value={d.dates} oninput={handleEdu} placeholder="2018 – 2022"/>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="rb-sec-h"><span>Skills</span></div>
+                        <div class="rb-skill-row">
+                            <input value={skillInput} oninput={handleSkillInput} onkeydown={handleSkillKey} placeholder="Add a skill, press Enter"/>
+                            <button type="button" class="rb-btn rb-btn--ghost" onclick={addSkill}>Add</button>
+                        </div>
+                        <div class="rb-chips">
+                            <template for:each={skills} for:item="s"><span key={s} class="rb-chip">{s}<button type="button" data-skill={s} onclick={removeSkill}>&times;</button></span></template>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:if={isStep3}>
+                    <div class="rb-body">
+                        <p class="rb-lbl">Preview &amp; generate</p>
+                        <div class="rb-preview">
+                            <div class="rb-prev-band"><strong>{fullName}</strong><span>{headline}</span><small>{email} | {phone} | {location}</small></div>
+                            <p class="rb-prev-sum">{summary}</p>
+                            <p class="rb-prev-meta">Template: <strong>{template}</strong> &middot; {experiences.length} experience &middot; {educations.length} education &middot; {skills.length} skills</p>
+                        </div>
+                        <p class="rb-note">Generating renders a professional PDF server-side and saves it to your library.</p>
+                    </div>
+                </template>
+
+                <template lwc:if={errorMsg}><p class="rb-error">{errorMsg}</p></template>
+
+                <footer class="rb-foot">
+                    <template lwc:if={isStep1}><button type="button" class="rb-btn rb-btn--ghost" onclick={close}>Cancel</button></template>
+                    <template lwc:else><button type="button" class="rb-btn rb-btn--ghost" onclick={back}>Back</button></template>
+                    <template lwc:if={isStep3}>
+                        <button type="button" class="rb-btn rb-btn--ghost" onclick={handleSaveDraft}>Save Draft</button>
+                        <button type="button" class="rb-btn rb-btn--primary" onclick={handleGenerate}>Generate PDF</button>
+                    </template>
+                    <template lwc:else><button type="button" class="rb-btn rb-btn--primary" onclick={next}>Continue</button></template>
+                </footer>
+            </template>
+        </div>
+    </div>
+</template>

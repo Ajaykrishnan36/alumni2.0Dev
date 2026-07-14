@@ -1,0 +1,57 @@
+<template>
+    <div class="photo-card" onclick={handleCardClick}>
+        <!-- Photo Image -->
+        <div class="photo-image-container">
+            <img src={photoImageUrl} alt="Photo" class="photo-image" />
+            <div class="photo-overlay"></div>
+
+            <!-- Menu Button -->
+            <button
+                class="menu-button"
+                type="button"
+                onclick={handleMenuClick}
+                title="More options"
+            >
+                <lightning-icon
+                    icon-name="utility:threedots"
+                    size="x-small"
+                    alternative-text="Menu"
+                    class="menu-icon"
+                ></lightning-icon>
+            </button>
+
+            <!-- Menu Dropdown -->
+            <template if:true={showMenu}>
+                <div class="menu-dropdown">
+                    <div
+                        class="menu-item"
+                        data-action="edit"
+                        onclick={handleMenuAction}
+                    >
+                        Edit
+                    </div>
+                    <div
+                        class="menu-item"
+                        data-action="delete"
+                        onclick={handleMenuAction}
+                    >
+                        Delete
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Profile Overlay -->
+        <div class="profile-overlay" onclick={handleOverlayClick}>
+            <div class="profile-image-container">
+                <img
+                    src={profileImageUrl}
+                    alt={personName}
+                    class="profile-image"
+                    data-profile-image="true"
+                />
+            </div>
+            <span class="profile-name">{personName}</span>
+        </div>
+    </div>
+</template>

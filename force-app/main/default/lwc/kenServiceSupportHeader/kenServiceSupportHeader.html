@@ -1,0 +1,35 @@
+<template>
+    <div class="header-container">
+        <div class="header-inner">
+            <h2 class="greeting-text">Hi, {userName}! What can we help you with?</h2>
+            <div class="search-section">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="11" cy="11" r="7" stroke="#9CA3AF" stroke-width="2"/>
+                        <path d="M21 21L16.5 16.5" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search for help topics..."
+                        value={searchValue}
+                        oninput={handleSearchInput}
+                        onkeypress={handleSearchKeyPress}
+                    />
+                    <button
+                        type="button"
+                        class={voiceButtonClass}
+                        onclick={handleVoiceSearch}
+                        aria-label="Voice search"
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="9" y="3" width="6" height="12" rx="3" stroke="#9CA3AF" stroke-width="2"/>
+                            <path d="M5 11C5 14.866 8.13401 18 12 18C15.866 18 19 14.866 19 11" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M12 18V22" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

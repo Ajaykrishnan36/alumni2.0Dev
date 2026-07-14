@@ -1,0 +1,67 @@
+<template>
+    <section class="wrap">
+        <div class="head">
+            <h2>Placement Cycle 1 (Jul–Dec 2025)</h2>
+            <div class="head__right">
+                <select class="select" value={activeCycle} onchange={handleCycleChange}>
+                    <option value="cycle1">Placement Cycle 1 (Jul–Dec 2025)</option>
+                    <option value="cycle2">Placement Cycle 2 (Jan–Jun 2026)</option>
+                </select>
+                <button class="btn-back" onclick={handleBack}>← Back</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <template for:each={stats} for:item="s">
+                <div key={s.id} class="stat">
+                    <div class="stat__label">{s.k}</div>
+                    <div class="stat__val">{s.v}</div>
+                    <div class="stat__sub">{s.sub}</div>
+                </div>
+            </template>
+        </div>
+
+        <div class="card">
+            <h3 class="card__title">Your Cycle Progress</h3>
+            <div class="timeline">
+                <template for:each={stages} for:item="st">
+                    <div key={st.id} class={st.cls}>
+                        <div class="stage__dot">{st.num}</div>
+                        <div class="stage__label">{st.label}</div>
+                        <div class="stage__date">{st.date}</div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card__title">Upcoming Companies</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Role</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={upcoming} for:item="r">
+                        <tr key={r.id}>
+                            <td>
+                                <div class="co">
+                                    <span class="co__logo" style={r.logoStyle}>{r.l}</span>{r.co}
+                                </div>
+                            </td>
+                            <td>{r.role}</td>
+                            <td>{r.date}</td>
+                            <td><span class={r.pillCls}>{r.status}</span></td>
+                            <td><button class={r.btnCls} data-id={r.id} onclick={handleRowAction}>{r.action}</button></td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</template>

@@ -1,0 +1,22 @@
+.comm-page-custom-applying .cDemoConnectedU .omniscript-container .omniscript-side-content, .comm-page-custom-applying .cDemoConnectedU .omniscript-container .slds-accordion__summary {
+  display: block;
+}
+.comm-page-custom-applying .cDemoConnectedU .omniscript-container .omniscript-body.slds-medium-size_3-of-4, .comm-page-custom-applying .cDemoConnectedU .omniscript-container .omniscript-body.slds-medium-size--3-of-4 {
+  width: 75%;
+}
+@media (min-width: 48em) {
+  .comm-page-custom-applying .omniscript-body[data-stepborder=left] {
+    border-left: none;
+  }
+}
+.comm-page-custom-applying [forceGenerated-omniScript_EDU___Admissions___English___lightning___false___brand___ltrgen_omniScript_EDU___Admissions___English___lightning___false___brand___ltrgen] .slds-text-body_small {
+  text-align: center;
+  border-radius: 10px;
+  background-color: #ebf7e6;
+  padding: 10px;
+  color: #2e844a;
+  line-height: 12px;
+  font-size: 12px;
+  margin-bottom: 20px;
+  margin-top: 15px;
+}

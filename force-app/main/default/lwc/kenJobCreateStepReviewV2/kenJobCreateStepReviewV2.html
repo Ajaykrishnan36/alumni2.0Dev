@@ -1,0 +1,65 @@
+<template>
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3 class="summary-card__title">Basic Details</h3>
+            <button class="edit-link" data-step="1" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-grid">
+            <div class="kv-pair"><p>Job ID</p><p>{jobId}</p></div>
+            <div class="kv-pair"><p>Job Title</p><p>{jobTitle}</p></div>
+            <div class="kv-pair"><p>Employer</p><p>{employer}</p></div>
+            <div class="kv-pair"><p>Placement Cycle</p><p>{placementCycle}</p></div>
+            <div class="kv-pair"><p>Company</p><p>{employer}</p></div>
+            <div class="kv-pair"><p>Status</p><p>{statusField}</p></div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3 class="summary-card__title">Description</h3>
+            <button class="edit-link" data-step="2" onclick={handleEdit}>Edit</button>
+        </div>
+        <p class="long-text">{description}</p>
+        <div class="kv-grid" style="margin-top:14px">
+            <div class="kv-pair"><p>Experience Level</p><p>{experienceLevel}</p></div>
+            <div class="kv-pair"><p>Qualifications</p><p>{qualifications}</p></div>
+        </div>
+        <div style="margin-top:14px">
+            <p class="kv-pair-label">Skills</p>
+            <div class="tag-list">
+                <template for:each={skills} for:item="s">
+                    <span key={s} class="tag">{s}</span>
+                </template>
+            </div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3 class="summary-card__title">Target Audience</h3>
+            <button class="edit-link" data-step="3" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-grid">
+            <div class="kv-pair"><p>Audience</p><p>{audienceSummary}</p></div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3 class="summary-card__title">Stage</h3>
+            <button class="edit-link" data-step="4" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-grid">
+            <div class="kv-pair"><p>Hiring Timeline</p><p>{stage}</p></div>
+        </div>
+    </div>
+    <div class="summary-card">
+        <div class="summary-card__head">
+            <h3 class="summary-card__title">Compensation & Logistics</h3>
+            <button class="edit-link" data-step="5" onclick={handleEdit}>Edit</button>
+        </div>
+        <div class="kv-grid">
+            <div class="kv-pair"><p>Salary Range</p><p>{salary}</p></div>
+            <div class="kv-pair"><p>Application Deadline</p><p>{deadline}</p></div>
+            <div class="kv-pair"><p>Openings</p><p>{openings}</p></div>
+            <div class="kv-pair"><p>Benefits</p><p>{benefits}</p></div>
+        </div>
+    </div>
+</template>

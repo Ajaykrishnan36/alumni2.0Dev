@@ -1,0 +1,101 @@
+<template>
+    <div class="biz-admin-wrap">
+        <lightning-tabset active-tab-value="business">
+
+            <!-- ── Business Approval ── -->
+            <lightning-tab label="Business Approval" value="business" icon-name="standard:approval">
+                <template if:true={bizLoading}>
+                    <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                </template>
+                <template if:false={bizLoading}>
+                    <lightning-tabset active-tab-value="All">
+                        <lightning-tab label={bizAllLabel} value="All">
+                            <lightning-datatable
+                                key-field="id"
+                                data={bizAllData}
+                                columns={bizColumns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={bizPendingLabel} value="Pending">
+                            <lightning-datatable
+                                key-field="id"
+                                data={bizPending}
+                                columns={bizColumns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={bizApprovedLabel} value="Approved">
+                            <lightning-datatable
+                                key-field="id"
+                                data={bizApproved}
+                                columns={bizColumns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={bizRejectedLabel} value="Rejected">
+                            <lightning-datatable
+                                key-field="id"
+                                data={bizRejected}
+                                columns={bizColumns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                    </lightning-tabset>
+                </template>
+            </lightning-tab>
+
+            <!-- ── Feature Approval ── -->
+            <lightning-tab label="Feature Approval" value="feature" icon-name="standard:campaign">
+                <template if:true={featLoading}>
+                    <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                </template>
+                <template if:false={featLoading}>
+                    <lightning-tabset active-tab-value="All">
+                        <lightning-tab label={featAllLabel} value="All">
+                            <lightning-datatable
+                                key-field="id"
+                                data={featAllData}
+                                columns={featColumns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={featPendingLabel} value="Pending">
+                            <lightning-datatable
+                                key-field="id"
+                                data={featPending}
+                                columns={featColumns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={featApprovedLabel} value="Approved">
+                            <lightning-datatable
+                                key-field="id"
+                                data={featApproved}
+                                columns={featColumns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={featRejectedLabel} value="Rejected">
+                            <lightning-datatable
+                                key-field="id"
+                                data={featRejected}
+                                columns={featColumns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                    </lightning-tabset>
+                </template>
+            </lightning-tab>
+
+        </lightning-tabset>
+    </div>
+</template>

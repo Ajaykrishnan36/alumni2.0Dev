@@ -1,0 +1,5 @@
+:host { display: block; }
+.step-h { font-size: 15px; font-weight: 700; margin: 4px 0 14px; color: #111827; }
+.text-input, .text-area { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #E5E6E8; border-radius: 6px; font-family: inherit; font-size: 13px; color: #373A45; margin-bottom: 10px; background: #fff; }
+.text-area { resize: vertical; }
+.field-label { display: block; font-size: 11.5px; font-weight: 600; color: #6B7280; margin: 6px 0; }

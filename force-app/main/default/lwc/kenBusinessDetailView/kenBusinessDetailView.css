@@ -1,0 +1,1278 @@
+/* Feature status badge */
+.feature-badge {
+    display: inline-block;
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 8px;
+    padding: 4px 12px;
+    border-radius: var(--portal-radius);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.fb-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.fb-live {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.fb-approved {
+    background: #dbeafe;
+    color: var(--secondary-color, #1e40af);
+}
+
+.fb-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.feature-reject-comment {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #991b1b;
+}
+
+/* Feature toggle (owner, top-right header) */
+.feature-toggle-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    width: 44px;
+    height: 24px;
+    border-radius: var(--portal-radius, 12px);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    padding: 0;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+.feature-toggle-btn.toggle-off  { background: #d1d5db; }
+.feature-toggle-btn.toggle-on   { background: var(--primary-color, #2563eb); }
+.feature-toggle-btn.toggle-pending { background: var(--primary-color, #2563eb); }
+
+.feature-toggle-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.toggle-thumb {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--portal-bg, #ffffff);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    transition: left 0.18s;
+}
+
+.toggle-off  .toggle-thumb { left: 3px; }
+.toggle-on   .toggle-thumb,
+.toggle-pending .toggle-thumb { left: 23px; }
+
+/* Business rejection reason box */
+.rejection-box {
+    background: #fef2f2;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 0 0 16px 0;
+}
+
+.rejection-box-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #991b1b;
+    margin: 0 0 4px 0;
+}
+
+.rejection-box-text {
+    font-size: 13px;
+    color: #b91c1c;
+    margin: 0;
+}
+
+/* Request Sent! popup */
+.request-sent-popup {
+    background: var(--portal-bg, #ffffff);
+    border-radius: 16px;
+    padding: 28px 32px;
+    text-align: center;
+    max-width: 360px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: modal-scale-in 0.18s ease-out;
+}
+
+.request-sent-ok-btn {
+    margin-top: 16px;
+}
+
+@keyframes modal-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modal-scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.request-sent-icon {
+    --slds-c-icon-color-foreground-default: #2e844a;
+    margin-bottom: 8px;
+}
+
+.request-sent-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 4px 0;
+}
+
+.request-sent-text {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* About section */
+.about-full {
+    width: 100%;
+}
+
+/* Contact bar: always at the bottom of the card in normal flow */
+.contact-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    flex-shrink: 0;
+    padding-top: 16px;
+    border-top: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+}
+
+.contact-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: nowrap;
+    color: #374151;
+    font-size: 14px;
+    min-width: 0;
+}
+
+/* Override the vertical contact-card item styling for this horizontal row */
+.contact-bar-left .contact-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    width: auto;
+    white-space: nowrap;
+}
+
+/* Owner sits inline, beside the email */
+.contact-bar-left .owner-info {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.contact-sep {
+    color: #d1d5db;
+}
+
+.contact-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.delete-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    background: var(--portal-bg);
+    cursor: pointer;
+}
+
+.delete-icon-btn:hover {
+    background: #fef2f2;
+}
+
+.delete-icon-red {
+    --slds-c-icon-color-foreground-default: #dc2626;
+}
+
+.status-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.status-badge-pill::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.status-badge-pill.st-active {
+    background: #edf7f0;
+    color: #1b8457;
+    border-color: #c7ead8;
+}
+
+.status-badge-pill.st-review {
+    background: #fffbeb;
+    color: #d97706;
+    border-color: #fde68a;
+}
+
+.status-badge-pill.st-rejected {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.status-badge-pill.st-deactivated {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: var(--portal-border-color, #e6e8ee);
+}
+
+.status-badge-pill.st-deletion {
+    background: #fffbeb;
+    color: #d97706;
+    border-color: #fde68a;
+}
+
+.status-badge-pill.st-deleted {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: var(--portal-border-color, #e6e8ee);
+}
+
+.status-badge-pill.st-deleted::before,
+.status-badge-pill.st-deactivated::before {
+    display: none;
+}
+
+/* Non-owner bottom actions */
+.loc-sep {
+    color: #d1d5db;
+    margin: 0 6px;
+}
+
+.get-directions-inline {
+    background: none;
+    border: none;
+    color: #111827;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+.chat-bottom-btn {
+    background: var(--portal-bg);
+    border: 1px solid var(--primary-color, #2563eb);
+    color: var(--primary-color, #2563eb);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.chat-bottom-btn:hover {
+    background: var(--primary-color-tint, #eff6ff);
+}
+
+.interest-done-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: default;
+}
+
+.interest-check {
+    --slds-c-icon-color-foreground-default: #166534;
+}
+
+.owner-label-inline {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.owner-image-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #e5e7eb;
+}
+
+.business-detail-page {
+    width: 100%;
+    /* Embedded inside kenBusinessDirectory: the host already stretches to
+       fill that parent's full-height flex container (align-items: stretch
+       is the flex default), so 100% here resolves against that. */
+    height: 100%;
+    box-sizing: border-box;
+    background-color: transparent;
+    position: relative;
+    overflow-x: clip;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Standalone on business_detail__c: nothing in the Builder page provides a
+   bounded height, so this component must establish its own. Edge-to-edge,
+   no outer gutter — matches the Events page pattern (kenPortalCreateEvent's
+   .component-container): the inner .main-content/.sidebar cards already
+   carry their own surface background, border and padding. */
+.business-detail-page.standalone-page {
+    height: calc(100vh - var(--portal-header-height, 160px));
+    background-color: var(--portal-bg);
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: var(--portal-bg);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+    margin-bottom: 16px;
+}
+
+.back-button:hover {
+    background-color: var(--portal-page-bg, #F6F8FB);
+}
+
+.back-icon {
+    --slds-c-icon-color-foreground-default: #374151;
+}
+
+.business-detail-container {
+    display: grid;
+    grid-template-columns: 1fr var(--portal-rail-width, 25%);
+    gap: var(--portal-gap-x, 1rem);
+    width: 100%;
+    margin: 0 auto;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+}
+
+/* Main Content Area */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+    background-color: var(--portal-surface, #ffffff);
+    border-radius: var(--portal-radius, 12px);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    padding: var(--portal-card-padding, 24px);
+    height: 100%;
+    overflow: hidden;
+    min-height: 500px;
+}
+
+/* Banner Section */
+.banner-section {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border-radius: var(--portal-radius) var(--portal-radius) 0 0;
+    overflow: hidden;
+    margin-bottom: 0;
+}
+
+.banner-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: var(--portal-radius) var(--portal-radius) 0 0;
+}
+
+.category-tag-banner {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background-color: #e0e7ff;
+    color: #3730a3;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    
+    z-index: 2;
+    white-space: nowrap;
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+}
+
+/* Business Header */
+.business-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-top: -70px;
+    position: relative;
+    z-index: 3;
+    padding: 0;
+}
+
+.logo-container {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background-color: #FF6B35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 4;
+}
+
+.business-logo-large {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.business-header-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 70px;
+    padding-left: 0;
+}
+
+.business-name-large {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+    
+    line-height: 1.2;
+}
+
+.business-location-large {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 0;
+    
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 70px;
+    flex-shrink: 0;
+}
+
+.get-directions-btn {
+    padding: 10px 20px;
+    background-color: var(--portal-bg);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.get-directions-btn:hover {
+    background-color: var(--portal-page-bg, #F6F8FB);
+}
+
+.express-interest-btn {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.express-interest-btn:hover {
+    background-color: var(--primary-color);
+}
+
+/* My Business Action Buttons */
+.delete-btn {
+    padding: 10px;
+    background-color: var(--primary-color-tint, #eff6ff);
+    border: 1px solid var(--portal-page-bg, #F6F8FB);
+    border-radius: 8px;
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+}
+
+.delete-btn:hover {
+    background-color: var(--portal-page-bg, #F6F8FB);
+}
+
+.delete-icon {
+    --slds-c-icon-color-foreground-default: #374151;
+}
+
+.deactivate-btn {
+    padding: 10px 20px;
+    background-color: var(--primary-color-tint, #eff6ff);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-color);
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.deactivate-btn:hover {
+    background-color: var(--portal-page-bg, #F6F8FB);
+}
+
+.edit-business-btn {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.edit-business-btn:hover {
+    background-color: var(--primary-color);
+}
+
+/* About Section Wrapper */
+.about-section-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+    align-items: stretch;
+    margin-top: 0;
+    flex: 1;
+    min-height: 0;
+}
+
+/* About Section */
+.about-section {
+    flex: 1;
+    min-height: 0;
+    margin-top: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.about-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 16px 0;
+    
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+    min-height: 60px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 8px;
+}
+
+.about-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.about-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.about-content::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.about-content::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+.about-paragraph {
+    font-size: 16px;
+    line-height: 1.6;
+    color: #374151;
+    margin: 0;
+    
+}
+
+/* Sidebar */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+.sidebar c-ken-similar-businesses {
+    flex: 1;
+    min-height: 0;
+}
+
+.sidebar c-ken-list-your-business {
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+
+
+/* Contact Card */
+.contact-card {
+    background-color: var(--portal-page-bg, #F6F8FB);
+    border-radius: var(--portal-radius);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+    flex-shrink: 0;
+    margin-top: 0;
+    align-items: flex-start;
+    border: 1px solid #D1D4DB;
+}
+
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.contact-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+    flex-shrink: 0;
+}
+
+.contact-text {
+    font-size: 14px;
+    color: #374151;
+    
+}
+
+.business-owner-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 8px;
+    width: 100%;
+    align-items: flex-start;
+}
+
+.business-owner-label {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+    
+}
+
+.owner-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.owner-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.owner-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #111827;
+    
+}
+
+.chat-button {
+    width: 100%;
+    padding: 14px 16px;
+    background-color: var(--portal-bg);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+    margin-top: 8px;
+}
+
+.chat-button:hover {
+    background-color: #e5e7eb;
+}
+
+.chat-icon {
+    --slds-c-icon-color-foreground-default: #374151;
+}
+
+
+/* Scrollbar Styling */
+.business-detail-page::-webkit-scrollbar,
+.main-content::-webkit-scrollbar,
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.business-detail-page::-webkit-scrollbar-track,
+.main-content::-webkit-scrollbar-track,
+.sidebar::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+}
+
+.business-detail-page::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb,
+.sidebar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.business-detail-page::-webkit-scrollbar-thumb:hover,
+.main-content::-webkit-scrollbar-thumb:hover,
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .business-detail-container {
+        grid-template-columns: 1fr 320px;
+    }
+}
+
+@media (max-width: 968px) {
+    .business-detail-container {
+        grid-template-columns: 1fr;
+    }
+
+    .business-header {
+        flex-wrap: wrap;
+    }
+
+    .action-buttons {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .about-section-wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .about-full .about-content {
+        flex: 1;
+    }
+
+    .sidebar {
+        height: auto;
+        max-height: none;
+        position: relative;
+    }
+}
+
+@media (max-width: 768px) {
+    .business-detail-page {
+        padding: 16px;
+    }
+
+    .banner-section {
+        height: 200px;
+    }
+
+    .business-name-large {
+        font-size: 24px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .get-directions-btn,
+    .express-interest-btn {
+        width: 100%;
+    }
+
+    .sidebar {
+        height: auto;
+        max-height: none;
+        position: relative;
+    }
+
+    .list-your-business-wrapper {
+        width: calc(100vw - 32px);
+        max-width: 380px;
+        right: 16px;
+        bottom: 16px;
+    }
+}
+
+/* Express Interest Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: modal-fade-in 0.18s ease-out;
+}
+
+.modal-container {
+    background-color: var(--portal-bg, #ffffff);
+    border-radius: var(--portal-radius, 12px);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    animation: modal-scale-in 0.18s ease-out;
+}
+
+.modal-header {
+    padding: var(--portal-card-padding, 24px) var(--portal-card-padding, 24px) 16px var(--portal-card-padding, 24px);
+    border-bottom: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    
+}
+
+.modal-body {
+    padding: var(--portal-card-padding, 24px);
+    flex: 1;
+    overflow-y: auto;
+}
+
+.form-field {
+    margin-bottom: 24px;
+}
+
+.form-field:last-of-type {
+    margin-bottom: 0;
+}
+
+.form-row-dates {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 0;
+}
+
+.form-row-dates .form-field {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+    
+}
+
+.required-asterisk {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+.form-input,
+.form-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    
+    color: #111827;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color, #2563eb);
+}
+
+.form-textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.modal-footer {
+    padding: 16px 24px 24px 24px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+}
+
+.cancel-btn {
+    padding: 10px 20px;
+    background-color: var(--portal-bg, #ffffff);
+    border: 1px solid var(--primary-color, #2563eb);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-color, #2563eb);
+    cursor: pointer;
+
+    transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+    background-color: var(--primary-color-tint, #eff6ff);
+}
+
+.submit-btn {
+    padding: 10px 20px;
+    background-color: var(--primary-color, #2563eb);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    cursor: pointer;
+
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: var(--primary-color, #2563eb);
+}
+
+.cancel-btn:disabled,
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Deactivate Modal */
+.deactivate-modal {
+    max-width: 500px;
+}
+
+.deactivate-modal .modal-header {
+    border-bottom: none;
+    padding: var(--portal-card-padding, 24px) var(--portal-card-padding, 24px) 0 var(--portal-card-padding, 24px);
+    text-align: center;
+}
+
+.deactivate-modal .modal-title {
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.deactivate-modal .modal-footer {
+    border-top: none;
+    padding: var(--portal-card-padding, 24px);
+    justify-content: flex-end;
+}
+
+.deactivate-modal .cancel-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+.deactivate-confirm-btn {
+    padding: 8px 16px;
+    background-color: var(--portal-bg);
+    border: 1px solid #ef4444;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ef4444;
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+}
+
+.deactivate-confirm-btn:hover {
+    background-color: #fef2f2;
+}
+
+/* Delete Modal */
+.delete-modal {
+    max-width: 500px;
+}
+
+.delete-modal .modal-header {
+    border-bottom: none;
+    padding: var(--portal-card-padding, 24px) var(--portal-card-padding, 24px) 0 var(--portal-card-padding, 24px);
+    text-align: center;
+    position: relative;
+}
+
+.delete-modal .modal-title {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.close-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    transition: color 0.2s;
+}
+
+.close-button:hover {
+    color: #111827;
+}
+
+.close-button lightning-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+}
+
+.close-button:hover lightning-icon {
+    --slds-c-icon-color-foreground-default: #111827;
+}
+
+.delete-modal .modal-footer {
+    border-top: none;
+    padding: var(--portal-card-padding, 24px);
+    justify-content: flex-end;
+}
+
+.deactivate-from-delete-btn {
+    padding: 8px 16px;
+    background-color: var(--primary-color-tint, #eff6ff);
+    border: 1px solid var(--portal-page-bg, #F6F8FB);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-color);
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+}
+
+.deactivate-from-delete-btn:hover {
+    background-color: var(--portal-page-bg, #F6F8FB);
+}
+
+.delete-confirm-btn {
+    padding: 8px 16px;
+    background-color: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ef4444;
+    cursor: pointer;
+    
+    transition: background-color 0.2s;
+}
+
+.delete-confirm-btn:hover {
+    background-color: #fee2e2;
+}
+
+/* Disabled state for all owner action buttons */
+.delete-icon-btn:disabled,
+.deactivate-btn:disabled,
+.reactivate-btn:disabled,
+.edit-business-btn:disabled,
+.remove-feature-btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Tooltip span wrapper — keep inline-flex so buttons stay on one row */
+span[title] {
+    display: inline-flex;
+}
+
+.reactivate-btn {
+    padding: 10px 20px;
+    background-color: #dcfce7;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #166534;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+
+.reactivate-btn:hover {
+    background-color: #bbf7d0;
+}
+
+.reactivate-confirm-btn {
+    padding: 8px 16px;
+    background-color: #dcfce7;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #166534;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.reactivate-confirm-btn:hover {
+    background-color: #bbf7d0;
+}
+
+.remove-feature-btn {
+    padding: 10px 20px;
+    background-color: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #92400e;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+
+.remove-feature-btn:hover {
+    background-color: #fde68a;
+}
+
+.remove-feature-confirm-btn {
+    padding: 8px 16px;
+    background-color: #fef3c7;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #92400e;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.remove-feature-confirm-btn:hover {
+    background-color: #fde68a;
+}
+
+.modal-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 8px 0 0 0;
+}

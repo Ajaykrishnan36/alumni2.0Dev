@@ -1,0 +1,4 @@
+<aura:component implements="lightning:actionOverride">
+    <aura:attribute name="recordId" type="String" />
+    <c:kenQuestionnaireEditForm recordId="{!v.recordId}"/>
+</aura:component>

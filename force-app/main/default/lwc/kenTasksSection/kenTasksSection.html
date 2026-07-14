@@ -1,0 +1,116 @@
+<template>
+    <div class="tasks-component-wrapper">
+        <div class="tasks-section-container">
+            <div class="tasks-header">
+                <h2 class="tasks-title">Tasks</h2>
+                <button type="button" class="add-task-btn" onclick={handleAddTask} disabled={isLoading}>Add a Task</button>
+            </div>
+            <div class="tasks-list">
+                <template for:each={displayTasks} for:item="task">
+                    <div key={task.id} class="task-card">
+                        <div class="task-header">
+                            <h3 class="task-title">{task.title}</h3>
+                            <div class="task-header-right">
+                                <span class={task.statusClass}>{task.status}</span>
+                                <div class="task-menu-wrapper" data-task-menu-root="true" if:true={task.canEdit}>
+                                    <button type="button" class="task-menu-btn" onclick={handleTaskMenu} data-task-id={task.id} aria-label="Task options" aria-haspopup="true" aria-expanded={task.isMenuOpen} disabled={isLoading}>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                            <path d="M12 8C13.1 8 14 7.1 14 6C14 4.9 13.1 4 12 4C10.9 4 10 4.9 10 6C10 7.1 10.9 8 12 8ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10ZM12 16C10.9 16 10 16.9 10 18C10 19.1 10.9 20 12 20C13.1 20 14 19.1 14 18C14 16.9 13.1 16 12 16Z" fill="#585A64"/>
+                                        </svg>
+                                    </button>
+                                    <template if:true={task.isMenuOpen}>
+                                        <div class="task-menu-dropdown" role="menu">
+                                            <button type="button" class="task-menu-item" data-action="edit" data-task-id={task.id} onclick={handleTaskAction}>
+                                                <lightning-icon icon-name="utility:edit" size="x-small" class="task-menu-item-icon"></lightning-icon>
+                                                <span>Edit</span>
+                                            </button>
+                                            <button type="button" class="task-menu-item delete" data-action="delete" data-task-id={task.id} onclick={handleTaskAction}>
+                                                <lightning-icon icon-name="utility:delete" size="x-small" class="task-menu-item-icon"></lightning-icon>
+                                                <span>Delete</span>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <template if:true={task.showAssignee}>
+                            <div class="task-assignee-row">
+                                <img src={task.assigneeAvatar} alt={task.assigneeName} class="task-assignee-avatar" />
+                                <span class="task-assignee-name">{task.assigneeName}</span>
+                            </div>
+                        </template>
+                        <div class="task-divider"></div>
+                        <p class="task-description">
+                            <span>{task.descriptionToShow}</span>
+                            <template if:true={task.isDescriptionTruncated}>
+                                <button
+                                    type="button"
+                                    class="task-description-toggle"
+                                    data-task-id={task.id}
+                                    onclick={handleToggleDescription}>
+                                    {task.descriptionToggleLabel}
+                                </button>
+                            </template>
+                        </p>
+                        <div class="task-footer">
+                            <span class="task-priority">
+                                Priority: <span class={task.priorityClass}>{task.priority}</span>
+                            </span>
+                            <span class="task-end-date">End date: {task.endDateLabel}</span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Edit Mentorship Preferences (Be-a-Mentor ON) -->
+        <template if:true={isBeAMentorOn}>
+            <div class="mentorship-preference-btn-wrapper">
+                <button type="button" class="mentorship-preference-btn" onclick={handleBecomeMentor}>
+                    Edit Mentorship Preferences
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="arrow-icon">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+        </template>
+
+        <!-- Become a Mentor card (Be-a-Mentor OFF) -->
+        <template if:false={isBeAMentorOn}>
+            <div class="become-mentor-card" onclick={handleBecomeMentor}>
+                <div class="become-mentor-text-wrap">
+                    <span class="become-mentor-label">Become a Mentor</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="become-mentor-arrow">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="become-mentor-illustration">
+                    <svg width="120" height="90" viewBox="0 0 120 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Person 1 (left) -->
+                        <circle cx="38" cy="22" r="10" fill="rgba(255,255,255,0.3)"/>
+                        <rect x="26" y="34" width="24" height="30" rx="8" fill="rgba(255,255,255,0.25)"/>
+                        <!-- Document in hand -->
+                        <rect x="48" y="42" width="14" height="18" rx="3" fill="rgba(255,255,255,0.4)"/>
+                        <line x1="51" y1="47" x2="59" y2="47" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+                        <line x1="51" y1="51" x2="59" y2="51" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+                        <line x1="51" y1="55" x2="56" y2="55" stroke="rgba(255,255,255,0.7)" stroke-width="1.5"/>
+                        <!-- Person 2 (right) -->
+                        <circle cx="82" cy="22" r="10" fill="rgba(255,255,255,0.3)"/>
+                        <rect x="70" y="34" width="24" height="30" rx="8" fill="rgba(255,255,255,0.25)"/>
+                    </svg>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={showAddTaskModal}>
+            <c-ken-add-task-modal
+                mode={modalMode}
+                task-data={editingTask}
+                mentor-options={mentorOptions}
+                mentee-options={menteeOptions}
+                onclose={handleCloseAddTaskModal}
+                onsavetask={handleSaveTask}>
+            </c-ken-add-task-modal>
+        </template>
+    </div>
+</template>

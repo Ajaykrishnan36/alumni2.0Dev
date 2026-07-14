@@ -1,0 +1,307 @@
+<template>
+    <!-- Profile Page -->
+    <template if:true={showProfilePage}>
+        <c-ken-profile-page profile-id={selectedAlumniId} onback={handleBackFromProfile}></c-ken-profile-page>
+    </template>
+
+    <!-- Network Page -->
+    <template if:false={showProfilePage}>
+        <div class="network-page">
+            <div class={networkContainerClass}>
+                <!-- Mobile: full list view (tab title + search/sort/filter + 2-col grid) -->
+                <template if:true={showMobileListFullView}>
+                    <div class="main-content main-content-mobile-full">
+                        <template if:false={isNoResults}>
+                            <c-ken-network-list-mobile alumni={filteredAlumni} active-tab-label={activeTabLabel}
+                                onback={handleMobileListBack} onsearch={handleSearch}
+                                onsortclick={handleSortClick} onsortchange={handleSortChange}
+                                onfiltersclick={handleFiltersClick}
+                                onprofileclick={handleProfileClick}></c-ken-network-list-mobile>
+                        </template>
+                        <template if:true={isNoResults}>
+                            <div class="network-empty-state">
+                                <div class="network-empty-content">
+                                    <img src={emptyStateImageUrl} alt="No data found" class="network-empty-img" />
+                                    <h2 class="network-empty-title">{emptyStateTitle}</h2>
+                                    <p class="network-empty-desc">{emptyStateDescription}</p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Main Content Area (hidden on mobile when full list is shown) -->
+                <template if:false={showMobileListFullView}>
+                    <div class="main-content">
+                        <!-- Tabs and Search Filter Row -->
+                        <div class="tabs-search-row">
+                            <!-- Tabs -->
+                            <c-ken-tabs-section active-tab={activeTab} ontabchange={handleTabChange}
+                                class="tabs-wrapper"></c-ken-tabs-section>
+
+                            <!-- Search and Filter Bar (hidden on mobile via .controls-row) -->
+                            <div class="controls-row search-filter-bar">
+                                <button class="filter-btn map-view-btn" onclick={handleMapViewOpen}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                                    </svg>
+                                    <span>Map view</span>
+                                </button>
+                                <c-ken-search-bar placeholder="Search" onsearch={handleSearch}></c-ken-search-bar>
+                                <div class="filter-buttons">
+                                    <div class="sort-by-wrapper">
+                                        <button class="filter-btn sort-toggle-btn" onclick={handleSortClick}>
+                                            <span>Sort by</span>
+                                            <svg class={sortIconClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <button class="filter-btn" data-filter-btn="true" onclick={handleFiltersClick}>
+                                        <lightning-icon icon-name="utility:filterList" size="x-small"
+                                            class="filter-icon"></lightning-icon>
+                                        <span>Filters</span>
+                                        <template if:true={activeFilterCount}>
+                                            <span class="filter-count-badge">{activeFilterCount}</span>
+                                        </template>
+                                        <lightning-icon icon-name="utility:down" size="xx-small"
+                                            class="dropdown-icon"></lightning-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alumni Grid (mobile: 2 cols, first 4 cards + View More) -->
+                        <template if:true={isNoResults}>
+                            <div class="network-empty-state">
+                                <div class="network-empty-content">
+                                    <img src={emptyStateImageUrl} alt="No data found" class="network-empty-img" />
+                                    <h2 class="network-empty-title">{emptyStateTitle}</h2>
+                                    <p class="network-empty-desc">{emptyStateDescription}</p>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={isNoResults}>
+                            <template if:false={showNearbyEmpty}>
+                                <div class="alumni-grid">
+                                    <template for:each={mobileVisibleAlumni} for:item="alumni">
+                                        <c-ken-alumni-card key={alumni.id} record-id={alumni.id} name={alumni.name} title={alumni.title}
+                                            company={alumni.company} graduation-year={alumni.graduationYear} education={alumni.education}
+                                            location={alumni.location} batch={alumni.batch} profile-image={alumni.profileImage}
+                                            linkedin={alumni.linkedin}
+                                            willing-to-help={alumni.willingToHelp} is-mentor={alumni.isMentor} is-my-mentor={alumni.isMyMentor} is-online={alumni.isOnline}
+                                            presence-status={alumni.presenceStatus}
+                                            compact={isMobile}
+                                            onprofileclick={handleProfileClick}></c-ken-alumni-card>
+                                    </template>
+                                </div>
+                                <template if:true={showViewMoreButton}>
+                                    <button type="button" class="view-all-mobile" onclick={handleViewMore}>View More</button>
+                                </template>
+                            </template>
+                            <template if:true={showNearbyEmpty}>
+                                <div class="network-empty-state">
+                                    <div class="network-empty-content">
+                                        <img src={emptyStateImageUrl} alt="No data found" class="network-empty-img" />
+                                        <h2 class="network-empty-title">{emptyStateTitle}</h2>
+                                        <p class="network-empty-desc">{emptyStateDescription}</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Right Sidebar -->
+                <div class="sidebar">
+                    <!-- Alumni Spotlight Widget -->
+                    <div class="sidebar-widget spotlight-widget">
+                        <c-ken-alumni-spotlight></c-ken-alumni-spotlight>
+                    </div>
+
+                    <!-- Businesses by Alumni Widget -->
+                    <div class="sidebar-widget business-widget">
+                        <h3 class="widget-title center-text">Businesses by Alumni</h3>
+                        <div class="coming-soon-container">
+                            <div class="coming-soon-icon">
+                                <svg width="73" height="65" viewBox="0 0 73 65" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M47.7774 12.4547V33.1242C47.7733 33.4614 47.8936 33.7882 48.1154 34.0423C48.3372 34.2963 48.6449 34.4596 48.9795 34.501C49.024 34.5039 49.0684 34.5069 49.1128 34.5069C49.4437 34.5073 49.7627 34.3837 50.0069 34.1605C50.1436 34.0351 50.2529 33.8828 50.3278 33.7131C50.4027 33.5434 50.4416 33.36 50.4422 33.1745V12.3008L47.7774 12.4547Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M21.6759 12.4547V33.1242C21.6717 33.4614 21.7921 33.7882 22.0138 34.0423C22.2356 34.2963 22.5433 34.4596 22.878 34.501C22.9224 34.5039 22.9668 34.5069 23.0112 34.5069C23.3421 34.5073 23.6611 34.3837 23.9054 34.1605C24.0421 34.0351 24.1513 33.8828 24.2262 33.7131C24.3011 33.5434 24.3401 33.36 24.3406 33.1745V12.3008L21.6759 12.4547Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M59.4628 33.532C59.4601 33.0634 59.2914 32.611 58.9867 32.2551C58.6819 31.8992 58.2608 31.6629 57.7983 31.5881L56.2505 31.334L53.5854 30.8967L50.4418 30.3815L47.7767 29.9419L29.3982 26.9242C29.1261 26.8802 28.8479 26.8927 28.5808 26.9609L24.3405 28.0599L22.6279 28.5018L21.9296 28.6826H21.9273L21.925 28.6849L21.6754 28.749L19.15 29.4016L18.3509 29.6076L18.1059 29.6695L15.6881 30.2945L11.0563 31.4943C10.7469 31.5742 10.4617 31.7282 10.2252 31.943V31.9476C10.0186 32.1321 9.85342 32.3583 9.74055 32.6113C9.62769 32.8642 9.56967 33.1382 9.57033 33.4152V56.6935C9.56963 56.859 9.5912 57.0238 9.63444 57.1835C9.72751 57.5409 9.91777 57.8655 10.1841 58.1213C10.4504 58.3771 10.7825 58.5542 11.1433 58.6328L37.453 64.2308L40.07 64.7872C40.1806 64.8116 40.2933 64.8246 40.4066 64.8261C40.4323 64.8299 40.4584 64.8315 40.4844 64.8307C40.5725 64.8303 40.6604 64.8242 40.7477 64.8124L40.75 64.8101C40.8628 64.7969 40.9741 64.7724 41.082 64.7368L50.4418 61.781L58.2677 59.3105C58.6734 59.1842 59.0275 58.9304 59.2775 58.5868C59.5275 58.2432 59.6599 57.8282 59.6551 57.4033L59.4628 33.532Z"
+                                        fill="white" />
+                                    <path
+                                        d="M57.7255 33.5457C57.7254 33.4873 57.7043 33.4308 57.666 33.3867C57.6278 33.3426 57.575 33.3137 57.5172 33.3052L57.3226 33.2732L56.251 33.0969L56.1457 33.0786H56.1434L56.1388 33.0763L53.5859 32.6596L50.4423 32.1421L47.7772 31.7048L29.1171 28.6391C29.1033 28.6391 29.0919 28.6368 29.0759 28.6368C29.0556 28.6363 29.0355 28.6394 29.0163 28.6459L27.4731 29.0443L25.8453 29.4656L24.341 29.8548L21.6759 30.544L21.4309 30.6081H21.4286L18.3514 31.4049L15.6886 32.0918L13.9325 32.5474L12.79 32.8427L12.7854 32.845L11.4918 33.177C11.4387 33.1906 11.3917 33.2217 11.3584 33.2654C11.3252 33.309 11.3076 33.3626 11.3086 33.4174V56.6957C11.3088 56.752 11.3282 56.8065 11.3636 56.8502C11.399 56.8939 11.4483 56.9242 11.5032 56.9361L12.6755 57.1857L37.9389 62.5616L40.3063 63.0654H40.3086L40.4322 63.0905C40.4739 63.1005 40.5174 63.0989 40.5582 63.086L40.8032 63.0081L47.72 60.8238H47.7223L50.3805 59.9859L57.7461 57.6573C57.7966 57.6419 57.8408 57.6106 57.8721 57.5682C57.9034 57.5257 57.9203 57.4743 57.9201 57.4215L57.7255 33.5457Z"
+                                        fill="#3F3D56" />
+                                    <path
+                                        d="M59.4628 33.532C59.4601 33.0634 59.2914 32.611 58.9867 32.2551C58.6819 31.8992 58.2608 31.6629 57.7983 31.5881L56.2505 31.334L53.5854 30.8967L50.4418 30.3815L47.7767 29.9419L29.3982 26.9242C29.1261 26.8802 28.8479 26.8927 28.5808 26.9609L24.3405 28.0599L22.6279 28.5018L21.9296 28.6826H21.9273L21.925 28.6849L21.6754 28.749L19.15 29.4016L18.3509 29.6076L18.1059 29.6695L15.6881 30.2945L11.0563 31.4943C10.7469 31.5742 10.4617 31.7282 10.2252 31.943V31.9476C10.0186 32.1321 9.85342 32.3583 9.74055 32.6113C9.62769 32.8642 9.56967 33.1382 9.57033 33.4152V56.6935C9.56963 56.859 9.5912 57.0238 9.63444 57.1835C9.72751 57.5409 9.91777 57.8655 10.1841 58.1213C10.4504 58.3771 10.7825 58.5542 11.1433 58.6328L37.453 64.2308L40.07 64.7872C40.1806 64.8116 40.2933 64.8246 40.4066 64.8261C40.4323 64.8299 40.4584 64.8315 40.4844 64.8307C40.5725 64.8303 40.6604 64.8242 40.7477 64.8124L40.75 64.8101C40.8628 64.7969 40.9741 64.7724 41.082 64.7368L50.4418 61.781L58.2677 59.3105C58.6734 59.1842 59.0275 58.9304 59.2775 58.5868C59.5275 58.2432 59.6599 57.8282 59.6551 57.4033L59.4628 33.532ZM58.1188 58.8389L50.3823 61.2818L47.7745 62.1061L40.9309 64.2675C40.892 64.2789 40.853 64.2881 40.8164 64.2972C40.6532 64.3323 40.4857 64.3423 40.3195 64.327H40.3173C40.2715 64.3201 40.2234 64.311 40.1753 64.3018L37.5881 63.7523L11.244 58.1474C10.9946 58.0933 10.7631 57.9763 10.5716 57.8076C10.3801 57.6389 10.2348 57.4241 10.1496 57.1835C10.0956 57.0257 10.0677 56.8602 10.0672 56.6935V33.4152C10.0667 33.0466 10.2029 32.6909 10.4495 32.417H10.4518V32.4147C10.6136 32.2366 10.8164 32.1006 11.0425 32.0186C11.0871 31.9999 11.133 31.9846 11.1799 31.9728L15.6881 30.8097L18.3509 30.1205L18.6302 30.0449H18.6371L21.6754 29.2619L23.0469 28.907L24.1596 28.6185L24.3405 28.5727L28.7022 27.444C28.8241 27.4124 28.9494 27.3962 29.0754 27.3959C29.1566 27.3963 29.2377 27.4024 29.3181 27.4142L47.7767 30.4456L50.4418 30.8829L53.5854 31.3981L56.2505 31.8377L57.7182 32.0781C58.0012 32.1235 58.2647 32.2508 58.476 32.4444H58.4806C58.6317 32.5832 58.7528 32.7516 58.8363 32.939C58.9198 33.1265 58.9639 33.3291 58.966 33.5343L59.1583 57.4078C59.1621 57.7265 59.063 58.0378 58.8758 58.2956C58.6885 58.5534 58.423 58.744 58.1188 58.8389Z"
+                                        fill="#3F3D56" />
+                                    <path
+                                        d="M58.803 32.8624C58.7837 32.8751 58.7625 32.8846 58.7402 32.8905L50.3862 35.1489L47.7856 35.8515L40.3888 37.8503C40.3677 37.8555 40.3461 37.8583 40.3244 37.8586C40.3094 37.8583 40.2945 37.8572 40.2797 37.8553L10.4546 32.4177L10.3554 32.3995C10.2907 32.3874 10.2335 32.3502 10.1962 32.296C10.1589 32.2418 10.1446 32.1751 10.1564 32.1103C10.1682 32.0456 10.2052 31.9882 10.2592 31.9507C10.3132 31.9132 10.3799 31.8986 10.4447 31.9101L11.0448 32.0192L40.3144 37.356L46.6895 35.6333L50.2556 34.6694L58.4806 32.4458L58.6112 32.4111C58.6677 32.3962 58.7276 32.4016 58.7805 32.4264C58.8334 32.4511 58.8759 32.4937 58.9006 32.5466C58.907 32.5593 58.9119 32.5726 58.9154 32.5863C58.9291 32.6383 58.9255 32.6933 58.9052 32.7431C58.8849 32.7928 58.8491 32.8347 58.803 32.8624Z"
+                                        fill="#3F3D56" />
+                                    <path
+                                        d="M40.5702 64.8903C40.5048 64.8903 40.4421 64.8645 40.3956 64.8185C40.3492 64.7725 40.3228 64.71 40.3222 64.6446L40.0742 37.6135C40.0736 37.5478 40.0992 37.4845 40.1453 37.4375C40.1914 37.3906 40.2542 37.3639 40.32 37.3633H40.3222C40.3876 37.3633 40.4503 37.3891 40.4968 37.4351C40.5432 37.4811 40.5696 37.5436 40.5702 37.609L40.8182 64.6401C40.8188 64.7058 40.7932 64.7691 40.7471 64.8161C40.7011 64.863 40.6382 64.8897 40.5725 64.8903H40.5702Z"
+                                        fill="#3F3D56" />
+                                    <path
+                                        d="M50.384 61.6003L47.7834 62.3029L46.6873 35.6323L18.7188 30.0674C18.6914 30.0625 18.6644 30.0559 18.6378 30.0475C18.423 29.9864 18.2353 29.854 18.1055 29.6722L21.9245 28.6836L23.0471 28.9068L49.5855 34.1857C49.7251 34.2133 49.857 34.2707 49.9723 34.354C50.0876 34.4373 50.1835 34.5446 50.2534 34.6684C50.3361 34.8123 50.3824 61.4284 50.384 61.6003Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M64.4322 7.11431C63.9765 6.99296 63.5163 6.87619 63.0607 6.76171V4.68276C63.0645 3.93489 62.7818 3.21395 62.2708 2.66792C62.0474 2.42494 61.7822 2.22408 61.4877 2.07491C61.4218 2.03951 61.3537 2.00817 61.284 1.98104C61.0137 1.86862 60.7267 1.80207 60.4345 1.78412C60.1225 1.7623 59.809 1.79326 59.5072 1.87571C59.3265 1.92505 59.1509 1.99176 58.9829 2.0749C58.7423 2.19803 58.5204 2.3545 58.3235 2.53969C58.28 2.5809 58.2388 2.62211 58.1953 2.66791C57.7071 3.18936 57.4354 3.87687 57.4352 4.59117V5.49097C43.2657 2.64731 28.6725 2.64731 14.503 5.49097V4.68275C14.5068 3.93488 14.2242 3.21394 13.7131 2.66791C13.4906 2.42498 13.2261 2.22411 12.9324 2.0749C12.8654 2.03993 12.7966 2.00859 12.7263 1.98103C12.4561 1.86861 12.169 1.80205 11.8769 1.78411C11.5648 1.7624 11.2514 1.79336 10.9496 1.8757C10.7696 1.92505 10.5947 1.99176 10.4276 2.07489C10.1859 2.19741 9.96311 2.35393 9.76589 2.53968C9.72238 2.58089 9.68117 2.6221 9.63995 2.6679C9.15114 3.18912 8.8786 3.87658 8.87751 4.59115V6.76169C8.42188 6.87617 7.96397 6.99293 7.50834 7.11428L7.39844 7.14405V7.25624C7.39728 8.19169 7.6029 9.11583 8.00061 9.96254L8.30283 10.5212C8.86712 11.4661 9.66691 12.2485 10.624 12.7919C11.5812 13.3353 12.6629 13.6211 13.7635 13.6213H15.689V34.4451C15.6847 34.7823 15.805 35.1092 16.0268 35.3631C16.2486 35.6171 16.5564 35.7802 16.8911 35.8212C17.0763 35.8399 17.2633 35.8194 17.4401 35.7611C17.6168 35.7027 17.7793 35.6077 17.9168 35.4823C18.0538 35.357 18.1632 35.2046 18.2381 35.0347C18.313 34.8648 18.3517 34.6812 18.3518 34.4955V13.777C18.9397 13.9368 19.4873 14.2189 19.9588 14.6047C20.4302 14.9906 20.815 15.4716 21.0879 16.0162C21.2597 16.3584 21.4563 16.6874 21.6763 17.0008C22.3629 17.9724 23.2733 18.7644 24.3306 19.31C25.3878 19.8555 26.5609 20.1386 27.7506 20.1352H44.1899C45.4415 20.1367 46.6741 19.8284 47.7776 19.2377C48.866 18.6613 49.7847 17.8105 50.4427 16.7695C50.5801 16.551 50.7047 16.3247 50.8159 16.0918C51.0821 15.528 51.4677 15.0289 51.9461 14.6292C52.4245 14.2295 52.9842 13.9387 53.5863 13.777V34.4452C53.582 34.7823 53.7023 35.1092 53.9241 35.3632C54.1459 35.6171 54.4537 35.7802 54.7884 35.8212C54.8325 35.8258 54.8768 35.8281 54.9212 35.8281C55.2522 35.8283 55.5715 35.7051 55.8164 35.4824C55.953 35.3567 56.0621 35.2042 56.137 35.0344C56.2118 34.8646 56.2508 34.6811 56.2514 34.4955V13.6213H58.1747C59.2754 13.6214 60.3572 13.3357 61.3144 12.7923C62.2715 12.2489 63.0713 11.4664 63.6354 10.5212C63.7455 10.3402 63.8464 10.1538 63.9376 9.96256C64.336 9.11602 64.5424 8.19188 64.542 7.25626V7.14407L64.4322 7.11431Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M35.3794 22.9502C39.3039 22.9502 42.4853 19.7687 42.4853 15.8442C42.4853 11.9197 39.3039 8.73828 35.3794 8.73828C31.4549 8.73828 28.2734 11.9197 28.2734 15.8442C28.2734 19.7687 31.4549 22.9502 35.3794 22.9502Z"
+                                        fill="#3F3D56" />
+                                    <path
+                                        d="M35.3797 19.6344C37.4728 19.6344 39.1695 17.9376 39.1695 15.8445C39.1695 13.7515 37.4728 12.0547 35.3797 12.0547C33.2866 12.0547 31.5898 13.7515 31.5898 15.8445C31.5898 17.9376 33.2866 19.6344 35.3797 19.6344Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M70.613 0.59375H61.2852V2.07512H72.234C72.1965 1.67077 72.0097 1.29491 71.7099 1.02097C71.4102 0.747033 71.019 0.594705 70.613 0.59375Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M50.1819 0.59375C49.7757 0.595005 49.3845 0.747377 49.0844 1.0212C48.7844 1.29502 48.5969 1.6707 48.5586 2.07512H59.5074V0.59375H50.1819Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M62.7264 2.07532C62.6205 1.49747 62.318 0.974048 61.8701 0.593954C61.5328 0.308709 61.1262 0.117449 60.6914 0.0394605C60.2566 -0.0385276 59.8089 -0.000484278 59.3935 0.149751C58.9781 0.299987 58.6096 0.557103 58.3253 0.895172C58.0409 1.23324 57.8508 1.64031 57.774 2.07532C57.7455 2.22167 57.7309 2.3704 57.7305 2.5195V2.66833H62.7653V2.5195C62.764 2.37065 62.751 2.22213 62.7264 2.07532Z"
+                                        fill="#3F3D56" />
+                                    <path
+                                        d="M22.0544 0.59375H12.7266V2.07512H23.6754C23.638 1.67077 23.4511 1.29491 23.1513 1.02097C22.8516 0.747037 22.4604 0.594707 22.0544 0.59375Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M1.62333 0.59375C1.21711 0.595009 0.825883 0.747381 0.525821 1.0212C0.225758 1.29503 0.038323 1.67071 0 2.07512H10.9488V0.59375H1.62333Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M14.1694 2.07651C14.0664 1.49461 13.7618 0.967552 13.309 0.587836C12.8562 0.20812 12.2841 0 11.6932 0C11.1022 0 10.5302 0.20812 10.0774 0.587836C9.62458 0.967552 9.31996 1.49461 9.217 2.07651C9.18925 2.22294 9.17545 2.37166 9.17579 2.52069V2.66952H14.2083V2.52069C14.207 2.37184 14.194 2.22332 14.1694 2.07651Z"
+                                        fill="#3F3D56" />
+                                    <path
+                                        d="M8.00391 9.96399C26.5739 7.59534 45.3696 7.59534 63.9396 9.96399C63.8484 10.1555 63.7476 10.3422 63.6376 10.5236C54.5223 9.36879 45.3435 8.78634 36.1553 8.77966H36.1494C35.6253 8.77966 35.0983 8.77966 34.5743 8.78558H34.5654C25.7853 8.83919 17.0164 9.41957 8.3059 10.5236L8.00391 9.96399Z"
+                                        fill="#3F3D56" />
+                                    <path
+                                        d="M25.7089 54.8243C25.6759 54.8242 25.6431 54.8206 25.6109 54.8133L16.4324 52.7407C16.3755 52.7279 16.3217 52.704 16.274 52.6703C16.2263 52.6367 16.1858 52.594 16.1546 52.5447C16.1235 52.4954 16.1023 52.4404 16.0924 52.383C16.0825 52.3255 16.084 52.2666 16.0968 52.2097C16.1097 52.1528 16.1336 52.099 16.1672 52.0513C16.2008 52.0037 16.2435 51.9631 16.2928 51.932C16.3421 51.9008 16.3971 51.8797 16.4546 51.8697C16.5121 51.8598 16.5709 51.8613 16.6278 51.8742L25.8063 53.9467C25.9129 53.9708 26.0069 54.0333 26.0703 54.1223C26.1336 54.2113 26.162 54.3205 26.15 54.4291C26.1379 54.5377 26.0863 54.638 26.0049 54.7109C25.9235 54.7838 25.8182 54.8242 25.7089 54.8243Z"
+                                        fill="#DADADA" />
+                                    <path
+                                        d="M23.3417 49.1954C23.3088 49.1953 23.2759 49.1917 23.2437 49.1844L14.0652 47.1118C13.9503 47.0859 13.8504 47.0154 13.7874 46.9158C13.7245 46.8162 13.7037 46.6957 13.7296 46.5808C13.7556 46.4659 13.8261 46.366 13.9256 46.3031C14.0252 46.2401 14.1457 46.2193 14.2606 46.2453L23.4392 48.3178C23.5457 48.3419 23.6397 48.4044 23.7031 48.4934C23.7665 48.5824 23.7948 48.6916 23.7828 48.8002C23.7707 48.9087 23.7191 49.0091 23.6377 49.082C23.5564 49.1549 23.451 49.1953 23.3417 49.1954Z"
+                                        fill="#DADADA" />
+                                </svg>
+                            </div>
+                            <p class="coming-soon-text">Coming Soon</p>
+                        </div>
+                    </div>
+
+                    <!-- Invite Friends Widget -->
+                    <div class="sidebar-widget invite-widget">
+                        <h3 class="widget-title">Invite Friends</h3>
+                        <p class="invite-text">Know alumni not here yet? Share your invite link to invite them onboard.
+                        </p>
+                        <div class="invite-input-container">
+                            <input type="text" value={inviteUrl} readonly class="invite-input" />
+                            <div class="copy-btn-wrap">
+                                <button class="copy-btn" onclick={handleCopyLink} aria-label="Copy invite link">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <g clip-path="url(#clip0_16432_3607)">
+                                            <path
+                                                d="M15 20H5V7C5 6.45 4.55 6 4 6C3.45 6 3 6.45 3 7V20C3 21.1 3.9 22 5 22H15C15.55 22 16 21.55 16 21C16 20.45 15.55 20 15 20ZM20 16V4C20 2.9 19.1 2 18 2H9C7.9 2 7 2.9 7 4V16C7 17.1 7.9 18 9 18H18C19.1 18 20 17.1 20 16ZM18 16H9V4H18V16Z"
+                                                fill="white" />
+                                        </g>
+                                        <defs>
+                                            <clipPath id="clip0_16432_3607">
+                                                <rect width="24" height="24" fill="white" />
+                                            </clipPath>
+                                        </defs>
+                                    </svg>
+                                </button>
+                                <template if:true={copySuccess}>
+                                    <span class="copy-success-msg">Copied!</span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Not Found Modal -->
+            <c-ken-user-not-found-modal show-modal={showUserNotFoundModal} user-name={selectedUserName}
+                batch={selectedUserBatch} profile-image={selectedUserProfileImage}
+                onclose={handleCloseUserNotFoundModal}></c-ken-user-not-found-modal>
+
+            <!-- Filters Popup -->
+            <template if:true={showFiltersPopup}>
+                <div class="filters-overlay" onclick={handleFiltersOverlayClick}>
+                    <div class="filters-popup" onclick={handleFiltersPopupClick}>
+                        <h2 class="filters-title">Filters</h2>
+
+                        <!-- Toggle Switch -->
+                        <div class="toggle-section">
+                            <label class="toggle-label" onclick={handleToggleClick}>
+                                <input type="checkbox" class="toggle-input" checked={showMentorsNearMe} />
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-text">Show mentors near me</span>
+                        </div>
+
+                        <!-- Filter Dropdowns -->
+                        <div class="filters-content">
+                            <div class="filter-field">
+                                <c-ken-searchable-select placeholder="Company"
+                                    value={selectedFilters.company} options={companyOptions} data-field="company"
+                                    onchange={handleFilterValueChange} class="filter-select"></c-ken-searchable-select>
+                            </div>
+                            <div class="filter-field">
+                                <c-ken-searchable-select placeholder="Industry"
+                                    value={selectedFilters.industry} options={industryOptions} data-field="industry"
+                                    onchange={handleFilterValueChange} class="filter-select"></c-ken-searchable-select>
+                            </div>
+                            <div class="filter-field">
+                                <c-ken-searchable-select placeholder="Job function"
+                                    value={selectedFilters.jobFunction} options={jobFunctionOptions} data-field="jobFunction"
+                                    onchange={handleFilterValueChange} class="filter-select"></c-ken-searchable-select>
+                            </div>
+                            <div class="filter-field">
+                                <c-ken-searchable-select placeholder="Program last attended"
+                                    value={selectedFilters.programLastAttended} options={programLastAttendedOptions} data-field="programLastAttended"
+                                    onchange={handleFilterValueChange} class="filter-select"></c-ken-searchable-select>
+                            </div>
+                            <div class="filter-field">
+                                <c-ken-searchable-select placeholder="Specialisation"
+                                    value={selectedFilters.specialisation} options={specialisationOptions} data-field="specialisation"
+                                    onchange={handleFilterValueChange} class="filter-select"></c-ken-searchable-select>
+                            </div>
+                            <div class="filter-field">
+                                <c-ken-searchable-select placeholder="Graduation year"
+                                    value={selectedFilters.graduationYear} options={graduationYearOptions} data-field="graduationYear"
+                                    onchange={handleFilterValueChange} class="filter-select"></c-ken-searchable-select>
+                            </div>
+                            <div class="filter-field">
+                                <c-ken-searchable-select placeholder="City / Town"
+                                    value={selectedFilters.currentCity} options={currentCityOptions} data-field="currentCity"
+                                    onchange={handleFilterValueChange} class="filter-select"></c-ken-searchable-select>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons (sticky on mobile) -->
+                        <div class="filters-actions">
+                            <button class="reset-filters-btn" onclick={handleResetFilters}>Reset</button>
+                            <button class="apply-filters-btn" onclick={handleApplyFilters}>Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template if:true={showMapModal}>
+                <div class="filters-overlay map-modal-overlay" onclick={handleMapModalClose}>
+                    <div class="map-modal" onclick={handleMapModalClick}>
+                        <button class="map-modal-close" onclick={handleMapModalClose} title="Close">
+                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                        </button>
+                        <c-ken-alumni-map map-height={mapModalHeight}></c-ken-alumni-map>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

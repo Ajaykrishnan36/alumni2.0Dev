@@ -1,0 +1,118 @@
+<template>
+    <div class="welcome-page">
+        <!-- Skip Button -->
+        <button class="skip-button" type="button" onclick={handleSkip}>Skip</button>
+        
+        <div class="welcome-container">
+            <!-- Mobile Logo -->
+             <div class="mobile-logo-container">
+                <img src={kenLogoUrl} alt="Ken42" class="ken-logo" />
+            </div>
+
+            <!-- Left Section -->
+            <div class="left-section">
+                <!-- Logo -->
+                <div class="logo-container">
+                    <img src={kenLogoUrl} alt="Ken42" class="ken-logo" />
+                </div>
+
+                <!-- Subtitle -->
+                <p class="subtitle">Experience Connection</p>
+
+                <!-- Main Title -->
+                <h1 class="main-title">Welcome to the {institutionName} Alumni Network!</h1>
+                <div class="title-underline"></div>
+
+                <!-- Description -->
+                <p class="description">{currentSlideDescription}</p>
+                <p class="powered-by">Powered by <img src={kenPoweredbyLogoUrl} alt="Ken42" class="ken-logo-poweredby" /></p>
+            </div>
+
+            <!-- Right Section -->
+            <div class="right-section">
+                <!-- Slide 1: Welcome Image 1 -->
+                <template if:true={isSlide1}>
+                    <div class="right-content-wrapper">
+                        <div class="welcome-image-container">
+                            <img src={welcomeImage1Url} alt="Welcome" class="welcome-image welcome-image-small welcome-image-height-reduced" />
+                        </div>
+                        <div class="right-section-text">
+                            <h2 class="right-section-title">{rightSectionTitle}</h2>
+                            <p class="right-section-subtitle">{rightSectionSubtitle}</p>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Slide 2: Welcome Image 2 -->
+                <template if:true={isSlide2}>
+                    <div class="right-content-wrapper">
+                        <div class="welcome-image-container">
+                            <img src={welcomeImage2Url} alt="Welcome" class="welcome-image welcome-image-small" />
+                        </div>
+                        <div class="right-section-text">
+                            <h2 class="right-section-title">{rightSectionTitle}</h2>
+                            <p class="right-section-subtitle">{rightSectionSubtitle}</p>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Slide 3: Welcome Image 3 -->
+                <template if:true={isSlide3}>
+                    <div class="right-content-wrapper">
+                        <div class="welcome-image-container">
+                            <img src={welcomeImage3Url} alt="Welcome" class="welcome-image welcome-image-height-large" />
+                        </div>
+                        <div class="right-section-text">
+                            <h2 class="right-section-title">{rightSectionTitle}</h2>
+                            <p class="right-section-subtitle">{rightSectionSubtitle}</p>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Bottom Navigation (desktop: inside right section) -->
+                <div class="bottom-navigation">
+                    <div class="nav-section">
+                        <div class="pagination-bars">
+                            <div class={bar1Class}></div>
+                            <div class={bar2Class}></div>
+                            <div class={bar3Class}></div>
+                        </div>
+                        <div class="nav-buttons">
+                            <template if:true={hasPrevious}>
+                                <button class="nav-button prev" type="button" onclick={handlePrevious}>
+                                    <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+                                </button>
+                            </template>
+                            <button class="nav-button next" type="button" onclick={handleNext}>
+                                {buttonText}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile only: fixed bottom navigation -->
+        <div class="bottom-navigation-mobile-wrapper">
+            <div class="bottom-navigation-mobile">
+                <div class="nav-section">
+                    <div class="pagination-bars">
+                        <div class={bar1Class}></div>
+                        <div class={bar2Class}></div>
+                        <div class={bar3Class}></div>
+                    </div>
+                    <div class="nav-buttons">
+                        <template if:true={hasPrevious}>
+                            <button class="nav-button prev" type="button" onclick={handlePrevious}>
+                                <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+                            </button>
+                        </template>
+                        <button class="nav-button next" type="button" onclick={handleNext}>
+                            {buttonText}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

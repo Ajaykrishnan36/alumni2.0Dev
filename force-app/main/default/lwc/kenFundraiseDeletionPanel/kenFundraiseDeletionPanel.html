@@ -1,0 +1,44 @@
+<template>
+    <div class="panel">
+        <template if:true={loading}>
+            <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+        </template>
+
+        <template if:false={loading}>
+            <template if:true={data.length}>
+                <lightning-datatable
+                    key-field="id"
+                    data={data}
+                    columns={columns}
+                    hide-checkbox-column
+                    wrap-text-max-lines="3"
+                    onrowaction={handleRowAction}
+                ></lightning-datatable>
+            </template>
+            <template if:false={data.length}>
+                <div class="empty">No pending deletion requests.</div>
+            </template>
+        </template>
+    </div>
+
+    <template if:true={showConfirm}>
+        <div class="overlay" onclick={handleCancel}>
+            <div class="modal" onclick={stopProp}>
+                <h2 class="modal-title">Confirm Deletion</h2>
+                <p class="modal-body">
+                    Permanently delete <strong>{confirmRow.name}</strong>? This cannot be undone.
+                </p>
+                <template if:true={actionError}>
+                    <p class="modal-error">{actionError}</p>
+                </template>
+                <div class="modal-footer">
+                    <button class="btn-cancel" onclick={handleCancel} disabled={actionInProgress}>Cancel</button>
+                    <button class="btn-danger" onclick={handleConfirm} disabled={actionInProgress}>
+                        <template if:true={actionInProgress}>Deleting…</template>
+                        <template if:false={actionInProgress}>Yes, Delete</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

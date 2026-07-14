@@ -1,0 +1,156 @@
+<template>
+    <section class="tracker-page">
+        <div class="tracker-topbar">
+            <button class="back-btn" onclick={handleBack}>
+                <span class="back-btn__arrow">←</span> Back
+            </button>
+        </div>
+
+        <!-- Header card -->
+        <article class="tracker-card">
+            <header class="job-head">
+                <div class="job-head__left">
+                    <div class="job-head__logo" style={logoStyle}>{logoLetter}</div>
+                    <div class="job-head__main">
+                        <p class="job-head__title">{job.title}</p>
+                        <p class="job-head__sub">{job.company}</p>
+                        <p class="job-head__salary">{job.salary}</p>
+                        <div class="job-head__tags">
+                            <template for:each={tagItems} for:item="tg">
+                                <span key={tg.key} class="pill pill--brand">{tg.label}</span>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                <div class="job-head__right">
+                    <template lwc:if={hasMatch}>
+                        <span class="match-chip">✓ {matchPercent} match</span>
+                    </template>
+                    <template lwc:if={hasAppliedStatus}>
+                        <span class={appliedStatusClass}>{appliedStatus}</span>
+                    </template>
+                </div>
+            </header>
+
+            <!-- Application Process stepper -->
+            <template lwc:if={hasSteps}>
+                <section class="stepper-wrap">
+                    <h4 class="section-title">Application Process</h4>
+                    <ol class="stepper">
+                        <template for:each={steps} for:item="s">
+                            <li key={s.key} class={s.cssClass}>
+                                <div class="step__circle">
+                                    <template lwc:if={s.isCompleted}>
+                                        <span class="step__check">✓</span>
+                                    </template>
+                                    <template lwc:elseif={s.isRejected}>
+                                        <span class="step__check">×</span>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="step__num">{s.indexLabel}</span>
+                                    </template>
+                                </div>
+                                <p class="step__label">{s.label}</p>
+                            </li>
+                        </template>
+                    </ol>
+                </section>
+            </template>
+
+            <!-- State-driven action panel -->
+            <template lwc:if={hasStatePanel}>
+                <section class="state-panel-wrap">
+                    <template lwc:if={isActionRequired}>
+                        <div class="state-panel state-panel--info">
+                            <div class="state-panel__icon">⚡</div>
+                            <div class="state-panel__body">
+                                <p class="state-panel__title">{nextActionTitle}</p>
+                                <p class="state-panel__sub">{nextActionDeadline}</p>
+                            </div>
+                            <button class="btn btn--primary" onclick={handleBookSlot}>{nextActionCta}</button>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isOffered}>
+                        <div class="state-panel state-panel--celebrate">
+                            <div class="state-panel__icon">🎉</div>
+                            <div class="state-panel__body">
+                                <p class="state-panel__title">Congratulations — you have an offer!</p>
+                                <template lwc:if={hasOffer}>
+                                    <p class="state-panel__sub">{offer.totalCTC} · Joining {offer.joiningDate}</p>
+                                </template>
+                            </div>
+                            <div class="state-panel__actions">
+                                <button class="btn btn--ghost" onclick={handleCompare}>Compare Offers</button>
+                                <button class="btn btn--success" onclick={handleAccept}>Accept Offer</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isRejected}>
+                        <div class="state-panel state-panel--danger">
+                            <div class="state-panel__icon">⚠️</div>
+                            <div class="state-panel__body">
+                                <p class="state-panel__title">Application not selected</p>
+                                <p class="state-panel__sub">Feedback from the hiring team is available. Keep going — your next role is around the corner.</p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isSlotClosed}>
+                        <div class="state-panel state-panel--warning">
+                            <div class="state-panel__icon">⏳</div>
+                            <div class="state-panel__body">
+                                <p class="state-panel__title">Interview slot closed</p>
+                                <p class="state-panel__sub">Awaiting next steps from the recruiter. We will notify you as soon as there is an update.</p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isInProgress}>
+                        <div class="state-panel state-panel--neutral">
+                            <div class="state-panel__icon">⏱️</div>
+                            <div class="state-panel__body">
+                                <p class="state-panel__title">Application in review</p>
+                                <p class="state-panel__sub">Your application is with the hiring team. No action needed right now.</p>
+                            </div>
+                        </div>
+                    </template>
+                </section>
+            </template>
+
+            <!-- About the job -->
+            <section class="about-section">
+                <h4 class="section-title">About the Job</h4>
+                <p class="about-text">
+                    Join {job.company} as a {job.title}. Work with a high-performing team on mission-critical
+                    systems, ship impact every sprint, and grow alongside operators who have done it before.
+                </p>
+                <h5 class="sub-title">Requirements</h5>
+                <ul class="bullet-list">
+                    <li>3+ years experience in a similar role</li>
+                    <li>Strong fundamentals in core technologies</li>
+                    <li>Excellent communication and ownership</li>
+                </ul>
+                <h5 class="sub-title">Benefits</h5>
+                <ul class="bullet-list">
+                    <li>Competitive salary and equity</li>
+                    <li>Health insurance for you and family</li>
+                    <li>Flexible work arrangements</li>
+                </ul>
+            </section>
+
+            <!-- Sticky action footer -->
+            <footer class="tracker-action-bar">
+                <button class="btn btn--ghost" onclick={handleBack}>Back to Jobs</button>
+                <template lwc:if={isActionRequired}>
+                    <button class="btn btn--primary" onclick={handleBookSlot}>{nextActionCta}</button>
+                </template>
+                <template lwc:if={isOffered}>
+                    <button class="btn btn--secondary" onclick={handleCompare}>Compare Offers</button>
+                    <button class="btn btn--success" onclick={handleAccept}>Accept Offer</button>
+                </template>
+            </footer>
+        </article>
+    </section>
+</template>

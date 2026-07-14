@@ -1,0 +1,164 @@
+<template>
+    <div class="dashboard">
+
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="dash-header-top">
+                <div>
+                    <h1 class="dash-title">Survey &amp; Questionnaire Dashboard</h1>
+                    <p class="dash-subtitle">Insights across surveys, responses, and question analytics</p>
+                </div>
+                <div class="dash-actions">
+                    <button class="create-btn" onclick={handleCreateQuestionnaire}>Create Questionnaire</button>
+                    <button class="create-btn" onclick={handleCreateSurvey}>Create Survey</button>
+                    <button class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
+                        <template if:true={isRefreshing}>
+                            <span class="btn-spinner"></span>Refreshing...
+                        </template>
+                        <template if:false={isRefreshing}>
+                            &#x21BB; Refresh
+                        </template>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Approval Status</label>
+                    <select class="filter-select" data-field="filterApproval" onchange={handleFilterChange}>
+                        <option value="All">All Approval Statuses</option>
+                        <template for:each={approvalOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Active Status</label>
+                    <select class="filter-select" data-field="filterActive" onchange={handleFilterChange}>
+                        <option value="All">All Active Status</option>
+                        <option value="Active Only">Active Only</option>
+                        <option value="Inactive Only">Inactive Only</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Year</label>
+                    <select class="filter-select" data-field="filterYear" onchange={handleFilterChange}>
+                        <option value="All">All Years</option>
+                        <template for:each={yearOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <button class="clear-btn" onclick={clearFilters}>&#x2715; Clear</button>
+            </div>
+        </div>
+
+        <!-- Summary Stat Cards -->
+        <div class="stat-row">
+            <div class="stat-card stat-card-clickable" data-type="total" onclick={handleStatCardClick} title="Click to view all surveys">
+                <div class="stat-icon-wrap stat-purple">&#128203;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{stats.total}</div>
+                    <div class="stat-label">Total Surveys</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="active" onclick={handleStatCardClick} title="Click to view active surveys">
+                <div class="stat-icon-wrap stat-green">&#9989;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{stats.active}</div>
+                    <div class="stat-label">Active Surveys</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="responses" onclick={handleStatCardClick} title="Click to view all responses">
+                <div class="stat-icon-wrap stat-blue">&#128202;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{stats.responses}</div>
+                    <div class="stat-label">Total Responses</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="pending" onclick={handleStatCardClick} title="Click to view pending approval surveys">
+                <div class="stat-icon-wrap stat-orange">&#9203;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{stats.pending}</div>
+                    <div class="stat-label">Pending Approval</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Approval Status, Active Status, Response Trend -->
+        <div class="grid grid-3">
+            <c-ken-donut-chart
+                title="Surveys by Approval Status"
+                description="Breakdown of surveys by approval state"
+                data={surveysByApprovalData}
+                is-loading={loadingByApproval}
+                dimension="approval"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-donut-chart
+                title="Active vs Inactive"
+                description="Distribution of active and inactive surveys"
+                data={surveysByActiveData}
+                is-loading={loadingByActive}
+                dimension="active"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Response Trend"
+                description="Monthly response volume across filtered surveys"
+                data={responseTrendData}
+                is-loading={loadingTrend}
+                dimension="trend"
+                chart-type="line"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+        <!-- Row 2: Top Surveys, Question Types, Top Questionnaires -->
+        <div class="grid grid-3">
+            <c-ken-bar-chart
+                title="Top Surveys by Responses"
+                description="Surveys with the highest response count"
+                data={topSurveysByResponsesData}
+                is-loading={loadingTopSurveys}
+                dimension="survey_responses"
+                chart-type="horizontal"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-donut-chart
+                title="Question Type Distribution"
+                description="Breakdown of question types across questionnaires"
+                data={questionTypeData}
+                is-loading={loadingQType}
+                dimension="qtype"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Top Questionnaires"
+                description="Questionnaires linked to the most surveys"
+                data={topQuestionnairesData}
+                is-loading={loadingTopQ}
+                dimension="questionnaire"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+    </div>
+
+    <!-- Drill-down Modal -->
+    <c-ken-survey-list-modal
+        is-open={modalOpen}
+        title={modalTitle}
+        modal-mode={modalMode}
+        survey-list={modalSurveys}
+        response-list={modalResponses}
+        is-loading={modalLoading}
+        onclose={handleModalClose}
+    ></c-ken-survey-list-modal>
+</template>

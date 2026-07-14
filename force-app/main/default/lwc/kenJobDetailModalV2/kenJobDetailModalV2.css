@@ -1,0 +1,31 @@
+:host { display: contents; }
+.owner-note { display: inline-flex; align-items: center; padding: 10px 14px; border-radius: 8px; background: #F3F4F6; color: #6B7280; font-weight: 500; font-size: 13px; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,0.55); display: flex; align-items: flex-start; justify-content: center; z-index: 9999; padding: 32px 24px; overflow-y: auto; }
+.modal { background: #fff; border-radius: 8px; width: 100%; max-width: 720px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.25); margin: auto 0; }
+.modal-cover { height: 170px; position: relative; overflow: hidden; }
+.modal-cover-overlay { position: absolute; left: 24px; bottom: 18px; right: 24px; display: flex; align-items: center; gap: 14px; }
+.modal-cover-logo { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+.modal-cover-text { color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+.modal-cover-company { font-size: 12px; font-weight: 600; letter-spacing: 0.5px; opacity: 0.92; text-transform: uppercase; }
+.modal-cover-role { font-size: 22px; font-weight: 700; line-height: 1.2; margin-top: 2px; }
+.modal-cover-tags { position: absolute; top: 14px; left: 14px; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag--inverse { background: rgba(255,255,255,0.95); color: #373A45; border: 0; font-size: 9.5px; font-weight: 500; border-radius: 999px; padding: 2px 7px; }
+.modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: 0; background: rgba(255,255,255,0.95); cursor: pointer; font-size: 20px; color: #373A45; line-height: 1; }
+.modal-location { display: flex; align-items: center; gap: 6px; padding: 12px 24px 0; font-size: 13px; color: #6B7280; }
+.modal-location svg { flex: 0 0 auto; }
+.modal-head-row { display: flex; align-items: flex-start; justify-content: space-between; padding: 18px 24px 8px; gap: 12px; }
+.modal-title { font-size: 20px; font-weight: 700; margin: 0 0 4px; color: #111827; }
+.modal-sub { font-size: 13px; color: #6B7280; }
+.job__match { font-weight: 500; font-size: 11px; color: #19A974; }
+.job__match--no { color: #E11D48; }
+.modal-body { padding: 16px 24px; max-height: 60vh; overflow-y: auto; }
+.modal-p { font-size: 13px; color: #6B7280; margin: 0 0 10px; line-height: 1.55; }
+.modal-list { padding-left: 20px; margin: 0 0 12px; }
+.modal-list li { font-size: 13px; color: #6B7280; line-height: 1.7; }
+.sec-h { font-size: 13px; font-weight: 700; color: #111827; margin: 14px 0 6px; }
+.modal-footer { display: flex; gap: 8px; padding: 14px 24px 20px; align-items: center; border-top: 1px solid #F1F5F9; flex-wrap: wrap; }
+.footer-link { margin-left: auto; font-size: 12px; color: #3061FF; cursor: pointer; }
+.btn { border: 0; border-radius: 6px; padding: 8px 14px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.btn--primary { background: #3061FF; color: #fff; }
+.btn--primary:disabled { background: #B2B3B7; cursor: not-allowed; }
+.btn--ghost { background: #fff; border: 1px solid #E5E6E8; color: #373A45; }

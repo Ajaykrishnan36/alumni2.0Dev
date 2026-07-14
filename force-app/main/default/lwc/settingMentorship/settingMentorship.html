@@ -1,0 +1,82 @@
+<template>
+    <div class="mentorship-container">
+        <h2 class="section-title">Mentorship</h2>
+
+        <!-- Be a mentor Section -->
+        <div class="card setting-section">
+            <div class="toggle-row">
+                <div class="toggle-label-group">
+                    <span class="toggle-label">Be a mentor</span>
+                    <p class="toggle-description">Share your experience with fellow alumni by offering guidance, career
+                        advice, or support.</p>
+                </div>
+                <lightning-input type="toggle" checked={isMentor} onchange={handleMentorToggle} class="mentor-toggle"
+                    variant="label-hidden">
+                </lightning-input>
+            </div>
+        </div>
+
+        <!-- Areas of expertise Section -->
+        <div class="card setting-section">
+            <h3 class="section-subtitle">Areas of expertise</h3>
+            <div class="expertise-inputs">
+                <lightning-combobox label="Select expertise" value={selectedExpertise1} options={expertiseOptions}
+                    onchange={handleExpertise1Change} class="expertise-select" disabled={isDisabled}>
+                </lightning-combobox>
+                <lightning-combobox label="Select expertise" value={selectedExpertise2} options={expertiseOptions}
+                    onchange={handleExpertise2Change} class="expertise-select" disabled={isDisabled}>
+                </lightning-combobox>
+            </div>
+        </div>
+
+        <!-- Mentorship preferences Section -->
+        <div class="card setting-section">
+            <h3 class="section-subtitle">Mentorship preferences</h3>
+            <h4 class="subsection-title">Preferred method of communication</h4>
+            <div class="checkbox-group">
+                <template for:each={communicationMethods} for:item="method">
+                    <div key={method.value} class="checkbox-item">
+                        <lightning-input type="checkbox" label={method.label} checked={method.checked}
+                            data-value={method.value} onchange={handleCommunicationChange} disabled={isDisabled}>
+                        </lightning-input>
+                    </div>
+                </template>
+            </div>
+
+            <h4 class="subsection-title">Maximum number of people I want to mentor at a time</h4>
+            <div class="number-input-group">
+                <div class="number-input-wrapper">
+                    <button type="button" class="number-btn" onclick={decrementCount} disabled={isDisabled}>-</button>
+                    <input type="number" class="number-input" value={maxMentees} min="0"
+                        onchange={handleMaxMenteesChange} disabled={isDisabled} />
+                    <button type="button" class="number-btn" onclick={incrementCount} disabled={isDisabled}>+</button>
+                </div>
+                <div class="radio-group">
+                    <lightning-input type="radio" label="Unlimited" checked={isUnlimited} name="menteeLimit"
+                        onchange={handleUnlimitedChange} disabled={isDisabled}>
+                    </lightning-input>
+                </div>
+            </div>
+        </div>
+
+        <!-- Privacy and confidentiality Section -->
+        <div class="card setting-section">
+            <h3 class="section-subtitle">Privacy and confidentiality</h3>
+            <h4 class="subsection-title">Manage who can see your contact information</h4>
+            <div class="toggle-group">
+                <div class="toggle-item">
+                    <span class="toggle-label">Show my Email</span>
+                    <lightning-input type="toggle" checked={showEmail} onchange={handleShowEmailChange}
+                        disabled={isDisabled}>
+                    </lightning-input>
+                </div>
+                <div class="toggle-item">
+                    <span class="toggle-label">Show my contact number</span>
+                    <lightning-input type="toggle" checked={showContactNumber} onchange={handleShowContactNumberChange}
+                        disabled={isDisabled}>
+                    </lightning-input>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

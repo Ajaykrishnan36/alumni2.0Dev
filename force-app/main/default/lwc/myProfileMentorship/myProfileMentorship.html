@@ -1,0 +1,174 @@
+<template>
+    <div class="mentorship-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h2 class="section-title">Mentorship Connections</h2>
+            <div class="header-controls">
+                <div class="search-box">
+                    <lightning-icon icon-name="utility:search" size="x-small" class="search-icon"></lightning-icon>
+                    <input type="text" placeholder="Search" class="search-input" />
+                    <lightning-icon icon-name="utility:voice" size="x-small" class="mic-icon"></lightning-icon>
+                </div>
+                <button class="control-btn" onclick={handleSort}>
+                    Sort by: A - Z
+                    <lightning-icon icon-name="utility:sort" size="x-small" class="btn-icon-right"></lightning-icon>
+                </button>
+                <button class="control-btn" onclick={handleFilter}>
+                    Filters
+                    <lightning-icon icon-name="utility:filterList" size="x-small"
+                        class="btn-icon-right"></lightning-icon>
+                </button>
+                <button class="preferences-btn" onclick={handleEditPreferences}>
+                    Edit Preferences
+                </button>
+            </div>
+        </div>
+
+        <!-- Mentors Grid -->
+        <div class="mentors-grid">
+            <template for:each={mentors} for:item="mentor">
+                <div key={mentor.id} class="mentor-card">
+                    <div class="card-content">
+                        <!-- Mentor Badge -->
+                        <template lwc:if={mentor.type}>
+                            <span class={mentor.typeClass}>{mentor.type}</span>
+                        </template>
+
+                        <!-- Avatar -->
+                        <div class="avatar-wrapper">
+                            <img src={mentor.avatarUrl} class="mentor-avatar" alt={mentor.name}>
+                            <template lwc:if={mentor.isOnline}>
+                                <span class="online-indicator"></span>
+                            </template>
+                        </div>
+
+                        <!-- Info -->
+                        <h3 class="mentor-name">{mentor.name}</h3>
+                        <p class="mentor-designation">{mentor.designation}</p>
+
+                        <div class="mentor-location">
+                            <lightning-icon icon-name="utility:checkin" size="xx-small"
+                                class="location-icon"></lightning-icon>
+                            <span>{mentor.location}</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Preferences Modal -->
+    <template lwc:if={showPreferencesModal}>
+        <div class="modal-overlay">
+            <div class="modal-content preferences-modal">
+                <div class="modal-header">
+                    <h2>Mentorship Preferences</h2>
+                </div>
+                <div class="modal-body">
+                    <!-- Areas of Expertise -->
+                    <div class="form-section">
+                        <h3>Areas of Expertise</h3>
+                        <div class="form-group">
+                            <label>Select expertise</label>
+                            <!-- Custom dropdown mock using simple select for now -->
+                            <select class="text-input" data-field="expertise" onchange={handleInputChange}>
+                                <option>Select expertise</option>
+                                <option>Product Design</option>
+                                <option>Engineering</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Mentorship preferences -->
+                    <div class="form-section">
+                        <h3>Mentorship preferences</h3>
+                        <div class="grid-row">
+                            <div class="form-group half-width">
+                                <label>Type of Mentees</label>
+                                <select class="text-input" data-field="menteeType" onchange={handleInputChange}>
+                                    <option>Choose mentee type</option>
+                                    <option>Students</option>
+                                    <option>Juniors</option>
+                                </select>
+                            </div>
+                            <div class="form-group half-width">
+                                <label>Preferred method of communication</label>
+                                <div class="checkbox-group-row">
+                                    <label class="checkbox-box">
+                                        <input type="checkbox" checked={preferences.communication.email}
+                                            data-field="email" data-group="communication" onchange={handleInputChange}>
+                                        <span>Email</span>
+                                    </label>
+                                    <label class="checkbox-box">
+                                        <input type="checkbox" checked={preferences.communication.sms} data-field="sms"
+                                            data-group="communication" onchange={handleInputChange}>
+                                        <span>SMS</span>
+                                    </label>
+                                    <label class="checkbox-box">
+                                        <input type="checkbox" checked={preferences.communication.whatsapp}
+                                            data-field="whatsapp" data-group="communication"
+                                            onchange={handleInputChange}>
+                                        <span>Whatsapp</span>
+                                    </label>
+                                    <label class="checkbox-box">
+                                        <input type="checkbox" checked={preferences.communication.inPerson}
+                                            data-field="inPerson" data-group="communication"
+                                            onchange={handleInputChange}>
+                                        <span>In-Person Meeting</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Maximum number of people I want to mentor at a time</label>
+                            <div class="counter-row">
+                                <div class="counter-input">
+                                    <input type="number" value={preferences.maxMentees} class="text-input count-input"
+                                        onchange={handleCountChange}>
+                                    <div class="stepper-controls">
+                                        <button class="step-btn minus">-</button>
+                                        <button class="step-btn plus">+</button>
+                                    </div>
+                                </div>
+                                <label class="radio-box">
+                                    <input type="radio" checked={preferences.isUnlimited} data-field="isUnlimited"
+                                        onchange={handleUnlimitedChange}>
+                                    <span>Unlimited</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Privacy -->
+                    <div class="form-section">
+                        <h3>Privacy and confidentiality</h3>
+                        <p class="sub-label">Manage who can see your contact information</p>
+
+                        <div class="toggle-row">
+                            <span>Show my Email</span>
+                            <label class="switch">
+                                <input type="checkbox" checked={preferences.showEmail} data-field="showEmail"
+                                    onchange={handleInputChange}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+
+                        <div class="toggle-row">
+                            <span>Show my contact number</span>
+                            <label class="switch">
+                                <input type="checkbox" checked={preferences.showContact} data-field="showContact"
+                                    onchange={handleInputChange}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="cancel-btn" onclick={closePreferencesModal}>Cancel</button>
+                    <button class="save-modal-btn" onclick={savePreferences}>Save</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,67 @@
+<template>
+    <section class="cmp-page">
+        <div class="cmp-topbar">
+            <button class="back-btn" onclick={handleBack}>
+                <span class="back-btn__arrow">←</span> Back
+            </button>
+            <h1 class="cmp-title">Compare your Offers</h1>
+        </div>
+
+        <template lwc:if={hasJobs}>
+            <p class="cmp-note">{countNote}</p>
+            <div class="cmp-grid">
+                <template for:each={decoratedJobs} for:item="j">
+                    <article key={j.key} class="cmp-card">
+                        <header class="cmp-card__head">
+                            <div class="cmp-card__logo" style={j.logoStyle}>{j.logoInitial}</div>
+                            <div>
+                                <h2 class="cmp-card__company">{j.company}</h2>
+                                <p class="cmp-card__title">{j.title}</p>
+                            </div>
+                        </header>
+
+                        <section class="cmp-row cmp-row--ctc">
+                            <h3 class="cmp-row__h">Total CTC</h3>
+                            <p class="cmp-row__big">{j.totalCTC}</p>
+                            <ul class="cmp-row__kv">
+                                <li><span>Fixed</span><strong>{j.fixed}</strong></li>
+                                <li><span>Variable</span><strong>{j.variable}</strong></li>
+                                <li><span>Bonus</span><strong>{j.bonus}</strong></li>
+                            </ul>
+                        </section>
+
+                        <section class="cmp-row cmp-row--perks">
+                            <h3 class="cmp-row__h">Perks &amp; Benefits</h3>
+                            <ul class="cmp-row__perks">
+                                <template for:each={j.perks} for:item="p">
+                                    <li key={p.key}>{p.label}</li>
+                                </template>
+                            </ul>
+                        </section>
+
+                        <section class="cmp-row cmp-row--small">
+                            <h3 class="cmp-row__h">Joining</h3>
+                            <p class="cmp-row__val">{j.joiningDate}</p>
+                        </section>
+
+                        <section class="cmp-row cmp-row--small">
+                            <h3 class="cmp-row__h">Bond</h3>
+                            <p class="cmp-row__val">{j.bond}</p>
+                        </section>
+
+                        <footer class="cmp-card__foot">
+                            <button class="btn btn--decline" data-id={j.id} onclick={handleDecline}>Decline</button>
+                            <button class="btn btn--accept"  data-id={j.id} onclick={handleAccept}>Accept</button>
+                        </footer>
+                    </article>
+                </template>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="cmp-empty">
+                <p>No offers selected for comparison. Open an offer from the tracker to start comparing.</p>
+            </div>
+        </template>
+    </section>
+</template>

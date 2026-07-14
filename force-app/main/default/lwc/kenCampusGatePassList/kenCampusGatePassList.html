@@ -1,0 +1,197 @@
+<template>
+    <section class="gpl-page">
+
+        <!-- Header -->
+        <header class="gpl-header">
+            <h1 class="gpl-title">All Passes</h1>
+            <div class="gpl-header-actions">
+                <button type="button" class="gpl-btn-outline">
+                    <span>Filters</span>
+                    <lightning-icon icon-name="utility:filter" size="xx-small"></lightning-icon>
+                </button>
+                <button type="button" class="gpl-btn-outline">
+                    <span>Sort by</span>
+                    <lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon>
+                </button>
+                <button type="button" class="gpl-create-btn" onclick={handleCreateGatePass}>
+                    + Create New Gate Pass
+                </button>
+            </div>
+        </header>
+
+        <!-- Filter tabs -->
+        <div class="gpl-tabs">
+            <template for:each={filterTabs} for:item="tab">
+                <button key={tab.key} type="button" class={tab.tabClass}
+                    data-filter={tab.key} onclick={handleFilterClick}>
+                    {tab.label}
+                </button>
+            </template>
+        </div>
+
+        <!-- Scrollable body -->
+        <div class="gpl-body">
+
+            <!-- Theme / data loading skeleton -->
+            <template lwc:if={isLoading}>
+                <c-ken-skeleton-loader variant="list" rows="5"></c-ken-skeleton-loader>
+            </template>
+
+            <template lwc:else>
+
+                <!-- Empty state -->
+                <template lwc:if={hasCasesEmpty}>
+                    <div class="gpl-empty">
+                        <p>{emptyMessage}</p>
+                        <button type="button" class="gpl-create-btn" onclick={handleCreateGatePass}>
+                            Create your first gate pass
+                        </button>
+                    </div>
+                </template>
+
+                <!-- Cases list -->
+                <template lwc:if={hasCases}>
+                    <div class="gpl-scroll-outer">
+                        <div class="gpl-scroll-area">
+                            <div class="gpl-list">
+                                <template for:each={cases} for:item="row">
+                                    <div key={row.caseId} class="gpl-card" data-case-id={row.caseId} onclick={handleViewCase}>
+
+                                        <!-- Card top row: case number | timestamp + status + action -->
+                                        <div class="gpl-card-top">
+                                            <span class="gpl-case-num">#{row.caseNumber}</span>
+                                            <div class="gpl-top-right">
+                                                <span class="gpl-timestamp">{row.tsPrefix}<strong>{row.tsDate}</strong></span>
+                                                <span class={row.statusClass}>{row.statusLabel}</span>
+                                                <template if:true={row.hasGatePass}>
+                                                    <button type="button" class="gpl-view-btn"
+                                                        data-case-id={row.caseId}
+                                                        onclick={handleViewPass}>
+                                                        View Pass
+                                                    </button>
+                                                </template>
+                                                <template if:true={row.canLeaveFeedback}>
+                                                    <button type="button" class="gpl-feedback-btn"
+                                                        data-case-id={row.caseId}
+                                                        onclick={handleViewCase}>
+                                                        Leave Feedback
+                                                    </button>
+                                                </template>
+                                            </div>
+                                        </div>
+
+                                        <!-- Pass type -->
+                                        <p class="gpl-pass-type">{row.passType}</p>
+
+                                        <!-- Visitor info (if any) -->
+                                        <template if:true={row.visitorInfo}>
+                                            <p class="gpl-visitor">Visitor: <strong>{row.visitorInfo}</strong></p>
+                                        </template>
+
+                                        <!-- Description -->
+                                        <template if:true={row.description}>
+                                            <p class="gpl-description">{row.description}</p>
+                                        </template>
+
+                                        <!-- Dates -->
+                                        <div class="gpl-dates">
+                                            <lightning-icon icon-name="utility:event" size="xx-small" class="gpl-date-icon"></lightning-icon>
+                                            <template if:true={row.entryTimeFormatted}>
+                                                <span>Entry Date &amp; Time: <strong>{row.entryTimeFormatted}</strong>&nbsp;&nbsp;|&nbsp;&nbsp;Exit Date &amp; Time: <strong>{row.exitTimeFormatted}</strong></span>
+                                            </template>
+                                            <template if:false={row.entryTimeFormatted}>
+                                                <template if:true={row.exitTimeFormatted}>
+                                                    <span>Exit Date &amp; Time: <strong>{row.exitTimeFormatted}</strong></span>
+                                                </template>
+                                            </template>
+                                        </div>
+
+                                        <!-- Attachments -->
+                                        <template if:true={row.hasAttachments}>
+                                            <div class="gpl-attachments" onclick={stopProp}>
+                                                <template for:each={row.attachmentNames} for:item="fname">
+                                                    <span key={fname} class="gpl-attach-tag">
+                                                        <lightning-icon icon-name="utility:attach" size="xx-small"></lightning-icon>
+                                                        {fname}
+                                                    </span>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <!-- Cancel button -->
+                                        <template if:true={row.canCancel}>
+                                            <div class="gpl-card-footer" onclick={stopProp}>
+                                                <button type="button" class="gpl-cancel-btn"
+                                                    data-case-id={row.caseId}
+                                                    onclick={handleCancelRequest}
+                                                    disabled={isCanceling}>
+                                                    Cancel Request
+                                                </button>
+                                            </div>
+                                        </template>
+
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+            </template>
+
+        </div>
+    </section>
+
+    <!-- View Pass Modal -->
+    <template if:true={showPassModal}>
+        <div class="gpl-overlay" onclick={handleCloseModal}>
+            <div class="gpl-modal" onclick={stopProp}>
+
+                <div class="gpl-modal-hdr">
+                    <h2 class="gpl-modal-title">Gate Pass Details</h2>
+                    <button type="button" class="gpl-modal-close" onclick={handleCloseModal}>✕</button>
+                </div>
+
+                <div class="gpl-modal-pass-info">
+                    <div class="gpl-modal-qr-col">
+                        <template if:true={modalQrUrl}>
+                            <img src={modalQrUrl} alt={modalPassName} width="180" height="180"
+                                 class="gpl-modal-qr-img" />
+                        </template>
+                        <p class="gpl-modal-pass-num">{modalPassName}</p>
+                        <template if:true={modalIsActive}>
+                            <span class="gpl-badge gpl-badge--active">Active</span>
+                        </template>
+                        <template if:true={modalIsExpired}>
+                            <span class="gpl-badge gpl-badge--rejected">Expired</span>
+                        </template>
+                    </div>
+                    <div class="gpl-modal-detail-col">
+                        <p class="gpl-modal-label">Exit Time</p>
+                        <p class="gpl-modal-value">{modalExitTime}</p>
+                        <p class="gpl-modal-label" style="margin-top:12px;">Return By</p>
+                        <p class="gpl-modal-value">{modalEntryTime}</p>
+                    </div>
+                </div>
+
+                <div class="gpl-modal-instructions">
+                    <p class="gpl-instr-title">Instructions</p>
+                    <ul>
+                        <li>Present this gate pass at the campus entry point for verification.</li>
+                        <li>Entry permitted only during the approved exit and return times.</li>
+                        <li>This gate pass is non-transferable.</li>
+                        <li>The university may revoke access if guidelines are not followed.</li>
+                    </ul>
+                </div>
+
+                <div class="gpl-modal-footer">
+                    <button type="button" class="gpl-download-btn" onclick={handleQrDownload}>
+                        ⬇ Download Gate Pass
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </template>
+
+</template>

@@ -1,0 +1,29 @@
+<template>
+    <div class="overlay" onclick={handleBackdrop}>
+        <div class="modal" onclick={stopProp} role="dialog" aria-modal="true" aria-labelledby="gi-title">
+            <header class="modal__header">
+                <h2 id="gi-title" class="modal__title">Invite to Group</h2>
+                <template lwc:if={groupName}>
+                    <p class="modal__sub">{groupName}</p>
+                </template>
+            </header>
+
+            <div class="modal__body">
+                <label class="field__label" for="gi-input">Alumni IDs or emails</label>
+                <textarea
+                    id="gi-input"
+                    class="ta"
+                    rows="5"
+                    placeholder="Paste comma-separated alumni record IDs or emails"
+                    value={raw}
+                    oninput={handleInput}></textarea>
+                <p class="hint">Tip: separate multiple entries with commas, spaces, or new lines.</p>
+            </div>
+
+            <footer class="modal__footer">
+                <button type="button" class="btn btn--outline" onclick={handleClose}>Cancel</button>
+                <button type="button" class="btn btn--primary" onclick={handleSend}>Send Invites</button>
+            </footer>
+        </div>
+    </div>
+</template>

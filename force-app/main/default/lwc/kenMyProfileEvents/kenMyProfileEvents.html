@@ -1,0 +1,76 @@
+<template>
+    <div class="events-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h2 class="section-title">Events Created</h2>
+            <button class="host-btn" onclick={handleHostEvent}>
+                <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                Host An Event
+            </button>
+        </div>
+
+        <!-- Event List -->
+        <div class="events-list">
+            <template for:each={events} for:item="event">
+                <div key={event.id} class="event-card">
+
+                    <div class="card-content-wrapper">
+                        <!-- Left Section: Title & Type -->
+                        <div class="event-main-info">
+                            <h3 class="event-title">{event.title}</h3>
+                            <p class="event-type">Event type: <span class="type-detail">{event.type}</span></p>
+                        </div>
+
+                        <!-- Middle Section: Details -->
+                        <div class="event-details">
+                            <div class="detail-item">
+                                <lightning-icon icon-name="utility:clock" size="xx-small"
+                                    class="detail-icon"></lightning-icon>
+                                <span>{event.dateTime}</span>
+                            </div>
+                            <div class="detail-item">
+                                <lightning-icon icon-name="utility:checkin" size="xx-small"
+                                    class="detail-icon"></lightning-icon>
+                                <span>{event.location}</span>
+                            </div>
+                            <div class="detail-item">
+                                <lightning-icon icon-name="utility:groups" size="xx-small"
+                                    class="detail-icon"></lightning-icon>
+                                <span>{event.participantsLabel}</span>
+                                <!-- Or just {event.participantsCount} if label is static? JS has full label 'Maximum...' or 'Total...'. Using that. -->
+                            </div>
+                        </div>
+
+                        <!-- Right Section: Status & Actions -->
+                        <div class="event-status-action">
+                            <template lwc:if={event.isRejected}>
+                                <!-- Rejection box replaces badge? No, badge could be there but layout changes. 
+                                     Screenshot 4: Rejection box takes up space on the right, light red bg. 
+                                     "Reason for rejection" label (Red bg badge-like) + "Venue not available" title + Desc. -->
+                                <div class="rejection-container">
+                                    <div class="rejection-header">
+                                        <span class="rejection-label">Reason for rejection</span>
+                                    </div>
+                                    <h4 class="rejection-title">{event.rejectionTitle}</h4>
+                                    <p class="rejection-desc">{event.rejectionReason}</p>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <!-- Status Badge -->
+                                <div class="status-wrapper">
+                                    <span class={event.statusClass}>{event.status}</span>
+                                </div>
+                                <!-- Action Button -->
+                                <template lwc:if={event.showFeedbackBtn}>
+                                    <button class="action-btn" data-id={event.id} onclick={handleSetupFeedback}>
+                                        Setup Feedback Form
+                                    </button>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

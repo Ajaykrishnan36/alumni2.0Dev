@@ -1,0 +1,102 @@
+<template>
+    <div class="fr-admin-wrap">
+        <lightning-tabset active-tab-value="fundraise">
+
+            <!-- ── Fundraise Approval ── -->
+            <lightning-tab label="Fundraise Approval" value="fundraise" icon-name="standard:campaign">
+                <template if:true={loading}>
+                    <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                </template>
+                <template if:false={loading}>
+                    <lightning-tabset active-tab-value="All">
+                        <lightning-tab label={allLabel} value="All">
+                            <lightning-datatable
+                                key-field="id"
+                                data={allData}
+                                columns={columns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={inReviewLabel} value="In Review">
+                            <lightning-datatable
+                                key-field="id"
+                                data={inReviewData}
+                                columns={columns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={approvedLabel} value="Approved">
+                            <lightning-datatable
+                                key-field="id"
+                                data={approvedData}
+                                columns={columns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                        <lightning-tab label={rejectedLabel} value="Rejected">
+                            <lightning-datatable
+                                key-field="id"
+                                data={rejectedData}
+                                columns={columns}
+                                hide-checkbox-column
+                                wrap-text-max-lines="3"
+                            ></lightning-datatable>
+                        </lightning-tab>
+                    </lightning-tabset>
+                </template>
+            </lightning-tab>
+
+            <!-- ── Deletion Requests ── -->
+            <lightning-tab label={deletionLabel} value="deletion" icon-name="utility:delete">
+                <template if:true={deletionLoading}>
+                    <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+                </template>
+                <template if:false={deletionLoading}>
+                    <template if:true={deletionData.length}>
+                        <lightning-datatable
+                            key-field="id"
+                            data={deletionData}
+                            columns={deletionColumns}
+                            hide-checkbox-column
+                            wrap-text-max-lines="3"
+                            onrowaction={handleDeletionRowAction}
+                        ></lightning-datatable>
+                    </template>
+                    <template if:false={deletionData.length}>
+                        <div class="empty-state">
+                            <p>No pending deletion requests.</p>
+                        </div>
+                    </template>
+                </template>
+            </lightning-tab>
+
+        </lightning-tabset>
+    </div>
+
+    <!-- ── Approve-deletion confirmation modal ── -->
+    <template if:true={showConfirmModal}>
+        <div class="modal-overlay" onclick={handleCancelConfirm}>
+            <div class="modal-box" onclick={stopPropagation}>
+                <h2 class="modal-title">Confirm Deletion</h2>
+                <p class="modal-body">
+                    Permanently delete <strong>{confirmCampaign.name}</strong>? This cannot be undone.
+                </p>
+                <template if:true={actionError}>
+                    <p class="modal-error">{actionError}</p>
+                </template>
+                <div class="modal-actions">
+                    <button class="btn btn-cancel" onclick={handleCancelConfirm} disabled={actionInProgress}>
+                        Cancel
+                    </button>
+                    <button class="btn btn-danger" onclick={handleConfirmApprove} disabled={actionInProgress}>
+                        <template if:true={actionInProgress}>Deleting…</template>
+                        <template if:false={actionInProgress}>Yes, Delete</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

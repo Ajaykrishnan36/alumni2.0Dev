@@ -1,0 +1,186 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="mentorship" has-rail>
+        <!-- ===== MAIN COLUMN: Connections + Calendar (Figma center region) ===== -->
+        <div class="m-main">
+            <template lwc:if={isLoading}>
+                <div class="dash-loading">Loading mentorship dashboard…</div>
+            </template>
+            <template lwc:else>
+                <!-- ===== Epic 1: Find a Mentor — advanced filters ===== -->
+                <section class="mm-filters">
+                    <h3 class="mm-filters__title">Find a Mentor</h3>
+                    <!-- Native HTML inputs — base components (lightning-input/-combobox) leak
+                         unstyled SVG icons in LWR community pages because their internals sit
+                         inside shadow DOM we can't reach. Native HTML keeps the markup under
+                         our own CSS. -->
+                    <div class="mm-filters__grid">
+                        <!-- QA Bug #120: free-text keyword search -->
+                        <label class="mm-field">
+                            <span class="mm-field__label">Search</span>
+                            <input type="text" class="mm-field__input" value={fKeyword}
+                                oninput={handleFKeyword} placeholder="Search by name, expertise…" />
+                        </label>
+                        <label class="mm-field">
+                            <span class="mm-field__label">Company</span>
+                            <input type="text" class="mm-field__input" value={fCompany}
+                                oninput={handleFCompany} placeholder="e.g. Acme" />
+                        </label>
+                        <label class="mm-field">
+                            <span class="mm-field__label">Industry</span>
+                            <input type="text" class="mm-field__input" value={fIndustry}
+                                oninput={handleFIndustry} placeholder="e.g. Tech" />
+                        </label>
+                        <label class="mm-field">
+                            <span class="mm-field__label">Job Location</span>
+                            <input type="text" class="mm-field__input" value={fLocation}
+                                oninput={handleFLocation} placeholder="e.g. Bangalore" />
+                        </label>
+                        <label class="mm-field">
+                            <span class="mm-field__label">Areas of Expertise</span>
+                            <select class="mm-field__input mm-field__select" value={fExpertise}
+                                onchange={handleFExpertise}>
+                                <template for:each={expertiseOptions} for:item="o">
+                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                </template>
+                            </select>
+                        </label>
+                        <!-- QA Bug #120: sort-by dropdown -->
+                        <label class="mm-field">
+                            <span class="mm-field__label">Sort by</span>
+                            <select class="mm-field__input mm-field__select" value={fSort}
+                                onchange={handleFSort}>
+                                <template for:each={sortOptions} for:item="o">
+                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                </template>
+                            </select>
+                        </label>
+                    </div>
+                    <div class="mm-filters__actions">
+                        <button type="button" class="mm-btn mm-btn--ghost" onclick={handleClearFilters}>Clear</button>
+                        <button type="button" class="mm-btn mm-btn--primary" onclick={handleSearchMentors} disabled={searching}>
+                            <template lwc:if={searching}>Searching…</template>
+                            <template lwc:else>Search Mentors</template>
+                        </button>
+                    </div>
+
+                    <template lwc:if={hasResults}>
+                        <div class="mm-results">
+                            <template for:each={mentors} for:item="m">
+                                <article key={m.id} class="mm-card">
+                                    <div class="mm-card__head">
+                                        <span class="mm-card__avatar">{m.avatar}</span>
+                                        <div>
+                                            <p class="mm-card__name">{m.name}</p>
+                                            <p class="mm-card__cap">{m.capacityLabel}</p>
+                                        </div>
+                                    </div>
+                                    <p class="mm-card__row"><b>Expertise:</b> {m.expertiseLabel}</p>
+                                    <p class="mm-card__row"><b>Communication:</b> {m.commLabel}</p>
+                                    <button type="button" class="mm-btn mm-btn--primary mm-btn--full"
+                                        data-name={m.name} onclick={handleConnectMentor}>Request Mentorship</button>
+                                </article>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:if={noResults}>
+                        <p class="mm-empty">No mentors match those filters yet.</p>
+                    </template>
+                </section>
+
+                <c-ken-mentorship-connections-v2
+                    connections={data.connections}
+                    oncardclick={handleConnectionClick}
+                    onsearch={handleConnSearch}>
+                </c-ken-mentorship-connections-v2>
+                <c-ken-mentorship-dash-calendar-v2
+                    sessions={data.sessions}
+                    month-label={data.currentMonthLabel}
+                    onschedule={handleScheduleCall}
+                    onleavefeedback={handleLeaveFeedback}>
+                </c-ken-mentorship-dash-calendar-v2>
+            </template>
+        </div>
+
+        <!-- ===== RIGHT RAIL: Tasks + Edit Preference / Become a Mentor (Figma right region) ===== -->
+        <aside slot="rail" class="m-rail">
+            <template lwc:if={isLoading}>
+                <div class="dash-loading dash-loading--rail">Loading…</div>
+            </template>
+            <template lwc:else>
+                <c-ken-mentorship-tasks-v2
+                    tasks={data.tasks}
+                    onaddtask={handleAddTask}
+                    ontaskclick={handleTaskClick}>
+                </c-ken-mentorship-tasks-v2>
+
+                <template lwc:if={showBecomeMentorCta}>
+                    <div class="become-mentor-card">
+                        <div class="become-mentor-card__icon" aria-hidden="true">&#127891;</div>
+                        <h3 class="become-mentor-card__title">Become a Mentor</h3>
+                        <p class="become-mentor-card__sub">Share your experience. Guide the next generation of alumni.</p>
+                        <button type="button" class="become-mentor-card__cta" onclick={handleBecomeMentor}>Get Started &rarr;</button>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <button type="button" class="m-edit-pref" onclick={handleEditPreference}>
+                        <span>Edit Mentorship Preference</span>
+                        <span aria-hidden="true">&rarr;</span>
+                    </button>
+                </template>
+            </template>
+        </aside>
+
+        <!-- ===== Schedule Call wizard ===== -->
+        <template lwc:if={showScheduleCall}>
+            <c-ken-schedule-call-wizard-v2
+                mentor={selectedMentor}
+                onclose={handleCloseSchedule}
+                onconfirm={handleScheduleConfirm}>
+            </c-ken-schedule-call-wizard-v2>
+        </template>
+
+        <!-- ===== Add Task modal ===== -->
+        <template lwc:if={showAddTask}>
+            <div class="dash-modal-backdrop" onclick={handleAddTaskBackdrop}>
+                <div class="dash-modal" onclick={handleStopProp}>
+                    <button type="button" class="dash-modal__close" onclick={handleAddTaskClose}>&times;</button>
+                    <h3 class="dash-modal__title">Add A Task</h3>
+                    <label class="dash-field">
+                        <span class="dash-field__label">Task title</span>
+                        <input type="text" class="dash-field__input" value={newTaskTitle} oninput={handleTaskTitle} />
+                    </label>
+                    <label class="dash-field">
+                        <span class="dash-field__label">Description</span>
+                        <textarea class="dash-field__input" value={newTaskDesc} oninput={handleTaskDesc}></textarea>
+                    </label>
+                    <label class="dash-field">
+                        <span class="dash-field__label">Priority</span>
+                        <select class="dash-field__input" value={newTaskPriority} onchange={handleTaskPriority}>
+                            <option value="High">High</option>
+                            <option value="Medium">Medium</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </label>
+                    <div class="dash-modal__actions">
+                        <button type="button" class="dash-btn dash-btn--outline" onclick={handleAddTaskClose}>Cancel</button>
+                        <button type="button" class="dash-btn dash-btn--primary" onclick={handleAddTaskSubmit}>Add task</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- ===== Mentor Preferences editor (Become a Mentor / Edit Preference) ===== -->
+        <template lwc:if={showPreferences}>
+            <div class="prefs-overlay" onclick={handlePreferencesClose}>
+                <div class="prefs-overlay__panel" onclick={handleStopProp}>
+                    <button type="button" class="prefs-overlay__close" onclick={handlePreferencesClose}>&times;</button>
+                    <c-ken-mentorship-preferences-v2 onclose={handlePreferencesClose}></c-ken-mentorship-preferences-v2>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={toastVisible}>
+            <div class="dash-toast">{toastMessage}</div>
+        </template>
+    </c-ken42-alumni-shell-v2>
+</template>

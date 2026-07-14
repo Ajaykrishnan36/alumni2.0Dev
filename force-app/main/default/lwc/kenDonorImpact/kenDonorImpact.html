@@ -1,0 +1,18 @@
+<template>
+    <section class="donor-impact">
+        <div class="impact-header">
+            <h2 class="impact-title">Donor Impact</h2>
+            <div class="impact-divider"></div>
+            <p class="impact-subtitle">Any contribution you make — small or big — results in the growth and welfare of your alma mater as the numbers here prove</p>
+        </div>
+
+        <div class="impact-grid">
+            <template for:each={stats} for:item="stat">
+                <div key={stat.id} class="impact-card">
+                    <span class="stat-number">{stat.number}</span>
+                    <span class="stat-label">{stat.label}</span>
+                </div>
+            </template>
+        </div>
+    </section>
+</template>

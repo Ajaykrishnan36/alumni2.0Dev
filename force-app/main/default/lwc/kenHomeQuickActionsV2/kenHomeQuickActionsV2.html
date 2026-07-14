@@ -1,0 +1,18 @@
+<template lwc:render-mode="light">
+    <div class="h-card sect qa-sect">
+        <div class="sect__head">
+            <span class="sect__head-ico sect__head-ico--am">&#10022;</span>
+            <span class="sect__head-title">{title}</span>
+            <span class="sect__head-count">{subtitle}</span>
+        </div>
+        <div class="qa-grid">
+            <template for:each={actions} for:item="q">
+                <button key={q.key} class="qa-tile" data-key={q.key} data-label={q.label} onclick={handleAction}>
+                    <span class={q.iconClass}>{q.icon}</span>
+                    <span class="qa-tile__label">{q.label}</span>
+                    <span class="qa-tile__sub">{q.desc}</span>
+                </button>
+            </template>
+        </div>
+    </div>
+</template>

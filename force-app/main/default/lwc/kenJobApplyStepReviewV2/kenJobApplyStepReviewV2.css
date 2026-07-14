@@ -1,0 +1,5 @@
+:host { display: block; }
+.step-h { font-size: 15px; font-weight: 700; margin: 4px 0 14px; color: #111827; }
+.review-row { display: grid; grid-template-columns: 120px 1fr; gap: 12px; padding: 8px 0; border-bottom: 1px solid #F6F8FB; }
+.kv-l { font-size: 10.5px; font-weight: 700; letter-spacing: 0.8px; color: #9CA3AF; }
+.kv-v { font-size: 13px; color: #373A45; line-height: 1.5; word-break: break-word; }

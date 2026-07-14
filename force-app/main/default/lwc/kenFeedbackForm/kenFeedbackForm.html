@@ -1,0 +1,141 @@
+<template>
+    <div class="step-content">
+        <!-- Info banner (show in both views) -->
+        <div class="info-banner-new">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="currentColor" />
+            </svg>
+            <span>This feedback form will be shared with attendees only after the event is completed.</span>
+        </div>
+
+        <!-- List view: sessions by date -->
+        <template if:true={showListView}>
+            <div class="feedback-forms-container-new">
+                <template if:true={feedbackFormsByDate.length}>
+                    <template for:each={feedbackFormsByDate} for:item="day">
+                        <div key={day.dateKey} class="feedback-day-card-new">
+                            <div class="feedback-date-new">{day.displayDate}</div>
+                            <template for:each={day.sessions} for:item="session">
+                                <div key={session.uniqueId} class="feedback-row-new">
+                                    <div class="feedback-session-info-new">
+                                        <div class="feedback-session-title-new">{session.title}</div>
+                                        <template if:true={session.hasForm}>
+                                            <span class="feedback-pill-new">{session.questionsCount} Questions Added</span>
+                                        </template>
+                                        <template if:false={session.hasForm}>
+                                            <span class="feedback-pill-new feedback-pill-muted-new">No Feedback Form Added</span>
+                                        </template>
+                                    </div>
+                                    <button class="link-button-new feedback-action-btn-new" data-session-id={session.uniqueId}
+                                        data-has-form={session.hasForm} onclick={handleFeedbackAction}>
+                                        <template if:true={session.hasForm}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="edit-pen-icon">
+                                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor" />
+                                            </svg>
+                                            Edit Form
+                                        </template>
+                                        <template if:false={session.hasForm}>Setup Form</template>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={feedbackFormsByDate.length}>
+                    <div class="empty-state-message-new">Create sessions to set up feedback forms.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Edit view: opens as a top-most modal overlay on top of the list (and the wizard
+             underneath) so nothing behind it is unmounted or affected. -->
+        <template if:true={showEditView}>
+            <div class="feedback-modal-overlay">
+                <div class="feedback-modal" role="dialog" aria-modal="true">
+                    <div class="feedback-modal-content">
+                        <div class="feedback-modal-body">
+                            <!-- Session header -->
+                            <div class="feedback-session-header" if:true={sessionHeader}>
+                                <div class="feedback-session-badges">
+                                    <span class="feedback-badge">{sessionHeader.dayLabel}</span>
+                                    <span class="feedback-badge">{sessionHeader.sessionLabel}</span>
+                                </div>
+                                <div class="feedback-session-title-row">
+                                    <h3 class="feedback-session-title-edit">{sessionHeader.title}</h3>
+                                    <span class="feedback-questions-badge">{sessionHeader.questionsCount} Question(s) Added</span>
+                                </div>
+                                <div class="feedback-session-datetime">{sessionHeader.dateTime}</div>
+                            </div>
+
+                            <!-- Trigger configuration -->
+                            <div class="feedback-trigger-section">
+                                <div class="feedback-trigger-title">How would you like to trigger the form?</div>
+                                <div class="feedback-trigger-options">
+                                    <label class="feedback-radio-label">
+                                        <input type="radio" name="triggerType" value="auto" checked={isAutoTriggerSelected}
+                                            onchange={handleTriggerTypeChange} />
+                                        <span>Auto-trigger</span>
+                                    </label>
+                                    <label class="feedback-radio-label">
+                                        <input type="radio" name="triggerType" value="manual"
+                                            onchange={handleTriggerTypeChange} />
+                                        <span>Trigger manually after session</span>
+                                    </label>
+                                </div>
+                                <template if:true={isAutoTriggerSelected}>
+                                    <div class="feedback-trigger-when">
+                                        <div class="feedback-trigger-when-title">When do you want to trigger?</div>
+                                        <div class="feedback-trigger-when-fields">
+                                            <div class="feedback-field">
+                                                <label>Choose</label>
+                                                <lightning-combobox
+                                                    value={triggerWhen}
+                                                    options={triggerWhenOptions}
+                                                    placeholder="Select"
+                                                    onchange={handleTriggerWhenChange}
+                                                    variant="label-hidden"
+                                                    class="feedback-combobox">
+                                                </lightning-combobox>
+                                            </div>
+                                            <div class="feedback-field">
+                                                <label>End Date</label>
+                                                <lightning-input type="date" value={endDate} onchange={handleEndDateChange}
+                                                    min={minDate} variant="label-hidden" placeholder="DD-MM-YYYY" class="feedback-input">
+                                                </lightning-input>
+                                            </div>
+                                            <div class="feedback-field">
+                                                <label>End Time</label>
+                                                <lightning-input type="time" value={endTime} onchange={handleEndTimeChange}
+                                                    variant="label-hidden" placeholder="HH:MM" class="feedback-input">
+                                                </lightning-input>
+                                            </div>
+                                        </div>
+                                        <template if:true={dateError}>
+                                            <p class="feedback-date-error">{dateError}</p>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Setup Feedback Questions (shared reusable builder) -->
+                            <div class="feedback-questions-section">
+                                <div class="custom-survey-section-title">Setup Feedback Questions</div>
+                                <c-ken-questionnaire-builder
+                                    questions={questions}
+                                    add-button-label="Add new question"
+                                    onquestionschange={handleBuilderChange}>
+                                </c-ken-questionnaire-builder>
+                            </div>
+                        </div>
+
+                        <!-- Modal actions (pinned) -->
+                        <div class="feedback-modal-footer">
+                            <button type="button" class="btn-outline-feedback" onclick={handleDiscard}>Discard Changes</button>
+                            <button type="button" class="btn-primary-feedback" onclick={handleSaveForm}>Save Form</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

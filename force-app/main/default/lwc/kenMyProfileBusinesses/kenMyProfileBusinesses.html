@@ -1,0 +1,65 @@
+<template>
+    <div class="businesses-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h2 class="section-title">Businesses</h2>
+            <button class="list-btn" onclick={handleListBusiness}>
+                <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                List Your Business
+            </button>
+        </div>
+
+        <!-- Business Grid -->
+        <div class="businesses-grid">
+            <template for:each={businesses} for:item="business">
+                <div key={business.id} class="business-card">
+                    <!-- Top Section: Icon, Info, Status -->
+                    <div class="card-top">
+                        <div class="business-icon-wrapper">
+                            <!-- Helper icon for "SpaceMan" logo mock -->
+                            <lightning-icon icon-name="utility:user" size="medium" class="business-icon-fallback"
+                                if:false={business.iconUrl}></lightning-icon>
+                            <!-- Using standard img if URL valid, or custom icon. Screenshot shows black circle with astronaut icon. -->
+                            <div class="spaceman-icon">
+                                <lightning-icon icon-name="utility:frozen" size="small"
+                                    variant="inverse"></lightning-icon>
+                            </div>
+                        </div>
+
+                        <div class="business-info">
+                            <h3 class="business-name">{business.name}</h3>
+                            <div class="business-location">
+                                <lightning-icon icon-name="utility:checkin" size="xx-small"
+                                    class="location-icon"></lightning-icon>
+                                <span>{business.location}</span>
+                            </div>
+                        </div>
+
+                        <!-- Status Badge (Absolute positioned or flex end) -->
+                        <div class="status-container">
+                            <span class={business.statusClass}>{business.status}</span>
+                            <!-- Rejected Tooltip Icon -->
+                            <template lwc:if={business.isRejected}>
+                                <div class="rejected-info-wrapper">
+                                    <lightning-icon icon-name="utility:info" size="xx-small"
+                                        class="info-icon"></lightning-icon>
+                                    <!-- Tooltip -->
+                                    <div class="tooltip">
+                                        <lightning-icon icon-name="utility:info" size="x-small"
+                                            class="tooltip-icon"></lightning-icon>
+                                        <span>{business.rejectionReason}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Section: Category -->
+                    <div class="card-bottom">
+                        <span class="category-badge">{business.category}</span>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

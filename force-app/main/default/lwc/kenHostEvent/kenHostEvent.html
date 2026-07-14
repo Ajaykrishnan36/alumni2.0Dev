@@ -1,0 +1,47 @@
+<template>
+    <template if:true={showComponent}>
+    <!-- Event Requests List View -->
+    <template if:true={hasEventRequests}>
+        <div class="event-requests-container">
+            <div class="event-requests-heading">Your event requests</div>
+
+            <div class="event-requests-list">
+                <template for:each={processedEventRequests} for:item="event" for:index="index">
+                    <div key={event.id} class="event-card event-card-clickable" data-id={event.id} onclick={handleEventClick}>
+                        <div class="event-thumbnail">
+                            <img src={event.imgurl} alt={event.eventtitle} class="event-image" />
+                        </div>
+                        <div class="event-details">
+                            <div class="event-title">{event.eventtitle}</div>
+                        </div>
+                        <div class="event-status">
+                            <span class="status-badge" data-status={event.status}>
+                                {event.status}
+                            </span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick={handleViewAll}>View all</button>
+                <button class="btn btn-primary" onclick={handleHostEvent}>Host an event</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Empty State - Host Event -->
+    <template if:false={hasEventRequests}>
+        <div class="host-event-container">
+            <div class="hosted-events-title">Hosted Events</div>
+            <div class="empty-state-content">
+                <div class="empty-state-illustration">
+                    <img src={emptyStateEventImage} alt="Empty state illustration" class="host-event-image" />
+                </div>
+                <div class="event-host-description">You haven't hosted any events yet</div>
+            </div>
+            <button class="btn btn-primary host-event-button" onclick={handleHostEvent}>Host an Event</button>
+        </div>
+    </template>
+    </template>
+</template>

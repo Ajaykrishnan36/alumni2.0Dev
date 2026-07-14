@@ -1,0 +1,34 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="home">
+        <section class="page">
+            <div class="chat">
+                <c-ken-chat-thread-list-v2
+                    threads={threads}
+                    search-q={searchQ}
+                    onsearch={handleSearch}
+                    onselectthread={handleSelect}
+                    onnewchat={handleNewChat}>
+                </c-ken-chat-thread-list-v2>
+
+                <c-ken-chat-conversation-v2
+                    active-name={activeName}
+                    active-status={activeStatus}
+                    active-initial={activeInitial}
+                    active-avatar-style={activeAvatarStyle}
+                    messages={messages}
+                    draft={draft}
+                    ondraftchange={handleDraft}
+                    onsend={handleSend}
+                    oncall={handleCall}
+                    onvideo={handleVideo}
+                    onmore={handleMore}
+                    onattach={handleAttach}>
+                </c-ken-chat-conversation-v2>
+            </div>
+
+            <template lwc:if={toastVisible}>
+                <div class="toast">{toastMessage}</div>
+            </template>
+        </section>
+    </c-ken42-alumni-shell-v2>
+</template>

@@ -1,0 +1,288 @@
+:host {
+    display: block;
+    font-family: "General Sans", "Inter", system-ui, sans-serif;
+    color: var(--text-primary, #111827);
+}
+
+.calendar-page {
+    padding: 16px 20px;
+    background: var(--neutral-bg, #f7f7f5);
+    min-height: 100%;
+    box-sizing: border-box;
+}
+
+/* Header */
+.cal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.cal-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary, #111827);
+    letter-spacing: -0.01em;
+}
+
+.cal-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cal-nav {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 1px solid var(--neutral-border, #e5e7eb);
+    background: var(--neutral-card, #fff);
+    color: var(--text-primary, #111827);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cal-nav:hover {
+    background: #f3f4f6;
+}
+
+.cal-month {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    min-width: 110px;
+    text-align: center;
+}
+
+.cal-view-toggle {
+    display: inline-flex;
+    margin-left: 8px;
+    border: 1px solid var(--neutral-border, #e5e7eb);
+    border-radius: 6px;
+    overflow: hidden;
+    background: var(--neutral-card, #fff);
+}
+
+.cal-view {
+    padding: 5px 12px;
+    background: transparent;
+    border: 0;
+    font-size: 12px;
+    color: var(--text-secondary, #6b7280);
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.cal-view + .cal-view {
+    border-left: 1px solid var(--neutral-border, #e5e7eb);
+}
+
+.cal-view--active {
+    background: var(--text-primary, #111827);
+    color: #fff;
+}
+
+/* Body */
+.cal-body {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+    align-items: start;
+}
+
+@media (max-width: 980px) {
+    .cal-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Grid wrap */
+.cal-grid-wrap {
+    background: var(--neutral-card, #fff);
+    border: 1px solid var(--neutral-border, #e5e7eb);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #fafaf9;
+    border-bottom: 1px solid var(--neutral-border, #e5e7eb);
+}
+
+.cal-weekday {
+    padding: 8px 10px;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-secondary, #6b7280);
+    font-weight: 600;
+}
+
+.cal-weekday + .cal-weekday {
+    border-left: 1px solid var(--neutral-border, #e5e7eb);
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.cal-cell {
+    min-height: 92px;
+    padding: 6px 8px;
+    background: var(--neutral-card, #fff);
+    border-right: 1px solid var(--neutral-border, #e5e7eb);
+    border-bottom: 1px solid var(--neutral-border, #e5e7eb);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cal-cell:nth-child(7n) {
+    border-right: 0;
+}
+
+.cal-cell--muted {
+    background: #fafaf9;
+}
+
+.cal-cell--muted .cal-cell__day {
+    color: #c4c4c1;
+}
+
+.cal-cell--today {
+    background: var(--brand-accent-light, rgba(99, 102, 241, 0.08));
+    box-shadow: inset 0 0 0 1px var(--brand-accent, #6366f1);
+}
+
+.cal-cell--today .cal-cell__day {
+    color: var(--brand-accent, #6366f1);
+    font-weight: 700;
+}
+
+.cal-cell__day {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.cal-cell__events {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 2px;
+}
+
+.cal-chip {
+    font-size: 10px;
+    line-height: 1.3;
+    padding: 1px 4px 1px 5px;
+    border-left: 2px solid #999;
+    color: var(--text-primary, #111827);
+    border-radius: 2px;
+    background: #f7f7f5;
+    overflow: hidden;
+}
+
+.cal-chip__title {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cal-chip--amber   { border-left-color: #d97706; background: #fef3c7; }
+.cal-chip--violet  { border-left-color: #7c3aed; background: #ede9fe; }
+.cal-chip--sky     { border-left-color: #0284c7; background: #e0f2fe; }
+.cal-chip--rose    { border-left-color: #e11d48; background: #ffe4e6; }
+.cal-chip--emerald { border-left-color: #059669; background: #d1fae5; }
+
+.cal-chip--more {
+    border-left-color: transparent;
+    background: transparent;
+    color: var(--text-secondary, #6b7280);
+    font-weight: 600;
+    padding-left: 5px;
+}
+
+/* Upcoming events list */
+.cal-events {
+    background: var(--neutral-card, #fff);
+    border: 1px solid var(--neutral-border, #e5e7eb);
+    border-radius: 8px;
+    padding: 14px 14px 6px;
+}
+
+.cal-events__title {
+    margin: 0 0 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.cal-events__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.cal-evt {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-top: 1px solid var(--neutral-border, #e5e7eb);
+}
+
+.cal-evt:first-child {
+    border-top: 0;
+}
+
+.cal-evt__bar {
+    width: 6px;
+    border-radius: 3px;
+    background: #999;
+    flex-shrink: 0;
+}
+
+.cal-evt__bar--amber   { background: #d97706; }
+.cal-evt__bar--violet  { background: #7c3aed; }
+.cal-evt__bar--sky     { background: #0284c7; }
+.cal-evt__bar--rose    { background: #e11d48; }
+.cal-evt__bar--emerald { background: #059669; }
+
+.cal-evt__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.cal-evt__date {
+    font-size: 10.5px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--text-secondary, #6b7280);
+    margin-bottom: 2px;
+}
+
+.cal-evt__title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    line-height: 1.3;
+}
+
+.cal-evt__loc {
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: var(--text-secondary, #6b7280);
+}

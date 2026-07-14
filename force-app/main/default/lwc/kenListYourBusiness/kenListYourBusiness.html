@@ -1,0 +1,14 @@
+<template>
+    <div class="list-your-business-card" onclick={handleClick}>
+        <div class="card-header">
+            <div class="header-content">
+                <h3 class="card-title">List Your Business</h3>
+                <lightning-icon icon-name="utility:chevronright" size="small" class="arrow-icon"></lightning-icon>
+            </div>
+            <div class="header-line"></div>
+        </div>
+        <div class="illustration-container">
+            <img src={listYourBusinessImageUrl} alt="List Your Business" class="list-business-image" onerror={handleImageError} />
+        </div>
+    </div>
+</template>

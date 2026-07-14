@@ -1,0 +1,46 @@
+<template>
+    <div class="setting-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <lightning-icon icon-name="utility:search" size="x-small" class="search-icon"></lightning-icon>
+                    <input type="text" placeholder="Search" class="search-input" />
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <template for:each={menuItems} for:item="item">
+                    <div key={item.name} class={item.class} data-name={item.name} onclick={handleTabChange}>
+                        <span>{item.label}</span>
+                    </div>
+                </template>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="sub-content">
+                <template lwc:if={isPreferences}>
+                    <c-setting-preferences></c-setting-preferences>
+                </template>
+                <template lwc:if={isEvents}>
+                    <c-setting-events></c-setting-events>
+                </template>
+                <template lwc:if={isGroups}>
+                    <c-setting-groups></c-setting-groups>
+                </template>
+
+                <template lwc:if={isMentorship}>
+                    <c-setting-mentorship></c-setting-mentorship>
+                </template>
+                <template lwc:if={isJobs}>
+                    <c-setting-jobs></c-setting-jobs>
+                </template>
+                <template lwc:if={isAccount}>
+                    <c-setting-account></c-setting-account>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

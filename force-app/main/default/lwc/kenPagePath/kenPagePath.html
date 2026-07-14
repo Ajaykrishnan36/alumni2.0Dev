@@ -1,0 +1,17 @@
+<template>
+    <div class="breadcrumb-container" if:true={hasBreadcrumbs}>
+        <lightning-breadcrumbs>
+            <template for:each={breadcrumbItems} for:item="item">
+                <lightning-breadcrumb
+                    key={item.id}
+                    label={item.label}
+                    href={item.href}
+                    onclick={handleBreadcrumbClick}
+                    onkeydown={handleBreadcrumbKeyDown}
+                    data-href={item.href}
+                    data-clickable={item.isClickable}>
+                </lightning-breadcrumb>
+            </template>
+        </lightning-breadcrumbs>
+    </div>
+</template>

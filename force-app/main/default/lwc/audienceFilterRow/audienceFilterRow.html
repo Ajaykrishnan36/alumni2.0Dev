@@ -1,0 +1,79 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 12-18-2025
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+-->
+<template>
+  <div class="slds-box slds-theme_shade slds-m-bottom_small rowBox">
+    <div class="slds-grid slds-gutters slds-wrap slds-grid_vertical-align-center">
+
+      <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+        <span class="slds-badge">{rowNumber}</span>
+      </div>
+
+      <div class="slds-col slds-size_1-of-1 slds-large-size_4-of-12">
+        <lightning-combobox
+          label="Field"
+          value={row.fieldApi}
+          options={fieldOptions}
+          onchange={onFieldChange}
+          placeholder="Select field"
+        ></lightning-combobox>
+      </div>
+
+      <div class="slds-col slds-size_1-of-1 slds-large-size_3-of-12">
+        <lightning-combobox
+          label="Operator"
+          value={row.operator}
+          options={operatorOptions}
+          onchange={onOperatorChange}
+        ></lightning-combobox>
+      </div>
+
+      <div class="slds-col slds-size_1-of-1 slds-large-size_4-of-12">
+        <template if:true={isPicklist}>
+          <lightning-combobox
+            label="Value"
+            value={row.value}
+            options={row.picklistValues}
+            onchange={onPicklistChange}
+            placeholder="Select value"
+          ></lightning-combobox>
+        </template>
+
+        <template if:true={isBoolean}>
+          <lightning-input
+            type="checkbox"
+            label="Value"
+            checked={booleanValue}
+            onchange={onBooleanChange}
+          ></lightning-input>
+        </template>
+
+        <template if:false={isPicklist}>
+          <template if:false={isBoolean}>
+            <lightning-input
+              type={inputType}
+              label="Value"
+              value={row.value}
+              onchange={onValueChange}
+              placeholder={placeholder}
+            ></lightning-input>
+          </template>
+        </template>
+      </div>
+
+      <div class="slds-col slds-size_1-of-12 slds-align_absolute-center">
+        <lightning-button-icon
+          icon-name="utility:close"
+          variant="bare"
+          alternative-text="Remove"
+          onclick={onRemove}
+        ></lightning-button-icon>
+      </div>
+
+    </div>
+  </div>
+</template>

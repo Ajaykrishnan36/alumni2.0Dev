@@ -1,0 +1,89 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal modal--md">
+            <div class="give-progress"><div class="give-progress-fill" style={progressStyle}></div></div>
+            <div class="modal-head-row">
+                <div>
+                    <div class="give-step-label">{stepLabel}</div>
+                    <div class="give-sub">{title}</div>
+                </div>
+                <button class="modal-close modal-close--inline" onclick={handleClose}>x</button>
+            </div>
+
+            <div class="modal-body">
+                <template lwc:if={isStep1}>
+                    <h3 class="step-h">How would you like to contribute to this?</h3>
+                    <div class="give-types">
+                        <template for:each={giveTypeCards} for:item="t">
+                            <button key={t.key} class={t.cssClass} data-key={t.key} onclick={handleSelectType}>
+                                <span class="give-type-icon">{t.icon}</span>
+                                <span class="give-type-label">{t.label}</span>
+                                <template lwc:if={t.recommended}><span class="rec-pill">Recommended</span></template>
+                                <span class="give-type-desc">{t.desc}</span>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+
+                <template lwc:if={isStep2}>
+                    <h3 class="step-h">Choose your amount</h3>
+                    <div class="amount-pills">
+                        <template for:each={giveAmountPills} for:item="a">
+                            <button key={a.value} class={a.cssClass} data-value={a.value} onclick={handleSelectAmount}>{a.label}</button>
+                        </template>
+                    </div>
+                    <input class="text-input" type="number" placeholder="Custom amount" value={giveCustom} oninput={handleCustomAmount}/>
+                    <h3 class="step-h step-h--mt">How would you like to be recognized?</h3>
+                    <button class={visPublicClass} data-value="public" onclick={handleSelectVisibility}>
+                        <span class="vis-content"><span class="vis-title">Show my name publicly</span><span class="vis-desc">Appears on the recognition wall.</span></span>
+                    </button>
+                    <button class={visBatchClass} data-value="name-batch" onclick={handleSelectVisibility}>
+                        <span class="vis-content"><span class="vis-title">Show my name and batch</span><span class="vis-desc">Most alumni choose this.</span></span>
+                    </button>
+                    <button class={visAnonClass} data-value="anonymous" onclick={handleSelectVisibility}>
+                        <span class="vis-content"><span class="vis-title">Keep me anonymous</span><span class="vis-desc">Counted in totals, name private.</span></span>
+                    </button>
+                    <label class="field-label">Notes (optional)</label>
+                    <textarea class="text-input" rows="3" value={giveNotes} oninput={handleNotes}></textarea>
+                </template>
+
+                <template lwc:if={isStep3}>
+                    <h3 class="step-h">Review and confirm</h3>
+                    <div class="review-table">
+                        <div class="review-row"><span>Campaign</span><strong>{title}</strong></div>
+                        <div class="review-row"><span>Type</span><strong>{giveTypeLabel}</strong></div>
+                        <div class="review-row"><span>Amount</span><strong>{effectiveAmountLabel}</strong></div>
+                        <div class="review-row"><span>Visibility</span><strong>{visibilityLabel}</strong></div>
+                    </div>
+                </template>
+
+                <template lwc:if={isStep4}>
+                    <div class="success-block">
+                        <div class="success-check">OK</div>
+                        <h3 class="success-title">Thank you, {userFirstName}</h3>
+                        <p class="success-text">Your contribution helps build visible impact for future students.</p>
+                        <div class="success-towards">Towards: {title}</div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="modal-footer">
+                <template lwc:if={isStep1}>
+                    <button class="btn btn--ghost" onclick={handleClose}>Cancel</button>
+                    <button class="btn btn--dark" onclick={handleNext}>Continue</button>
+                </template>
+                <template lwc:if={isStep2}>
+                    <button class="btn btn--ghost" onclick={handlePrev}>Back</button>
+                    <button class="btn btn--dark" onclick={handleNext}>Continue</button>
+                </template>
+                <template lwc:if={isStep3}>
+                    <button class="btn btn--ghost" onclick={handlePrev}>Back</button>
+                    <button class="btn btn--dark" onclick={handleConfirm}>Confirm and submit</button>
+                </template>
+                <template lwc:if={isStep4}>
+                    <button class="btn btn--dark" onclick={handleClose}>Done</button>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

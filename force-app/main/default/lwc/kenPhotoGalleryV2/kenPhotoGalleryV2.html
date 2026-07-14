@@ -1,0 +1,137 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="home">
+    <section class="page">
+        <template lwc:if={isAlbums}>
+            <header class="page__head">
+                <div>
+                    <h1 class="page__title">Gallery</h1>
+                    <p class="page__subtitle">Relive memories from events &amp; reunions</p>
+                </div>
+                <div class="page__actions">
+                    <button type="button" class="btn btn--outline" onclick={handleOpenUpload}>+ Upload Photos</button>
+                    <button type="button" class="btn btn--primary" onclick={handleOpenCreate}>+ Create Album</button>
+                </div>
+            </header>
+            <div class="chips">
+                <template for:each={yearChips} for:item="y">
+                    <button key={y.id} type="button" class={y.chipClass} data-id={y.id} onclick={handleYear}>{y.label}</button>
+                </template>
+            </div>
+            <template lwc:if={hasAlbums}>
+            <div class="grid">
+                <template for:each={albums} for:item="a">
+                    <article key={a.id} class="album" data-id={a.id} onclick={handleAlbumOpen}>
+                        <div class="album__cover" style={a.coverStyle}>
+                            <span class="album__count">📷 {a.count}</span>
+                        </div>
+                        <div class="album__body">
+                            <h3 class="album__name">{a.name}</h3>
+                            <p class="album__year">{a.year}</p>
+                        </div>
+                    </article>
+                </template>
+            </div>
+            </template>
+            <template lwc:if={hasAlbums}></template>
+            <template lwc:else>
+                <div class="pg-empty"><div class="pg-empty__icon">📷</div><h3>No albums yet</h3><p>Create your first album to start sharing memories.</p><button type="button" class="btn btn--primary" onclick={handleOpenCreate}>+ Create Album</button></div>
+            </template>
+        </template>
+
+        <template lwc:if={isPhotos}>
+            <header class="page__head">
+                <div>
+                    <button type="button" class="back-btn" onclick={handleBackToAlbums}>← Back to Albums</button>
+                    <h1 class="page__title">{selectedAlbumName}</h1>
+                    <p class="page__subtitle">{selectedAlbumMeta}</p>
+                </div>
+                <button type="button" class="btn btn--primary" onclick={handleOpenUpload}>+ Upload Photos</button>
+            </header>
+            <template lwc:if={hasPhotos}>
+                <div class="photo-grid">
+                    <template for:each={photos} for:item="p">
+                        <button key={p.id} type="button" class="photo" data-id={p.id} onclick={handlePhotoOpen}>
+                            <div class="photo__img" style={p.photoStyle}></div>
+                            <p class="photo__cap pg-clamp-1">{p.caption}</p>
+                        </button>
+                    </template>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="pg-empty"><div class="pg-empty__icon">🖼️</div><h3>No photos in this album</h3><p>Upload your first photos to populate the album.</p><button type="button" class="btn btn--primary" onclick={handleOpenUpload}>+ Upload Photos</button></div>
+            </template>
+        </template>
+
+        <!-- Create Album Modal -->
+        <template lwc:if={showCreate}>
+            <div class="modal-backdrop" onclick={handleBackdropClick}>
+                <div class="modal" onclick={handleStopProp}>
+                    <button type="button" class="modal__close" onclick={handleCloseCreate}>×</button>
+                    <h2 class="modal__title">Create Album</h2>
+                    <div class="field">
+                        <label>Album name</label>
+                        <input type="text" data-field="name" value={createForm.name} oninput={handleCreateField} placeholder="e.g. Annual Reunion 2025"/>
+                    </div>
+                    <div class="field">
+                        <label>Cover color</label>
+                        <input type="color" data-field="cover" value={createForm.cover} oninput={handleCreateField}/>
+                    </div>
+                    <div class="field">
+                        <label>Privacy</label>
+                        <select data-field="privacy" value={createForm.privacy} onchange={handleCreateField}>
+                            <option>Public</option>
+                            <option>Alumni only</option>
+                            <option>Private</option>
+                        </select>
+                    </div>
+                    <div class="modal__actions">
+                        <button type="button" class="btn btn--outline" onclick={handleCloseCreate}>Cancel</button>
+                        <button type="button" class="btn btn--primary" onclick={handleCreateSubmit}>Create Album</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Upload Photos Modal -->
+        <template lwc:if={showUpload}>
+            <div class="modal-backdrop" onclick={handleBackdropClick}>
+                <div class="modal" onclick={handleStopProp}>
+                    <button type="button" class="modal__close" onclick={handleCloseUpload}>×</button>
+                    <h2 class="modal__title">Upload Photos</h2>
+                    <div class="dropzone">
+                        <p class="dropzone__icon">📤</p>
+                        <p class="dropzone__text">Drag &amp; drop photos here, or click to browse</p>
+                        <p class="dropzone__hint">JPG, PNG up to 10 MB each</p>
+                    </div>
+                    <div class="field">
+                        <label>Caption (optional)</label>
+                        <input type="text" data-field="caption" value={uploadForm.caption} oninput={handleUploadField} placeholder="A caption for these photos"/>
+                    </div>
+                    <div class="modal__actions">
+                        <button type="button" class="btn btn--outline" onclick={handleCloseUpload}>Cancel</button>
+                        <button type="button" class="btn btn--primary" onclick={handleUploadSubmit}>Upload</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Lightbox -->
+        <template lwc:if={showLightbox}>
+            <div class="modal-backdrop modal-backdrop--dark" onclick={handleBackdropClick}>
+                <div class="lightbox" onclick={handleStopProp}>
+                    <button type="button" class="lightbox__close" onclick={handleCloseLightbox}>×</button>
+                    <div class="lightbox__img" style={selectedPhotoStyle}></div>
+                    <div class="lightbox__meta">
+                        <p class="lightbox__cap">{selectedPhotoCaption}</p>
+                        <p class="lightbox__by">{selectedPhotoUploader}</p>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={toastVisible}>
+            <div class="toast">{toastMessage}</div>
+        </template>
+    </section>
+    </c-ken42-alumni-shell-v2>
+</template>

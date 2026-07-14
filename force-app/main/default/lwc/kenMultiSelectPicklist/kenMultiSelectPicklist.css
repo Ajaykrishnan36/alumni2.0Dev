@@ -1,0 +1,101 @@
+/* Keeps dropdown above surrounding containers */
+.slds-dropdown {
+    z-index: 10;
+}
+
+.pillInput {
+    min-height: 2.5rem;
+    border: 1px solid #c9ced6;
+    border-radius: 0.5rem;
+    padding: 0.35rem 2.25rem 0.35rem 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #ffffff;
+    position: relative;
+    cursor: pointer;
+}
+
+.pillInput:focus {
+    outline: none;
+    border-color: #F6F8FB;
+    box-shadow: 0 0 0 1px #F6F8FB;
+}
+
+.pillRowInline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    flex: 1;
+}
+
+.pillTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: var(--secondary-color);
+    color: var(--primary-color);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.pillText {
+    line-height: 1.1rem;
+}
+
+.pillRemove {
+    border: none;
+    background: transparent;
+    border-radius: 999px;
+    width: 1.1rem;
+    height: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    --slds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+.pillRemove:hover {
+    --slds-c-icon-color-foreground-default: var(--primary-color);
+    opacity: 0.85;
+}
+
+.pillPlaceholder {
+    color: #8b93a5;
+    font-size: 0.85rem;
+}
+
+.pillCaret {
+    position: absolute;
+    right: 0.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+    --slds-c-icon-color-foreground-default: #7a7f87;
+}
+
+.optionRow {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 0.35rem;
+    cursor: pointer;
+}
+
+.optionRow:hover {
+    background: #f5f7fb;
+}
+
+.optionLabel {
+    color: #2f3545;
+}
+
+.optionCheckbox {
+    width: 1rem;
+    height: 1rem;
+    pointer-events: none;
+}

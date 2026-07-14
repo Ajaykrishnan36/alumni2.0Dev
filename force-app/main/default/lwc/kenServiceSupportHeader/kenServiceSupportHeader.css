@@ -1,0 +1,130 @@
+.header-container {
+    background: linear-gradient(90deg, var(--primary-color, #E85D04) 0%, var(--primary-color, #E85D04) 58%, var(--secondary-color, #F59E0B) 100%);
+    border-radius: 16px;
+    padding: 3rem 2rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.header-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 720px;
+}
+
+.greeting-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0;
+    text-align: center;
+    text-transform: none !important;
+}
+
+.search-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #FFFFFF;
+    border-radius: 999px;
+    padding: 0.55rem 1rem;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.search-icon {
+    color: #9CA3AF;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 12px;
+    color: #111827;
+    background: transparent;
+    padding: 0;
+    min-width: 0;
+    font-family: inherit;
+}
+
+.search-input::placeholder {
+    color: #9CA3AF;
+}
+
+.voice-search-btn {
+    background: transparent;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: #9CA3AF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.voice-search-btn:hover {
+    color: #6B7280;
+}
+
+.voice-search-btn.listening {
+    color: var(--primary-color, #E85D04);
+    background: rgba(232, 93, 4, 0.1);
+    border-radius: 999px;
+}
+
+.voice-search-btn.listening svg rect,
+.voice-search-btn.listening svg path {
+    stroke: currentColor;
+}
+
+@media (max-width: 768px) {
+    .header-container {
+        padding: 2rem 1rem;
+        min-height: 160px;
+        border-radius: 12px;
+    }
+
+    .greeting-text {
+        font-size: 16px;
+    }
+
+    .search-input-wrapper {
+        padding: 0.5rem 0.85rem;
+    }
+
+    .search-input {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-container {
+        padding: 1.5rem 0.75rem;
+        min-height: 140px;
+    }
+
+    .greeting-text {
+        font-size: 14px;
+    }
+}

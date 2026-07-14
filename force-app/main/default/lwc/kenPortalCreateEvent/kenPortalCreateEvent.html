@@ -1,0 +1,661 @@
+<template>
+    <!-- Access denied (portal users only) when hosting is disabled in custom setting -->
+    <template if:true={accessDenied}>
+        <div class="access-denied-container">
+            <div class="access-denied-card">
+                <h2 class="access-denied-title">Access denied</h2>
+                <p class="access-denied-message">You don't have access to host events. Redirecting…</p>
+            </div>
+        </div>
+    </template>
+
+    <template if:false={accessDenied}>
+    <!-- Global click handler to close dropdowns -->
+    <div class="global-click-handler" onclick={handleGlobalClick}>
+        <!-- Toast Notification Component -->
+        <c-ken-toast-notification 
+            is-visible={isToastVisible}
+            toast-title={toastTitle}
+            toast-message={toastMessage}
+            toast-variant={toastVariant}>
+        </c-ken-toast-notification>
+
+
+        <div class={pageClass} onclick={handleGlobalClick}>
+            <div class={containerClass}>
+                <template if:true={showSpinner}>
+                    <div class="loading-overlay">
+                        <lightning-spinner alternative-text="Saving..." size="medium"
+                            variant="brand"></lightning-spinner>
+                    </div>
+                </template>
+
+                <template if:false={showSpinner}>
+                        <!-- Mobile Navigation Header -->
+                        <div class="mobile-nav-header">
+                            <button class="mobile-back-btn" onclick={handleBackNavigation}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
+                                </svg>
+                            </button>
+                            <div class="mobile-nav-title">Host an Event</div>
+                            <div class="mobile-nav-spacer"></div>
+                        </div>
+
+                    <!-- Component Fixed Header with Stepper Component -->
+                        <div class="component-header">
+                        <c-ken-event-stepper
+                            current-step={currentStep}
+                            fee-disabled={feeDisabled}
+                            is-step1-completed={isStep1Completed}
+                            is-step2-completed={isStep2Completed}
+                            is-step3-completed={isStep3Completed}
+                            is-step4-completed={isStep4Completed}
+                            is-step5-completed={isStep5Completed}
+                            is-step6-completed={isStep6Completed}
+                            is-step7-completed={isStep7Completed}>
+                        </c-ken-event-stepper>
+                        </div>
+
+                        <!-- Component Scrollable Content -->
+                        <div class="component-content" onclick={handleGlobalClick}>
+                            <div class="events-container">
+                            <!-- Step 1: Event Setup - Child Component -->
+                            <c-ken-event-setup 
+                                if:true={isStep1Active}
+                                event-data={eventData}
+                                validation-errors={validationErrors}
+                                selected-categories={selectedCategories}
+                                selected-suitable-for={selectedSuitableFor}
+                                selected-languages={selectedLanguages}
+                                category-options={categoryOptions}
+                                suitable-for-options={suitableForOptions}
+                                language-options={languageOptions}
+                                show-category-dropdown={showCategoryDropdown}
+                                show-suitable-for-dropdown={showSuitableForDropdown}
+                                show-language-dropdown={showLanguageDropdown}
+                                is-picklist-data-loaded={isPicklistDataLoaded}
+                                has-cover-photo={hasCoverPhoto}
+                                has-brochure-file={hasBrochureFile}
+                                selected-dates={selectedDates}
+                                current-date={currentDate}
+                                calendar-days={calendarDays}
+                                current-month-year={currentMonthYear}
+                                ondatachange={handleStep1DataChange}
+                                onvalidationchange={handleStep1ValidationChange}
+                                oncoverphotoupload={handleCoverPhotoUpload}
+                                oncoverphotouploadscreen={handleCoverPhotoUploadScreen}
+                                ondeletecoverimage={handleDeleteCoverImage}
+                                onbrochureupload={handleBrochureUpload}
+                                onchangebrochure={handleChangeBrochure}
+                                onremovebrochure={handleRemoveBrochure}
+                                oncategorytoggle={handleCategoryDropdownToggle}
+                                oncategoryselect={handleCategorySelect}
+                                onremovecategory={handleRemoveCategory}
+                                onsuitablefortoggle={handleSuitableForDropdownToggle}
+                                onsuitableforselect={handleSuitableForSelect}
+                                onremovesuitablefor={handleRemoveSuitableFor}
+                                onlanguagetoggle={handleLanguageDropdownToggle}
+                                onlanguageselect={handleLanguageSelect}
+                                onremovelanguage={handleRemoveLanguage}
+                                ondropdownclick={handleDropdownContainerClick}
+                                ondatechange={handleStep2DateChange}
+                                onmonthchange={handleStep2MonthChange}
+                                onremovedate={handleRemoveDate}>
+                            </c-ken-event-setup>
+
+                            <!-- Step 2: Target Audience - Child Component -->
+                            <c-ken-target-audience
+                                if:true={isStep2Active}
+                                parent-object-type="Event"
+                                parent-record-id={currentEventId}
+                                initial-audience={preselectedAudience}
+                                validation-errors={validationErrors}
+                                onaudiencechange={handleAudienceChange}>
+                            </c-ken-target-audience>
+
+                            <!-- Step 3: Schedule Setup - Child Component -->
+                            <c-ken-schedule-setup
+                                if:true={isStep3Active}
+                                active-date-tab={activeDateTab}
+                                date-tabs-with-classes={dateTabsWithClasses}
+                                sessions-by-date={sessionsByDate}
+                                current-session={currentSession}
+                                show-session-form={showSessionForm}
+                                editing-session-id={editingSessionId}  
+                                validation-errors={validationErrors}
+                                onsessionchange={handleStep3SessionChange}
+                                onsessionformtoggle={handleStep3SessionFormToggle}
+                                onaddsession={handleAddSession}
+                                oneditsession={handleEditSession}
+                                ondeletesession={handleDeleteSession}
+                                ondiscardsession={handleDiscardSession}
+                                onsavesession={handleSaveSession}
+                                onaddspeaker={handleAddSpeaker}
+                                oneditspeaker={handleEditSpeaker}
+                                ondeletespeaker={handleDeleteSpeaker}>
+                            </c-ken-schedule-setup>
+
+                            <!-- Step 4: Pre Event Surveys - Child Component -->
+                            <c-ken-pre-event-survey
+                                if:true={isStep4Active}
+                                event-dates={selectedDates}
+                                initial-data={surveyInitialData}
+                                onsurveychange={handleStep5SurveyChange}>
+                            </c-ken-pre-event-survey>
+
+                            <!-- Step 5: Fee Setup - Child Component -->
+                            <c-ken-fee-setup
+                                if:true={isStep5Active}
+                                fee-rows-by-date={feeRowsByDate}
+                                fee-summary-total={feeSummaryTotal}
+                                event-title={eventData.title}
+                                meals-paid-addon-enabled={surveyMealsData.mealsPaidAddonEnabled}
+                                meal-fees={mealFees}
+                                pricing-mode={pricingMode}
+                                overall-price={overallPrice}
+                                overall-is-free={overallIsFree}
+                                onfeechange={handleStep4FeeChange}
+                                onmodechange={handleFeeModeChange}
+                                onsessionpricechange={handleFeeSessionPriceChange}
+                                onsessionfreetoggle={handleFeeSessionFreeToggle}
+                                onoverallpricechange={handleFeeOverallPriceChange}
+                                onoverallfreetoggle={handleFeeOverallFreeToggle}
+                                onmealfeeschanged={handleMealFeesChanged}
+                                onviewsummary={handleViewFeeSummary}
+                                onfeefreetoggle={handleFeeFreeToggle}
+                                onfeeinputchange={handleFeeInputChange}>
+                            </c-ken-fee-setup>
+
+                            <!-- Step 6: Feedback Form - Child Component -->
+                            <c-ken-feedback-form
+                                if:true={isStep6Active}
+                                feedback-forms-by-date={feedbackFormsByDate}
+                                active-feedback-session-id={activeFeedbackSessionId}
+                                active-feedback-session={activeFeedbackSession}
+                                feedback-data-for-session={feedbackDataForSession}
+                                onfeedbackchange={handleStep6FeedbackChange}
+                                onmissingfeedback={handleMissingFeedback}
+                                onfeedbackaction={handleFeedbackAction}
+                                onsavefeedback={handleFeedbackFormSave}
+                                ondiscardfeedback={handleFeedbackFormDiscard}>
+                            </c-ken-feedback-form>
+
+                            <!-- Step 7: Summary - Child Component -->
+                            <c-ken-event-summary-step
+                                if:true={isStep7Active}
+                                data={eventSummaryData}
+                                oneditstep={handleEditStep}>
+                            </c-ken-event-summary-step>
+                                                            </div>
+                        </div>
+
+                        <!-- Component Fixed Footer -->
+                        <div class="component-footer">
+                            <div class="button-group">
+                                <!-- Step 1 Buttons -->
+                                <template if:true={isStep1Active}>
+                                    <button class="secondary-button" onclick={handleCancel}>Cancel</button>
+                                    <button class="btn btn-primary" onclick={handleSaveAndProceed}>
+                                        Save and proceed</button>
+                                </template>
+
+                                <!-- Step 2 Buttons -->
+                                <template if:true={isStep2Active}>
+                                    <button class="secondary-button" onclick={handlePreviousStep}>Previous
+                                        step</button>
+                                    <button class="btn btn-primary" onclick={handleSaveAndProceed}>Save and
+                                        proceed</button>
+                                </template>
+
+                                <!-- Step 3 Buttons -->
+                                <template if:true={isStep3Active}>
+                                    <button class="secondary-button" onclick={handlePreviousStep}>Previous
+                                        step</button>
+                                    <button class="btn btn-primary" onclick={handleSubmitRequest}
+                                        disabled={isStep3ProceedDisabled}>Save &amp; proceed</button>
+                                </template>
+
+                                <!-- Step 4 Buttons (Pre Event Surveys) -->
+                                <template if:true={isStep4Active}>
+                                    <button class="secondary-button" onclick={handleSaveAsDraft}>Save as Draft</button>
+                                    <button class="secondary-button" onclick={handlePreviousStep}>Previous
+                                        step</button>
+                                    <button class="btn btn-primary" onclick={handleSaveSurveyProceed}>
+                                        Save &amp; proceed</button>
+                                </template>
+
+                                <!-- Step 5 Buttons (Fee Setup) -->
+                                <template if:true={isStep5Active}>
+                                    <button class="secondary-button" onclick={handlePreviousStep}>Previous
+                                        step</button>
+                                    <button class="btn btn-primary" onclick={handleSaveFeeStep}>
+                                        Save &amp; proceed</button>
+                                </template>
+
+                                <!-- Step 6 Buttons (Feedback Form) -->
+                                <template if:true={isStep6Active}>
+                                    <button class="secondary-button" onclick={handleSaveAsDraft}>Save as Draft</button>
+                                    <button class="secondary-button" onclick={handlePreviousStep}>Previous
+                                        step</button>
+                                    <button class="btn btn-primary" onclick={handleProceedFromFeedback}>
+                                        Save &amp; proceed</button>
+                                </template>
+
+                                <!-- Step 7 Buttons (Summary) -->
+                                <template if:true={isStep7Active}>
+                                    <button class="secondary-button" onclick={handleSaveAsDraft}>Save as Draft</button>
+                                    <button class="secondary-button" onclick={handlePreviousStep}>Previous
+                                        step</button>
+                                    <button class="btn btn-primary" onclick={handleFinalizeEvent}>
+                                        Confirm &amp; Submit</button>
+                                </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+        <!-- <template if:true={isMobile}>
+            <c-ken-bottom-navigation-mobile></c-ken-bottom-navigation-mobile>
+            </template> -->
+    </div>
+    </template>
+    <!-- /* Modal for Email Confirmation */ -->
+    <template if:true={showCancelConfirmModal}>
+        <div class="modal-backdrop"></div>
+        <div class="email-confirmation-modal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>Cancel Event Creation</div>
+                    <button class="close-btn" onclick={handleCancelConfirmNo}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>{cancelConfirmMessage}</p>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick={handleCancelConfirmNo}>No, keep editing</button>
+                    <button class="btn btn-primary" onclick={handleCancelConfirmYes}>Yes, cancel</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={showEmailConfirmModal}>
+        <div class="modal-backdrop"></div>
+        <div class="email-confirmation-modal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>Send Email Confirmation</div>
+                    <button class="close-btn" onclick={handleCloseEmailConfirmModal}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Do you want to request an Email notification to be send to users once the event is approved?</p>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick={handleEmailConfirmNo}>No</button>
+                    <button class="btn btn-primary" onclick={handleEmailConfirmYes}>Yes</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    <!-- Share Email Modal -->
+    <!-- <c-share-email-modal 
+        if:true={showShareEmailModal}
+        share-email-subject={shareEmailSubject}
+        email-body={emailBody}
+        schedule-date={scheduleDate}
+        schedule-time={scheduleTime}
+        selected-file-name={selectedFileName}
+        min-date={minDate}
+        selected-email-distribution-list={selectedEmailDistributionList}
+        email-distribution-options={emailDistributionOptions}
+        show-email-distribution-dropdown={showEmailDistributionDropdown}
+        onclose={handleCloseShareEmailModal}
+        onsubmit={handleSubmitShareEmail}
+        onsubjectchange={handleShareEmailSubjectChange}
+        onbodychange={handleShareEmailBodyChange}
+        onscheduledatechange={handleScheduleDateChange}
+        onscheduletimechange={handleScheduleTimeChange}
+        onemaildistributiontoggle={handleEmailDistributionDropdownToggle}
+        onemaildistributionselect={handleEmailDistributionSelect}
+        onremoveemaildistribution={handleRemoveEmailDistribution}
+        onfileupload={handleEmailAttachmentUpload}>
+    </c-share-email-modal> -->
+    
+    <!-- Share Email Modal - Original Content (to be removed after child component is created) -->
+    <template if:true={showShareEmailModal} style="display: none;">
+        <div class="modal-backdrop"></div>
+        <section class="share-email-modal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <div>Share your Event by Email</div>
+                    <button class="close-btn" onclick={handleCloseShareEmailModal}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="modal-subtitle">Add details below</div>
+                <div class="modal-body">
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label style="font-size: 16px;">Email Distribution List</label>
+                        <div class="multi-select-container">
+                            <!-- Use your existing multi-select logic here -->
+                            <!-- Example: -->
+                            <div class="multi-select-input" onclick={handleEmailDistributionDropdownToggle}>
+                                <div class="selected-tags">
+                                    <template for:each={selectedEmailDistributionList} for:item="item">
+                                        <span key={item.key} class="tag">
+                                            {item.label}
+                                            <button class="tag-remove" onclick={handleRemoveEmailDistribution}
+                                                data-value={item.value}>
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                                    <path
+                                                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"
+                                                        fill="currentColor" />
+                                                </svg>
+                                            </button>
+                                        </span>
+                                    </template>
+                                    <span class="placeholder" if:false={selectedEmailDistributionList.length}>
+                                        Students, Faculty, Staff, or Combination
+                                    </span>
+                                </div>
+                                <div class="dropdown-arrow">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M7 10l5 5 5-5z" fill="currentColor" />
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="dropdown-options" if:true={showEmailDistributionDropdown}>
+                                <template for:each={emailDistributionOptions} for:item="option">
+                                    <div key={option.key} class="dropdown-option"
+                                        onclick={handleEmailDistributionSelect} data-value={option.value}>
+                                        <span class="option-label">{option.label}</span>
+                                        <span class="option-check" if:true={option.selected}>✓</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row " style="margin-top: 16px;">
+                        <div class="form-group">
+                            <label style="font-size: 16px;">Schedule Date</label>
+                            <input type="date" class="form-input" min={minDate} onchange={handleScheduleDateChange} />
+                        </div>
+                        <div class="form-group">
+                            <label style="font-size: 16px;">Schedule Time</label>
+                            <input type="time" class="form-input" onchange={handleScheduleTimeChange} />
+                        </div>
+                    </div>
+                    <!-- <div class="form-group">
+                        <label style="font-size: 16px;">Subject</label>
+                        <input type="text" class="form-input" placeholder="Enter a short, clear subject for the email"
+                            onchange={handleShareEmailSubjectChange} />
+                    </div>
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label style="font-size: 16px;">Email Body</label>
+                        <textarea rows="4" class="form-input1" placeholder="Write the content of your email"
+                            onchange={handleShareEmailBodyChange}></textarea>
+                    </div> -->
+                    <div class="form-group">
+                        <label style="font-size: 16px;">Subject</label>
+                        <input type="text" maxlength="50" class="form-input"
+                            placeholder="Enter a short, clear subject for the email" value={shareEmailSubject}
+                            onchange={handleShareEmailSubjectChange} />
+                    </div>
+
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label style="font-size: 16px;">Email Body</label>
+                        <textarea rows="4" maxlength="5000" class="form-input1"
+                            placeholder="Write the content of your email" value={shareEmailBody}
+                            onchange={handleShareEmailBodyChange}></textarea>
+                    </div>
+
+
+
+
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label style="font-size: 16px;">Attachment / Image <span
+                                style="color: #6B7280; font-weight: normal;">(Optional)</span></label>
+                        <div class="upload-area">
+                            <!-- HIDDEN FILE INPUT -->
+                            <input type="file" accept="image/png,image/jpeg" style="display:none"
+                                onchange={handleFileChange} />
+                            <button class="upload-button" type="button" onclick={handleUploadButtonClick}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path fill-rule="evenodd" clip-rule="evenodd"
+                                        d="M11.2929 3.29289C11.6834 2.90237 12.3166 2.90237 12.7071 3.29289L17.7071 8.29289C18.0976 8.68342 18.0976 9.31658 17.7071 9.70711C17.3166 10.0976 16.6834 10.0976 16.2929 9.70711L13 6.41421V16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16V6.41421L7.70711 9.70711C7.31658 10.0976 6.68342 10.0976 6.29289 9.70711C5.90237 9.31658 5.90237 8.68342 6.29289 8.29289L11.2929 3.29289ZM4 16C4.55228 16 5 16.4477 5 17V19C5 19.2652 5.10536 19.5196 5.29289 19.7071C5.48043 19.8946 5.73478 20 6 20H18C18.2652 20 18.5196 19.8946 18.7071 19.7071C18.8946 19.5196 19 19.2652 19 19V17C19 16.4477 19.4477 16 20 16C20.5523 16 21 16.4477 21 17V19C21 19.7957 20.6839 20.5587 20.1213 21.1213C19.5587 21.6839 18.7957 22 18 22H6C5.20435 22 4.44129 21.6839 3.87868 21.1213C3.31607 20.5587 3 19.7957 3 19V17C3 16.4477 3.44772 16 4 16Z"
+                                        fill="#545454" />
+                                </svg>
+                                Choose a file
+                            </button>
+
+
+                            <div class="upload-info">
+                                <p>Max image size: 5MB | Min width: 1024px | Image format: PNG, JPEG</p>
+                            </div>
+                        </div>
+                        <template if:true={validationErrors.coverPhoto}>
+                            <p class="error-message">{validationErrors.coverPhoto}</p>
+                        </template>
+                    </div>
+                    <div class="selected-file-name" if:true={selectedFileName}>
+                        Selected file: <strong>{selectedFileName}</strong>
+                    </div>
+                    <div class="modal-footer">
+                        <p onclick={handleCloseShareEmailModal} style="cursor: pointer;">Cancel</p>
+                        <button class="btn btn-primary" onclick={handleSubmitShareEmail}>Submit</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </template>
+
+    <!-- Modals as Child Components -->
+
+    <!-- Fee Summary Modal -->
+    <!-- <c-fee-summary-modal 
+        if:true={showFeeSummaryModal}
+        fee-summary-sessions={feeSummarySessions}
+        fee-summary-total={feeSummaryTotal}
+        onclose={closeFeeSummaryModal}>
+    </c-fee-summary-modal> -->
+    
+    <!-- Fee Summary Modal - Original Content (to be removed after child component is created) -->
+    <template if:true={showFeeSummaryModal} style="display: none;">
+        <div class="modal-backdrop-new"></div>
+        <section class="fee-summary-modal-new">
+            <div class="fee-modal-container-new">
+                <header class="fee-modal-header-new">
+                    <div class="fee-modal-title-new">Event Summary | Fee Overview</div>
+                </header>
+                <div class="fee-modal-content-new">
+                    <template for:each={feeSummarySessions} for:item="session">
+                        <div key={session.id} class="fee-summary-item-new">
+                            <div class="fee-summary-title-new">{session.title}</div>
+                            <div class="fee-summary-details-new">{session.date} {session.time}</div>
+                            <div class="fee-summary-price-new">{session.price}</div>
+                        </div>
+                    </template>
+                    <div class="fee-summary-divider-new"></div>
+                    <div class="fee-summary-total-new">
+                        <div class="fee-summary-total-label-new">Total event cost</div>
+                        <div class="fee-summary-total-price-new">₹{feeSummaryTotal}/-</div>
+                    </div>
+                </div>
+                <footer class="fee-modal-footer-new">
+                    <button class="btn-outline-new" onclick={closeFeeSummaryModal}>Close</button>
+                    <button class="btn-primary-new" onclick={closeFeeSummaryModal}>Continue</button>
+                </footer>
+            </div>
+        </section>
+    </template>
+
+    <!-- Speaker Modal -->
+    <!-- <c-speaker-modal 
+        if:true={showSpeakerForm}
+        current-speaker={currentSpeaker}
+        validation-errors={validationErrors}
+        onclose={handleCloseSpeakerModal}
+        onsave={handleSaveSpeaker}
+        ondiscard={handleDiscardSpeaker}>
+    </c-speaker-modal> -->
+    
+    <!-- Speaker Modal - Original Content (to be removed after child component is created) -->
+    <template if:true={showSpeakerForm} style="display: none;">
+        <div class="modal-backdrop-speaker" onclick={handleCloseSpeakerModal}></div>
+        <div class="speaker-modal">
+            <div class="speaker-modal-content">
+                <div class="speaker-modal-header">
+                    <h3>Add a Speaker</h3>
+                    <button class="speaker-modal-close" onclick={handleCloseSpeakerModal}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="speaker-modal-body">
+                    <div class="form-group-new">
+                        <label for="modalSpeakerName">Name of the Speaker<span class="required-asterisk">*</span></label>
+                        <input type="text" id="modalSpeakerName" class={speakerNameClass}
+                            placeholder="Enter full name"
+                            value={currentSpeaker.name}
+                            onkeyup={handleSpeakerNameChange} maxlength="50" />
+                        <div class="error-message" if:true={validationErrors.speakerName}>
+                            <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                    fill="currentColor" />
+                            </svg>
+                            {validationErrors.speakerName}
+                        </div>
+                    </div>
+                    <div class="form-group-new" style="margin-top: 1rem;">
+                        <label for="modalSpeakerEmail">Email of the Speaker</label>
+                        <input type="email" id="modalSpeakerEmail" class="form-control-new"
+                            placeholder="speaker@example.com"
+                            value={currentSpeaker.email}
+                            onkeyup={handleSpeakerEmailChange} maxlength="80" />
+                        <div class="error-message" if:true={validationErrors.speakerEmail}>
+                            <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                    fill="currentColor" />
+                            </svg>
+                            {validationErrors.speakerEmail}
+                        </div>
+                    </div>
+                    <div class="form-group-new speaker-invite-row" style="margin-top: 1rem;">
+                        <label class="speaker-invite-label">
+                            <input type="checkbox" checked={currentSpeaker.sendInvite}
+                                onchange={handleSpeakerInviteToggle} />
+                            <span>Send an email invite to this speaker</span>
+                        </label>
+                    </div>
+                    <div class="form-group-new" style="margin-top: 1rem;">
+                        <label for="modalSpeakerImage">Image of the Speaker <span
+                                style="color: #6B7280; font-weight: normal;">(optional)</span></label>
+                        <div class="file-upload-container-new">
+                            <template if:false={currentSpeaker.image}>
+                                <div class="file-upload-new">
+                                    <input type="file" id="modalSpeakerImage"
+                                        accept=".png,.jpeg,.jpg"
+                                        onchange={handleSpeakerImageUpload} />
+                                    <label for="modalSpeakerImage" class="file-upload-label-new">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"
+                                                stroke="currentColor" stroke-width="2" />
+                                            <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" />
+                                        </svg>
+                                        Choose image
+                                    </label>
+                                </div>
+                            </template>
+                            <template if:true={currentSpeaker.image}>
+                                <div class="file-preview-new">
+                                    <div class="file-info-new">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            class="file-icon-new">
+                                            <path
+                                                d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"
+                                                stroke="currentColor" stroke-width="2" />
+                                            <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" />
+                                        </svg>
+                                        <span class="file-name-new">{currentSpeaker.imageFileName}</span>
+                                    </div>
+                                    <div class="file-actions-new">
+                                        <button class="file-action-btn-new change"
+                                            onclick={handleChangeSpeakerImage}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                <path d="M4 12v8h8M12 4v8m0-8l8 8" stroke="currentColor" stroke-width="2" />
+                                            </svg>
+                                        </button>
+                                        <button class="file-action-btn-new remove"
+                                            onclick={handleRemoveSpeakerImage}>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                <path
+                                                    d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                                    fill="currentColor" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="form-group-new" style="margin-top: 1rem;">
+                        <label for="modalSpeakerDescription">About the Speaker <span
+                                style="color: #6B7280; font-weight: normal;">(optional)</span></label>
+                        <textarea id="modalSpeakerDescription" class="form-control-new speaker-description-textarea"
+                            rows="4" placeholder="Give a brief introduction of the speaker"
+                            onkeyup={handleSpeakerDescriptionChange} maxlength="500">{currentSpeaker.description}</textarea>
+                    </div>
+                </div>
+                <div class="speaker-modal-footer">
+                    <button class="btn btn-secondary-new" onclick={handleDiscardSpeaker}>Cancel</button>
+                    <button class="btn btn-primary-new" onclick={handleSaveSpeaker}>Save</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Missing Feedback Modal -->
+    <!-- <c-missing-feedback-modal 
+        if:true={showMissingFeedbackModal}
+        ongoback={handleGoBackFromMissingFeedback}
+        oncontinue={handleContinueAnyway}>
+    </c-missing-feedback-modal> -->
+    
+    <!-- Missing Feedback Modal - Original Content (to be removed after child component is created) -->
+    <template if:true={showMissingFeedbackModal} style="display: none;">
+        <div class="modal-backdrop-new"></div>
+        <section class="missing-feedback-modal-new">
+            <div class="missing-feedback-container-new">
+                <header class="missing-feedback-header-new">
+                    <div class="missing-feedback-title-new">Some sessions don't have a feedback form</div>
+                </header>
+                <div class="missing-feedback-content-new">
+                    <p class="missing-feedback-description-new">Feedback forms aren't added for all sessions. Those sessions won't collect attendee feedback.</p>
+                </div>
+                <footer class="missing-feedback-footer-new">
+                    <button class="btn-outline-new" onclick={handleGoBackFromMissingFeedback}>Go Back</button>
+                    <button class="btn-primary-new" onclick={handleContinueAnyway}>Continue Anyway</button>
+                </footer>
+            </div>
+        </section>
+    </template>
+
+    <!-- Triggering Feedback Modal removed (submission now happens directly). -->
+
+</template>

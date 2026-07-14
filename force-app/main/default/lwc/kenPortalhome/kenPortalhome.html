@@ -1,0 +1,188 @@
+<template>
+    <div class="home">
+        <!-- Greeting row -->
+        <div class="greeting-row">
+            <h1 class="greeting">{greeting}</h1>
+            <button class="btn-primary header-action" onclick={handleHeaderAction}>
+                <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5l7 7-7 7M20 12H4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>{headerActionLabel}</span>
+            </button>
+        </div>
+
+        <div class="home-grid">
+            <!-- ============ MAIN COLUMN ============ -->
+            <div class="main-col">
+                <!-- For you right now -->
+                <section class="card foryou-card">
+                    <div class="foryou-head">
+                        <svg class="accent-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 5.8L20 10l-5.8 2.2L12 18l-2.2-5.8L4 10l5.8-2.2L12 2z" fill="currentColor"/></svg>
+                        <span class="foryou-title">For you right now</span>
+                        <span class="foryou-sub">{forYouSubtitle}</span>
+                    </div>
+                    <div class="chips">
+                        <template for:each={chips} for:item="chip">
+                            <div key={chip.id} class={chip.cssClass}>
+                                <lightning-icon icon-name={chip.icon} size="xx-small" class="chip-ic"></lightning-icon>
+                                <span class="chip-text">{chip.text}</span>
+                            </div>
+                        </template>
+                    </div>
+                </section>
+
+                <!-- Spotlight + video -->
+                <div class="spotlight-row">
+                    <section class="card spotlight-card">
+                        <div class="spotlight-media">
+                            <img src={spotlight.image} alt={spotlight.name} class="spotlight-img" />
+                            <span class="spotlight-badge">{spotlight.badge}</span>
+                        </div>
+                        <div class="spotlight-body">
+                            <span class="spotlight-kicker">{spotlight.kicker}</span>
+                            <h2 class="spotlight-name">{spotlight.name}</h2>
+                            <p class="spotlight-meta">{spotlight.meta}</p>
+                            <p class="spotlight-quote">{spotlight.quote}</p>
+                            <div class="spotlight-actions">
+                                <button class="btn-dark">Read full story
+                                    <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5l7 7-7 7M20 12H4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </button>
+                                <button class="btn-ghost">Nominate next month</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="card video-card">
+                        <img src={spotlight.video.thumb} alt="" class="video-thumb" />
+                        <div class="video-overlay"></div>
+                        <span class="video-badge">{spotlight.video.badge}</span>
+                        <button class="video-play" aria-label="Play video">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+                        </button>
+                        <div class="video-caption">
+                            <p class="video-quote">{spotlight.video.caption}</p>
+                            <p class="video-sub">{spotlight.video.sub}</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- List + Quick actions -->
+                <div class="two-col">
+                    <section class="card list-card">
+                        <div class="card-head">
+                            <div class="card-head-left">
+                                <svg class="accent-ic accent-green" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm-1.2 14.2l-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7z" fill="currentColor"/></svg>
+                                <span class="card-title">{listTitle}</span>
+                                <span class="card-count">{listCount}</span>
+                            </div>
+                            <a class="all-link" href="#" onclick={handleHeaderAction}>All →</a>
+                        </div>
+                        <div class="list">
+                            <template for:each={listItems} for:item="item">
+                                <div key={item.id} class="list-item">
+                                    <span class={item.accentClass}></span>
+                                    <span class={item.iconWrapClass}>
+                                        <lightning-icon icon-name={item.icon} size="x-small"></lightning-icon>
+                                    </span>
+                                    <div class="list-item-body">
+                                        <p class="list-item-title">{item.title}</p>
+                                        <p class="list-item-meta">
+                                            <span class="list-tag">{item.tag}</span>
+                                            <span class="list-sub">{item.sub}</span>
+                                        </p>
+                                    </div>
+                                    <button class={item.btnClass} data-id={item.id} onclick={handleItemAction}>{item.action}</button>
+                                </div>
+                            </template>
+                        </div>
+                    </section>
+
+                    <section class="card quick-card">
+                        <div class="card-head">
+                            <div class="card-head-left">
+                                <svg class="accent-ic accent-amber" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" fill="currentColor"/></svg>
+                                <span class="card-title">Quick actions</span>
+                                <span class="card-sub">{quickSubtitle}</span>
+                            </div>
+                        </div>
+                        <div class="tiles">
+                            <template for:each={quickTiles} for:item="tile">
+                                <button key={tile.id} class="tile" data-id={tile.id} onclick={handleTile}>
+                                    <span class={tile.iconWrapClass}>
+                                        <lightning-icon icon-name={tile.icon} size="small"></lightning-icon>
+                                    </span>
+                                    <span class="tile-body">
+                                        <span class="tile-label">{tile.label}</span>
+                                        <span class="tile-sub">{tile.sub}</span>
+                                    </span>
+                                </button>
+                            </template>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <!-- ============ RIGHT RAIL ============ -->
+            <aside class="rail">
+                <section class="card feed-card">
+                    <div class="card-head">
+                        <span class="card-title rail-title">Campus &amp; alumni feed</span>
+                        <a class="all-link" href="#" onclick={handleHeaderAction}>All →</a>
+                    </div>
+                    <div class="feed-list">
+                        <template for:each={feedItems} for:item="item">
+                            <button key={item.id} class="feed-item" data-id={item.id} onclick={handleFeedItem}>
+                                <img src={item.img} alt="" class="feed-thumb" />
+                                <div class="feed-body">
+                                    <div class="feed-meta">
+                                        <span class="feed-tag">{item.tag}</span>
+                                        <span class="feed-time">{item.time}</span>
+                                    </div>
+                                    <p class="feed-title">{item.title}</p>
+                                </div>
+                            </button>
+                        </template>
+                    </div>
+                </section>
+
+                <!-- Contextual card -->
+                <template if:true={isActivateCard}>
+                    <section class="card activate-card">
+                        <div class="activate-head">
+                            <span class="activate-kicker">
+                                <svg class="accent-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 5.8L20 10l-5.8 2.2L12 18l-2.2-5.8L4 10l5.8-2.2L12 2z" fill="currentColor"/></svg>
+                                ACTIVATE
+                            </span>
+                            <span class="activate-badge">{contextual.badge}</span>
+                        </div>
+                        <h3 class="activate-title">{contextual.title}</h3>
+                        <p class="activate-sub">{contextual.sub}</p>
+                        <div class="progress"><div class="progress-fill" style={progressStyle}></div></div>
+                        <button class="btn-primary activate-btn" onclick={handleContextual}>
+                            {contextual.button}
+                            <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5l7 7-7 7M20 12H4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </section>
+                </template>
+                <template if:true={isEventCard}>
+                    <section class="card event-card">
+                        <span class="event-kicker">{contextual.kicker}</span>
+                        <h3 class="event-title">{contextual.title}</h3>
+                        <p class="event-sub">{contextual.sub}</p>
+                        <button class="btn-rsvp" onclick={handleContextual}>
+                            {contextual.button}
+                            <svg class="btn-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 5l7 7-7 7M20 12H4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </button>
+                    </section>
+                </template>
+
+                <!-- Feedback prompt -->
+                <button class="feedback" onclick={handleFeedback}>
+                    <svg class="feedback-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H7l-3 3V4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+                    <span class="feedback-body">
+                        <span class="feedback-title">What can we do better?</span>
+                        <span class="feedback-sub">Share an idea or open a case - we read every one.</span>
+                    </span>
+                </button>
+            </aside>
+        </div>
+    </div>
+</template>

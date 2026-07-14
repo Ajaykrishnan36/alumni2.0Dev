@@ -1,0 +1,13 @@
+<aura:component	controller="SDO_Tool_qinsight_controller"
+                implements="force:hasRecordId,flexipage:availableForAllPageTypes,forceCommunity:availableForAllPageTypes"
+                access="global"
+                >
+    <aura:attribute name="Description" type="String" default="This component helps Q Branch understand how demos are used so we can better invest our resources.  No personal information is used." />
+    <aura:attribute name="page" type="String" default="Sales" />
+    <aura:attribute name="org" type="String" default="SDO" />
+    <aura:attribute name="email" type="String" default="" />
+    
+    <ltng:require scripts="{!$Resource.SDO_Tool_DemoAppTrackGA}"
+                  afterScriptsLoaded="{!c.loadGoogleAnalytics}"/>
+    
+</aura:component>

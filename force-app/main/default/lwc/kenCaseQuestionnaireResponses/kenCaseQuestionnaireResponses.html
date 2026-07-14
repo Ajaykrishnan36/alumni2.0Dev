@@ -1,0 +1,82 @@
+<template>
+    <div class="qr-card">
+        <div class="qr-header">
+            <div class="qr-header-left">
+                <div class="qr-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span class="qr-title">Questionnaire Responses</span>
+                <template if:true={hasResponses}>
+                    <span class="qr-count">{responseCount}</span>
+                </template>
+            </div>
+            <template if:true={hasResponses}>
+                <button class="qr-collapse-btn" type="button" onclick={toggleCollapse} title={collapseLabel}>
+                    <svg class={chevronClass} width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </template>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="qr-loading">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <template if:true={hasResponses}>
+                <template if:false={isCollapsed}>
+                    <div class="qr-body">
+                        <template for:each={groupedResponses} for:item="group">
+                            <div key={group.questionnaireName} class="qr-group">
+                                <template if:true={isMultipleQuestionnaires}>
+                                    <div class="qr-section-header">
+                                        <span class="qr-section-name">{group.questionnaireName}</span>
+                                    </div>
+                                </template>
+                                <template for:each={group.items} for:item="item">
+                                    <div key={item._key} class="qr-item">
+                                        <span class="qr-question">{item.displayQuestion}</span>
+                                        <template if:true={item.isFileUpload}>
+                                            <template if:true={item.hasFile}>
+                                                <a class="qr-file-link" href={item.fileUrl} target="_blank">
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                    {item.displayResponse}
+                                                </a>
+                                            </template>
+                                            <template if:false={item.hasFile}>
+                                                <span class={item.responseClass}>{item.displayResponse}</span>
+                                            </template>
+                                        </template>
+                                        <template if:false={item.isFileUpload}>
+                                            <span class={item.responseClass}>{item.displayResponse}</span>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </template>
+
+            <template if:false={hasResponses}>
+                <div class="qr-empty">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke="#c9c9c9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <p>No questionnaire responses</p>
+                </div>
+            </template>
+        </template>
+    </div>
+</template>

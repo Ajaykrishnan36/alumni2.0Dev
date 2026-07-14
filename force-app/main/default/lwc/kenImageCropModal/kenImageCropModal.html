@@ -1,0 +1,41 @@
+<template>
+	<div class="modal-overlay" onclick={handleBackdropClick}>
+		<div class="modal-container" onclick={handleModalClick}>
+			<div class="modal-header">
+				<h2 class="modal-title">Move and scale</h2>
+				<button type="button" class="close-button" onclick={handleClose} aria-label="Close">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="crop-container"
+					onmousedown={handleMouseDown}
+					onmousemove={handleMouseMove}
+					onmouseup={handleMouseUp}
+					onmouseleave={handleMouseUp}
+					onwheel={handleWheel}
+					ontouchstart={handleTouchStart}
+					ontouchmove={handleTouchMove}
+					ontouchend={handleTouchEnd}>
+					<div class="crop-viewport">
+						<template if:true={imageUrl}>
+							<img src={imageUrl} alt="Crop preview" class="crop-image" style={imageStyle}
+								onload={handleImageOnLoad} onerror={handleImageError} draggable="false" />
+						</template>
+						<template if:false={imageReady}>
+							<div class="crop-spinner">
+								<lightning-spinner alternative-text="Loading image..." size="medium" variant="brand"></lightning-spinner>
+							</div>
+						</template>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="upload-button" onclick={handleUpload}>Upload</button>
+				<button type="button" class="choose-different-button" onclick={handleChooseDifferent}>Choose a different image</button>
+			</div>
+		</div>
+	</div>
+</template>

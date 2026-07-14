@@ -1,0 +1,117 @@
+<template>
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+    </template>
+    
+    <template if:false={showSpinner}>
+        <div class="slds-m-around_xx-small">
+            <div class="slds-text-heading_medium slds-m-bottom_small">
+                <strong>Select Event Dates</strong>
+            </div>
+            
+            <div class="step-content date-selection-step">
+                <div class="date-selection-layout">
+                    <!-- Left Column: Calendar -->
+                    <div class="calendar-column">
+                        <div class="calendar-section">
+                            <div class="calendar-header">
+                                <button class="calendar-nav" onclick={previousMonth}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"
+                                            fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <h3 class="calendar-title">{currentMonthYear}</h3>
+                                <button class="calendar-nav" onclick={nextMonth}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"
+                                            fill="currentColor" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="calendar-grid">
+                                <div class="calendar-weekdays">
+                                    <div class="weekday">Sun</div>
+                                    <div class="weekday">Mon</div>
+                                    <div class="weekday">Tue</div>
+                                    <div class="weekday">Wed</div>
+                                    <div class="weekday">Thu</div>
+                                    <div class="weekday">Fri</div>
+                                    <div class="weekday">Sat</div>
+                                </div>
+                                <div class="calendar-days">
+                                    <template for:each={calendarDays} for:item="day">
+                                        <div key={day.key} class={day.classes} onclick={selectDate}
+                                            data-date={day.date}>
+                                            {day.number}
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Date Selection Info -->
+                    <div class="date-info-column">
+                        <div class="date-selection-info">
+                            <p style="font-weight: 500;color: #373A45;margin-bottom: 0.5rem;font-size: 1rem;margin-top: 4rem;">
+                                Please select your preferred dates for the event:
+                            </p>
+                            <p>Choose one date if it is a single-day event. Choose multiple dates if it is a multi-day event.</p>
+
+                            <div class="selected-dates" if:true={hasSelectedDates}>
+                                <p style="font-weight: 500;color: #373A45;margin-bottom: 0.5rem;font-size: 1rem;">
+                                    Dates selected
+                                </p>
+                                <div class="date-pills">
+                                    <template for:each={selectedDatesDisplay} for:item="date">
+                                        <div key={date.key} class="date-pill">
+                                            <span class="date-text">{date.display}</span>
+                                            <button class="remove-date" onclick={removeDate} data-date={date.key}>
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                                                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"
+                                                        fill="currentColor" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navigation Buttons -->
+        <div class="custom-flex-container">
+            <div class="custom-flex-left">
+                <lightning-button 
+                    class="slds-p-around_xx-small" 
+                    name="previous" 
+                    label="Previous"
+                    onclick={handlePrevious}>
+                </lightning-button>
+            </div>
+            <div class="custom-flex">
+                <div class="slds-p-around_xx-small">
+                    <lightning-button 
+                        name="cancel" 
+                        label="Cancel" 
+                        onclick={handleCancel}>
+                    </lightning-button>
+                </div>
+                <div class="slds-p-around_xx-small">
+                    <lightning-button 
+                        variant="brand" 
+                        type="button" 
+                        name="save" 
+                        label="Save and Proceed" 
+                        onclick={handleSave}
+                        disabled={isSaveDisabled}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,31 @@
+<template>
+	<div class="modal-overlay" onclick={handleBackdropClick}>
+		<div class="modal-container" onclick={handleModalClick}>
+			<div class="modal-header">
+				<h2 class="modal-title">Opt-in</h2>
+				<button type="button" class="close-button" onclick={handleClose} aria-label="Close">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<p class="consent-text">
+					I would like to sign up to receive information about university developments, invitations to events and fundraising activities relevant to my interests via email. I understand that Ken42 University will keep my personal information securely and that I can access information held about me or ask the University to stop contacting me and storing my data at any time.
+				</p>
+				<div class="checkbox-section">
+					<lightning-input
+						type="checkbox"
+						checked={universityUpdates}
+						onchange={handleCheckboxChange}
+						label="University Updates"
+						class="updates-checkbox">
+					</lightning-input>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="finish-button" onclick={handleFinish}>Finish profile setup</button>
+			</div>
+		</div>
+	</div>
+</template>

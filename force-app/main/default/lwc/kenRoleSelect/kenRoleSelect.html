@@ -1,0 +1,55 @@
+<template>
+    <div class={containerClass}>
+        <template if:true={isLoading}>
+            <div class="page-loader" role="status" aria-live="polite" aria-label="Loading roles">
+                <div class="loader-spinner"></div>
+            </div>
+        </template>
+        <template if:false={isLoading}>
+            <div class="center-area">
+                <div class="role-card">
+                    <img src={kenLogo} class="ken-logo" alt="Ken42 Logo" />
+                    <h1 class="card-title">Choose a role to proceed.</h1>
+                    <div class="account-list">
+                        <template for:each={accounts} for:item="account">
+                            <button
+                                key={account.id}
+                                type="button"
+                                class={account.itemClass}
+                                onclick={handleSelectAccount}
+                                data-account-id={account.id}
+                            >
+                                <span class="account-item-content">
+                                    <span class="account-program">{account.program}</span>
+                                    <span class="account-registration">Reg. No - {account.registrationNumber}</span>
+                                    <span class="account-batch">Batch - {account.batch}</span>
+                                </span>
+                                <template if:true={account.selected}>
+                                    <span class="tick-indicator" aria-hidden="true">
+                                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3.09375 9.84375L7.03125 13.7812L14.9062 5.34375" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>
+                                </template>
+                            </button>
+                        </template>
+                    </div>
+                    <button
+                        type="button"
+                        class="proceed-button"
+                        disabled={isProceedDisabled}
+                        onclick={handleProceed}
+                    >
+                        Proceed
+                    </button>
+                </div>
+            </div>
+            <div class="powered-by-section">
+                <div class="powered-by-button">
+                    <span class="powered-by-text">Powered by</span>
+                    <img src={sideLogoUrl} alt="ken42" class="ken42-icon" />
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

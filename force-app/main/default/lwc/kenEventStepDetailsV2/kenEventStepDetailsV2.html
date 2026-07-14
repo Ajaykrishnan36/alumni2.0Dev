@@ -1,0 +1,261 @@
+<template>
+    <template lwc:if={showHeading}>
+        <h2>6. Target Audience</h2>
+        <p class="muted">Select who should be able to see and register for this event.</p>
+    </template>
+
+    <!-- ============ SAVED AUDIENCE LIST (default view) ============ -->
+    <template lwc:if={isSavedView}>
+        <div class="saved">
+            <div class="saved__head">
+                <div>
+                    <p class="saved__title">Saved Audience</p>
+                    <p class="saved__sub">Add previously saved audience.</p>
+                </div>
+                <button type="button" class="saved__add" onclick={handleAddNewAudience}>Add New Audience</button>
+            </div>
+            <div class="saved__search">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="search" placeholder="Search by name, email, ID or phone number" value={savedSearchTerm} oninput={handleSavedSearch} autocomplete="off" />
+            </div>
+            <template lwc:if={hasSavedAudiences}>
+                <div class="saved__grid">
+                    <template for:each={savedAudienceRows} for:item="a">
+                        <div key={a.id} class={a.cardCls}>
+                            <template lwc:if={a.added}>
+                                <span class="saved-card__check">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                </span>
+                            </template>
+                            <div class="saved-card__body">
+                                <p class="saved-card__name">{a.name}</p>
+                                <p class="saved-card__meta">{a.memberLabel}</p>
+                            </div>
+                            <template lwc:if={a.added}>
+                                <button type="button" class="saved-card__remove" data-id={a.id} onclick={handleRemoveSaved}>Remove</button>
+                            </template>
+                            <template lwc:else>
+                                <button type="button" class="saved-card__review" data-id={a.id} onclick={handleReviewAdd}>Review &amp; Add</button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template lwc:if={noSavedAudiences}>
+                <p class="saved__empty">No saved audiences found.</p>
+            </template>
+        </div>
+    </template>
+
+    <!-- ============ BUILDER (Add New Audience) ============ -->
+    <template lwc:if={isBuilderView}>
+    <div class="audience">
+        <div class="aud-menu">
+            <p class="aud-menu__head">Select By</p>
+            <ul class="aud-menu__list">
+                <template for:each={audienceCats} for:item="c">
+                    <li key={c.id} class={c.cls} data-id={c.id} onclick={handleAudCat}>{c.label}</li>
+                </template>
+                <li class="aud-cat" onclick={handleBackToSaved}>Saved Audience</li>
+            </ul>
+        </div>
+        <div class="aud-panel">
+            <!-- 1. ROLE & DETAILS (rich audience builder — Phase 1) -->
+            <template lwc:if={isRolesCat}>
+                <c-ken-event-audience-builder-v2 audiences={audiencesData} onvaluechange={handleBuilderChange}></c-ken-event-audience-builder-v2>
+            </template>
+
+            <!-- 2. GROUPS -->
+            <template lwc:if={isGroupsCat}>
+                <div class="grp-layout">
+                    <!-- available groups as cards -->
+                    <div class="grp-main">
+                        <p class="aud-panel__hint">Add to members of specific groups or clubs.</p>
+                        <input type="search" class="aud-search" placeholder="Search by group name" value={groupSearchTerm} oninput={handleGroupSearch} />
+                        <template lwc:if={hasGroupResults}>
+                            <div class="grp-grid">
+                                <template for:each={groupResultRows} for:item="g">
+                                    <div key={g.id} class={g.cardCls} data-id={g.id} data-name={g.name}
+                                         data-members={g.membersLabel} data-count={g.memberCount} onclick={handleGroupToggle}>
+                                        <span class={g.tickCls}>
+                                            <template lwc:if={g.checked}>✓</template>
+                                            <template lwc:else>+</template>
+                                        </span>
+                                        <div class="grp-card__body">
+                                            <p class="grp-card__name">{g.name}</p>
+                                            <p class="grp-card__meta">{g.membersLabel}</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:if={noGroupResults}>
+                            <p class="grp-empty">No groups found.</p>
+                        </template>
+                    </div>
+
+                    <!-- selected audience panel -->
+                    <div class="grp-side">
+                        <p class="sel-aud__title">Selected Audience</p>
+                        <p class="sel-aud__label">GROUPS</p>
+                        <template lwc:if={hasSelectedGroups}>
+                            <template for:each={selectedGroupCards} for:item="g">
+                                <div key={g.id} class="sel-card">
+                                    <div class="sel-card__head">
+                                        <span class="sel-card__name">{g.name}</span>
+                                        <button type="button" class="sel-card__x" data-id={g.id} onclick={handleRemoveGroup}>×</button>
+                                    </div>
+                                    <div class="sel-card__tags">
+                                        <span class="sel-tag sel-tag--cat">Groups</span>
+                                        <span class="sel-tag">{g.membersLabel}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:if={hasSelectedGroups}></template>
+                        <template lwc:else>
+                            <p class="sel-aud__empty">No groups selected yet.</p>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- 3. SPECIFIC INDIVIDUALS -->
+            <template lwc:if={isIndividualsCat}>
+                <div class="grp-layout">
+                    <div class="grp-main">
+                        <p class="aud-panel__hint">Search and add specific people by name, email, ID, or phone number.</p>
+                        <div class="ind-search">
+                            <input type="search" class="aud-search" placeholder="Search by name, email, ID or phone number"
+                                   value={individualSearchTerm} oninput={handleIndividualSearch} autocomplete="off" />
+                            <!-- live suggestions while typing -->
+                            <template lwc:if={individualSearching}>
+                                <div class="ind-suggest ind-suggest--msg">Searching…</div>
+                            </template>
+                            <template lwc:if={hasIndividualResults}>
+                                <div class="ind-suggest">
+                                    <template for:each={individualResultRows} for:item="p">
+                                        <div key={p.id} class="ind-option" data-id={p.id} data-name={p.name} data-subtitle={p.subtitle} onclick={handleIndividualToggle}>
+                                            <span class={p.tickCls}>
+                                                <template lwc:if={p.checked}>✓</template>
+                                                <template lwc:else>+</template>
+                                            </span>
+                                            <span class="ind-option__text">{p.name}<em class="aud-meta">{p.subtitle}</em></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:if={showIndividualEmpty}>
+                                <div class="ind-suggest ind-suggest--msg">No matches found.</div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- selected audience panel -->
+                    <div class="grp-side">
+                        <p class="sel-aud__title">Selected Audience</p>
+                        <p class="sel-aud__label">INDIVIDUALS</p>
+                        <template lwc:if={hasSelectedIndividuals}>
+                            <template for:each={selectedIndividualCards} for:item="p">
+                                <div key={p.id} class="sel-card">
+                                    <div class="sel-card__head">
+                                        <span class="sel-card__name">{p.name}</span>
+                                        <button type="button" class="sel-card__x" data-id={p.id} onclick={handleRemoveIndividual}>×</button>
+                                    </div>
+                                    <template lwc:if={p.subtitle}>
+                                        <div class="sel-card__tags"><span class="sel-tag">{p.subtitle}</span></div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <p class="sel-aud__empty">No individuals selected yet.</p>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+    </template>
+
+    <!-- ============ REVIEW SAVED AUDIENCE MODAL ============ -->
+    <template lwc:if={reviewOpen}>
+        <div class="rev-overlay">
+            <div class="rev-modal">
+                <div class="rev-modal__head">
+                    <h3 class="rev-modal__title">Review Saved Audience &amp; Add</h3>
+                    <button type="button" class="rev-modal__x" onclick={closeReview}>×</button>
+                </div>
+                <div class="rev-modal__body">
+                    <p class="rev-modal__name">{reviewName}</p>
+
+                    <!-- custom criteria groups -->
+                    <template for:each={reviewGroups} for:item="g">
+                        <div key={g.key} class="rev-group">
+                            <button type="button" class="rev-group__head" data-key={g.key} onclick={toggleCollapse}>
+                                <span class={g.chevClass}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></span>
+                                <span class="rev-group__title">{g.title}</span>
+                            </button>
+                            <div class={g.bodyClass}>
+                                <div class="rev-group__role">
+                                    <template lwc:if={g.roleLabel}><span class="rev-chip rev-chip--role">{g.roleLabel}</span></template>
+                                    <template lwc:if={g.membersLabel}><span class="rev-chip rev-chip--muted">{g.membersLabel}</span></template>
+                                </div>
+                                <template for:each={g.criteria} for:item="c">
+                                    <div key={c.key} class="rev-crit">
+                                        <p class="rev-crit__label">{c.label}</p>
+                                        <div class="rev-crit__chips">
+                                            <template for:each={c.chips} for:item="ch">
+                                                <span key={ch.key} class="rev-chip">{ch.label}</span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- groups added -->
+                    <template lwc:if={hasReviewNamedGroups}>
+                        <div class="rev-sec">
+                            <button type="button" class="rev-sec__head" data-key="groups" onclick={toggleCollapse}>
+                                <span class="rev-sec__left"><span class={groupsChevClass}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></span><span class="rev-sec__title">Groups Added</span></span>
+                                <span class="rev-sec__count">{reviewNamedGroupCount}</span>
+                            </button>
+                            <div class={groupsBodyClass}>
+                                <template for:each={reviewNamedGroups} for:item="ng">
+                                    <div key={ng.id} class="rev-row"><span class="rev-row__name">{ng.name}</span><span class="rev-row__meta">{ng.membersLabel}</span></div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- individuals added -->
+                    <template lwc:if={hasReviewIndividuals}>
+                        <div class="rev-sec">
+                            <button type="button" class="rev-sec__head" data-key="individuals" onclick={toggleCollapse}>
+                                <span class="rev-sec__left"><span class={individualsChevClass}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg></span><span class="rev-sec__title">Individuals Added</span></span>
+                                <span class="rev-sec__count">{reviewIndividualCount}</span>
+                            </button>
+                            <div class={individualsBodyClass}>
+                                <template for:each={reviewIndividuals} for:item="ind">
+                                    <div key={ind.id} class="rev-row">
+                                        <span class="rev-row__name">{ind.name}</span>
+                                        <template lwc:if={ind.role}><span class="rev-chip rev-chip--muted">{ind.role}</span></template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                <div class="rev-modal__foot">
+                    <button type="button" class="rev-download" onclick={handleDownloadMembers}>Download Member List</button>
+                    <div class="rev-foot__right">
+                        <button type="button" class="rev-btn rev-btn--ghost" onclick={closeReview}>Cancel</button>
+                        <button type="button" class="rev-btn rev-btn--primary" onclick={confirmReviewAdd}>Add Audience</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

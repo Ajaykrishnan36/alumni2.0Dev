@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>64.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Ken Alumni Map</masterLabel>
+    <description>Interactive world map showing alumni counts by country, state and city</description>
+    <targets>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="title"
+                type="String"
+                default="Our Global Alumni Community"
+                label="Title"
+                description="Heading shown above the map"/>
+            <property name="mapHeight"
+                type="Integer"
+                default="560"
+                label="Map height (px)"
+                description="Height of the map area in pixels"/>
+            <property name="hideHeader"
+                type="Boolean"
+                default="false"
+                label="Hide header"
+                description="Hide the title and summary row above the map"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

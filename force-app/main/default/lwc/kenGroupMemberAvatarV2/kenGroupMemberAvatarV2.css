@@ -1,0 +1,7 @@
+:host { display: inline-block; }
+.member { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.member__avatar-wrap { position: relative; }
+.member__avatar { width: 60px; height: 60px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 22px; }
+.member__dot { position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: #19A974; border-radius: 50%; border: 2px solid #fff; }
+.member__name { margin: 0; font-weight: 600; font-size: 13px; color: #111827; }
+.member__batch { margin: 0; font-weight: 500; font-size: 11px; color: #8A8D96; }

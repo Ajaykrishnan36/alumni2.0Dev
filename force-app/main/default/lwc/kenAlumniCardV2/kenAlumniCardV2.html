@@ -1,0 +1,15 @@
+<template>
+    <article class="alum" onclick={handleView}>
+        <template lwc:if={showWilling}>
+            <span class="willing">Willing to help</span>
+        </template>
+        <div class="alum__photo-wrap">
+            <div class="alum__photo" style={avatarStyle}>{displayInitial}</div>
+            <span class={statusClass}></span>
+        </div>
+        <h3 class="alum__name">{name}</h3>
+        <p class="alum__role">{title}</p>
+        <p class="alum__co">{company}</p>
+        <p class="alum__meta">{cityLine}</p>
+    </article>
+</template>

@@ -1,0 +1,19 @@
+<template>
+    <div class="tools">
+        <div class="search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9DA0A8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="Search" value={searchValue} oninput={handleSearch} />
+        </div>
+        <select class="dropdown dropdown--select" onchange={handleSort}>
+            <option value="">Sort by</option>
+            <option value="recent">Recently active</option>
+            <option value="name">Name (A–Z)</option>
+            <option value="company">Company (A–Z)</option>
+            <option value="batch">Batch (newest)</option>
+        </select>
+        <button type="button" class="dropdown" onclick={handleFilter}>
+            <span>Filters</span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+    </div>
+</template>

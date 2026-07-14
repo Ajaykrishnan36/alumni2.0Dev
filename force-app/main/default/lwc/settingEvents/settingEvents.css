@@ -1,0 +1,147 @@
+:host {
+    display: block;
+    color: #1a1a1a;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.card {
+    background-color: #f5f7fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.events-grid {
+    display: flex;
+    gap: 40px;
+}
+
+.column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Radio Group (Resued concept) */
+.radio-group-custom {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+}
+
+.radio-option input[type="radio"] {
+    margin-right: 6px;
+    accent-color: #2f61d5;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.radio-option label {
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+}
+
+/* Dropdown */
+.dropdown-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.dropdown-trigger {
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    padding: 10px 12px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-top: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    z-index: 10;
+    padding: 8px 0;
+}
+
+.dropdown-item {
+    padding: 2px 12px;
+}
+
+/* Updates Group */
+.updates-group {
+    /* Special styling for the toggle row label being separate */
+}
+
+.toggle-row {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Right Column stuff */
+.card-like-input {
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    color: #333;
+}
+
+.custom-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e0e0e0;
+    background-color: #fff;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+}

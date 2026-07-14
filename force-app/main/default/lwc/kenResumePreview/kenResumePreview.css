@@ -1,0 +1,76 @@
+.preview-wrapper {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.step-heading {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 1.5rem 0;
+}
+
+.preview-card-container {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    min-height: 400px;
+}
+
+/* Shared template base */
+.resume-template {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    color: #111827;
+    line-height: 1.5;
+}
+
+.resume-name { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.02em; margin-bottom: 0.25rem; }
+.resume-title { font-size: 1rem; font-weight: 400; color: #374151; margin-bottom: 0.5rem; }
+.resume-contact { font-size: 0.8125rem; color: #6B7280; }
+.resume-section { margin-top: 1.25rem; }
+.section-heading { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.05em; color: #111827; margin: 0 0 0.5rem 0; padding-bottom: 0.25rem; }
+.section-content { font-size: 0.875rem; color: #4B5563; }
+.resume-item { margin-bottom: 0.75rem; }
+.item-title { font-weight: 600; font-size: 0.9375rem; }
+.item-sub { font-size: 0.8125rem; color: #6B7280; margin-top: 0.15rem; }
+.item-meta, .item-desc { font-size: 0.8125rem; color: #4B5563; margin-top: 0.35rem; }
+.skills-list { font-size: 0.875rem; color: #4B5563; }
+
+/* New York */
+.resume-newyork .resume-header { text-align: left; margin-bottom: 1.25rem; }
+
+/* Toronto */
+.resume-toronto .resume-header { margin-bottom: 1.25rem; }
+.header-content { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+.header-text { flex: 1; min-width: 0; }
+.resume-toronto .resume-name, .resume-toronto .resume-title, .resume-toronto .resume-contact { }
+.resume-photo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.resume-photo-placeholder { width: 80px; height: 80px; border-radius: 50%; background: #E5E7EB; flex-shrink: 0; }
+.resume-toronto .section-heading { font-size: 0.875rem; border-bottom: 1px solid #E5E7EB; }
+.item-main { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+.item-company { font-weight: 600; font-size: 0.9375rem; }
+.item-date { font-size: 0.8125rem; color: #6B7280; }
+.resume-toronto .item-title { font-size: 0.875rem; color: #374151; }
+
+/* Modern */
+.resume-modern { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+.resume-modern .resume-header { text-align: center; margin-bottom: 1.5rem; }
+.resume-modern .resume-photo,
+.resume-modern .resume-photo-placeholder {
+    width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 1rem; display: block;
+}
+.resume-modern .resume-photo-placeholder { background: #E5E7EB; }
+.resume-modern .section-heading { font-size: 0.875rem; color: var(--primary-color, #ffffff); border-bottom: 2px solid var(--primary-color, #ffffff); }
+
+/* Classic */
+.resume-classic { font-family: Georgia, 'Times New Roman', serif; line-height: 1.6; }
+.resume-classic .resume-header { text-align: left; margin-bottom: 1.25rem; padding-bottom: 0.75rem; border-bottom: 2px solid #111827; }
+.resume-classic .resume-title { font-style: italic; }
+.resume-classic .section-heading { font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+@media (max-width: 768px) {
+    .preview-card-container { padding: 1rem; }
+}

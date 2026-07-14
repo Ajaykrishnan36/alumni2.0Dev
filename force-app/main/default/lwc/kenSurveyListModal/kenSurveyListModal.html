@@ -1,0 +1,119 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div class="modal-box" onclick={stopPropagation}>
+
+                <!-- Header -->
+                <div class="modal-header">
+                    <div class="modal-title-wrap">
+                        <h2 class="modal-title">{title}</h2>
+                        <span class="modal-count">{recordCount} {recordLabel}</span>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="export-btn" onclick={handleExportCsv} title="Export as CSV" aria-label="Export as CSV">&#x2193; Export CSV</button>
+                        <button class="modal-close" onclick={handleClose} title="Close" aria-label="Close modal">&#x2715;</button>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="modal-search">
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder={searchPlaceholder}
+                        value={searchTerm}
+                        oninput={handleSearch}
+                    />
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <template if:true={isLoading}>
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>{loadingText}</p>
+                        </div>
+                    </template>
+
+                    <template if:false={isLoading}>
+                        <template if:true={hasRows}>
+
+                            <!-- Surveys table -->
+                            <template if:true={isSurveyMode}>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-survey-name">Survey Name</th>
+                                            <th class="col-questionnaire">Questionnaire</th>
+                                            <th class="col-approval">Approval Status</th>
+                                            <th class="col-active">Active</th>
+                                            <th class="col-audience">Target Audience</th>
+                                            <th class="col-date">Start Date</th>
+                                            <th class="col-date">End Date</th>
+                                            <th class="col-responses">Responses</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={paginatedList} for:item="r">
+                                            <tr key={r.id} class="data-row" data-record-id={r.id} data-object-api="Ken_Survey__c" onclick={handleRowClick}>
+                                                <td class="col-survey-name name-cell">{r.name}</td>
+                                                <td class="col-questionnaire">{r.questionnaire}</td>
+                                                <td class="col-approval">
+                                                    <span class={r.approvalClass}>{r.approvalStatus}</span>
+                                                </td>
+                                                <td class="col-active">
+                                                    <span class={r.activeClass}>{r.activeLabel}</span>
+                                                </td>
+                                                <td class="col-audience">{r.targetAudience}</td>
+                                                <td class="col-date">{r.startDate}</td>
+                                                <td class="col-date">{r.endDate}</td>
+                                                <td class="col-responses resp-cell">{r.responseCount}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </template>
+
+                            <!-- Responses table -->
+                            <template if:true={isResponseMode}>
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-respondent">Respondent</th>
+                                            <th class="col-survey-name">Survey</th>
+                                            <th class="col-question">Question</th>
+                                            <th class="col-response">Response</th>
+                                            <th class="col-date">Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={paginatedList} for:item="r">
+                                            <tr key={r.id} class="data-row" data-record-id={r.id} data-object-api="Ken_Questionnaire_Parameter_Response__c" onclick={handleRowClick}>
+                                                <td class="col-respondent name-cell">{r.respondentName}</td>
+                                                <td class="col-survey-name">{r.surveyName}</td>
+                                                <td class="col-question">{r.questionLabel}</td>
+                                                <td class="col-response response-truncated">{r.response}</td>
+                                                <td class="col-date">{r.createdDate}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </template>
+
+                            <!-- Pagination -->
+                            <div class="pagination">
+                                <button class="page-btn" onclick={prevPage} disabled={isFirstPage}>&#8249; Prev</button>
+                                <span class="page-info">{pageInfo}</span>
+                                <button class="page-btn" onclick={nextPage} disabled={isLastPage}>Next &#8250;</button>
+                            </div>
+                        </template>
+                        <template if:false={hasRows}>
+                            <div class="empty-state">{emptyText}</div>
+                        </template>
+                    </template>
+                </div>
+
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,35 @@
+<template>
+    <div class="groups-joined-container">
+
+        <div class="card-header">
+            <h3 class="card-title">Groups Joined</h3>
+            <button class="btn-view-all" onclick={handleViewAll}>View All</button>
+        </div>
+        <div class="divider"></div>
+
+        <template if:true={hasGroups}>
+            <div class="group-list">
+                <template for:each={groups} for:item="group">
+                    <div key={group.id} class="group-item" data-group-id={group.id} onclick={handleGroupClick}>
+                        <div class="group-info">
+                            <span class="group-name">{group.name}</span>
+                            <span class="type-badge" if:true={group.groupType}>{group.groupType}</span>
+                            <span class="group-meta">{group.members} members</span>
+                        </div>
+                        <div class="group-thumb" style={group.cardStyle}></div>
+                    </div>
+                </template>
+            </div>
+            <button class="btn-discover btn-discover-static" onclick={handleDiscover}>Discover More Groups</button>
+        </template>
+
+        <template if:false={hasGroups}>
+            <div class="empty-state">
+                <img src={SurveyEmptyImageUrl} alt="No groups joined" class="empty-img" />
+                <p class="empty-text">- You haven&#39;t joined any groups yet -</p>
+                <button class="btn-discover" onclick={handleDiscover}>Discover Groups</button>
+            </div>
+        </template>
+
+    </div>
+</template>

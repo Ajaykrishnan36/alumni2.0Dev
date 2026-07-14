@@ -1,0 +1,99 @@
+<template>
+    <template if:true={show}>
+        <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div class="modal-box" onclick={stopProp}>
+
+                <!-- Header -->
+                <div class="modal-header">
+                    <div class="modal-title-wrap">
+                        <h2 class="modal-title">{title}</h2>
+                        <span class="modal-count">{records.length} records</span>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="export-btn" onclick={handleExport}>Export CSV</button>
+                        <button class="modal-close" onclick={handleClose} title="Close">✕</button>
+                    </div>
+                </div>
+
+                <!-- Search -->
+                <div class="modal-search">
+                    <input type="text" class="search-input" placeholder="Search by mentor, mentee, title, status…"
+                           oninput={handleSearch} />
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body">
+                    <template if:true={isLoading}>
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <span>Loading records…</span>
+                        </div>
+                    </template>
+
+                    <template if:false={isLoading}>
+                        <template if:true={hasRecords}>
+                            <table class="mentorship-table">
+                                <thead>
+                                    <tr>
+                                        <th>Record #</th>
+                                        <th>Type</th>
+                                        <th>Mentor</th>
+                                        <th>Mentee</th>
+                                        <th>Status</th>
+                                        <th>Mode</th>
+                                        <th>Meet Date</th>
+                                        <th>Meeting Title</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={filteredRecords} for:item="r">
+                                        <tr key={r.id} class="mentorship-row"
+                                            data-record-id={r.id}
+                                            onclick={handleRowClick}>
+                                            <td class="rec-name-cell">{r.name}</td>
+                                            <td><span class={r.rtClass}>{r.rtLabel}</span></td>
+                                            <td>
+                                                <span class="person-link"
+                                                      data-record-id={r.mentorId}
+                                                      onclick={handlePersonClick}>
+                                                    {r.mentorDisp}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="person-link"
+                                                      data-record-id={r.menteeId}
+                                                      onclick={handlePersonClick}>
+                                                    {r.menteeDisp}
+                                                </span>
+                                            </td>
+                                            <td><span class={r.statusClass}>{r.status}</span></td>
+                                            <td>
+                                                <template if:true={r.meetingMode}>
+                                                    <span class={r.modeClass}>{r.meetingMode}</span>
+                                                </template>
+                                                <template if:false={r.meetingMode}>—</template>
+                                            </td>
+                                            <td>{r.meetDateDisp}</td>
+                                            <td class="title-cell">{r.titleDisp}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+
+                            <!-- Pagination -->
+                            <div class="pagination">
+                                <button class="page-btn" onclick={handlePrev} disabled={isFirstPage}>← Prev</button>
+                                <span class="page-info">Page {currentPage} of {totalPages}</span>
+                                <button class="page-btn" onclick={handleNext} disabled={isLastPage}>Next →</button>
+                            </div>
+                        </template>
+
+                        <template if:false={hasRecords}>
+                            <div class="empty-state">No records found.</div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

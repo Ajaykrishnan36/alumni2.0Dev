@@ -1,0 +1,15 @@
+<template>
+    <div class="experience-card">
+        <div class="company-logo-container">
+            <img src={displayLogo} alt={company} class="company-logo" onerror={handleLogoError} />
+        </div>
+        <div class="experience-details">
+            <h4 class="position">{position}</h4>
+            <p class="company-info">{company} | {employmentType}</p>
+            <p class="location-info">{location} | {workType}</p>
+        </div>
+        <div class="experience-duration">
+            <span class="duration-badge">{duration}</span>
+        </div>
+    </div>
+</template>

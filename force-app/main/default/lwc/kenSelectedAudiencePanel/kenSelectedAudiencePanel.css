@@ -1,0 +1,70 @@
+.panelTitle { font-weight: 800; }
+.panelBody { min-height: 220px; }
+.emptyBox {
+    border: 1px solid #e8e8e8; border-radius: 10px; padding: 14px; text-align: center;
+    font-weight: 700; color: #6b6b6b; background: #ffffff;
+}
+.audItem { border: 1px solid #e8e8e8; border-radius: 10px; padding: 12px; background: #ffffff; margin-bottom: 10px; }
+.audRow { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.audTitle { font-weight: 800; }
+.audSub { margin-top: 4px; color: #6b6b6b; font-size: 12px; line-height: 1.35; }
+
+.menuWrapper {
+    position: relative;
+}
+
+.menuTrigger {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    color: #5b6270;
+}
+
+.menuTrigger:hover {
+    background: #eceff5;
+}
+
+.groupMenuIcon {
+    --slds-c-icon-color-foreground-default: #5b6270;
+}
+
+.menuBackdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.menuDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.25rem;
+    min-width: 120px;
+    background: #fff;
+    border: 1px solid #e6e9ef;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+    overflow: hidden;
+}
+
+.menuItem {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 0.875rem;
+    color: #2f3545;
+    cursor: pointer;
+}
+
+.menuItem:hover {
+    background: #f6f8fc;
+}

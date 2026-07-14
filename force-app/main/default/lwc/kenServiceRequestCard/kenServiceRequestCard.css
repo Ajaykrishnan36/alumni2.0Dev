@@ -1,0 +1,122 @@
+.service-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    border: 1px solid #DBE3EF;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--primary-color, #E85D04) 0%, var(--primary-color, #E85D04) 58%, var(--secondary-color, #F59E0B) 100%);
+    color: #FFFFFF;
+    padding: 1.25rem 1.25rem 1rem 1.25rem;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+    font-family: inherit;
+    transition: box-shadow 0.2s ease, transform 0.2s ease, filter 0.2s ease;
+}
+
+.service-card:focus,
+.service-card:focus-visible,
+.service-card:active {
+    outline: none;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.service-card:hover {
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.14), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+    transform: translateY(-2px);
+    filter: brightness(1.08);
+}
+
+.service-card:hover .arrow-circle {
+    background: rgba(255, 255, 255, 0.32);
+}
+
+.service-card__pattern {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 60%;
+    height: 60%;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.22) 1px, transparent 1.5px);
+    background-size: 10px 10px;
+    pointer-events: none;
+    opacity: 0.9;
+}
+
+.card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+    color: #FFFFFF;
+}
+
+.arrow-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.card-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.85rem;
+    position: relative;
+    z-index: 1;
+}
+
+.card-chip {
+    background: rgba(255, 255, 255, 0.22);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 0.3rem 0.85rem;
+    border-radius: 999px;
+}
+
+.card-icon {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 0.85rem;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@media (max-width: 768px) {
+    .service-card {
+        min-height: 180px;
+        padding: 1rem;
+    }
+    .card-title {
+        font-size: 16px;
+    }
+    .card-icon svg {
+        width: 48px;
+        height: 48px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-chip {
+        font-size: 12px;
+        padding: 0.25rem 0.65rem;
+    }
+}

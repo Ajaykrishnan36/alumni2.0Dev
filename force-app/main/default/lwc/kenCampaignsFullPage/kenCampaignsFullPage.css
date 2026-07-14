@@ -1,0 +1,421 @@
+/* =============================================
+   Dashboard Container — fixed height, no scroll
+   ============================================= */
+.dashboard-container {
+    display: flex;
+    gap: 1rem;
+    margin: 0 auto;
+    font-family: 'GeneralSansCustom', sans-serif;
+    background-color: #F6F8FA;
+    box-sizing: border-box;
+    height: calc(100vh - 148px);
+    overflow: hidden;
+}
+
+/* =============================================
+   Base Card
+   ============================================= */
+.section-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.section-header.space-between {
+    justify-content: space-between;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #373A45;
+    margin: 0;
+}
+
+.divider {
+    height: 1px;
+    background-color: #E6E8ED;
+    margin-bottom: 0.75rem;
+}
+
+/* =============================================
+   Left Column
+   ============================================= */
+.main-column {
+    flex: 2.9;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---- Donor Impact ---- */
+.donor-impact-section {
+    flex-shrink: 0;
+}
+
+.section-subtitle {
+    font-size: 0.75rem;
+    color: #6C757D;
+    margin-bottom: 0.75rem;
+}
+
+.impact-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.625rem;
+}
+
+.impact-card {
+    background-color: #F8F9FF;
+    border: 1px solid #7FA4FF;
+    border-radius: 8px;
+    padding: 0.75rem;
+    text-align: left;
+}
+
+.impact-card h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1A1A1A;
+    margin: 0 0 0.25rem 0;
+}
+
+.impact-card p {
+    font-size: 0.7rem;
+    color: #6C757D;
+    margin: 0;
+    line-height: 1.35;
+}
+
+/* ---- Donate for a Cause ---- */
+.donate-cause-section {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.view-all-campaigns-btn {
+    background-color: #FFFFFF;
+    color: var(--primary-color, #2B62FF);
+    border: 1px solid var(--primary-color, #2B62FF);
+    border-radius: 6px;
+    padding: 0.35rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.view-all-campaigns-btn:hover {
+    background-color: var(--secondary-color, #F0F4FF);
+    color: var(--primary-color, #2B62FF);
+}
+
+.cause-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cause-card {
+    background: #F8F9FA;
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.cause-image {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.cause-content {
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.cause-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #373A45;
+    margin: 0 0 0.25rem 0;
+}
+
+.cause-desc {
+    font-size: 0.7rem;
+    color: #6C757D;
+    line-height: 1.35;
+    margin: 0 0 0.5rem 0;
+    flex: 1;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.cause-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.explore-text {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #373A45;
+}
+
+.explore-icon {
+    --sds-c-icon-color-foreground: #373A45;
+}
+
+/* =============================================
+   Right Column
+   ============================================= */
+.side-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* ---- My Campaigns ---- */
+.my-campaigns-section {
+    flex-shrink: 0;
+}
+
+.campaign-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.campaign-list-item {
+    background-color: #F8F9FA;
+    border-radius: 8px;
+    padding: 0.625rem 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.campaign-item-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.campaign-item-content h4 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #373A45;
+    margin: 0 0 0.25rem 0;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0.45rem;
+    border-radius: 20px;
+    font-size: 0.6rem;
+    font-weight: 500;
+}
+
+.ongoing-badge {
+    background-color: #FFFFFF;
+    border: 1px solid #EAEAEA;
+    color: #373A45;
+}
+
+.in-review-badge {
+    background-color: #FFF8E5;
+    color: #B47C00;
+    border: 1px solid transparent;
+}
+
+.completed-badge {
+    background-color: #EBF1FF;
+    color: #2B62FF;
+    border: 1px solid transparent;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #FF4A4A;
+    border-radius: 50%;
+}
+
+.campaign-date {
+    font-size: 0.65rem;
+    color: #6C757D;
+    margin: 0.25rem 0 0 0;
+    font-style: italic;
+}
+
+.campaign-item-image {
+    width: 56px;
+    height: 42px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.view-all-btn {
+    width: 100%;
+    background-color: var(--secondary-color, #F0F4FF);
+    color: var(--primary-color, #2B62FF);
+    border: 1px solid var(--primary-color, #B0CAFF);
+    border-radius: 6px;
+    padding: 0.45rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.view-all-btn:hover {
+    background-color: var(--primary-color, #2B62FF);
+    color: #FFFFFF;
+    border-color: var(--primary-color, #2B62FF);
+}
+
+/* ---- Create New Campaign ---- */
+.create-campaign-card {
+    flex: 1;
+    min-height: 0;
+    background-color: var(--primary-color, #2B62FF);
+    border-radius: 12px;
+    padding: 1rem;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 12px rgba(43, 98, 255, 0.2);
+    transition: filter 0.2s;
+    overflow: hidden;
+}
+
+.create-campaign-card:hover {
+    filter: brightness(0.95);
+}
+
+.card-header {
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.card-title {
+    font-weight: 500;
+    font-size: 1.125rem;
+    line-height: 140%;
+    color: #ffffff;
+    margin: 0;
+}
+
+.arrow-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+.header-line {
+    width: 100%;
+    height: 0.5px;
+    border-bottom: 0.5px solid #FFFFFF;
+    opacity: 0.5;
+    margin-bottom: 0.75rem;
+}
+
+.create-illustration {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.create-illustration img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+/* =============================================
+   Responsive
+   ============================================= */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        flex-direction: column;
+        height: auto;
+        overflow-y: auto;
+    }
+
+    .main-column,
+    .side-column {
+        flex: 1;
+        width: 100%;
+        overflow: visible;
+    }
+
+    .donate-cause-section,
+    .cause-grid,
+    .create-campaign-card {
+        overflow: visible;
+        min-height: unset;
+        height: auto;
+    }
+
+    .cause-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .impact-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cause-grid {
+        grid-template-columns: 1fr;
+    }
+}

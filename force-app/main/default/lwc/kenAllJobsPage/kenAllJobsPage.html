@@ -1,0 +1,193 @@
+<template>
+    <section class="all-jobs">
+        <div class="header">
+            <h2>All Jobs</h2>
+            <div class="controls">
+                <div class="view-toggle" role="group" aria-label="View switch">
+                    <button class={cardViewClass} onclick={handleCardView}>
+                        <lightning-icon icon-name="utility:apps" size="x-small"></lightning-icon>
+                    </button>
+                    <button class={listViewClass} onclick={handleListView}>
+                        <lightning-icon icon-name="utility:list" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="dropdown">
+                    <button class="dropdown-trigger" onclick={toggleCompanyTypeMenu}>
+                        <span>{companyTypeLabel}</span>
+                        <lightning-icon icon-name="utility:down" size="x-small"></lightning-icon>
+                    </button>
+                    <template lwc:if={isCompanyTypeOpen}>
+                        <div class="dropdown-menu">
+                            <label class="checkbox-row">
+                                <input type="checkbox" data-type="Startup" checked={companyTypeSelection.Startup} onchange={handleCompanyTypeChange}/>
+                                <span>Startups</span>
+                            </label>
+                            <label class="checkbox-row">
+                                <input type="checkbox" data-type="Corporate" checked={companyTypeSelection.Corporate} onchange={handleCompanyTypeChange}/>
+                                <span>Corporates</span>
+                            </label>
+                            <label class="checkbox-row">
+                                <input type="checkbox" data-type="SME" checked={companyTypeSelection.SME} onchange={handleCompanyTypeChange}/>
+                                <span>SMEs</span>
+                            </label>
+                            <label class="checkbox-row">
+                                <input type="checkbox" data-type="PSU" checked={companyTypeSelection.PSU} onchange={handleCompanyTypeChange}/>
+                                <span>PSUs</span>
+                            </label>
+                        </div>
+                    </template>
+                </div>
+
+                <button class={filterButtonClass} onclick={toggleFilters}>
+                    <span>Filters</span>
+                    <lightning-icon icon-name="utility:filterList" size="x-small"></lightning-icon>
+                    <template lwc:if={hasAppliedFilters}>
+                        <span class="filter-count">{appliedFilterCount}</span>
+                    </template>
+                </button>
+            </div>
+        </div>
+
+        <div class="body">
+            <div class="content">
+                <template lwc:if={isCardView}>
+                    <div class="grid">
+                        <template for:each={filteredJobs} for:item="job">
+                            <article key={job.id} class="job-card">
+                                <div class="job-top">
+                                    <div class="company">
+                                        <span class={job.badgeClass}>{job.initials}</span>
+                                        <span class="company-name">{job.company}</span>
+                                    </div>
+                                    <button class={job.bookmarkClass} data-id={job.id} onclick={handleBookmarkToggle} aria-pressed={job.isBookmarked}>
+                                        <lightning-icon icon-name="utility:bookmark" size="x-small"></lightning-icon>
+                                    </button>
+                                </div>
+                                <h3 class="title">{job.title}</h3>
+                                <div class="tags">
+                                    <span class="tag">{job.industry}</span>
+                                    <span class="tag">
+                                        <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                                        {job.location}
+                                    </span>
+                                    <span class="tag">{job.type}</span>
+                                </div>
+                                <div class="salary">{job.salary}</div>
+                                <div class="match">
+                                    <span class={job.matchClass}>
+                                        <lightning-icon icon-name={job.matchIcon} size="xx-small"></lightning-icon>
+                                    </span>
+                                    <span>{job.matchText}</span>
+                                </div>
+                            </article>
+                        </template>
+                    </div>
+                </template>
+
+                <template lwc:if={isListView}>
+                    <div class="list-card">
+                        <div class="list-header">
+                            <span>Company name</span>
+                            <span>Job title</span>
+                            <span>Industry</span>
+                            <span>Company type</span>
+                            <span>Salary Range</span>
+                            <span>Skills Match</span>
+                            <span>Action</span>
+                        </div>
+                        <template for:each={filteredJobs} for:item="job">
+                            <div key={job.id} class="list-row">
+                                <span>{job.company}</span>
+                                <span>{job.title}</span>
+                                <span>{job.industry}</span>
+                                <span>{job.type}</span>
+                                <span>{job.salary}</span>
+                                <span class="list-match">
+                                    <span class={job.matchClass}>
+                                        <lightning-icon icon-name={job.matchIcon} size="xx-small"></lightning-icon>
+                                    </span>
+                                    <span>{job.matchText}</span>
+                                </span>
+                                <button class="action">View</button>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <template lwc:if={filtersOpen}>
+                <aside class="filters">
+                    <div class="filters-header">Filters</div>
+                    <template lwc:if={hasSelectedFilterPills}>
+                        <div class="filter-pills">
+                            <template for:each={selectedFilterPills} for:item="pill">
+                                <button
+                                    key={pill.key}
+                                    type="button"
+                                    class="filter-pill"
+                                    data-key={pill.key}
+                                    data-category={pill.category}
+                                    onclick={handlePillRemove}
+                                >
+                                    <span>{pill.label}</span>
+                                    <span class="pill-close">x</span>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                    <label class="toggle-row">
+                        <input type="checkbox" checked={showMentors} onchange={toggleMentors}/>
+                        <span>Show mentors near me</span>
+                    </label>
+                    <select class="filter-input" data-field="company" value={filters.company} onchange={handleFilterChange}>
+                        <option value="">Company</option>
+                        <template for:each={companyOptions} for:item="option">
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        </template>
+                    </select>
+                    <select class="filter-input" data-field="industry" value={filters.industry} onchange={handleFilterChange}>
+                        <option value="">Industry</option>
+                        <template for:each={industryOptions} for:item="option">
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        </template>
+                    </select>
+                    <select class="filter-input" data-field="jobFunction" value={filters.jobFunction} onchange={handleFilterChange}>
+                        <option value="">Job function</option>
+                        <template for:each={jobFunctionOptions} for:item="option">
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        </template>
+                    </select>
+                    <select class="filter-input" data-field="program" value={filters.program} onchange={handleFilterChange}>
+                        <option value="">Program last attended</option>
+                        <template for:each={programOptions} for:item="option">
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        </template>
+                    </select>
+                    <select class="filter-input" data-field="specialization" value={filters.specialization} onchange={handleFilterChange}>
+                        <option value="">Specialisation</option>
+                        <template for:each={specializationOptions} for:item="option">
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        </template>
+                    </select>
+                    <select class="filter-input" data-field="graduationYear" value={filters.graduationYear} onchange={handleFilterChange}>
+                        <option value="">Graduation year</option>
+                        <template for:each={graduationYearOptions} for:item="option">
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        </template>
+                    </select>
+                    <select class="filter-input" data-field="city" value={filters.city} onchange={handleFilterChange}>
+                        <option value="">Current city / Town of residence</option>
+                        <template for:each={cityOptions} for:item="option">
+                            <option key={option.value} value={option.value}>{option.label}</option>
+                        </template>
+                    </select>
+                    <div class="filter-actions">
+                        <button class="reset" onclick={resetFilters}>Reset Filters</button>
+                        <button class="apply" onclick={applyFilters}>Apply</button>
+                    </div>
+                </aside>
+            </template>
+        </div>
+    </section>
+</template>

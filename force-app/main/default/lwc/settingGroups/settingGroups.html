@@ -1,0 +1,53 @@
+<template>
+    <div class="groups-container">
+        <!-- Groups Settings -->
+        <h1 class="header-title">Groups</h1>
+
+        <div class="card groups-card-content">
+            <h2 class="section-title">Preferences</h2>
+
+            <div class="form-section">
+                <!-- Who can invite -->
+                <div class="form-group">
+                    <label class="field-label">Who can invite me to groups</label>
+                    <div class="radio-group-custom">
+                        <div class="radio-option">
+                            <input type="radio" id="g-everyone" name="group-invite" checked />
+                            <label for="g-everyone">Everyone</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="g-alumni" name="group-invite" />
+                            <label for="g-alumni">Only other alumni</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="g-admin" name="group-invite" />
+                            <label for="g-admin">Only admin</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Updates Toggle -->
+                <div class="form-group">
+                    <label class="field-label">Receive updates from groups that you are a part of</label>
+                    <div class="toggle-row">
+                        <span>Turn on updates</span>
+                        <lightning-input type="toggle" variant="label-hidden" checked message-toggle-active=""
+                            message-toggle-inactive="">
+                        </lightning-input>
+                    </div>
+                </div>
+
+                <!-- Notify me for -->
+                <div class="form-group">
+                    <label class="field-label">Notify me for</label>
+                    <div class="checkbox-group">
+                        <lightning-input type="checkbox" label="New Posts"></lightning-input>
+                        <lightning-input type="checkbox" label="New Members"></lightning-input>
+                        <lightning-input type="checkbox" label="Polls"></lightning-input>
+                        <lightning-input type="checkbox" label="Events"></lightning-input>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

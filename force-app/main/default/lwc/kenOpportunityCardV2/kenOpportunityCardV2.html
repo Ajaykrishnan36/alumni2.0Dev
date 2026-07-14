@@ -1,0 +1,38 @@
+<template>
+    <article class="opp-card" onclick={handleDetails}>
+        <div class={coverClass}>
+            <div class="opp-card__cover-img" style={imgStyle}></div>
+            <span class={catClass}>{category}</span>
+            <template lwc:if={approved}>
+                <span class="opp-card__approved">Approved</span>
+            </template>
+            <h3 class="opp-card__title">{title}</h3>
+        </div>
+        <div class="opp-card__body">
+            <p class="opp-card__desc">{desc}</p>
+            <div class="opp-card__stats">
+                <div>
+                    <div class="opp-card__raised">{raisedText}</div>
+                    <div class="opp-card__raised-sub">{targetText}</div>
+                </div>
+                <template lwc:if={hasProgress}>
+                    <div>
+                        <div class="opp-card__pct">{pctText}</div>
+                        <div class="opp-card__pct-sub">funded</div>
+                    </div>
+                </template>
+            </div>
+            <template lwc:if={hasProgress}>
+                <div class="opp-card__bar"><div class="opp-card__bar-fill" style={progressStyle}></div></div>
+            </template>
+            <div class="opp-card__foot">
+                <span>👥 {contributors}</span>
+                <span>{ctx}</span>
+            </div>
+            <div class="opp-card__actions">
+                <button type="button" class="opp-btn opp-btn--primary" onclick={handleGive}>♡ Give now</button>
+                <button type="button" class="opp-btn opp-btn--ghost" onclick={handleDetails}>Details →</button>
+            </div>
+        </div>
+    </article>
+</template>

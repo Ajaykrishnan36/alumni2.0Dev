@@ -1,0 +1,129 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="home" has-rail>
+        <!-- MAIN -->
+        <main class="main home-main">
+            <template lwc:if={isLoading}>
+                <div class="home-skeleton">Loading your dashboard…</div>
+            </template>
+            <template lwc:else>
+                <!-- FOR YOU RIGHT NOW (shared) -->
+                <c-ken-home-for-you-bar-v2
+                    subtitle={forYouSub}
+                    cta-label={forYouCta}
+                    chips={chips}
+                    oncta={handleForYouCta}>
+                </c-ken-home-for-you-bar-v2>
+
+                <!-- HERO ROW (shared) -->
+                <section class="hero-row">
+                    <c-ken-home-match-hero-v2
+                        eyebrow={spotEyebrow}
+                        title={spotName}
+                        meta={spotMeta}
+                        quote={spotlightQuote}
+                        cta-label={spotCtaLabel}
+                        secondary-cta-label={spotSecondaryCta}
+                        oncontinuesetup={handleSpotlightRead}
+                        onnominate={handleNominate}>
+                    </c-ken-home-match-hero-v2>
+                    <c-ken-home-video-card-v2
+                        chip-label={videoChipLabel}
+                        title={videoTitle}
+                        meta={videoMeta}
+                        onplay={handlePlayVideo}>
+                    </c-ken-home-video-card-v2>
+                </section>
+
+                <!-- VERIFY phase: Checklist + Quick actions -->
+                <template lwc:if={isVerifyPhase}>
+                    <section class="two-col">
+                        <c-ken-home-checklist-card-v2
+                            title={middleLeftTitle}
+                            subtitle={middleLeftSub}
+                            head-symbol={middleLeftHeadSymbol}
+                            head-tone={middleLeftHeadTone}
+                            rows={middleLeftRows}
+                            onviewall={handleAllChecklist}
+                            onrowaction={handleChecklistRow}>
+                        </c-ken-home-checklist-card-v2>
+                        <c-ken-home-quick-actions-v2
+                            title={quickTitle}
+                            subtitle={quickSub}
+                            actions={quickActions}
+                            onaction={handleQuickAction}>
+                        </c-ken-home-quick-actions-v2>
+                    </section>
+                </template>
+
+                <!-- CONNECT phase: Attention + Quick actions -->
+                <template lwc:if={isConnectPhase}>
+                    <section class="two-col">
+                        <c-ken-home-attention-card-v2
+                            items={attentionItems}
+                            onviewall={handleAllChecklist}
+                            onrowaction={handleAttentionRow}>
+                        </c-ken-home-attention-card-v2>
+                        <c-ken-home-quick-actions-v2
+                            title={quickTitle}
+                            subtitle={quickSub}
+                            actions={quickActions}
+                            onaction={handleQuickAction}>
+                        </c-ken-home-quick-actions-v2>
+                    </section>
+                </template>
+            </template>
+        </main>
+
+        <!-- RIGHT RAIL -->
+        <aside slot="rail" class="rail home-rail">
+            <template lwc:if={isLoading}>
+                <div class="home-skeleton home-skeleton--rail">Loading…</div>
+            </template>
+            <template lwc:else>
+                <c-ken-home-feed-rail-v2
+                    items={feedItems}
+                    show-verify={isVerifyState}
+                    show-connect={isConnectState}
+                    onviewall={handleAllFeed}
+                    onitemclick={handleFeedItem}
+                    onverifycta={handleVerifyCta}
+                    onconnectcta={handleConnectCta}>
+                </c-ken-home-feed-rail-v2>
+
+                <!-- VERIFY: Activate alumni profile -->
+                <template lwc:if={isVerifyPhase}>
+                    <div class="activate-card">
+                        <div class="activate-eyebrow">ACTIVATE</div>
+                        <h3 class="activate-title">Activate your alumni profile</h3>
+                        <p class="activate-body">You're {profileCompleteness}% there.</p>
+                        <div class="activate-bar">
+                            <div class="activate-bar__fill" style={progressStyle}></div>
+                        </div>
+                        <a href="/my-profile" class="activate-cta">Complete profile →</a>
+                    </div>
+                </template>
+
+                <!-- CONNECT: Upcoming event highlight -->
+                <template lwc:if={isConnectPhase}>
+                    <template lwc:if={hasTopEvent}>
+                        <div class="upcoming-event-card">
+                            <p class="ue-eyebrow">THIS WEEK</p>
+                            <h3 class="ue-title">{topEvent.title}</h3>
+                            <p class="ue-meta">{topEvent.date} · {topEvent.location}</p>
+                            <a href={topEvent.targetUrl} class="ue-cta">View event →</a>
+                        </div>
+                    </template>
+                </template>
+
+                <!-- Feedback — always the LAST element in the rail, below the activate cards -->
+                <div class="rail-feedback" data-href="/feedback">
+                    <span class="rail-feedback__ico" aria-hidden="true">&#128172;</span>
+                    <div class="rail-feedback__body">
+                        <div class="rail-feedback__title">What can we do better?</div>
+                        <div class="rail-feedback__sub">Share an idea or open a case · we read every one.</div>
+                    </div>
+                </div>
+            </template>
+        </aside>
+    </c-ken42-alumni-shell-v2>
+</template>

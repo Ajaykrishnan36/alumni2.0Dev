@@ -1,0 +1,5 @@
+:host { display: block; }
+.feed-tabs { display: flex; gap: 24px; border-bottom: 1px solid #E5E6E8; margin-bottom: 18px; background: #fff; padding: 0 18px; border-radius: 10px 10px 0 0; }
+.feed-tab { background: none; border: 0; padding: 14px 4px; font-family: inherit; font-weight: 500; font-size: 13px; color: #8A8D96; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.feed-tab:hover { color: #373A45; }
+.feed-tab--active { color: #3061FF; font-weight: 600; border-bottom-color: #3061FF; }

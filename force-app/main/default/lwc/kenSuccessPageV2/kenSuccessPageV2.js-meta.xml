@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 — Registration Success</masterLabel>
+    <description>"Thank you for registering" confirmation shown after Request Access submission.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="title" type="String" label="Title" default="Thank you for registering!"/>
+            <property name="message" type="String" label="Message" default="Your application is under review. You'll receive a confirmation email within 3 working days once it's approved."/>
+            <property name="ctaLabel" type="String" label="CTA Label" default="Got it!"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

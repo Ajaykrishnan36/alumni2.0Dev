@@ -1,0 +1,208 @@
+<template>
+
+     <!-- Event-Wise Fee Section -->
+     <template if:true={isEventWise}>
+        <lightning-card title="Event-Wise Fee">
+            <div class="fee-setup-container">
+                <!--Event Name-->
+                <div class="fee-input">
+                    <p>Event details</p>
+                 <strong>{eventFields.eventName}</strong>
+                </div>
+                <div class="fee-input">
+                       <!-- Event Fee Input -->
+                   <p><label for="eventFee">Setup price</label></p> 
+                   <input 
+                       type="number" 
+                       id="eventFee" 
+                       name="eventFee" 
+                       value={eventFields.eventFee} 
+                       onchange={handleEventFeeChange}>
+                </div>
+                <div class="fee-input">
+                     <!-- Event No Fee -->
+                     <p><label for="noFee">Mark as free</label></p>
+                     <input 
+                         type="checkbox" 
+                         id="noFee" 
+                         name="noFee" 
+                         checked={eventFields.noFee} 
+                         onchange={handleEventFeeChange}>
+                </div>
+                 
+                
+                 
+                    
+                   
+
+                <!-- Event Fee Input -->
+               <!--<div class=".fee-input">
+                <lightning-input
+                label="Setup price"
+                type="number"
+                name="eventFee"
+                value={eventFields.eventFee}
+                onchange={handleEventFeeChange}
+                >
+            </lightning-input>
+               </div>-->
+
+                <!-- Event No Fee-->
+                <!--<lightning-input
+                    label="Mark as free"
+                    type="checkbox"
+                    name="noFee"
+                    checked={eventFields.noFee}
+                    onchange={handleEventFeeChange}
+                    >
+                </lightning-input>-->
+            </div>
+        </lightning-card>
+    </template>
+
+    <!-- Session-Wise Fee Section -->
+    <template if:true={isSessionWise}>
+        <lightning-card title="Session-Wise Fee">
+            <template for:each={sessions} for:item="session">
+                <!-- <div key={sessionDate.date} class="event-day slds-p-around_medium">
+                    Whole Day Setup Row 
+                    <div class="session-row slds-grid slds-gutters slds-m-around_x-small">
+                        <div class="slds-col slds-size_1-of-3">
+                            <label>Day & session details</label><br>
+                            <strong>{sessionDate.formattedDate}</strong>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3" style="align-content: center;">
+                            <label>Setup price</label>
+                            <lightning-input
+                                type="number"
+                                value={sessionDate.wholeDayFee}
+                                name="Whole_Day_Fee__c"
+                                data-id={sessionDate.date}
+                                onchange={handleWholeDayFeeChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <label>Mark as free</label>
+                            <lightning-input
+                                type="checkbox"
+                                name="No_Fee__c"
+                                checked={sessionDate.wholeDayFree}
+                                data-id={sessionDate.date}
+                                onchange={handleWholeDayFeeChange}>
+                            </lightning-input>
+                        </div>
+                    </div>-->
+            
+                    <!-- Individual Session Rows 
+                    <template for:each={sessionDate.sessions} for:item="session">-->
+                        <div key={session.Id} class="session-row slds-grid slds-gutters slds-m-around_x-small">
+                            <div class="slds-col slds-size_1-of-3">
+                                <p>Session {session.displayIndex}</p>
+                                <strong>{session.Name}</strong>
+                            </div>
+                            
+                            <div class="slds-col slds-size_1-of-3">
+                                
+                                    <label class="input-label">Setup price</label>
+                                    <div class="slds-m-top_none">
+                                    <lightning-input
+                                        type="number"
+                                        name="Session_Fee__c"
+                                        value={session.Session_Fee__c}
+                                        data-id={session.Id}
+                                        onchange={handleSessionFeeChange}>
+                                    </lightning-input>
+                                </div>
+                            </div>
+                            
+                            <div class="slds-col slds-size_1-of-3">
+                                <div class="checkbox-container">
+                                    <label>Mark as free</label>  
+                                    <lightning-input
+                                        type="checkbox"
+                                        name="No_Fee__c"
+                                        checked={session.No_Fee__c}
+                                        data-id={session.Id}
+                                        onchange={handleSessionFeeChange}
+                                        class="checkbox-input">
+                                    </lightning-input>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    <!--</template>
+                </div>-->
+            </template>
+        
+            <!--<div class="slds-p-around_medium">-->
+        <!-- <template for:each={sessionsByDate} for:item="sessionDate">
+            <div key={sessionDate.date} class="event-day">
+                <strong>{sessionDate.formattedDate}</strong>
+                <template for:each={sessionDate.sessions} for:item="session" for:index="index">
+                    <div key={session.Id} class="sldsbox slds-m-bottom_small">
+                         <div data-id={index}>
+                            <p>session {session.displayIndex}</p>
+                            <strong>{session.Name}</strong>
+                         </div>
+                        
+
+                         <div class ="session-input">
+                            <lightning-input
+                                label="Setup price"
+                                type="number"
+                                name="Session_Fee__c"
+                                value={session.Session_Fee__c}
+                                data-id={session.Id}
+                                onchange={handleSessionFeeChange}
+                                >
+                            </lightning-input>
+                         </div>
+                        
+
+                        <div class="session-checkbox">
+                            
+                            <p><label for="noFee">Mark as free</label></p>
+                            <input 
+                                type="checkbox"
+                                name="No_Fee__c"
+                                checked={session.No_Fee__c}
+                                data-id={session.Id}
+                                onchange={handleSessionFeeChange}>
+                       </div>
+                        <div class="session-checkbox">
+                            <lightning-input
+                                label="Mark as free"
+                                type="checkbox"
+                                name="No_Fee__c"
+                                checked={session.No_Fee__c}
+                                data-id={session.Id}
+                                onchange={handleSessionFeeChange}
+                                >
+                            </lightning-input>
+                         </div>
+                        
+                    </div>
+                </template>
+            </div>
+        </template> -->       
+            <!--</div>-->
+        </lightning-card>
+    </template>
+
+    
+        <!-- Buttons for navigation and actions -->
+        <div class="custom-flex-container">
+            <div class="custom-flex-left">
+                <lightning-button class="slds-p-around_xx-small" name="previous" label="Previous" onclick={handlePreviousFee}></lightning-button>
+            </div>
+            <div class="custom-flex">
+                <div class="slds-p-around_xx-small">
+                    <lightning-button name="cancel" label="Cancel" onclick={handleCancel}></lightning-button>
+                </div>
+                <div class="slds-p-around_xx-small">
+                    <lightning-button class="slds-p-around_xx-small" variant="brand" label="Save" onclick={handleSave}></lightning-button>
+                </div>
+            </div>
+        </div>
+   
+</template>

@@ -1,0 +1,138 @@
+/* Alumni 2.0 — Employment Form Popup */
+
+:host {
+    --a2-secondary-500:#3061FF; --a2-secondary-100:#EAEFFF; --a2-secondary-200:#B5C5FF;
+    --a2-white:#FFFFFF; --a2-blacks-400:#373A45; --a2-blacks-100:#B2B3B7; --a2-blacks-50:#E5E6E8;
+    --a2-neutrals-50:#F6F8FB; --a2-required:#DC5959;
+    --a2-font-title:"General Sans","Inter",system-ui,sans-serif;
+    --a2-radius-sm:8px; --a2-radius-md:12px;
+    display:block; font-family:var(--a2-font-title); color:var(--a2-blacks-400);
+}
+
+.overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+}
+.modal {
+    width: 768px; max-width: 100%;
+    background: var(--a2-white);
+    border-radius: var(--a2-radius-md);
+    box-shadow: 0 4px 30px rgba(0,0,0,0.1);
+    display: flex; flex-direction: column;
+    max-height: calc(100vh - 48px);
+    overflow: hidden;
+}
+.modal__header { padding: 28px 36px 16px; border-bottom: 1px solid var(--a2-blacks-50); }
+.modal__title { margin: 0; font-weight: 600; font-size: 20px; line-height: 140%; }
+.modal__body { padding: 24px 36px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+.modal__footer { padding: 20px 36px; border-top: 1px solid var(--a2-blacks-50); display: flex; justify-content: flex-end; gap: 12px; }
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { font-weight: 500; font-size: 14px; color: var(--a2-blacks-400); }
+.req { color: var(--a2-required); margin-left: 2px; }
+.opt { color: var(--a2-blacks-100); font-weight: 400; }
+
+.segs { display: flex; gap: 12px; }
+.seg {
+    flex: 0 0 auto;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px;
+    background: var(--a2-secondary-100);
+    border: 1.5px solid transparent;
+    border-radius: var(--a2-radius-sm);
+    font-family: inherit; font-weight: 500; font-size: 14px; color: var(--a2-blacks-400);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+}
+.seg:hover { background: #DBE3FF; }
+.seg--on { border-color: var(--a2-secondary-500); }
+.seg__icon { display: inline-flex; }
+
+.grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; row-gap: 20px; }
+.field input, .select {
+    width: 100%; height: 44px; padding: 10px 12px; box-sizing: border-box;
+    background: var(--a2-white);
+    border: 1px solid var(--a2-blacks-50); border-radius: var(--a2-radius-sm);
+    font-family: inherit; font-weight: 500; font-size: 14px; color: var(--a2-blacks-400);
+    outline: none;
+    transition: border-color 0.15s;
+}
+.field input::placeholder { color: var(--a2-blacks-100); }
+.field input:focus, .select:focus { border-color: var(--a2-secondary-500); }
+.select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23373A45' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+.row { display: flex; gap: 12px; }
+.row > * { flex: 1; }
+
+.checkbox { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; font-size: 14px; }
+.checkbox input { width: 16px; height: 16px; accent-color: var(--a2-secondary-500); margin: 0; }
+
+.desc-field { margin-top: 4px; }
+.rte {
+    border: 1px solid var(--a2-blacks-50);
+    border-radius: var(--a2-radius-sm);
+    overflow: hidden;
+    background: var(--a2-white);
+}
+.rte__area {
+    min-height: 110px;
+    padding: 12px;
+    font-family: inherit; font-weight: 500; font-size: 14px; line-height: 150%;
+    color: var(--a2-blacks-400);
+    outline: none;
+}
+.rte__area[contenteditable]:empty::before {
+    content: 'Describe your role...';
+    color: var(--a2-blacks-100);
+}
+.rte__toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px;
+    border-top: 1px solid var(--a2-blacks-50);
+    background: var(--a2-white);
+}
+.rte__group { display: inline-flex; gap: 4px; }
+.rte__btn {
+    width: 28px; height: 28px;
+    background: transparent; border: 0; cursor: pointer; border-radius: 4px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: inherit; font-size: 14px; color: var(--a2-blacks-400);
+    transition: background 0.15s;
+}
+.rte__btn:hover { background: var(--a2-neutrals-50); }
+.rte__btn--bold { font-weight: 700; }
+.rte__btn--italic { font-style: italic; }
+.rte__ai {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: transparent; border: 0; cursor: pointer;
+    font-family: inherit; font-weight: 500; font-size: 13px; color: var(--a2-secondary-500);
+}
+
+.btn {
+    height: 44px; min-width: 110px;
+    border-radius: var(--a2-radius-sm);
+    font-family: inherit; font-weight: 500; font-size: 14px;
+    cursor: pointer; padding: 0 24px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1.5px solid transparent;
+    transition: background 0.15s;
+}
+.btn--primary { background: var(--a2-secondary-500); color: var(--a2-white); }
+.btn--primary:hover { background: #2752D6; }
+.btn--outline { background: var(--a2-secondary-100); border-color: var(--a2-secondary-200); color: var(--a2-secondary-500); }
+.btn--outline:hover { background: #DBE3FF; }
+
+@media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; }
+    .segs { flex-direction: column; }
+    .seg { width: 100%; justify-content: flex-start; }
+    .modal__header, .modal__body, .modal__footer { padding-left: 20px; padding-right: 20px; }
+}

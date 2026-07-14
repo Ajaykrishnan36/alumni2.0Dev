@@ -1,0 +1,175 @@
+.mobile-list-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    background-color: #ffffff;
+    padding: 10px 12px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.mobile-list-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+    min-width: 0;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    min-height: 24px;
+    flex-shrink: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: #374151;
+    cursor: pointer;
+}
+
+.back-btn:hover {
+    background-color: transparent;
+}
+
+.back-btn lightning-icon {
+    --sds-c-icon-color-foreground-default: #374151;
+}
+
+.mobile-list-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile-list-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-shrink: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.mobile-list-controls c-ken-search-bar {
+    width: 100%;
+    min-width: 0;
+}
+
+.mobile-filter-buttons {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+}
+
+.sort-by-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-filter-buttons .sort-by-wrapper .filter-btn {
+    width: 100%;
+    height: 100%;
+    flex: none; /* override flex: 1 from below */
+}
+
+.sort-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    overflow: hidden;
+}
+
+.sort-option {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    color: #374151;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sort-option:hover {
+    background-color: #f3f4f6;
+}
+
+.mobile-filter-buttons .filter-btn {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 8px;
+    background-color: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #374151;
+    cursor: pointer;
+    min-height: 44px;
+    width: 100%;
+}
+
+.mobile-filter-buttons .filter-btn span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile-filter-buttons .filter-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.filter-icon,
+.dropdown-icon {
+    --slds-c-icon-color-foreground-default: #374151;
+    flex-shrink: 0;
+}
+
+.mobile-alumni-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.mobile-alumni-grid c-ken-alumni-card {
+    min-width: 0;
+}

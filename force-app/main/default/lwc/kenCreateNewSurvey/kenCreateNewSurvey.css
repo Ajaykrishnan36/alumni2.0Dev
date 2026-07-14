@@ -1,0 +1,275 @@
+.create-survey-card {
+    background: var(--primary-color);
+    border-radius: 12px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 56, 122, 0.2);
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+
+.create-survey-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 56, 122, 0.3);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    margin: 0;
+}
+
+.arrow-icon {
+    color: white;
+    transition: transform 0.2s ease;
+}
+
+.create-survey-card:hover .arrow-icon {
+    transform: translateX(4px);
+}
+
+.card-illustration {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem 0;
+    flex: 1;
+    min-height: 200px;
+}
+
+.illustration-wrapper {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Desktop Monitor */
+.monitor {
+    position: relative;
+    z-index: 1;
+}
+
+.monitor-screen {
+    width: 220px;
+    height: 150px;
+    background: #E5E7EB;
+    border-radius: 4px;
+    border: 10px solid #4B5563;
+    padding: 14px;
+    display: flex;
+    gap: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.screen-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 10px;
+    justify-content: flex-start;
+    padding-top: 8px;
+}
+
+.form-line {
+    height: 5px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 2px;
+    width: 100%;
+}
+
+.form-line:nth-child(1) {
+    width: 100%;
+}
+
+.form-line:nth-child(2) {
+    width: 85%;
+}
+
+.form-line:nth-child(3) {
+    width: 95%;
+}
+
+.form-line.short {
+    width: 65%;
+}
+
+.screen-right {
+    flex: 1.2;
+    background: white;
+    border-radius: 3px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.monitor-stand {
+    width: 70px;
+    height: 14px;
+    background: #E5E7EB;
+    margin: 0 auto;
+    border-radius: 0 0 4px 4px;
+}
+
+/* Stylized Figures */
+.person {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+}
+
+.person-head {
+    width: 22px;
+    height: 22px;
+    background: #1F2937;
+    border-radius: 50%;
+    margin-bottom: 5px;
+}
+
+.person-body {
+    width: 40px;
+    height: 52px;
+    background: #1F2937;
+    border-radius: 4px;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.person-body::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 36px;
+    background: white;
+    border-radius: 2px;
+}
+
+/* Figure 1 - Left-top (typing/selecting) */
+.person-top-left {
+    top: 5px;
+    left: 12%;
+    transform: translateX(-50%);
+}
+
+.person-hands.typing {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 14px;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 2px;
+    z-index: 1;
+}
+
+/* Figure 2 - Left-bottom (reviewing with magnifying glass) */
+.person-bottom-left {
+    bottom: 15px;
+    left: 18%;
+    transform: translateX(-50%);
+}
+
+.magnifying-glass {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.magnifying-glass::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    width: 7px;
+    height: 2.5px;
+    background: rgba(0, 0, 0, 0.4);
+    transform: rotate(45deg);
+    border-radius: 1px;
+}
+
+/* Figure 3 - Right (placing/dragging element) */
+.person-right {
+    top: 25px;
+    right: 12%;
+    transform: translateX(50%);
+}
+
+.person-hands.dragging {
+    position: absolute;
+    top: 10px;
+    right: -10px;
+    width: 20px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.dragged-element {
+    width: 14px;
+    height: 12px;
+    background: #4B5563;
+    border-radius: 2px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 768px) {
+    .create-survey-card {
+        padding: 1.25rem;
+    }
+
+    .card-title {
+        font-size: 0.9rem;
+    }
+
+    .illustration-wrapper {
+        height: 180px;
+    }
+
+    .monitor-screen {
+        width: 160px;
+        height: 110px;
+    }
+
+    .person-head {
+        width: 16px;
+        height: 16px;
+    }
+
+    .person-body {
+        width: 28px;
+        height: 38px;
+    }
+}

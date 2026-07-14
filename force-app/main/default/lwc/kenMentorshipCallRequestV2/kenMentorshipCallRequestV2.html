@@ -1,0 +1,63 @@
+<template>
+    <div class="backdrop" onclick={handleClose}>
+        <div class="modal" onclick={stopBubble}>
+            <button class="x" onclick={handleClose} title="Close">×</button>
+
+            <header class="hd">
+                <span class="badge">Call Request</span>
+                <h3>{meetingTitle}</h3>
+                <p class="who">with {requesterName}</p>
+                <template lwc:if={currentSlot}>
+                    <p class="slot">Proposed slot: {currentSlot}</p>
+                </template>
+            </header>
+
+            <template lwc:if={errorMsg}><div class="err">{errorMsg}</div></template>
+            <template lwc:if={statusMsg}><div class="ok">{statusMsg}</div></template>
+
+            <!-- DETAIL: accept / decline / suggest -->
+            <template lwc:if={isDetail}>
+                <div class="actions">
+                    <template lwc:if={isProposed}>
+                        <button class="b b--solid" onclick={handleAcceptProposed} disabled={busy}>Accept New Slot</button>
+                    </template>
+                    <template lwc:else>
+                        <button class="b b--solid" onclick={handleAccept} disabled={busy}>Accept Request</button>
+                        <button class="b b--danger" onclick={handleDecline} disabled={busy}>Decline Request</button>
+                    </template>
+                    <button class="b b--ghost" onclick={showReschedule} disabled={busy}>Suggest a different slot</button>
+                </div>
+            </template>
+
+            <!-- RESCHEDULE form -->
+            <template lwc:if={isReschedule}>
+                <div class="form">
+                    <lightning-input type="date" label="New date" value={rDate} onchange={handleDate}></lightning-input>
+                    <div class="row">
+                        <lightning-input type="time" label="Start" value={rStart} onchange={handleStart}></lightning-input>
+                        <lightning-input type="time" label="End" value={rEnd} onchange={handleEnd}></lightning-input>
+                    </div>
+                    <lightning-combobox label="Meeting mode" value={rMode} options={modeOptions}
+                        onchange={handleMode}></lightning-combobox>
+
+                    <template lwc:if={isOnline}>
+                        <lightning-input type="url" label="Google Meet link" value={rLink}
+                            placeholder="https://meet.google.com/…" onchange={handleLink}></lightning-input>
+                    </template>
+                    <template lwc:else>
+                        <lightning-input type="text" label="Physical address" value={rLocation}
+                            placeholder="Venue / address" onchange={handleLocation}></lightning-input>
+                    </template>
+
+                    <div class="actions">
+                        <button class="b b--ghost" onclick={backToDetail} disabled={busy}>Back</button>
+                        <button class="b b--solid" onclick={submitReschedule} disabled={rescheduleInvalid}>
+                            <template lwc:if={busy}>Sending…</template>
+                            <template lwc:else>Send New Slot</template>
+                        </button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

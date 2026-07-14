@@ -1,0 +1,37 @@
+<template>
+	<template if:true={showSpinner}>
+		<lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+	</template>
+	<template if:false={showSpinner}>
+		<div class="slds-m-around_xx-small">
+		<p>Who is this event for? <span class="info-text"></span></p>
+		<p>(The event will be visible to the audience you select)</p>
+		
+			<lightning-button variant={studentVariant} label="Students" data-value="Students" title="Primary action" onclick={handleAudienceSelection}
+				class="slds-m-left_x-small"></lightning-button>
+			<lightning-button variant={facultyVariant} label="Faculty" data-value="Faculty" title="Primary action" onclick={handleAudienceSelection}
+				class="slds-m-left_x-small"></lightning-button>
+			<lightning-button variant={alumniVariant} label="Alumni" data-value="Alumni" title="Primary action" onclick={handleAudienceSelection}
+				class="slds-m-left_x-small"></lightning-button>
+			<lightning-button variant={allVariant} label="Applicable to all" title="Primary action" onclick={handleInviteAll}
+				class="slds-m-left_x-small"></lightning-button>
+		</div>
+		
+		<div class="custom-flex-container">
+			<div class="custom-flex-left">
+				<lightning-button class="slds-p-around_xx-small" name="previous" label="Previous"
+					onclick={handlePrevious}>
+				</lightning-button>
+			</div>
+			<div class="custom-flex">
+				<div class="slds-p-around_xx-small">
+					<lightning-button name="cancel" label="Cancel" onclick={handleCancel}>
+					</lightning-button>
+				</div>
+				<div class="slds-p-around_xx-small">
+					<lightning-button variant="brand" type="button" name="save" label="Save and proceed" onclick={handleSave}>
+					</lightning-button>
+				</div>
+			</div>
+		</div>
+</template>

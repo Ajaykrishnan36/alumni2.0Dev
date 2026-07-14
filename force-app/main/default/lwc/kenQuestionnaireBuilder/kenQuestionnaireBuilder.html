@@ -1,0 +1,146 @@
+<template>
+    <div class="questionnaire-builder">
+        <div class="questions-container">
+            <template for:each={normalizedQuestions} for:item="question" for:index="index">
+                <div
+                    key={question.id}
+                    class="question-card"
+                    data-question-id={question.id}
+                    ondragover={handleDragOver}
+                    ondrop={handleDrop}
+                    ondragend={handleDragEnd}>
+                    <div class="question-top-controls">
+                        <div class="drag-handle" title="Drag to reorder"
+                            draggable="true"
+                            data-question-id={question.id}
+                            ondragstart={handleDragStart}>
+                            <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+                                <circle cx="2" cy="3" r="1.5" fill="#6B7280"/>
+                                <circle cx="2" cy="8" r="1.5" fill="#6B7280"/>
+                                <circle cx="2" cy="13" r="1.5" fill="#6B7280"/>
+                                <circle cx="8" cy="3" r="1.5" fill="#6B7280"/>
+                                <circle cx="8" cy="8" r="1.5" fill="#6B7280"/>
+                                <circle cx="8" cy="13" r="1.5" fill="#6B7280"/>
+                            </svg>
+                        </div>
+                        <div class="question-top-right-controls">
+                            <template if:true={question.showRequiredToggle}>
+                                <div class="required-toggle">
+                                    <span class="required-label">Required</span>
+                                    <lightning-input type="toggle" checked={question.required}
+                                        onchange={handleRequiredToggle} data-question-id={question.id}
+                                        class="toggle-input" message-toggle-active="" message-toggle-inactive="">
+                                    </lightning-input>
+                                </div>
+                            </template>
+                            <button type="button" class="delete-question-btn" onclick={handleDeleteQuestion}
+                                data-question-id={question.id}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" class="delete-icon">
+                                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM8 9H16V19H8V9ZM15.5 4L14.5 3H9.5L8.5 4H5V6H19V4H15.5Z" fill="#585A64"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="question-header-row">
+                        <div class="question-right-section">
+                            <div class="question-type-field">
+                                <label class="field-label">Choose type</label>
+                                <div class="question-type-dropdown">
+                                    <lightning-combobox value={question.type} options={questionTypeOptions}
+                                        placeholder="Select" onchange={handleQuestionTypeChange}
+                                        data-question-id={question.id} variant="label-hidden" class="custom-select">
+                                    </lightning-combobox>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="question-left-section">
+                            <span class="question-number">Question {question.number}<span class="qb-required-star">*</span></span>
+                            <div class="question-input-field">
+                                <lightning-input type="text" value={question.text}
+                                    placeholder={questionPlaceholder}
+                                    onchange={handleQuestionTextChange} data-question-id={question.id}
+                                    variant="label-hidden" class={question.questionInputClass}>
+                                </lightning-input>
+                                <template if:true={question.textError}>
+                                    <div class="qb-error">{question.textError}</div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                    <template if:true={question.showMultipleOptions}>
+                        <div class="question-options">
+                            <template for:each={question.options} for:item="option" for:index="optionIndex">
+                                <div key={option.id} class="option-item">
+                                    <div class="option-control">
+                                        <template if:true={question.isMultiple}>
+                                            <div class="radio-button"></div>
+                                        </template>
+                                        <template if:true={question.isCheckboxType}>
+                                            <div class="checkbox-button"></div>
+                                        </template>
+                                    </div>
+                                    <div class="option-label">
+                                        <span class="option-letter">{option.letter}</span>
+                                        <span>)</span>
+                                    </div>
+                                    <lightning-input type="text" value={option.text} placeholder="Add option"
+                                        onchange={handleOptionTextChange} data-question-id={question.id}
+                                        data-option-id={option.id} variant="label-hidden" class="option-input">
+                                    </lightning-input>
+                                    <button type="button" class="delete-option-btn" onclick={handleDeleteOption}
+                                        data-question-id={question.id} data-option-id={option.id}>
+                                        <lightning-icon icon-name="utility:close" size="x-small" class="delete-option-icon"></lightning-icon>
+                                    </button>
+                                </div>
+                            </template>
+                            <button type="button" class="add-option-btn" onclick={handleAddOptionClick}
+                                data-question-id={question.id}>
+                                Add option {question.nextOptionNumber}
+                            </button>
+                            <template if:true={question.optionsError}>
+                                <div class="qb-error">{question.optionsError}</div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:true={question.showLinearScale}>
+                        <div class="question-scale">
+                            <div class="scale-range">
+                                <lightning-combobox value={question.scaleMin} options={scaleNumberOptions}
+                                    onchange={handleScaleMinChange} data-question-id={question.id}
+                                    variant="label-hidden" class="scale-input custom-select">
+                                </lightning-combobox>
+                                <span class="scale-to">to</span>
+                                <lightning-combobox value={question.scaleMax} options={scaleNumberOptions}
+                                    onchange={handleScaleMaxChange} data-question-id={question.id}
+                                    variant="label-hidden" class="scale-input custom-select">
+                                </lightning-combobox>
+                            </div>
+                            <div class="scale-labels">
+                                <div class="scale-label-item">
+                                    <span class="scale-label-number">{question.scaleMin}</span>
+                                    <lightning-input type="text" value={question.scaleMinLabel} placeholder="Label (Optional)"
+                                        onchange={handleScaleMinLabelChange} data-question-id={question.id}
+                                        variant="label-hidden" class="scale-label-input">
+                                    </lightning-input>
+                                </div>
+                                <div class="scale-label-item">
+                                    <span class="scale-label-number">{question.scaleMax}</span>
+                                    <lightning-input type="text" value={question.scaleMaxLabel} placeholder="Label (Optional)"
+                                        onchange={handleScaleMaxLabelChange} data-question-id={question.id}
+                                        variant="label-hidden" class="scale-label-input">
+                                    </lightning-input>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+        <template if:true={showAddButton}>
+            <button type="button" class="add-questions-btn" onclick={handleAddQuestion}>
+                <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                {addButtonLabel}
+            </button>
+        </template>
+    </div>
+</template>

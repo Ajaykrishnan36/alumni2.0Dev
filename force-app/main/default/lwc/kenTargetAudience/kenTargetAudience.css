@@ -1,0 +1,64 @@
+.step-content {
+    margin: 0 auto;
+    padding: 0;
+    /* Full width so the audience card is the SAME width on every "Select By" tab
+       instead of shrink-wrapping to each tab's content. */
+    width: 100%;
+    /* Pass the wizard step height down to the audience component so its columns scroll, not the page. */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.step-content-step2 {
+    padding: 0;
+}
+
+/* Fill the step height so the audience component (and its inner columns) can size to it. */
+.add-new-audience-wrapper,
+.add-new-audience-wrapper > c-ken-portal-audience-selection {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.step-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 2rem;
+}
+
+.step-subtitle {
+    font-size: 0.9375rem;
+    color: #6b7280;
+    margin: 0 0 1rem 0;
+}
+
+.target-audience-initial {
+    padding: 0 0 2rem 0;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.add-new-audience-wrapper {
+    padding: 0;
+    max-width: none;
+    width: 100%;
+}
+
+.audience-loading {
+    padding: 3rem 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .step-title {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+}

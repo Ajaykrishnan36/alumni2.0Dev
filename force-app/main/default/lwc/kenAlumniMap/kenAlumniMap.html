@@ -1,0 +1,26 @@
+<template>
+    <div class="map-card">
+        <div class="map-header" lwc:if={showHeader}>
+            <div class="map-heading">
+                <h2 class="map-title">{title}</h2>
+                <p class="map-summary" lwc:if={summaryLabel}>{summaryLabel}</p>
+            </div>
+        </div>
+        <div class="map-shell" style={shellStyle}>
+            <div class="map-container" lwc:dom="manual"></div>
+            <template lwc:if={isLoading}>
+                <div class="map-overlay">
+                    <lightning-spinner alternative-text="Loading map" size="medium"></lightning-spinner>
+                </div>
+            </template>
+            <template lwc:if={errorMessage}>
+                <div class="map-overlay">
+                    <div class="map-error">
+                        <p>{errorMessage}</p>
+                        <p class="map-error-detail" lwc:if={errorDetail}>{errorDetail}</p>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

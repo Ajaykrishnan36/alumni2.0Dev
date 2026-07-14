@@ -1,0 +1,79 @@
+<template lwc:render-mode="light">
+    <section class="mg-wrap">
+        <template lwc:if={hasNoEntries}>
+            <div class="mg-empty">
+                <div class="mg-empty__icon">🏆</div>
+                <h3 class="mg-empty__title">No personal contributions yet</h3>
+                <p class="mg-empty__body">Explore opportunities to start your giving journey. Every contribution is acknowledged and tracked here.</p>
+                <button type="button" class="mg-empty__cta" onclick={handleExplore}>Explore opportunities</button>
+            </div>
+        </template>
+
+        <template lwc:if={hasEntries}>
+            <div class="mg-summary">
+                <template for:each={totals} for:item="t">
+                    <div key={t.key} class={t.tone}>
+                        <div class="sc-bar"></div>
+                        <div class="sc-label"><span class="sc-icon">{t.icon}</span> {t.label}</div>
+                        <div class="sc-value">{t.value}</div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="mg-table-card">
+                <div class="mg-table-head">
+                    <h3 class="mg-table-title">All giving activity</h3>
+                    <button type="button" class="mg-download">📄 Download statement</button>
+                </div>
+                <div class="mg-table-scroll">
+                    <table class="mg-table">
+                        <thead>
+                            <tr>
+                                <th>Campaign</th>
+                                <th>Type</th>
+                                <th>Amount / value</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Visibility</th>
+                                <th class="mg-th-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={entries} for:item="g">
+                                <tr key={g.id}>
+                                    <td class="mg-td-camp">{g.campaignTitle}</td>
+                                    <td class="mg-td-muted"><span class="mg-type"><span class="mg-type__icon">{g.typeIcon}</span> {g.typeLabel}</span></td>
+                                    <td>{g.amountOrValue}</td>
+                                    <td class="mg-td-muted">{g.date}</td>
+                                    <td><span class={g.statusCls}>{g.status}</span></td>
+                                    <td class="mg-td-muted">{g.visibility}</td>
+                                    <td class="mg-td-actions">
+                                        <template lwc:if={g.showComplete}>
+                                            <button type="button" class="mg-act mg-act--pay">Complete payment</button>
+                                        </template>
+                                        <template lwc:if={g.showReceipt}>
+                                            <button type="button" class="mg-act mg-act--link">Receipt</button>
+                                        </template>
+                                        <template lwc:if={g.showUpdates}>
+                                            <button type="button" class="mg-act mg-act--link">Updates</button>
+                                        </template>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mg-prefs">
+                <h3 class="mg-prefs__title">👁 Anonymous giving preferences</h3>
+                <p class="mg-prefs__body">Default visibility for your future contributions. You can still override this per-campaign.</p>
+                <div class="mg-prefs__opts">
+                    <template for:each={visibilityOptions} for:item="o">
+                        <button key={o.key} type="button" class={o.cls}>{o.label}</button>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </section>
+</template>

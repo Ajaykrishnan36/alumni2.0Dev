@@ -1,0 +1,1051 @@
+/* Remove focus outline from all checkbox inputs globally */
+:host input[type="checkbox"]:focus,
+:host .slds-checkbox__faux:focus,
+:host .slds-checkbox input[type="checkbox"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.basic-profile-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Render correct markup per breakpoint */
+.desktop {
+    display: block;
+}
+.mobile {
+    display: none;
+}
+
+.profile-picture-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-top: 1rem;
+}
+
+.avatar-wrapper {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 4px solid white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar-image {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-initial {
+    color: white;
+    font-size: 3rem;
+    font-weight: 600;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.camera-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    border: 3px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease;
+}
+
+.camera-button:hover {
+    transform: scale(1.1);
+}
+
+.camera-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+.greeting-text {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: #373A45;
+    margin: 0;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.profile-avatar.clickable-avatar {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    border: none;
+    padding: 0;
+}
+
+.profile-avatar.clickable-avatar:hover {
+    transform: scale(1.05);
+}
+
+.profile-avatar.clickable-avatar:focus {
+    outline: none;
+}
+
+.preview-image {
+    opacity: 0.7;
+}
+
+.crop-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.profile-avatar.clickable-avatar:hover .crop-overlay {
+    opacity: 1;
+}
+
+.crop-text {
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    text-align: center;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.form-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1rem 10rem;
+    margin-bottom: 2rem;
+    max-height: calc(100vh - 473px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.form-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    min-height: 0;
+}
+
+.form-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.form-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.form-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.form-scroll::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    align-items: start;
+    grid-auto-rows: min-content;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-height: 0;
+    align-items: stretch;
+    flex-shrink: 0;
+}
+
+/* Ensure consistent height for input fields */
+.form-field .custom-input,
+.form-field .custom-select,
+.form-field .phone-input-wrapper {
+    min-height: 30px;
+}
+
+/* Ensure form fields align at the top */
+.form-column > .form-field:first-child {
+    margin-top: 0;
+}
+
+/* LinkedIn note styling - moved outside form-field */
+.linkedin-note {
+    font-size: 0.6rem;
+    color: #6c757d;
+    margin-top: -1.75rem;
+    margin-bottom: 7px;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 0;
+    font-family: 'GeneralSansCustom', sans-serif;
+    line-height: 1.4;
+    display: block;
+}
+
+/* Spacer field to balance LinkedIn note height */
+.spacer-field {
+    min-height: 0;
+    height: 1.75rem;
+    margin: 0;
+    padding: 0;
+    visibility: hidden;
+    overflow: hidden;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+/* Ensure consistent spacing between form fields */
+.form-column .form-field + .form-field {
+    margin-top: 0;
+}
+
+/* Ensure LinkedIn note doesn't affect field alignment */
+.form-column .form-field + .linkedin-note {
+    margin-top: -1.75rem;
+}
+
+/* Ensure proper alignment of all field labels */
+.form-field .field-label {
+    margin-bottom: 0.5rem;
+}
+
+.field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #373A45;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.required {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+.custom-input,
+.custom-select {
+    --sds-c-input-color-border: #D8D8D8;
+    --sds-c-input-color-border-focus: #D8D8D8;
+    --sds-c-input-color-background: transparent;
+    --sds-c-input-color-background-focus: transparent;
+    --sds-c-input-shadow: none;
+    --sds-c-input-shadow-focus: none;
+    --sds-c-input-radius-border: 8px;
+    --sds-c-input-spacing-block-start: 0.75rem;
+    --sds-c-input-spacing-block-end: 0.75rem;
+}
+
+.custom-input:focus,
+.custom-select:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+.phone-input, .native-phone-input, .iti-phone-input{
+    padding: 7px 10px 4px 85px !important;
+    border: 1px solid #d8d8d8 !important;
+    border-radius: 8px !important;
+}
+.iti--allow-dropdown .iti__flag-container:hover .iti__selected-flag{
+    background-color: none !important;
+    border-radius: 5px 0px 0px 5px !important;
+}
+.iti--separate-dial-code .iti__selected-flag{
+    background-color: none !important;
+    border-radius: 5px 0px 0px 5px !important;
+}
+/* Remove background and shadow from lightning-input and combobox */
+.custom-input input,
+.custom-select input,
+.custom-select button {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.custom-input input:focus,
+.custom-select input:focus,
+.custom-select button:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Combobox specific styling */
+.custom-select .slds-combobox__input,
+.custom-select .slds-combobox__input:focus,
+.custom-select .slds-combobox__input:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-color: #D8D8D8 !important;
+    outline: none !important;
+}
+
+.custom-select .slds-combobox__input-entity-icon,
+.custom-select .slds-combobox__input-entity-icon-container {
+    background: transparent !important;
+}
+
+/* Remove all shadows and backgrounds from SLDS components */
+.custom-input .slds-input,
+.custom-select .slds-input,
+.custom-select .slds-combobox__input {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.custom-input .slds-input:focus,
+.custom-select .slds-input:focus,
+.custom-select .slds-combobox__input:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: #D8D8D8 !important;
+}
+
+.linkedin-input-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.linkedin-input-wrapper .custom-input {
+    width: 100%;
+    position: relative;
+}
+
+.linkedin-input-wrapper .custom-input .slds-input {
+    /* leave room for both the chain icon AND the sync button */
+    padding-right: 70px !important;
+}
+
+/* Inline sync-from-LinkedIn icon button — sits to the right of the chain icon */
+.linkedin-input-wrapper .linkedin-sync-icon-btn {
+    position: absolute;
+    right: 40px;
+    top: 36%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--primary-color, #b8002a);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 11;
+}
+.linkedin-input-wrapper .linkedin-sync-icon-btn:hover {
+    background: rgba(184, 0, 42, 0.08);
+}
+.linkedin-input-wrapper .linkedin-sync-icon-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(184, 0, 42, 0.25);
+}
+
+.linkedin-input-wrapper .custom-input .slds-form-element__control {
+    position: relative;
+}
+
+/* Position icon inside the input field */
+.linkedin-input-wrapper .link-icon {
+    position: absolute;
+    right: 14px;
+    top: 36%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    z-index: 10;
+    width: 20px;
+    height: 20px;
+    margin-top: 0;
+}
+
+/* Ensure icon stays inside input boundaries */
+.linkedin-input-wrapper .custom-input .slds-input-wrapper {
+    position: relative;
+}
+
+:host .phone-input-wrapper {
+    width: 100%;
+}
+
+:host .iti {
+    width: 100%;
+    font-family: inherit;
+}
+
+:host .iti .iti__flag-container {
+    height: 40px;
+    border: 1px solid var(--slds-c-input-color-border, var(--sds-c-input-color-border, var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3))));
+    border-right: 0;
+    border-radius: var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, var(--dxp-s-form-element-radius-border, 4px))) 0 0 var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, var(--dxp-s-form-element-radius-border, 4px)));
+    background-color: var(--slds-c-input-color-background, var(--sds-c-input-color-background, var(--dxp-s-form-element-color-background, var(--dxp-g-root))));
+}
+
+:host .iti .iti__selected-flag {
+    height: 100%;
+}
+
+:host .iti .iti__arrow {
+    margin-left: 6px;
+}
+
+:host .iti .iti__country-list {
+    border-radius: var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, var(--dxp-s-form-element-radius-border, 4px)));
+}
+
+:host .iti input.iti__tel-input {
+    width: 100%;
+    height: 40px;
+    font-size: var(--dxp-s-form-element-text-font-size, var(--dxp-s-body-font-size));
+    font-family: var(--dxp-s-form-element-text-font-family, var(--dxp-s-body-font-family));
+    font-weight: var(--dxp-s-form-element-text-font-weight, var(--dxp-s-body-font-weight));
+    color: var(--slds-c-input-text-color, var(--sds-c-input-text-color, var(--dxp-s-form-element-text-color, var(--dxp-g-root-contrast))));
+    border: 1px solid var(--slds-c-input-color-border, var(--sds-c-input-color-border, var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3))));
+    border-left: 0;
+    border-radius: 0 var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, var(--dxp-s-form-element-radius-border, 4px))) var(--slds-c-input-radius-border, var(--sds-c-input-radius-border, var(--dxp-s-form-element-radius-border, 4px))) 0;
+    padding: 0 var(--slds-c-input-spacing-inlineend, var(--sds-c-input-spacing-horizontal-end, 16px)) 0 90px;
+    background-color: var(--slds-c-input-color-background, var(--sds-c-input-color-background, var(--dxp-s-form-element-color-background, var(--dxp-g-root))));
+}
+
+:host .iti input.iti__tel-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: var(--slds-c-input-color-border-focus, var(--sds-c-input-color-border-focus, var(--dxp-s-form-element-color-border, var(--dxp-g-neutral-3))));
+}
+
+.terms-section {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.terms-checkbox-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+.terms-checkbox-label {
+    flex: 1;
+    line-height: 1.5;
+    font-size: 0.875rem;
+    color: inherit;
+    display: inline-block;
+}
+
+.asterisk-red {
+    color: #dc3545 !important;
+    font-weight: 500 !important;
+}
+
+.terms-checkbox {
+    --sds-c-checkbox-label-font-size: 0.875rem;
+    --sds-c-checkbox-color-border: #d8d8d8;
+    --sds-c-checkbox-color-border-checked: var(--primary-color);
+    --sds-c-checkbox-color-background: transparent;
+    --sds-c-checkbox-color-background-checked: transparent;
+    --sds-c-checkbox-shadow: none;
+    --sds-c-checkbox-shadow-focus: none;
+    --slds-c-checkbox-shadow-focus: none;
+
+  /* enforce a consistent border color in all states */
+  --slds-c-checkbox-color-border: #c9c9c9;
+  --slds-c-checkbox-color-border-hover: #c9c9c9;
+  --slds-c-checkbox-color-border-focus: #c9c9c9;
+  --slds-c-checkbox-color-border-checked: #c9c9c9;
+
+  /* optional: keep box background stable */
+  --slds-c-checkbox-color-background-checked: #ffffff;
+}
+
+
+/* Style asterisk in terms section label to primary color */
+.terms-section .terms-checkbox .slds-form-element__label::first-letter,
+.terms-section lightning-input.terms-checkbox .slds-form-element__label::first-letter {
+    color: var(--primary-color) !important;
+}
+
+/* Add margin to checkbox faux */
+.slds-checkbox__faux,
+.terms-checkbox .slds-checkbox__faux,
+lightning-input.terms-checkbox .slds-checkbox__faux,
+.slds-checkbox .slds-checkbox--faux,
+.slds-checkbox .slds-checkbox_faux {
+    margin-left: 0.5rem !important;
+}
+
+.terms-checkbox:focus,
+.terms-checkbox:focus-within,
+.terms-checkbox input:focus,
+.terms-checkbox .slds-checkbox__faux:focus,
+.terms-checkbox .slds-checkbox input:focus,
+lightning-input.terms-checkbox:focus,
+lightning-input.terms-checkbox:focus-within {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Target checkbox elements inside shadow DOM */
+lightning-input.terms-checkbox ::part(input),
+lightning-input.terms-checkbox ::part(checkbox) {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Global checkbox focus removal - target all possible checkbox elements */
+:host lightning-input.terms-checkbox .slds-checkbox__faux:focus,
+:host lightning-input.terms-checkbox input[type="checkbox"]:focus,
+lightning-input.terms-checkbox .slds-checkbox__faux:focus,
+lightning-input.terms-checkbox input[type="checkbox"]:focus,
+.slds-checkbox__faux:focus,
+input[type="checkbox"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: var(--sds-c-checkbox-color-border-checked, var(--primary-color)) !important;
+}
+
+/* Remove focus ring from SLDS checkbox */
+.slds-checkbox [type="checkbox"]:focus + .slds-checkbox__faux,
+.slds-checkbox [type="checkbox"]:focus ~ .slds-checkbox__faux,
+.slds-checkbox [type="checkbox"]:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    padding-right: 1rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.cancel-button {
+    padding: 0.75rem 2rem;
+    border: 1px solid var(--primary-color);
+    background-color: white;
+    color: #000;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.cancel-button:hover {
+    background-color: #f8f9fa;
+}
+
+.continue-button {
+    padding: 0.75rem 2rem;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.continue-button:hover {
+    background-color: var(--primary-color);
+}
+
+/* Modal styles (shared) */
+.top-dialog,
+.top-dialog-error {
+    position: fixed;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(450px, 90vw);
+    min-height: 87px;
+    background: white;
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border-radius: 12px;
+}
+
+.top-dialog {
+    border-bottom: 6px solid rgba(56, 142, 60, 1);
+}
+
+.top-dialog-error {
+    border-bottom: 6px solid rgba(192, 43, 43, 1);
+}
+
+.dialog-content {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+}
+
+.text-container {
+    flex-grow: 1;
+    padding-left: 10px;
+}
+
+.dialog-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.text-container p {
+    width: 100%;
+    font-size: 14px;
+    margin: 5px 0 0;
+    color: #555;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+/* Tablet Media Query (Between 601px and 1024px) */
+@media only screen and (min-width: 601px) and (max-width: 1024px) {
+    .form-container {
+        padding: 1rem 2rem;
+        max-height: calc(100vh - 400px);
+    }
+    .form-row {
+        gap: 1.5rem;
+    }
+    .basic-profile-container {
+        height: auto;
+    }
+    .form-scroll {
+        overflow-y: visible;
+        max-height: none;
+    }
+}
+
+/* Mobile Media Query (max-width 600px) */
+@media only screen and (max-width: 600px) {
+    /* Use mobile markup only on small screens */
+    .field-linkedin{
+        margin-top: 1rem !important;
+    }
+    .linkedin-note{
+        margin-top: -0.75rem !important;
+    }
+    .desktop {
+        display: none;
+    }
+    .mobile {
+        display: block;
+    }
+    .profile-avatar{
+        width: 90px;
+        height: 90px;
+    }
+    .terms-checkbox-label{
+        font-size: 0.6rem;
+    }
+    .form-container {
+        padding: 1rem;
+        height: calc(100vh - 356px); /* Adjust based on header and stepper height */
+        max-height: none;
+        margin-bottom: 0;
+        overflow-y: auto;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    .basic-profile-container {
+        height: auto;
+        overflow: visible; /* Override hidden to allow scrolling */
+    }
+    .form-scroll {
+        overflow-y: visible;
+        max-height: none;
+    }
+    .form-column {
+        gap: 1rem;
+    }
+    .terms-section {
+        margin-top: 1rem;
+    }
+    .form-actions {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        width: 100%;
+        background-color: transparent;
+        padding: 1rem;
+        box-shadow: none;
+        z-index: auto;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+    .cancel-button {
+        padding: 0.5rem 1.5rem;
+    }
+    .continue-button {
+         padding: 0.5rem 1.5rem;
+    }
+}
+.twitter-css{
+    margin-top: 1.15rem !important;
+}
+.current-city-css{
+    margin-top: 0.51rem !important;
+}
+
+/* Dropdown styling - white background and no border on hover */
+.custom-select,
+lightning-combobox.custom-select {
+    --sds-c-combobox-dropdown-color-background: #ffffff;
+    --sds-c-combobox-dropdown-color-border: #D8D8D8;
+    --slds-c-listbox-option-color-background: #ffffff !important;
+    --slds-c-listbox-option-color-background-hover: #f3f4f6 !important;
+    --slds-c-listbox-option-color-background-active: #ffffff !important;
+}
+
+/* Global style for combobox dropdown */
+lightning-combobox {
+    --slds-c-listbox-option-color-background: #ffffff !important;
+    --slds-c-listbox-option-color-background-hover: #f3f4f6 !important;
+    --slds-c-listbox-option-color-background-active: #ffffff !important;
+}
+
+/* Target dropdown listbox globally - these are rendered outside shadow DOM */
+.slds-listbox,
+.slds-dropdown {
+    background-color: #ffffff !important;
+}
+
+.slds-listbox__option,
+.slds-dropdown__item {
+    background-color: #ffffff !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+.slds-listbox__option:hover,
+.slds-dropdown__item:hover {
+    background-color: #f3f4f6 !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.slds-listbox__option[aria-selected="true"],
+.slds-dropdown__item[aria-selected="true"] {
+    background-color: #ffffff !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+/* Target body-level dropdowns that Lightning creates */
+body .slds-listbox,
+body .slds-dropdown,
+body .slds-listbox__option,
+body .slds-dropdown__item {
+    background-color: #ffffff !important;
+    border: none !important;
+}
+
+body .slds-listbox__option:hover,
+body .slds-dropdown__item:hover {
+    background-color: #f3f4f6 !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove borders from all nested elements in dropdown options */
+.slds-listbox__option *,
+.slds-dropdown__item *,
+.slds-listbox__option:hover *,
+.slds-dropdown__item:hover * {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove borders from pseudo-elements */
+.slds-listbox__option::before,
+.slds-listbox__option::after,
+.slds-dropdown__item::before,
+.slds-dropdown__item::after {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* LinkedIn Modal Styles */
+.linkedin-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.linkedin-modal-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+/* Loader shown while the LinkedIn import is in progress */
+.linkedin-modal-spinner {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    z-index: 5;
+}
+
+.linkedin-modal-icon {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 32px;
+    height: 32px;
+}
+
+.linkedin-modal-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: #373A45;
+    margin: 0 0 0.75rem 0;
+    padding-right: 3rem;
+    font-family: 'GeneralSansCustom', sans-serif;
+    line-height: 1.4;
+}
+
+.linkedin-modal-description {
+    font-size: 16px;
+    font-weight: 400;
+    color: #373A45;
+    margin: 0 0 1.5rem 0;
+    line-height: 1.5;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.linkedin-modal-input-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.linkedin-modal-input-wrapper .linkedin-modal-input.custom-input {
+    width: 100%;
+    position: relative;
+}
+
+.linkedin-modal-input-wrapper .linkedin-modal-input.custom-input .slds-input {
+    padding-right: 40px !important;
+}
+
+.linkedin-modal-link-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+    z-index: 10;
+    width: 20px;
+    height: 20px;
+}
+
+.linkedin-modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+
+.linkedin-modal-button {
+    padding: 0.5rem 1.5rem;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;    
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+    min-width: 48%;
+}
+
+.linkedin-modal-button.later-button {
+    background-color: #F6F8FB;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.linkedin-modal-button.later-button:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.linkedin-modal-button.import-button {
+    background-color: var(--primary-color);
+    border: none;
+    color: white;
+}
+
+.linkedin-modal-button.import-button:hover {
+    background-color: var(--primary-color);
+}
+
+.linkedin-modal-button.import-button:active {
+    background-color: var(--primary-color);
+}
+
+/* Mobile fixes for LinkedIn Modal */
+@media only screen and (max-width: 600px) {
+    .linkedin-modal-container {
+        width: 90%;
+        padding: 1.5rem;
+        max-width: 90%;
+        max-height: 85vh; /* Ensure modal fits within screen */
+        overflow-y: auto; /* Allow scrolling if content is too tall */
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .linkedin-modal-buttons {
+        flex-direction: row; /* Keep buttons side by side */
+        gap: 0.5rem;
+    }
+    
+    .linkedin-modal-button {
+        width: auto;
+        flex: 1; /* Distribute width equally */
+        min-width: 0; /* Allow shrinking if needed */
+        padding: 0.5rem 0.1rem; /* Minimize horizontal padding */
+        text-align: center;
+        margin: 0;
+        font-size: 0.75rem; /* Smaller font to fit text */
+        white-space: normal; /* Allow text to wrap */
+        line-height: 1.1; /* Tight line height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 40px;
+    }
+    
+    .linkedin-modal-title {
+        font-size: 1.125rem;
+        padding-right: 0; 
+        margin-right: 2rem; /* Make space for the icon */
+    }
+    
+    .linkedin-modal-description {
+        font-size: 0.9rem;
+    }
+}
+.field-error {
+    color: #c23934;
+    font-size: 0.75rem;
+    margin-top: -10px;
+    margin-bottom: 0;
+}
+
+.modal-field-error {
+    text-align: center;
+    margin-top: -15px;
+    margin-bottom: 8px;
+}

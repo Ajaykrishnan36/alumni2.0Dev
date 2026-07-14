@@ -1,0 +1,112 @@
+<template>
+    <div class={mobileChatContainerClass} role="application" aria-label="Chat">
+        <!-- List View -->
+        <template if:true={isListViewModel}>
+            <div class="mobile-list-view">
+                <div class="chat-tabs">
+                    <button type="button" class="chat-tab" data-tab="individuals" aria-pressed={isIndividuals}
+                        onclick={handleTabChange}>Individuals</button>
+                    <button type="button" class="chat-tab" data-tab="groups" aria-pressed={isGroups}
+                        onclick={handleTabChange}>Groups</button>
+                </div>
+                <div class="chat-search-wrap">
+                    <span class="chat-search-icon" aria-hidden="true">
+                        <lightning-icon icon-name="utility:search" size="x-small"></lightning-icon>
+                    </span>
+                    <input type="search" class="chat-search-input" placeholder="Search" value={searchTerm}
+                        oninput={handleSearchInput} aria-label="Search conversations" />
+                    <!-- Same as desktop: mic optional -->
+                    <!-- <button type="button" class="chat-mic-btn" aria-label="Voice input" title="Voice input">
+                        <lightning-icon icon-name="utility:record" size="x-small"></lightning-icon>
+                    </button> -->
+                </div>
+                <div class="chat-list" role="list">
+                    <template for:each={filteredList} for:item="item">
+                        <div key={item.key} role="listitem" class="chat-card mobile-chat-card" data-id={item.id}
+                            onclick={handleChatSelect}>
+                            <template if:true={item.pillTag}>
+                                <span class="chat-pill">{item.pillTag}</span>
+                            </template>
+                            <div class="chat-card-avatar">
+                                <img src={item.avatarUrl} alt="" class="chat-avatar-img" />
+                            </div>
+                            <div class="chat-card-body">
+                                <div class="chat-card-name">{item.name}</div>
+                                <div class="chat-card-preview">{item.lastMessage}</div>
+                            </div>
+                            <div class="chat-card-time">{item.lastTime}</div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Chat Detail View (full screen) -->
+        <template if:true={isChatViewModel}>
+            <div class="mobile-chat-view">
+                <header class="chat-header">
+                    <button type="button" class="chat-back-btn" onclick={handleBack} aria-label="Back to conversations" title="Back">
+                        <lightning-icon icon-name="utility:chevronleft" size="small"></lightning-icon>
+                    </button>
+                    <div class="chat-header-left">
+                        <div class="chat-header-avatar">
+                            <img src={selectedChat.avatarUrl} alt="" />
+                        </div>
+                        <div class="chat-header-info">
+                            <h2 class="chat-header-name">{selectedChat.name}</h2>
+                            <template if:true={isGroupSelected}>
+                                <!-- <span class="chat-header-members">{chatHeaderSubline}</span> -->
+                                <span class="chat-header-online"><span class="status-dot"></span>{chatHeaderOnlineText}</span>
+                            </template>
+                            <template if:false={isGroupSelected}>
+                                <span class="chat-header-status">
+                                    <template if:true={selectedChat.online}><span class="status-dot"></span>Online</template>
+                                    <template if:false={selectedChat.online}>Offline</template>
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                    <button type="button" class="chat-header-action" aria-label="More options" title="More options">
+                        <lightning-icon icon-name="utility:info" size="small"></lightning-icon>
+                    </button>
+                </header>
+                <div class="chat-messages" role="log" aria-live="polite">
+                    <template for:each={currentMessages} for:item="msg">
+                        <template if:true={msg.dateLabel}>
+                            <div key={msg.key} class="chat-date-sep">{msg.dateLabel}</div>
+                        </template>
+                        <div key={msg.key} class="chat-msg-row" data-outgoing={msg.isOutgoing}>
+                            <template if:false={msg.isOutgoing}>
+                                <div class="chat-msg-avatar chat-msg-avatar-left">
+                                    <img src={selectedChat.avatarUrl} alt="" />
+                                </div>
+                            </template>
+                            <div class="chat-msg-bubble">
+                                <template if:true={msg.senderName}>
+                                    <div class="chat-msg-sender">{msg.senderName}</div>
+                                </template>
+                                <span class="chat-msg-text">{msg.text}</span>
+                                <span class="chat-msg-time">{msg.time}</span>
+                            </div>
+                            <template if:true={msg.isOutgoing}>
+                                <div class="chat-msg-avatar chat-msg-avatar-right">
+                                    <img src={selectedChat.avatarUrl} alt="" />
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+                <div class="chat-composer">
+                    <button type="button" class="chat-composer-attach" aria-label="Attach file" title="Attach">
+                        <lightning-icon icon-name="utility:attach" size="small"></lightning-icon>
+                    </button>
+                    <input type="text" class="chat-composer-input" placeholder="Type a message" value={newMessageText}
+                        oninput={handleComposerInput} onkeydown={handleComposerKeyDown} aria-label="Message input" />
+                    <button type="button" class="chat-composer-send" onclick={handleSend} aria-label="Send message" title="Send">
+                        <lightning-icon icon-name="utility:send" size="small"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

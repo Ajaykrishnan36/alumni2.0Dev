@@ -1,0 +1,53 @@
+<template>
+    <aside class="gp__side">
+        <div class="side-card">
+            <div class="side-card__head">
+                <h3 class="side-card__title">Groups Joined</h3>
+                <button class="side-card__link" onclick={handleViewAll}>View All</button>
+            </div>
+            <template lwc:if={hasJoined}>
+                <template for:each={joinedDecorated} for:item="g">
+                    <div key={g.id} class="side-row" data-id={g.id} onclick={handleRowClick}>
+                        <div class="side-row__body">
+                            <p class="side-row__name">{g.name}</p>
+                            <div class="side-row__sub">
+                                <span class={g.visClass}>{g.visibility}</span>
+                                <span class="side-row__members">{g.membersLabel}</span>
+                            </div>
+                        </div>
+                        <div class="side-row__thumb" style={g.coverStyle}></div>
+                    </div>
+                </template>
+            </template>
+            <template lwc:else>
+                <p class="side-empty">You haven't joined any groups yet.</p>
+            </template>
+            <button class="side-card__cta" onclick={handleDiscover}>Discover More Groups</button>
+        </div>
+
+        <div class="side-card side-card--accent">
+            <div class="side-card__head">
+                <h3 class="side-card__title">{createdTitle}</h3>
+                <button class="side-card__link" onclick={handleCreate}>+ Create Group</button>
+            </div>
+            <template lwc:if={hasCreated}>
+                <template for:each={createdDecorated} for:item="g">
+                    <div key={g.id} class="side-row" data-id={g.id} onclick={handleRowClick}>
+                        <div class="side-row__body">
+                            <p class="side-row__name">{g.name}</p>
+                            <div class="side-row__sub">
+                                <span class={g.visClass}>{g.visibility}</span>
+                                <span class="side-row__members">{g.membersLabel}</span>
+                            </div>
+                        </div>
+                        <div class="side-row__thumb" style={g.coverStyle}></div>
+                    </div>
+                </template>
+            </template>
+            <template lwc:else>
+                <p class="side-empty">You haven't created any groups yet.</p>
+            </template>
+            <button class="side-card__cta side-card__cta--outline" onclick={handleViewAll}>View All</button>
+        </div>
+    </aside>
+</template>

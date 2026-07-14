@@ -1,0 +1,251 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
+/* ============ Base (shared) ============ */
+.sidebar {
+    width: 100%;
+    height: calc(100vh - 44px);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 20;
+    box-sizing: border-box;
+}
+
+/* ============ Desktop: dark rail pinned flush to the viewport (left / top / bottom) ============ */
+.sidebar:not(.embedded-mode) {
+    background: var(--tertiary-color, #ffffff);
+    padding: 24px;
+    /* Pin to the viewport edges so there's no gap from the Builder section/column padding.
+       The grid column still reserves this width, so the main content does not shift under it. */
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--nav-rail-width, 16.6667vw);
+    height: 100vh;
+    z-index: 100;
+    /* nav-item theme tokens consumed by c-ken-nav-item */
+    --nav-item-text: rgba(255, 255, 255, 0.72);
+    --nav-item-icon: rgba(255, 255, 255, 0.72);
+    --nav-item-hover-bg: rgba(255, 255, 255, 0.08);
+    --nav-item-active-bg: var(--primary-color, #ffffff);
+    --nav-item-active-text: #ffffff;
+    --nav-item-active-icon: #ffffff;
+}
+
+.sidenav {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ============ Profile (centered photo + name + batch) ============ */
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0 16px 0;
+    cursor: pointer;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.profile-picture-container {
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.profile-picture {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--primary-color);
+    display: block;
+}
+
+.profile-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 6px 0;
+    text-align: center;
+}
+
+.profile-batch {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+    text-align: center;
+}
+
+/* Desktop dark recolour of the profile text */
+.sidebar:not(.embedded-mode) .profile-name {
+    color: #ffffff;
+}
+
+.sidebar:not(.embedded-mode) .profile-batch {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ============ Menu Items List ============ */
+.menu-items-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 0;
+}
+
+.menu-item-wrapper {
+    margin: 0;
+    padding: 0;
+}
+
+.menu-items-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.menu-items-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar:not(.embedded-mode) .menu-items-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+}
+
+.sidebar.embedded-mode .menu-items-list::-webkit-scrollbar-thumb {
+    background: rgba(232, 235, 243, 1);
+    border-radius: 10px;
+}
+
+/* ============ Powered By ============ */
+.powered-by-section {
+    margin-top: auto;
+    padding: 16px 0;
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.powered-by-button {
+    background: linear-gradient(181deg, #EAEFFF 6.67% 6.67%, #FFFFFF 71.65%, #EAEFFF 100%);
+    border: 1px solid #F6F8FB;
+    border-radius: 8px;
+    padding: 5px 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: default;
+    width: 100%;
+    max-width: 370px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.powered-by-text {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 140%;
+    letter-spacing: 0%;
+    color: #3061FF;
+    white-space: nowrap;
+}
+
+.ken42-icon {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+/* ============ Logout ============ */
+.logout-section {
+    flex-shrink: 0;
+}
+
+/* ============ Mobile: embedded white drawer keeps the light item theme ============ */
+@media screen and (max-width: 768px) {
+    .sidebar:not(.embedded-mode) {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        bottom: 0;
+        width: 100% !important;
+        height: calc(100vh - 60px);
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 1000;
+    }
+
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .sidebar.embedded-mode {
+        position: relative !important;
+        top: auto;
+        left: auto;
+        bottom: auto;
+        height: 100% !important;
+        width: 100% !important;
+        min-height: 0;
+        transform: none !important;
+        box-shadow: none;
+        border: none;
+        padding: 0 12px 12px;
+        margin: 0;
+        z-index: auto;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+    /* Profile is duplicated in the mobile header — hide here */
+    .sidebar.embedded-mode .profile-section {
+        display: none;
+    }
+
+    .sidebar.embedded-mode .sidenav {
+        flex: 1 1 0;
+        min-height: 0;
+        height: auto;
+        overflow: hidden;
+    }
+
+    .sidebar.embedded-mode .menu-items-list {
+        flex: 1 1 0;
+        min-height: 0;
+        max-height: none;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .sidebar.embedded-mode .powered-by-section {
+        margin-top: 0;
+        flex-shrink: 0;
+    }
+
+    .sidebar.embedded-mode .logout-section {
+        flex-shrink: 0;
+    }
+
+    .profile-picture {
+        width: 60px;
+        height: 60px;
+    }
+}

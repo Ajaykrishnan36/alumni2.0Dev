@@ -1,0 +1,815 @@
+<template>
+    <main class="student360">
+        <section class="profile-hero">
+            <div class="profile-hero__avatar">AG</div>
+
+            <div class="profile-hero__content">
+                <div class="eyebrow-row">
+                    <span>Student</span>
+                    <span>KEN42947</span>
+                    <span>Stage: Middle Years</span>
+                </div>
+                <h1>Abhishek Gupta</h1>
+                <p class="profile-hero__subtitle">B.Tech Computer Science · 2024-2028</p>
+
+                <div class="profile-facts">
+                    <div>
+                        <span>Year / Sem</span>
+                        <strong>Year 2 · Semester 4</strong>
+                    </div>
+                    <div>
+                        <span>School</span>
+                        <strong>School of Engineering</strong>
+                    </div>
+                    <div>
+                        <span>Campus</span>
+                        <strong>Ken42 University · Bangalore Campus</strong>
+                    </div>
+                    <div>
+                        <span>Status</span>
+                        <strong>Active Student</strong>
+                    </div>
+                </div>
+
+                <p class="verified-line">
+                    <lightning-icon icon-name="utility:shield" size="x-small"></lightning-icon>
+                    Contact verified · Attendance updated today
+                </p>
+
+                <div class="profile-tags">
+                    <span class="status-pill status-pill--good">Active</span>
+                    <span class="status-pill status-pill--warn">Attendance Risk</span>
+                    <span class="status-pill status-pill--blue">Hostel Resident</span>
+                    <span class="status-pill status-pill--good">Fees Clear</span>
+                    <span class="status-pill status-pill--purple">Parent Linked</span>
+                    <span class="status-pill status-pill--good">Contact Verified</span>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button class="outline-button">
+                    <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                    <span>Edit Profile</span>
+                </button>
+                <button class="outline-button">
+                    <lightning-icon icon-name="utility:comments" size="x-small"></lightning-icon>
+                    <span>Send Communication</span>
+                </button>
+                <button class="outline-button">
+                    <lightning-icon icon-name="utility:case" size="x-small"></lightning-icon>
+                    <span>Raise Case</span>
+                </button>
+                <button class="outline-button">
+                    <lightning-icon icon-name="utility:file" size="x-small"></lightning-icon>
+                    <span>View Documents</span>
+                </button>
+                <button class="plain-more">··· More</button>
+            </div>
+        </section>
+
+        <section class="block-heading">
+            <div>
+                <span>Summary</span>
+                <h2>Student at a glance</h2>
+            </div>
+            <p>Updated today</p>
+        </section>
+
+        <section class="summary-grid">
+            <template for:each={summaryCards} for:item="card">
+                <article key={card.id} class={card.accentClass}>
+                    <div class="summary-card__head">
+                        <div>
+                            <p>{card.title}</p>
+                            <h3>{card.value}</h3>
+                            <span>{card.subtitle}</span>
+                        </div>
+                        <div class={card.iconWrapClass}>
+                            <lightning-icon icon-name={card.iconName} size="small"></lightning-icon>
+                        </div>
+                    </div>
+                    <div class="summary-card__metrics">
+                        <template for:each={card.metrics} for:item="metric">
+                            <div key={metric.label}>
+                                <span>{metric.label}</span>
+                                <strong class={metric.valueClass}>{metric.value}</strong>
+                            </div>
+                        </template>
+                    </div>
+                </article>
+            </template>
+        </section>
+
+        <section class="block-heading block-heading--lifecycle">
+            <div>
+                <span>Lifecycle Journey</span>
+                <h2>One record · from lead to alumnus</h2>
+            </div>
+            <p>Currently: Middle Years</p>
+        </section>
+
+        <section class="lifecycle-list">
+            <template for:each={lifecycleStages} for:item="stage">
+                <article key={stage.id} class={stage.rowClass}>
+                    <div class={stage.iconClass}>
+                        <lightning-icon icon-name={stage.iconName} size="small"></lightning-icon>
+                    </div>
+                    <div class="lifecycle-row__body">
+                        <div class="lifecycle-row__meta">
+                            <span>{stage.stage}</span>
+                            <strong class={stage.badgeClass}>{stage.status}</strong>
+                        </div>
+                        <h3>{stage.title}</h3>
+                        <p>{stage.description}</p>
+                    </div>
+                    <div class="lifecycle-row__period">{stage.period}</div>
+                    <lightning-icon icon-name="utility:chevrondown" size="x-small" class="chevron"></lightning-icon>
+                </article>
+            </template>
+        </section>
+
+        <section class="content-grid">
+            <div class="record-area">
+                <section class="block-heading block-heading--record">
+                    <div>
+                        <span>Student Record</span>
+                        <h2>Detailed record</h2>
+                    </div>
+                    <p>Reg. KEN42947</p>
+                </section>
+
+                <article class="record-card">
+                    <nav class="record-tabs" role="tablist">
+                        <template for:each={tabs} for:item="tab">
+                            <button key={tab.label} class={tab.cssClass} data-tab={tab.label} onclick={selectTab} role="tab">
+                                {tab.label}
+                            </button>
+                        </template>
+                    </nav>
+
+                    <div class="record-content">
+                        <template lwc:if={isOverview}>
+                            <section class="content-section">
+                                <span class="section-kicker">Student Snapshot</span>
+                                <div class="field-grid">
+                                    <div class="field-row"><span>Current academic status</span><strong>Active · Year 2 · Sem 4</strong></div>
+                                    <div class="field-row"><span>Program</span><strong>B.Tech Computer Science</strong></div>
+                                    <div class="field-row"><span>Year / Semester</span><strong>Year 2 · Sem 4</strong></div>
+                                    <div class="field-row"><span>Section</span><strong>CSE-B</strong></div>
+                                    <div class="field-row"><span>Faculty advisor</span><strong>Prof. Meera Nair</strong></div>
+                                    <div class="field-row"><span>Mentor</span><strong>Dr. Rohit Sinha</strong></div>
+                                    <div class="field-row"><span>Student category</span><strong>Regular · Merit</strong></div>
+                                    <div class="field-row"><span>Residential status</span><strong>Hostel resident</strong></div>
+                                </div>
+                            </section>
+
+                            <section class="content-section">
+                                <span class="section-kicker">Personal & Contact</span>
+                                <div class="field-grid">
+                                    <div class="field-row"><span>Phone</span><strong>+91 98xxx 47210</strong></div>
+                                    <div class="field-row"><span>Email</span><strong>abhishek.gupta@ken42.edu</strong></div>
+                                    <div class="field-row"><span>Alternate email</span><strong>abhishek.g.0214@gmail.com</strong></div>
+                                    <div class="field-row"><span>Date of birth</span><strong>14 Feb 2006</strong></div>
+                                    <div class="field-row"><span>Blood group</span><strong>B+</strong></div>
+                                    <div class="field-row"><span>Nationality</span><strong>Indian</strong></div>
+                                    <div class="field-row"><span>Languages</span><strong>English, Hindi, Bengali</strong></div>
+                                    <div class="field-row"><span>Address</span><strong>Salt Lake, Sector V, Kolkata 700091</strong></div>
+                                </div>
+                            </section>
+
+                            <section class="content-section">
+                                <span class="section-kicker">Relationships</span>
+                                <div class="relationship-grid">
+                                    <article class="person-card"><div>VG</div><span>Father</span><strong>Vipra Garg</strong><p>Verified contact</p></article>
+                                    <article class="person-card"><div>MM</div><span>Mother</span><strong>Muskaan Madaan</strong><p>Verified contact</p></article>
+                                    <article class="person-card"><div>PM</div><span>Faculty Advisor</span><strong>Prof. Meera Nair</strong><p>Computer Science</p></article>
+                                    <article class="person-card person-card--highlight"><div>MR</div><span>Hostel Warden</span><strong>Mr. Rajesh Kumar</strong><p>Block B</p></article>
+                                </div>
+                            </section>
+
+                            <section class="content-section">
+                                <span class="section-kicker">Admissions Timeline</span>
+                                <p class="section-subtitle">One record · from lead to current term</p>
+                                <div class="timeline">
+                                    <div><span></span><strong>Lead created</strong><p>Sep 2023</p></div>
+                                    <div><span></span><strong>Application submitted</strong><p>Nov 2023</p></div>
+                                    <div><span></span><strong>Documents verified</strong><p>Jan 2024</p></div>
+                                    <div><span></span><strong>Admission confirmed</strong><p>May 2024</p></div>
+                                    <div><span></span><strong>Enrolled as student</strong><p>Aug 2024</p></div>
+                                    <div><span class="timeline__active"></span><strong>Semester 4 active</strong><p>Current</p></div>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isAdmissions}>
+                            <section class="two-card-row">
+                                <article class="link-card">
+                                    <lightning-icon icon-name="utility:archive" size="small"></lightning-icon>
+                                    <div><span>Linked Lead Record</span><strong>LEAD-2023-04217</strong><p>Campus open day enquiry · captured 12 Sep 2023</p></div>
+                                </article>
+                                <article class="link-card">
+                                    <lightning-icon icon-name="utility:edit_form" size="small"></lightning-icon>
+                                    <div><span>Application Form</span><strong>APP-2024-08412</strong><p>B.Tech · submitted 18 Nov 2023</p></div>
+                                    <span class="status-pill status-pill--good">Confirmed</span>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Application & Entrance</span>
+                                <div class="field-grid">
+                                    <div class="field-row"><span>Application ID</span><strong>APP-2024-08412</strong></div>
+                                    <div class="field-row"><span>Submitted</span><strong>18 Nov 2023 via Online portal</strong></div>
+                                    <div class="field-row"><span>Programme</span><strong>B.Tech · Computer Science Engineering</strong></div>
+                                    <div class="field-row"><span>Entrance exam</span><strong>JEE Main 2024 · 97.42 %ile</strong></div>
+                                    <div class="field-row"><span>Roll number</span><strong>240611082147</strong></div>
+                                    <div class="field-row"><span>All India rank</span><strong class="good-text">AIR 18,420</strong></div>
+                                </div>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Documents at Intake</span>
+                                <div class="document-list">
+                                    <template for:each={documentRows} for:item="doc">
+                                        <div key={doc.title} class="document-row">
+                                            <lightning-icon icon-name="utility:file" size="x-small"></lightning-icon>
+                                            <strong>{doc.title}</strong>
+                                            <span class={doc.badgeClass}>{doc.status}</span>
+                                            <lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon>
+                                        </div>
+                                    </template>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isAcademics}>
+                            <section class="content-section content-section--flush">
+                                <div class="section-heading-row">
+                                    <div><span class="section-kicker">Semester 4 Courses</span><h3>6 active courses · CSE-B</h3></div>
+                                    <a>View timetable ›</a>
+                                </div>
+                                <div class="course-list">
+                                    <template for:each={courseCards} for:item="course">
+                                        <article key={course.code} class="course-card">
+                                            <div class={course.iconTileClass}>
+                                                <lightning-icon icon-name={course.iconName} size="small"></lightning-icon>
+                                            </div>
+                                            <div class="course-card__body">
+                                                <div><span>{course.code}</span><em>{course.credits}</em></div>
+                                                <h3>{course.title}</h3>
+                                                <p>{course.faculty}</p>
+                                            </div>
+                                            <div class="course-card__attendance">
+                                                <span>Attendance</span>
+                                                <strong>{course.pct}%</strong>
+                                                <div class="progress-bar"><div class={course.progressClass} style={course.progressStyle}></div></div>
+                                            </div>
+                                            <lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon>
+                                        </article>
+                                    </template>
+                                </div>
+                                <div class="small-stat-grid">
+                                    <article><span>Cumulative GPA</span><strong>7.8</strong></article>
+                                    <article><span>Credits Earned</span><strong>62 / 160</strong></article>
+                                    <article><span>Active Backlog</span><strong class="warn-text">1 course</strong></article>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isAttendance}>
+                            <section class="stat-grid">
+                                <article><span>Overall</span><strong class="warn-text">72%</strong></article>
+                                <article><span>Threshold</span><strong>75%</strong></article>
+                                <article><span>Below Threshold</span><strong class="warn-text">2 courses</strong></article>
+                            </section>
+                            <section class="content-section content-section--flush">
+                                <span class="section-kicker">Course-wise Attendance</span>
+                                <div class="attendance-list">
+                                    <template for:each={attendanceRows} for:item="row">
+                                        <article key={row.code} class="attendance-row">
+                                            <div class="attendance-row__top">
+                                                <div><span>{row.code}</span><strong>{row.title}</strong></div>
+                                                <strong>{row.pct}%</strong>
+                                            </div>
+                                            <div class="progress-bar progress-bar--wide"><div class={row.progressClass} style={row.progressStyle}></div></div>
+                                            <template lwc:if={row.warning}>
+                                                <p class="intervention">Below 75% threshold - intervention recommended</p>
+                                            </template>
+                                        </article>
+                                    </template>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isExaminations}>
+                            <section class="stat-grid stat-grid--five">
+                                <article><span>Cumulative GPA</span><strong class="good-text">7.83</strong></article>
+                                <article><span>Credits Earned</span><strong>61 / 160</strong></article>
+                                <article><span>Class Rank</span><strong>118 of 240</strong></article>
+                                <article><span>Active Backlogs</span><strong class="warn-text">1</strong></article>
+                                <article><span>Expected Graduation</span><strong>May 2028</strong></article>
+                            </section>
+                            <section class="content-section content-section--flush exam-transcript">
+                                <div class="section-heading-row">
+                                    <div><span class="section-kicker">Semester-wise Transcript</span></div>
+                                    <a>Full transcript ›</a>
+                                </div>
+                                <div class="semester-head semester-head--expanded">
+                                    <strong>Sem 3</strong>
+                                    <span>Aug - Dec 2025 · 20 / 22 credits · 7 courses</span>
+                                    <span>SGPA <strong>7.9</strong></span>
+                                    <span>CGPA <strong>7.83</strong></span>
+                                    <span class="status-pill status-pill--good">Completed</span>
+                                </div>
+                                <table class="ken-table">
+                                    <thead><tr><th>Course</th><th>Title</th><th>Credits</th><th>Grade</th><th>Grade Pt</th></tr></thead>
+                                    <tbody>
+                                        <template for:each={transcriptRows} for:item="row">
+                                            <tr key={row.code}>
+                                                <td>{row.code}</td>
+                                                <td>{row.title}</td>
+                                                <td>{row.credits}</td>
+                                                <td><span class={row.gradeClass}>{row.grade}</span></td>
+                                                <td>{row.points}</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                                <div class="marksheet-row">
+                                    <span>Marksheet: MS-2025-S3-KEN42947</span>
+                                    <a>
+                                        <lightning-icon icon-name="utility:file" size="x-small"></lightning-icon>
+                                        View marksheet
+                                    </a>
+                                </div>
+                                <div class="semester-head semester-head--collapsed">
+                                    <strong>Sem 2</strong>
+                                    <span>Jan - May 2025<br />21 / 21 credits · 7 courses</span>
+                                    <span>SGPA <strong>7.6</strong></span>
+                                    <span>CGPA <strong>7.85</strong></span>
+                                    <span class="status-pill status-pill--good">Completed</span>
+                                    <lightning-icon icon-name="utility:chevrondown" size="x-small" class="muted-icon"></lightning-icon>
+                                </div>
+                                <div class="semester-head semester-head--collapsed">
+                                    <strong>Sem 1</strong>
+                                    <span>Aug - Dec 2024<br />20 / 20 credits · 7 courses</span>
+                                    <span>SGPA <strong>8.1</strong></span>
+                                    <span>CGPA <strong>8.1</strong></span>
+                                    <span class="status-pill status-pill--good">Completed</span>
+                                    <lightning-icon icon-name="utility:chevrondown" size="x-small" class="muted-icon"></lightning-icon>
+                                </div>
+                            </section>
+                            <section class="content-section exam-section">
+                                <span class="section-kicker">Backlogs & Repeats</span>
+                                <article class="exam-alert-card">
+                                    <lightning-icon icon-name="utility:warning" size="x-small"></lightning-icon>
+                                    <div>
+                                        <strong>MA201 · Discrete Mathematics</strong>
+                                        <p>From Sem 3 · attempt 1 · clear by Supplementary · Jul 2026</p>
+                                    </div>
+                                    <span class="status-pill status-pill--warn">Revaluation Pending</span>
+                                </article>
+                            </section>
+                            <section class="two-card-row exam-bottom-grid">
+                                <div>
+                                    <span class="section-kicker">Upcoming Exams</span>
+                                    <article class="exam-list-card">
+                                        <div>
+                                            <strong>Sem 4 Mid-semester</strong>
+                                            <span>18 - 24 Mar 2026</span>
+                                            <p>Hall ticket: Pending issue</p>
+                                        </div>
+                                        <div>
+                                            <strong>Sem 4 End-semester</strong>
+                                            <span>12 - 28 May 2026</span>
+                                            <p>Hall ticket: Not yet released</p>
+                                        </div>
+                                        <div>
+                                            <strong>MA201 Supplementary</strong>
+                                            <span>08 - 10 Jul 2026</span>
+                                            <p>Hall ticket: Not yet released</p>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div>
+                                    <span class="section-kicker">Revaluation Requests</span>
+                                    <article class="exam-alert-card exam-alert-card--compact">
+                                        <div>
+                                            <strong>MA201 · Discrete Mathematics</strong>
+                                            <p>Sem 3 · applied 12 Jan 2026</p>
+                                        </div>
+                                        <span class="status-pill status-pill--warn">Under Review</span>
+                                    </article>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isFees}>
+                            <section class="stat-grid stat-grid--five">
+                                <article><span>Status</span><strong class="good-text">Clear</strong></article>
+                                <article><span>Net Annual Fee</span><strong>₹ 8,07,500</strong></article>
+                                <article><span>Paid YTD</span><strong>₹ 4,03,750</strong></article>
+                                <article><span>Outstanding</span><strong class="good-text">₹ 0</strong></article>
+                                <article><span>Next Due</span><strong>15 Aug 2026</strong></article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Fee Composition (Annual)</span>
+                                <div class="field-grid">
+                                    <div class="field-row"><span>Total tuition + ancillary</span><strong>₹ 9,50,000</strong></div>
+                                    <div class="field-row"><span>Scholarship deducted</span><strong class="good-text">- ₹ 1,42,500</strong></div>
+                                    <div class="field-row"><span>Net payable</span><strong>₹ 8,07,500</strong></div>
+                                    <div class="field-row"><span>Paid year-to-date</span><strong class="good-text">₹ 4,03,750</strong></div>
+                                    <div class="field-row"><span>Outstanding</span><strong>₹ 0</strong></div>
+                                    <div class="field-row"><span>Next installment</span><strong>₹ 4,03,750 on 15 Aug 2026</strong></div>
+                                </div>
+                            </section>
+                            <section class="content-section content-section--flush">
+                                <div class="section-heading-row">
+                                    <span class="section-kicker">Instalments & Receipts</span>
+                                    <a>Full schedule ›</a>
+                                </div>
+                                <table class="ken-table">
+                                    <thead><tr><th>Sem</th><th>Head</th><th>Amount</th><th>Due</th><th>Paid On</th><th>Receipt</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        <template for:each={feeRows} for:item="row">
+                                            <tr key={row.sem}>
+                                                <td>{row.sem}</td><td>{row.head}</td><td>{row.amount}</td><td>{row.due}</td><td>{row.paidOn}</td><td>{row.receipt}</td><td><span class={row.badgeClass}>{row.status}</span></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </section>
+                            <section class="two-card-row tab-section-grid">
+                                <div>
+                                    <span class="section-kicker">Recent Transactions</span>
+                                    <article class="row-list-card">
+                                        <div class="icon-list-row">
+                                            <lightning-icon icon-name="utility:money" size="x-small"></lightning-icon>
+                                            <div><strong>Sem 4 tuition instalment</strong><p>12 Feb 2026 · Net banking · ICICI</p></div>
+                                            <strong>-₹ 4,03,750</strong>
+                                        </div>
+                                        <div class="icon-list-row">
+                                            <lightning-icon icon-name="utility:money" size="x-small"></lightning-icon>
+                                            <div><strong>Hostel mess top-up</strong><p>08 Jan 2026 · UPI</p></div>
+                                            <strong>-₹ 12,500</strong>
+                                        </div>
+                                        <div class="icon-list-row">
+                                            <lightning-icon icon-name="utility:money" size="x-small"></lightning-icon>
+                                            <div><strong>Library fine waiver</strong><p>20 Dec 2025 · Adjustment</p></div>
+                                            <strong class="good-text">+₹ 250</strong>
+                                        </div>
+                                    </article>
+                                </div>
+                                <div>
+                                    <span class="section-kicker">Refunds & Adjustments</span>
+                                    <article class="row-list-card">
+                                        <div class="icon-list-row">
+                                            <lightning-icon icon-name="utility:refresh" size="x-small"></lightning-icon>
+                                            <div><strong>Caution deposit refund (excess)</strong><p>Applied 10 Apr 2025 · processed 22 Apr 2025</p></div>
+                                            <strong>₹ 5,000</strong>
+                                            <span class="status-pill status-pill--good">Processed</span>
+                                        </div>
+                                    </article>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isCampusLife}>
+                            <section class="two-card-row tab-section-grid">
+                                <article class="feature-card">
+                                    <lightning-icon icon-name="utility:home" size="small"></lightning-icon>
+                                    <div><span class="section-kicker">Hostel</span><strong>Block B · Room 304</strong><p>Twin sharing · roommate Pranav Iyer (KEN42953)<br />Warden: Mr. Rajesh Kumar<br />Resident since: Aug 2024</p></div>
+                                </article>
+                                <article class="feature-card feature-card--tinted">
+                                    <lightning-icon icon-name="utility:settings" size="small"></lightning-icon>
+                                    <div><span class="section-kicker">Mess Plan</span><strong>Standard vegetarian</strong><p>3 meals/day · Block B mess hall · plan active</p></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Clubs & Communities</span>
+                                <div class="two-card-row">
+                                    <article class="feature-card feature-card--compact"><lightning-icon icon-name="utility:code" size="small"></lightning-icon><div><strong>Coding Club</strong><p>Active member · joined Aug 2024</p></div><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></article>
+                                    <article class="feature-card feature-card--compact"><lightning-icon icon-name="utility:photo" size="small"></lightning-icon><div><strong>Photography Club</strong><p>Member · joined Jan 2025</p></div><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></article>
+                                </div>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Events Attended</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:event" size="x-small"></lightning-icon><div><strong>Tech Symposium 2026</strong><p>Attendee</p></div><span>12 Mar 2026</span><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:event" size="x-small"></lightning-icon><div><strong>Inter-college Hackathon</strong><p>Participant · Team of 4</p></div><span>04 Feb 2026</span><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:event" size="x-small"></lightning-icon><div><strong>Founders' Day</strong><p>Volunteer</p></div><span>18 Jan 2026</span><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:event" size="x-small"></lightning-icon><div><strong>Photography Walk</strong><p>Attendee</p></div><span>07 Dec 2025</span><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:event" size="x-small"></lightning-icon><div><strong>Coding Club Onboarding</strong><p>Attendee</p></div><span>12 Aug 2025</span><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Facilities Bookings</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:event" size="x-small"></lightning-icon><div><strong>CSE Lab 3 - Project work</strong><p>Tomorrow · 14:00-16:00</p></div><span class="status-pill status-pill--good">Confirmed</span><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:event" size="x-small"></lightning-icon><div><strong>Library discussion room D2</strong><p>Today · 18:00-19:30</p></div><span class="status-pill status-pill--good">Confirmed</span><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:event" size="x-small"></lightning-icon><div><strong>Sports complex · Badminton court</strong><p>Sat 23 May · 17:00</p></div><span class="status-pill status-pill--warn">Pending</span><lightning-icon icon-name="utility:chevronright" size="x-small" class="muted-icon"></lightning-icon></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Campus Access & Movement</span>
+                                <article class="feature-card feature-card--wide"><lightning-icon icon-name="utility:identity" size="small"></lightning-icon><div class="access-grid"><span>Gate pass</span><strong>Active · Resident pass KEN42947-G</strong><span>Last entry</span><strong>Today 08:42 · Main Gate</strong><span>Last exit</span><strong>Yesterday 19:15 · Main Gate</strong><span>Entries this week</span><strong>28</strong><span>Visitor passes</span><strong>1 approved</strong></div></article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Service & Maintenance Requests</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row service-row"><span>MNT-2418</span><strong>Wi-Fi connectivity in Block B</strong><span class="status-pill status-pill--warn">Open</span><span>1 day ago</span></div>
+                                    <div class="icon-list-row service-row"><span>AMN-1142</span><strong>Locker key replacement</strong><span class="status-pill status-pill--good">Resolved</span><span>5 days ago</span></div>
+                                </article>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isPlacements}>
+                            <section class="content-section">
+                                <article class="feature-card feature-card--wide placement-readiness-card">
+                                    <lightning-icon icon-name="utility:briefcase" size="small"></lightning-icon>
+                                    <div>
+                                        <div class="section-heading-row section-heading-row--tight"><div><span class="section-kicker">Placement Readiness</span><strong>Eligible from Sem 7 (Aug 2027)</strong><p>Profile completeness: 84%</p></div><a>Edit profile ›</a></div>
+                                        <div class="progress-bar progress-bar--wide"><div class="progress-bar__fill progress-bar__fill--coral" style="width:84%;"></div></div>
+                                        <div class="field-grid placement-field-grid">
+                                            <div class="field-row"><span>Resume on file</span><strong>Yes · updated 12 Jan 2026</strong></div>
+                                            <div class="field-row"><span>Expected CTC</span><strong>₹ 12 - 18 LPA</strong></div>
+                                            <div class="field-row"><span>Preferred roles</span><strong>Software Engineer, Backend Engineer, ML Engineer</strong></div>
+                                            <div class="field-row"><span>Locations</span><strong>Bangalore, Hyderabad, Remote</strong></div>
+                                            <div class="field-row"><span>CGPA cutoff (≥ 7.0)</span><strong class="good-text">Met</strong></div>
+                                            <div class="field-row"><span>Active backlogs</span><strong class="warn-text">1 (MA201)</strong></div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Skills Snapshot</span>
+                                <div class="skill-row"><span class="skill-pill skill-pill--good">Python · Advanced</span><span class="skill-pill skill-pill--blue">Java · Intermediate</span><span class="skill-pill skill-pill--good">SQL · Advanced</span><span class="skill-pill skill-pill--blue">React · Intermediate</span><span class="skill-pill skill-pill--warn">System Design · Beginner</span><span class="skill-pill skill-pill--good">DSA · Advanced</span></div>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Internships Completed</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:company" size="x-small"></lightning-icon><div><strong>Razorpay · SWE Intern (Backend)</strong><p>May - Jul 2025 · stipend ₹ 60,000 / mo · certificate On file</p></div><span class="status-pill status-pill--good">Completed</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:company" size="x-small"></lightning-icon><div><strong>IIT-B Innov. · Research Intern (AI)</strong><p>Dec 2025 (4 wks) · stipend Unpaid · certificate On file</p></div><span class="status-pill status-pill--good">Completed</span></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Recommended Drives & Opportunities</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:favorite" size="x-small"></lightning-icon><div><strong>Microsoft - SDE Internship 2026</strong><p>Apr 2026 · CGPA ≥ 8.0 · Eligible from Sem 7</p></div><span class="status-pill status-pill--blue">Recommended</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:favorite" size="x-small"></lightning-icon><div><strong>Goldman Sachs - Summer Analyst 2026</strong><p>Apr 2026 · CGPA ≥ 7.5 · Eligible from Sem 7</p></div><span class="status-pill status-pill--blue">Recommended</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:favorite" size="x-small"></lightning-icon><div><strong>Walmart Labs - SDE Intern</strong><p>May 2026 · No backlogs · Resolve MA201</p></div><span class="status-pill status-pill--muted">Watching</span></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Offers</span>
+                                <div class="empty-panel">No offers yet. Eligible from Sem 7 (Aug 2027).</div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isDocuments}>
+                            <section class="stat-grid stat-grid--four">
+                                <article><span>On File</span><strong>9</strong></article>
+                                <article><span>Verified</span><strong class="good-text">7</strong></article>
+                                <article><span>Pending</span><strong class="warn-text">1</strong></article>
+                                <article><span>Expired</span><strong class="warn-text">1</strong></article>
+                            </section>
+                            <section class="content-section content-section--flush">
+                                <div class="section-heading-row"><span class="section-kicker">Documents on File</span><a><lightning-icon icon-name="utility:upload" size="x-small"></lightning-icon> Upload</a></div>
+                                <table class="ken-table">
+                                    <thead><tr><th>Document</th><th>Category</th><th>Uploaded</th><th>Expiry</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>Class X marksheet</td><td>Academic credentials</td><td>18 Nov 2023</td><td>-</td><td><span class="status-pill status-pill--good">Verified</span></td></tr>
+                                        <tr><td>Class XII marksheet</td><td>Academic credentials</td><td>18 Nov 2023</td><td>-</td><td><span class="status-pill status-pill--good">Verified</span></td></tr>
+                                        <tr><td>JEE Main scorecard</td><td>Entrance</td><td>20 Apr 2024</td><td>-</td><td><span class="status-pill status-pill--good">Verified</span></td></tr>
+                                        <tr><td>Aadhaar</td><td>Identity</td><td>18 Nov 2023</td><td>-</td><td><span class="status-pill status-pill--good">Verified</span></td></tr>
+                                        <tr><td>PAN card</td><td>Identity</td><td>18 Nov 2023</td><td>-</td><td><span class="status-pill status-pill--good">Verified</span></td></tr>
+                                        <tr><td>Passport size photograph</td><td>Identity</td><td>18 Nov 2023</td><td>-</td><td><span class="status-pill status-pill--good">Verified</span></td></tr>
+                                        <tr><td>Class XII migration cert.</td><td>Academic credentials</td><td>-</td><td>-</td><td><span class="status-pill status-pill--warn">Pending</span></td></tr>
+                                        <tr><td>Address proof (rental)</td><td>Identity</td><td>12 Aug 2024</td><td>11 Aug 2025</td><td><span class="status-pill status-pill--danger">Expired</span></td></tr>
+                                        <tr><td>Medical fitness certificate</td><td>Health</td><td>10 Aug 2024</td><td>10 Aug 2026</td><td><span class="status-pill status-pill--good">Verified</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </section>
+                            <section class="two-card-row tab-section-grid">
+                                <div>
+                                    <div class="section-heading-row section-heading-row--tight"><span class="section-kicker">Document Requests</span><a>New request ›</a></div>
+                                    <article class="row-list-card">
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:file" size="x-small"></lightning-icon><div><strong>Bonafide certificate</strong><p>For Passport renewal · requested 08 Mar 2026 · issued 10 Mar 2026</p></div><span class="status-pill status-pill--good">Issued</span></div>
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:file" size="x-small"></lightning-icon><div><strong>Provisional transcript</strong><p>For Internship at Razorpay · requested 12 Apr 2025 · issued</p></div><span class="status-pill status-pill--good">Issued</span></div>
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:file" size="x-small"></lightning-icon><div><strong>Hostel residency proof</strong><p>For Bank KYC update · requested 14 Mar 2026</p></div><span class="status-pill status-pill--blue">In Progress</span></div>
+                                    </article>
+                                </div>
+                                <div>
+                                    <span class="section-kicker">Certificates Issued</span>
+                                    <article class="row-list-card">
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:file" size="x-small"></lightning-icon><div><strong>Sem 1 marksheet</strong><p>15 Feb 2025 · MS-2024-S1-KEN42947</p></div><lightning-icon icon-name="utility:download" size="x-small" class="coral-icon"></lightning-icon></div>
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:file" size="x-small"></lightning-icon><div><strong>Sem 2 marksheet</strong><p>10 Aug 2025 · MS-2025-S2-KEN42947</p></div><lightning-icon icon-name="utility:download" size="x-small" class="coral-icon"></lightning-icon></div>
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:file" size="x-small"></lightning-icon><div><strong>Sem 3 marksheet</strong><p>20 Feb 2026 · MS-2025-S3-KEN42947</p></div><lightning-icon icon-name="utility:download" size="x-small" class="coral-icon"></lightning-icon></div>
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:file" size="x-small"></lightning-icon><div><strong>Internship completion · Razorpay</strong><p>05 Aug 2025 · INT-CERT-2025-S2</p></div><lightning-icon icon-name="utility:download" size="x-small" class="coral-icon"></lightning-icon></div>
+                                    </article>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isCommunications}>
+                            <section class="stat-grid stat-grid--four">
+                                <article><span>Last 30 Days</span><strong>18</strong></article>
+                                <article><span>Outbound</span><strong>16</strong></article>
+                                <article><span>Inbound</span><strong>2</strong></article>
+                                <article><span>Parent Copies</span><strong>6</strong></article>
+                            </section>
+                            <section class="content-section">
+                                <div class="section-heading-row"><span class="section-kicker">Communication History</span><a>New message ›</a></div>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:email" size="x-small"></lightning-icon><div><strong>Attendance shortfall - Operating Systems</strong><span class="status-pill status-pill--blue">Academics</span><p>To Office of the Registrar · Email · Delivered</p></div><span>2 days ago</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:email" size="x-small"></lightning-icon><div><strong>Mid-sem timetable Sem 4 published</strong><span class="status-pill status-pill--warn">Examinations</span><p>To Examination Cell · Email · Read</p></div><span>3 days ago</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:notification" size="x-small"></lightning-icon><div><strong>Library book due reminder</strong><span class="status-pill status-pill--muted">Admin</span><p>To Library · In-app · Read</p></div><span>4 days ago</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:email" size="x-small"></lightning-icon><div><strong>Fee receipt - Sem 4 instalment 1</strong><span class="status-pill status-pill--good">Fees</span><p>To Finance Office · Email · Read</p></div><span>Last week</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:phone_portrait" size="x-small"></lightning-icon><div><strong>Hostel mess menu update</strong><span class="status-pill status-pill--purple">Hostel</span><p>To Hostel Office · Push · Read</p></div><span>Last week</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:email" size="x-small"></lightning-icon><div><strong>Internship drive - Apr 2026 (eligible)</strong><span class="status-pill status-pill--purple">Placements</span><p>To Placement Cell · Email · Read</p></div><span>2 weeks ago</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:email" size="x-small"></lightning-icon><div><strong>Re: Attendance correction request</strong><span class="status-pill status-pill--blue">Academics</span><p>From Self · Email · Read</p></div><span>3 weeks ago</span></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Parent Communications</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:email" size="x-small"></lightning-icon><div><strong>Term progress note - Sem 4 mid-term</strong><p>To Vipra Garg (Father) · Email · Delivered</p></div><span>Last week</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:sms" size="x-small"></lightning-icon><div><strong>Attendance shortfall - copy to parents</strong><p>To Vipra Garg (Father) · SMS · Delivered</p></div><span>2 days ago</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:email" size="x-small"></lightning-icon><div><strong>Quarterly fee statement</strong><p>To Muskaan Madaan (Mother) · Email · Read</p></div><span>3 weeks ago</span></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Surveys & Feedback</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:survey" size="x-small"></lightning-icon><div><strong>Mid-semester teaching feedback · Sem 4</strong><p>Due 28 Mar 2026</p></div><span class="status-pill status-pill--warn">Pending</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:survey" size="x-small"></lightning-icon><div><strong>Hostel mess satisfaction · Q1</strong><p>-</p></div><span class="status-pill status-pill--good">Submitted</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:survey" size="x-small"></lightning-icon><div><strong>Industry readiness pulse</strong><p>-</p></div><span class="status-pill status-pill--good">Submitted</span></div>
+                                </article>
+                            </section>
+                            <section class="two-card-row tab-section-grid">
+                                <div>
+                                    <span class="section-kicker">Active Alert Templates</span>
+                                    <article class="row-list-card">
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:notification" size="x-small"></lightning-icon><strong>Attendance shortfall · 75% threshold</strong><span>2 days ago</span></div>
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:notification" size="x-small"></lightning-icon><strong>Fee due reminder · T-7 days</strong><span>Mar 2026</span></div>
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:notification" size="x-small"></lightning-icon><strong>Exam hall ticket release</strong><span>Mar 2026</span></div>
+                                        <div class="icon-list-row"><lightning-icon icon-name="utility:notification" size="x-small"></lightning-icon><strong>Library overdue notice</strong><span>4 days ago</span></div>
+                                    </article>
+                                </div>
+                                <div>
+                                    <span class="section-kicker">Notification Preferences</span>
+                                    <article class="row-list-card">
+                                        <div class="pref-row"><strong>Email</strong><span class="status-pill status-pill--good">On</span></div>
+                                        <div class="pref-row"><strong>SMS</strong><span class="status-pill status-pill--good">On</span></div>
+                                        <div class="pref-row"><strong>In-app</strong><span class="status-pill status-pill--good">On</span></div>
+                                        <div class="pref-row"><strong>Push</strong><span class="status-pill status-pill--good">On</span></div>
+                                        <div class="pref-row"><strong>WhatsApp</strong><span class="status-pill status-pill--muted">Off</span></div>
+                                    </article>
+                                </div>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isSupport}>
+                            <section class="stat-grid stat-grid--five">
+                                <article><span>Open</span><strong class="warn-text">2</strong></article>
+                                <article><span>In Progress</span><strong>1</strong></article>
+                                <article><span>Resolved (30d)</span><strong class="good-text">4</strong></article>
+                                <article><span>Avg Resolution</span><strong>1.4 days</strong></article>
+                                <article><span>Satisfaction</span><strong class="good-text">4.6 / 5</strong></article>
+                            </section>
+                            <section class="content-section content-section--flush">
+                                <div class="section-heading-row"><span class="section-kicker">All Tickets</span><a>+ Raise ticket</a></div>
+                                <table class="ken-table">
+                                    <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Assignee</th><th>Raised</th><th>Priority</th><th>Status</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>SR-2418</td><td>Wi-Fi connectivity in Block B</td><td>Hostel · IT</td><td>IT helpdesk</td><td>1 day ago</td><td class="warn-text">Medium</td><td><span class="status-pill status-pill--warn">Open</span></td></tr>
+                                        <tr><td>SR-2409</td><td>Library card replacement</td><td>Library</td><td>Library desk</td><td>3 days ago</td><td>Low</td><td><span class="status-pill status-pill--blue">In Progress</span></td></tr>
+                                        <tr><td>SR-2401</td><td>Attendance correction - CS204 lab</td><td>Academics</td><td>Dr. Anitha S.</td><td>5 days ago</td><td class="warn-text">Medium</td><td><span class="status-pill status-pill--good">Resolved</span></td></tr>
+                                        <tr><td>SR-2390</td><td>Locker key replacement</td><td>Hostel</td><td>Hostel office</td><td>1 wk ago</td><td>Low</td><td><span class="status-pill status-pill--good">Resolved</span></td></tr>
+                                        <tr><td>SR-2371</td><td>Fee receipt format request</td><td>Finance</td><td>Finance office</td><td>2 wks ago</td><td>Low</td><td><span class="status-pill status-pill--good">Resolved</span></td></tr>
+                                        <tr><td>SR-2356</td><td>Transcript issuance delay</td><td>Examinations</td><td>Exam cell</td><td>3 wks ago</td><td class="danger-text">High</td><td><span class="status-pill status-pill--danger">Escalated</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Lost & Found History</span>
+                                <article class="lost-found-card">
+                                    <div class="lost-found-row">
+                                        <div>
+                                            <strong>Black umbrella</strong>
+                                            <p>Library 2nd floor · reported 3 days ago</p>
+                                        </div>
+                                        <span class="status-pill status-pill--warn">Open</span>
+                                    </div>
+                                    <div class="lost-found-row">
+                                        <div>
+                                            <strong>Student ID card</strong>
+                                            <p>Mess block · reported Feb 2026</p>
+                                        </div>
+                                        <span class="status-pill status-pill--good">Recovered</span>
+                                    </div>
+                                    <div class="lost-found-row">
+                                        <div>
+                                            <strong>Earphones (boAt)</strong>
+                                            <p>Bus stop near gate 2 · reported Jan 2026</p>
+                                        </div>
+                                        <span class="status-pill status-pill--blue">Returned</span>
+                                    </div>
+                                </article>
+                            </section>
+                        </template>
+
+                        <template lwc:if={isGraduation}>
+                            <section class="content-section">
+                                <article class="feature-card feature-card--wide">
+                                    <lightning-icon icon-name="utility:knowledge_base" size="small"></lightning-icon>
+                                    <div>
+                                        <span class="section-kicker">Programme Progress</span>
+                                        <strong>On track for May 2028</strong>
+                                        <p>Year 2 of 4 · CGPA 7.83 · First Class track</p>
+                                        <div class="progress-label-row"><span>Credits completed</span><strong>61 / 160 (38%)</strong></div>
+                                        <div class="progress-bar progress-bar--wide"><div class="progress-bar__fill progress-bar__fill--coral" style="width:38%;"></div></div>
+                                    </div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">No-dues Checklist</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:success" size="x-small" class="green-icon"></lightning-icon><div><strong>Library</strong><p>No outstanding books</p></div><span class="status-pill status-pill--good">Cleared</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:warning" size="x-small" class="amber-icon"></lightning-icon><div><strong>Hostel</strong><p>Re-initiate at final semester</p></div><span class="status-pill status-pill--warn">Pending</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:warning" size="x-small" class="amber-icon"></lightning-icon><div><strong>Mess</strong><p>Re-initiate at final semester</p></div><span class="status-pill status-pill--warn">Pending</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:success" size="x-small" class="green-icon"></lightning-icon><div><strong>Finance</strong><p>All instalments to date paid</p></div><span class="status-pill status-pill--good">Cleared</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:warning" size="x-small" class="amber-icon"></lightning-icon><div><strong>Lab / dept.</strong><p>Re-initiate at final semester</p></div><span class="status-pill status-pill--warn">Pending</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:info" size="x-small"></lightning-icon><div><strong>IT assets</strong><p>Re-initiate at final semester</p></div><span class="status-pill status-pill--muted">Not Initiated</span></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <span class="section-kicker">Closure Tasks</span>
+                                <article class="row-list-card">
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:task" size="x-small"></lightning-icon><div><strong>Final semester result publish</strong><p>Expected: May 2028</p></div><span class="status-pill status-pill--muted">Not Started</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:task" size="x-small"></lightning-icon><div><strong>Provisional certificate</strong><p>Expected: Jun 2028</p></div><span class="status-pill status-pill--muted">Not Started</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:task" size="x-small"></lightning-icon><div><strong>Original degree issuance</strong><p>Expected: Convocation 2028</p></div><span class="status-pill status-pill--muted">Not Started</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:task" size="x-small"></lightning-icon><div><strong>Transcript - consolidated</strong><p>Expected: Jun 2028</p></div><span class="status-pill status-pill--muted">Not Started</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:task" size="x-small"></lightning-icon><div><strong>Exit interview</strong><p>Expected: Apr 2028</p></div><span class="status-pill status-pill--muted">Not Started</span></div>
+                                    <div class="icon-list-row"><lightning-icon icon-name="utility:task" size="x-small"></lightning-icon><div><strong>Alumni record activation</strong><p>Expected: On graduation</p></div><span class="status-pill status-pill--blue">Scheduled</span></div>
+                                </article>
+                            </section>
+                            <section class="content-section">
+                                <article class="feature-card feature-card--tinted alumni-card">
+                                    <lightning-icon icon-name="utility:success" size="small"></lightning-icon>
+                                    <div><span class="section-kicker">Alumni Activation</span><strong>Profile will activate on graduation (May 2028)</strong><p>Linked to alumni module · mentorship and giving preferences will be captured at exit interview.</p></div>
+                                    <lightning-icon icon-name="utility:chevronright" size="x-small" class="coral-icon"></lightning-icon>
+                                </article>
+                            </section>
+                        </template>
+                    </div>
+                </article>
+            </div>
+
+            <aside class="right-rail">
+                <section class="rail-card rail-card--attention">
+                    <div class="rail-card__head">
+                        <h3>Needs attention</h3>
+                        <span class="status-pill status-pill--warn">3 Open</span>
+                    </div>
+                    <template for:each={attentionItems} for:item="item">
+                        <article key={item.id} class="attention-item">
+                            <div><lightning-icon icon-name={item.iconName} size="x-small"></lightning-icon></div>
+                            <div><strong>{item.title}</strong><a>{item.action} ›</a></div>
+                        </article>
+                    </template>
+                </section>
+
+                <section class="rail-card">
+                    <div class="rail-card__head"><h3>Recent activity</h3></div>
+                    <template for:each={activityItems} for:item="activity">
+                        <article key={activity.id} class="activity-item">
+                            <div><lightning-icon icon-name={activity.iconName} size="x-small"></lightning-icon></div>
+                            <strong>{activity.title}</strong>
+                            <span>{activity.when}</span>
+                        </article>
+                    </template>
+                </section>
+
+                <section class="rail-card">
+                    <div class="rail-card__head"><h3>Quick actions</h3></div>
+                    <div class="quick-actions">
+                        <button><lightning-icon icon-name="utility:comments" size="x-small"></lightning-icon><span>Send Message</span></button>
+                        <button><lightning-icon icon-name="utility:add" size="x-small"></lightning-icon><span>Add Note</span></button>
+                        <button><lightning-icon icon-name="utility:case" size="x-small"></lightning-icon><span>Raise Case</span></button>
+                        <button><lightning-icon icon-name="utility:upload" size="x-small"></lightning-icon><span>Upload Document</span></button>
+                        <button><lightning-icon icon-name="utility:pulse" size="x-small"></lightning-icon><span>Update Risk Status</span></button>
+                    </div>
+                </section>
+
+                <section class="rail-card">
+                    <div class="rail-card__head"><h3>Record health</h3></div>
+                    <template for:each={healthItems} for:item="item">
+                        <article key={item.id} class="health-item">
+                            <lightning-icon icon-name={item.iconName} size="x-small" class={item.iconClass}></lightning-icon>
+                            <strong>{item.title}</strong>
+                            <span>{item.note}</span>
+                        </article>
+                    </template>
+                </section>
+            </aside>
+        </section>
+    </main>
+</template>

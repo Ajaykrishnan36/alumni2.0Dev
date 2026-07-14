@@ -1,0 +1,372 @@
+.business-directory-page {
+    width: 100%;
+    min-height: calc(100vh - var(--portal-header-height, 160px));
+    height: calc(100vh - var(--portal-header-height, 160px));
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    overflow: hidden;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--portal-text-secondary, #374151);
+    margin: 0;
+    line-height: 140%;
+    letter-spacing: 0%;
+}
+
+.my-businesses-title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--portal-text-secondary, #374151);
+    margin: 0 0 16px 0;
+    padding-bottom: 16px;
+    border-bottom: 0.5px solid var(--portal-divider, rgba(0, 0, 0, 0.30));
+    line-height: 140%;
+    letter-spacing: 0%;
+}
+
+.business-directory-container {
+    display: grid;
+    grid-template-columns: 1fr var(--portal-rail-width, 25%);
+    gap: var(--portal-gap-x, 1rem);
+    margin: 0 auto;
+    align-items: stretch;
+    height: 100%;
+    min-height: 0;
+    flex: 1;
+}
+
+/* All Businesses Section */
+.all-businesses-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background-color: var(--portal-surface, #ffffff);
+    border-radius: var(--portal-radius, 12px);
+    padding: var(--portal-card-padding, 24px);
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-shrink: 0;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    justify-content: flex-end;
+}
+
+.filters-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background-color: #f3f4f6;
+    border: none;
+    border-radius: var(--portal-radius);
+    font-size: 14px;
+    color: var(--portal-text-secondary, #374151);
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.filters-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.filters-icon {
+    --slds-c-icon-color-foreground-default: #374151;
+    width: 16px;
+    height: 16px;
+}
+
+.filters-icon-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 16px;
+    height: 12px;
+    justify-content: center;
+}
+
+.filter-line {
+    height: 2px;
+    background-color: #374151;
+    border-radius: 1px;
+}
+
+.filter-line.line-1 {
+    width: 16px;
+}
+
+.filter-line.line-2 {
+    width: 12px;
+}
+
+.filter-line.line-3 {
+    width: 8px;
+}
+
+.business-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+/* My Businesses Section */
+.my-businesses-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: 100%;
+    min-height: 0;
+}
+
+.my-businesses-section c-ken-list-your-business {
+    margin-top: auto;
+}
+
+.my-businesses-list {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--portal-surface, #ffffff);
+    border-radius: var(--portal-radius, 12px);
+    padding: var(--portal-card-padding, 24px);
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+}
+
+.my-businesses-title {
+    flex-shrink: 0;
+    margin-bottom: 16px;
+}
+
+.my-businesses-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+}
+
+
+
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .business-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .business-directory-container {
+        grid-template-columns: 1fr 320px;
+    }
+}
+
+@media (max-width: 968px) {
+    .business-directory-container {
+        grid-template-columns: 1fr;
+    }
+
+    .business-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .business-directory-page {
+        padding: 16px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .header-controls {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .business-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .all-businesses-section {
+        height: 100%;
+        min-height: 0;
+        padding: 16px;
+    }
+
+    .my-businesses-section {
+        height: 100%;
+        min-height: 0;
+    }
+
+.my-businesses-list {
+    padding: 16px;
+    }
+}
+
+/* Filters Popup */
+.filters-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.35);
+    z-index: 999;
+    padding: 0;
+    box-sizing: border-box;
+    pointer-events: auto;
+    cursor: default;
+}
+
+.filters-popup {
+    position: fixed;
+    background-color: var(--portal-surface, #ffffff);
+    border-radius: var(--portal-radius);
+    padding: var(--portal-card-padding, 24px);
+    width: 400px;
+    max-width: 90vw;
+    max-height: 500px;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    z-index: 1000;
+    pointer-events: auto;
+}
+
+.filters-header {
+    margin-bottom: 24px;
+}
+
+.filters-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--portal-text-primary, #1f2333);
+    margin: 0;
+}
+
+.filters-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+    margin-bottom: 24px;
+}
+
+.filter-field {
+    width: 100%;
+}
+
+.filter-field lightning-combobox {
+    width: 100%;
+}
+
+.filter-field lightning-combobox .slds-form-element__label {
+    display: none !important;
+}
+
+.filter-field lightning-combobox .slds-combobox__input,
+.filter-field lightning-combobox .slds-input_faux {
+    border: 0.5px solid #B2B3B7 !important;
+    border-radius: 8px !important;
+    padding: 10px 12px !important;
+    font-size: 14px !important;
+    color: #9ca3af !important;
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    min-height: 44px !important;
+    height: 44px !important;
+}
+
+.filter-field lightning-combobox .slds-combobox__input input,
+.filter-field lightning-combobox .slds-input_faux input {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+}
+
+.filter-field lightning-combobox {
+    --slds-c-input-color-background: #ffffff !important;
+    --slds-c-input-color-background-focus: #ffffff !important;
+}
+
+.filter-field lightning-combobox .slds-combobox__input:focus,
+.filter-field lightning-combobox .slds-input_faux:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2) !important;
+}
+
+.filter-field lightning-combobox .slds-input__icon-group_right .slds-input__icon {
+    fill: #6b7280 !important;
+}
+
+.filters-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    margin-top: auto;
+}
+
+.reset-filters-btn {
+    padding: 10px 20px;
+    background-color: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--portal-text-secondary, #374151);
+    cursor: pointer;
+    min-width: 120px;
+    transition: background-color 0.2s;
+}
+
+.reset-filters-btn:hover {
+    background-color: var(--primary-color-tint, #eff6ff);
+}
+
+.apply-filters-btn {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    cursor: pointer;
+    min-width: 120px;
+    
+    transition: background-color 0.2s;
+}
+
+.apply-filters-btn:hover {
+    background-color: var(--primary-color);
+}

@@ -1,0 +1,128 @@
+<template>
+    <div class="prefs slds-text-font_sans">
+        <header class="prefs__hd">
+            <h2 class="slds-text-heading_medium prefs__title">Update your mentor preferences</h2>
+            <p class="slds-text-body_small slds-text-color_weak sub">
+                Tell us when you're available and who you'd like to guide.
+            </p>
+        </header>
+
+        <template lwc:if={loading}>
+            <div class="muted">Loading your preferences…</div>
+        </template>
+
+        <template lwc:else>
+            <template lwc:if={errorMsg}><div class="err">{errorMsg}</div></template>
+            <template lwc:if={savedOk}><div class="ok">Your preferences have been saved.</div></template>
+
+            <!-- Become a mentor -->
+            <section class="card">
+                <label class="toggle">
+                    <input type="checkbox" checked={willing} onchange={handleWilling} />
+                    <span><b>I'm willing to be a mentor</b> — list me in the matchmaking directory.</span>
+                </label>
+            </section>
+
+            <!-- Availability -->
+            <section class="card">
+                <h3 class="slds-text-title_caps card__section-title">Recurring availability</h3>
+
+                <fieldset class="prefs-group">
+                    <legend class="prefs-group__legend slds-form-element__label">Select days</legend>
+                    <div class="prefs-group__options">
+                        <template for:each={dayOptions} for:item="o">
+                            <label key={o.value} class="prefs-chip">
+                                <input type="checkbox" data-group="days" data-value={o.value}
+                                    checked={o.checked} onchange={handleGroupToggle} />
+                                <span>{o.label}</span>
+                            </label>
+                        </template>
+                    </div>
+                </fieldset>
+
+                <div class="row">
+                    <label class="prefs-field">
+                        <span class="prefs-field__label slds-form-element__label">From</span>
+                        <input type="time" class="prefs-field__input" value={startTime} onchange={handleStart} />
+                    </label>
+                    <label class="prefs-field">
+                        <span class="prefs-field__label slds-form-element__label">To</span>
+                        <input type="time" class="prefs-field__input" value={endTime} onchange={handleEnd} />
+                    </label>
+                </div>
+            </section>
+
+            <!-- Expertise -->
+            <section class="card">
+                <h3 class="slds-text-title_caps card__section-title">Areas of expertise</h3>
+                <fieldset class="prefs-group">
+                    <legend class="prefs-group__legend slds-form-element__label">Expertise</legend>
+                    <div class="prefs-group__options">
+                        <template for:each={expertiseOptionsUi} for:item="o">
+                            <label key={o.value} class="prefs-chip">
+                                <input type="checkbox" data-group="expertise" data-value={o.value}
+                                    checked={o.checked} onchange={handleGroupToggle} />
+                                <span>{o.label}</span>
+                            </label>
+                        </template>
+                    </div>
+                </fieldset>
+            </section>
+
+            <!-- Mentorship preferences -->
+            <section class="card">
+                <h3 class="slds-text-title_caps card__section-title">Mentorship preferences</h3>
+
+                <fieldset class="prefs-group">
+                    <legend class="prefs-group__legend slds-form-element__label">Type of mentees</legend>
+                    <div class="prefs-group__options">
+                        <template for:each={menteeTypeOptions} for:item="o">
+                            <label key={o.value} class="prefs-chip">
+                                <input type="checkbox" data-group="mentee" data-value={o.value}
+                                    checked={o.checked} onchange={handleGroupToggle} />
+                                <span>{o.label}</span>
+                            </label>
+                        </template>
+                    </div>
+                </fieldset>
+
+                <div class="spacer"></div>
+
+                <fieldset class="prefs-group">
+                    <legend class="prefs-group__legend slds-form-element__label">Preferred communication</legend>
+                    <div class="prefs-group__options">
+                        <template for:each={commOptions} for:item="o">
+                            <label key={o.value} class="prefs-chip">
+                                <input type="checkbox" data-group="comms" data-value={o.value}
+                                    checked={o.checked} onchange={handleGroupToggle} />
+                                <span>{o.label}</span>
+                            </label>
+                        </template>
+                    </div>
+                </fieldset>
+
+                <div class="spacer"></div>
+
+                <div class="cap">
+                    <label class="prefs-field prefs-field--grow">
+                        <span class="prefs-field__label slds-form-element__label">Max mentee capacity</span>
+                        <input type="number" class="prefs-field__input" min="1"
+                            value={maxCapacity} disabled={capacityDisabled} oninput={handleCapacity} />
+                    </label>
+                    <label class="toggle toggle--inline">
+                        <input type="checkbox" checked={unlimited} onchange={handleUnlimited} />
+                        <span>Unlimited</span>
+                    </label>
+                </div>
+            </section>
+
+            <footer class="prefs__ft">
+                <button class="btn btn--ghost" onclick={handleClose}>Cancel</button>
+                <button class="btn btn--solid" onclick={handleSave} disabled={saving}>
+                    <template lwc:if={saving}>Saving…</template>
+                    <template lwc:else>Save Preferences</template>
+                </button>
+            </footer>
+        </template>
+    </div>
+</template>

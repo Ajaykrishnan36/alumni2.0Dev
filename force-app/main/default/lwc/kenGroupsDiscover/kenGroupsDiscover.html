@@ -1,0 +1,62 @@
+<template>
+    <div class="discover-container">
+        <div class="discover-banner">
+            <div class="banner-overlay">
+                <div class="header">
+                    <h2>Suggested for You ({suggestedCountFormatted})</h2>
+                    <div class="badge">Created by Admin</div>
+                    <div class="controls">
+                        <button type="button" class="nav-btn left" onclick={handlePrev} aria-label="Previous">❮</button>
+                        <button type="button" class="nav-btn right" onclick={handleNext} aria-label="Next">❯</button>
+                    </div>
+                </div>
+
+                <!-- Mobile: 1 card only, arrows change card -->
+                <template if:true={isMobileView}>
+                    <div class="cards-single-container">
+                        <template if:true={currentSuggestedGroup}>
+                            <div class="group-card group-card-single" data-group-id={currentSuggestedGroup.id} onclick={handleGroupClick}>
+                                <div class="card-image-wrapper" style={currentSuggestedGroup.cardStyle}></div>
+                                <div class="card-content">
+                                    <h3 class="group-name">{currentSuggestedGroup.name}</h3>
+                                    <p class="member-count">{currentSuggestedGroup.members} members</p>
+                                    <div class="friends-preview">
+                                        <div class="avatars">
+                                            <template for:each={currentSuggestedGroup.friendsImages} for:item="img">
+                                                <img key={img.key} src={img.url} alt="" class="avatar-sm" />
+                                            </template>
+                                        </div>
+                                        <span class="friends-text">{currentSuggestedGroup.friends}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Desktop: scrollable row of cards -->
+                <template if:false={isMobileView}>
+                    <div class="cards-scroll-container">
+                        <template for:each={suggestedGroups} for:item="group">
+                            <div key={group.id} class="group-card" data-group-id={group.id} onclick={handleGroupClick}>
+                                <div class="card-image-wrapper" style={group.cardStyle}></div>
+                                <div class="card-content">
+                                    <h3 class="group-name">{group.name}</h3>
+                                    <p class="member-count">{group.members} members</p>
+                                    <div class="friends-preview">
+                                        <div class="avatars">
+                                            <template for:each={group.friendsImages} for:item="img">
+                                                <img key={img.key} src={img.url} alt="" class="avatar-sm" />
+                                            </template>
+                                        </div>
+                                        <span class="friends-text">{group.friends}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

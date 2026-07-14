@@ -1,0 +1,344 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="home">
+    <section class="page">
+
+        <!-- ─── Main Board ─────────────────────────────────────────────── -->
+        <template lwc:if={isMainBoard}>
+            <header class="page__head">
+                <div>
+                    <h1 class="page__title">Business Directory</h1>
+                    <p class="page__subtitle">Discover &amp; support alumni-owned businesses</p>
+                </div>
+                <button type="button" class="btn btn--primary" onclick={handleOpenSetup}>+ List Your Business</button>
+            </header>
+
+            <div class="layout">
+                <div class="main-col">
+                    <!-- Featured banner (with cover image + overlay) -->
+                    <template lwc:if={hasFeatured}>
+                        <article class="featured" data-id={featured.id} onclick={handleOpenBusiness} style={featured.coverStyle}>
+                            <div class="featured__inner">
+                                <div class="featured__left">
+                                    <template lwc:if={featured.hasLogo}>
+                                        <img class="featured__logo-img" src={featured.logoUrl} alt={featured.name}/>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="featured__logo" style={featured.logoStyle}>{featured.initial}</span>
+                                    </template>
+                                    <div class="featured__body">
+                                        <span class="featured__eyebrow">FEATURED BUSINESS OF THE MONTH</span>
+                                        <h2 class="featured__name">{featured.name}</h2>
+                                        <p class="featured__meta">{featured.category} · {featured.city}</p>
+                                    </div>
+                                </div>
+                                <button type="button" class="featured__cta" data-id={featured.id} onclick={handleOpenBusiness}>View Business</button>
+                            </div>
+                        </article>
+                    </template>
+
+                    <!-- Category chips -->
+                    <div class="board__toolbar">
+                        <h3 class="board__sectionTitle">All Businesses</h3>
+                    </div>
+                    <div class="chips">
+                        <template for:each={categories} for:item="c">
+                            <button key={c.id} type="button" class={c.chipClass} data-id={c.id} onclick={handleCat}>{c.label}</button>
+                        </template>
+                    </div>
+
+                    <template lwc:if={isLoading}>
+                        <p class="biz__tagline">Loading businesses...</p>
+                    </template>
+                    <template lwc:elseif={hasBusinesses}>
+                        <div class="grid">
+                            <template for:each={businesses} for:item="b">
+                                <article key={b.id} class="biz" data-id={b.id} onclick={handleOpenBusiness}>
+                                    <div class="biz__cover" style={b.cardCoverStyle}>
+                                        <span class="biz__cat">{b.category}</span>
+                                    </div>
+                                    <div class="biz__body">
+                                        <h3 class="biz__name biz__name--clamp">{b.name}</h3>
+                                        <p class="biz__tagline biz__tagline--clamp">{b.tagline}</p>
+                                        <p class="biz__loc biz__loc--clamp"><span class="pin">📍</span>{b.city}</p>
+                                    </div>
+                                    <div class="biz__footer">
+                                        <div class="biz__founder">
+                                            <template lwc:if={b.hasFounderAvatar}>
+                                                <img class="biz__founderAv" src={b.founderAvatarUrl} alt={b.founderName}/>
+                                            </template>
+                                            <template lwc:else>
+                                                <span class="biz__founderAv biz__founderAv--initial" style={b.logoStyle}>{b.initial}</span>
+                                            </template>
+                                            <span class="biz__founderName">{b.founderName}</span>
+                                        </div>
+                                    </div>
+                                </article>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty empty--card">
+                            <div class="empty__icon" aria-hidden="true">🏪</div>
+                            <h3 class="empty__title">No businesses listed yet</h3>
+                            <p class="empty__copy">Be the first alumnus to list your business in this category.</p>
+                            <button type="button" class="btn btn--primary" onclick={handleOpenSetup}>List Your Business</button>
+                        </div>
+                    </template>
+                </div>
+
+                <aside class="rail">
+                    <div class="rail__card">
+                        <h3 class="rail__title">My Businesses</h3>
+                        <template lwc:if={hasMyBusinesses}>
+                            <template for:each={myBusinesses} for:item="m">
+                                <div key={m.id} class="mb" data-id={m.id} onclick={handleMyBusinessClick}>
+                                    <template lwc:if={m.hasLogo}>
+                                        <img class="mb__logo" src={m.logoUrl} alt={m.name}/>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="mb__logo mb__logo--initial">{m.name}</span>
+                                    </template>
+                                    <div class="mb__info">
+                                        <p class="mb__name">{m.name}</p>
+                                        <p class="mb__cat">{m.category}</p>
+                                    </div>
+                                    <span class={m.statusClass}>{m.status}</span>
+                                    <button type="button" class="mb__edit" data-id={m.id} onclick={handleEditBusiness} title="Edit business">✎</button>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <p class="rail__empty">You haven't listed any businesses yet.</p>
+                        </template>
+                        <button type="button" class="btn btn--outline rail__btn" onclick={handleOpenSetup}>+ List Another</button>
+                    </div>
+
+                    <div class="rail__cta" onclick={handleListBusiness}>
+                        <div class="rail__ctaTop">
+                            <h3 class="rail__ctaTitle">List your Business</h3>
+                            <span class="rail__ctaArrow">→</span>
+                        </div>
+                        <p class="rail__ctaCopy">Share your venture with the alumni community.</p>
+                        <div class="rail__ctaArt" aria-hidden="true">💼</div>
+                    </div>
+                </aside>
+            </div>
+        </template>
+
+        <!-- ─── Business Detail (full-page) ────────────────────────────── -->
+        <template lwc:if={isBusinessDetail}>
+            <div class="detail__breadcrumb">
+                <button type="button" class="back-btn" onclick={handleBackToDirectory}>← Back to Directory</button>
+                <p class="bcrumb">Info hub &nbsp;›&nbsp; <span class="bcrumb__current">Business Directory</span></p>
+            </div>
+
+            <div class="detail">
+                <div class="detail__main">
+                    <!-- Cover -->
+                    <div class="detail__cover" style={selectedBusiness.cardCoverStyle}>
+                        <span class="detail__catPill">{selectedBusiness.category}</span>
+                    </div>
+
+                    <!-- Header -->
+                    <div class="detail__header">
+                        <template lwc:if={selectedBusiness.hasLogo}>
+                            <img class="detail__logo-img" src={selectedBusiness.logoUrl} alt={selectedBusiness.name}/>
+                        </template>
+                        <template lwc:else>
+                            <span class="detail__logo" style={selectedBusiness.logoStyle}>{selectedBusiness.initial}</span>
+                        </template>
+                        <div class="detail__headerBody">
+                            <h1 class="detail__name">{selectedBusiness.name}</h1>
+                            <p class="detail__locRow"><span class="pin">📍</span>{selectedBusiness.address}
+                                <template lwc:if={selectedBusiness.mapUrl}>
+                                    &nbsp;·&nbsp;<a class="detail__mapLink" href="javascript:void(0)" onclick={handleGetDirections}>Get Directions</a>
+                                </template>
+                            </p>
+                            <div class="detail__badges">
+                                <span class="badge badge--verified">✓ Verified Alumni Business</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About -->
+                    <div class="detail__section">
+                        <h2 class="detail__h2">About {selectedBusiness.name}</h2>
+                        <template for:each={selectedBusiness.aboutParagraphs} for:item="p">
+                            <p key={p.id} class="detail__p detail__p--wrap">{p.text}</p>
+                        </template>
+                    </div>
+
+                    <!-- Action bar -->
+                    <div class="detail__actions">
+                        <div class="detail__contacts">
+                            <template lwc:if={selectedBusiness.phone}>
+                                <button type="button" class="ic-btn" onclick={handlePhone} title={selectedBusiness.phone}>📞 {selectedBusiness.phone}</button>
+                            </template>
+                            <template lwc:if={selectedBusiness.email}>
+                                <button type="button" class="ic-btn" onclick={handleEmail} title={selectedBusiness.email}>✉️</button>
+                            </template>
+                            <template lwc:if={selectedBusiness.website}>
+                                <button type="button" class="ic-btn" onclick={handleVisitWebsite} title="Visit website">🌐</button>
+                            </template>
+                            <template lwc:if={selectedBusiness.hasOwner}>
+                                <div class="detail__founderChip">
+                                    <template lwc:if={selectedBusiness.hasFounderAvatar}>
+                                        <img class="detail__founderAv" src={selectedBusiness.founderAvatarUrl} alt={selectedBusiness.founderName}/>
+                                    </template>
+                                    <template lwc:else>
+                                        <span class="detail__founderAv detail__founderAv--initial" style={selectedBusiness.logoStyle}>{selectedBusiness.initial}</span>
+                                    </template>
+                                    <span class="detail__founderName">{selectedBusiness.founderName}</span>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="detail__ctas">
+                            <button type="button" class="btn btn--outline" onclick={handleChat}>{selectedBusiness.chatLabel}</button>
+                            <button type="button" class="btn btn--primary" onclick={handleExpressInterest}>Express Interest</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <aside class="detail__side">
+                    <div class="side__card">
+                        <h3 class="side__title">Similar Businesses</h3>
+                        <template lwc:if={hasSimilar}>
+                            <template for:each={similarBusinesses} for:item="s">
+                                <div key={s.id} class="sim" data-id={s.id} onclick={handleOpenBusiness}>
+                                    <div class="sim__thumb" style={s.cardCoverStyle}></div>
+                                    <div class="sim__body">
+                                        <p class="sim__name">{s.name}</p>
+                                        <p class="sim__tag">{s.tagline}</p>
+                                    </div>
+                                    <span class="sim__chev">›</span>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <p class="side__empty">— No similar businesses found —</p>
+                        </template>
+                    </div>
+
+                    <div class="rail__cta" onclick={handleListBusiness}>
+                        <div class="rail__ctaTop">
+                            <h3 class="rail__ctaTitle">List your Business</h3>
+                            <span class="rail__ctaArrow">→</span>
+                        </div>
+                        <p class="rail__ctaCopy">Share your venture with the alumni community.</p>
+                        <div class="rail__ctaArt" aria-hidden="true">💼</div>
+                    </div>
+                </aside>
+            </div>
+        </template>
+
+        <!-- ─── Setup wizard (kept) ─────────────────────────────────────── -->
+        <template lwc:if={isSetup}>
+            <header class="page__head">
+                <div>
+                    <button type="button" class="back-btn" onclick={handleCancelSetup}>← Back to Directory</button>
+                    <h1 class="page__title">{setupHeading}</h1>
+                    <p class="page__subtitle">{setupProgressLabel}</p>
+                </div>
+            </header>
+            <div class="setup">
+                <div class="steps">
+                    <template for:each={setupSteps} for:item="s">
+                        <div key={s.id} class={s.stepClass}>
+                            <span class="step__dot">{s.id}</span>
+                            <span class="step__label">{s.label}</span>
+                        </div>
+                    </template>
+                </div>
+                <div class="form-card">
+                    <template lwc:if={isStep0}>
+                        <h3 class="form__h3">Basics</h3>
+                        <div class="field"><label>Business name *</label>
+                            <input type="text" data-field="name" value={setupForm.name} oninput={handleSetupField}/></div>
+                        <div class="field"><label>Category</label>
+                            <select data-field="category" value={setupForm.category} onchange={handleSetupField}>
+                                <option>Technology</option><option>Art &amp; Design</option><option>Education</option>
+                                <option>Retail</option><option>Food &amp; Beverage</option><option>Hotels &amp; Accommodation</option>
+                                <option>Financial Services</option><option>Health &amp; Wellness</option><option>Legal Services</option><option>Consumer Goods</option>
+                            </select></div>
+                        <div class="field"><label>City / Address</label>
+                            <input type="text" data-field="city" value={setupForm.city} oninput={handleSetupField}/></div>
+                        <div class="field">
+                            <label>Upload Cover Photo</label>
+                            <input type="file" accept="image/png, image/jpeg" class="slds-file-selector__input" onchange={handleCoverPhoto}/>
+                            <p class="biz__tagline">PNG or JPEG, up to 2MB.</p>
+                            <template lwc:if={hasCoverPreview}>
+                                <img src={coverPreviewUrl} alt="Cover preview" style="margin-top:8px;max-width:240px;max-height:140px;border-radius:8px;object-fit:cover;"/>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:if={isStep1}>
+                        <h3 class="form__h3">Details</h3>
+                        <div class="field"><label>Tagline (one line)</label>
+                            <input type="text" data-field="tagline" value={setupForm.tagline} oninput={handleSetupField}/></div>
+                        <div class="field"><label>About</label>
+                            <textarea rows="4" data-field="about" value={setupForm.about} oninput={handleSetupField}></textarea></div>
+                        <div class="field"><label>Products / services</label>
+                            <textarea rows="3" data-field="products" value={setupForm.products} oninput={handleSetupField}></textarea></div>
+                    </template>
+                    <template lwc:if={isStep2}>
+                        <h3 class="form__h3">Alumni Offer &amp; Contact</h3>
+                        <div class="field"><label>Alumni-exclusive offer</label>
+                            <input type="text" data-field="offer" value={setupForm.offer} oninput={handleSetupField} placeholder="e.g. 10% off for verified alumni"/></div>
+                        <div class="field"><label>Contact</label>
+                            <input type="text" data-field="contact" value={setupForm.contact} oninput={handleSetupField} placeholder="email · phone"/></div>
+                    </template>
+                    <template lwc:if={isStep3}>
+                        <h3 class="form__h3">Review</h3>
+                        <div class="review">
+                            <p><strong>Name:</strong> {setupForm.name}</p>
+                            <p><strong>Category:</strong> {setupForm.category}</p>
+                            <p><strong>City:</strong> {setupForm.city}</p>
+                            <p><strong>Tagline:</strong> {setupForm.tagline}</p>
+                            <p><strong>Offer:</strong> {setupForm.offer}</p>
+                            <p><strong>Contact:</strong> {setupForm.contact}</p>
+                        </div>
+                        <p class="review__note">Your listing will be reviewed by the alumni office within 2 business days.</p>
+                    </template>
+                    <div class="form-actions">
+                        <template lwc:if={setupCanBack}>
+                            <button type="button" class="btn btn--outline" onclick={handleSetupPrev}>Back</button>
+                        </template>
+                        <template lwc:if={isLastSetupStep}>
+                            <button type="button" class="btn btn--primary" onclick={handleSetupSubmit}>{setupSubmitLabel}</button>
+                        </template>
+                        <template lwc:else>
+                            <button type="button" class="btn btn--primary" onclick={handleSetupNext}>Next</button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={showInterestModal}>
+            <div class="modal-backdrop" onclick={handleCloseInterest}>
+                <div class="modal modal--sm" onclick={stopBubble}>
+                    <header class="modal__header">
+                        <h2>Express interest</h2>
+                        <button type="button" class="modal__close" onclick={handleCloseInterest}>×</button>
+                    </header>
+                    <div class="modal__body">
+                        <label>Subject</label>
+                        <input type="text" value={interestSubject} data-field="interestSubject" oninput={handleInterestField}/>
+                        <label>Message</label>
+                        <textarea data-field="interestMessage" oninput={handleInterestField} rows="4" placeholder="Hi, I'd like to learn more about...">{interestMessage}</textarea>
+                    </div>
+                    <footer class="modal__footer">
+                        <button type="button" class="btn btn--outline" onclick={handleCloseInterest}>Cancel</button>
+                        <button type="button" class="btn btn--primary" onclick={handleSubmitInterest} disabled={interestSubmitDisabled}>Send</button>
+                    </footer>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={toastVisible}>
+            <div class="toast">{toastMessage}</div>
+        </template>
+    </section>
+    </c-ken42-alumni-shell-v2>
+</template>

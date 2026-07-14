@@ -1,0 +1,112 @@
+<template>
+    <section class="jobs-shell">
+        <div class="jobs-left">
+            <div class="jobs-card">
+                <div class="jobs-card__header">
+                    <div class="tabs">
+                        <button class={recommendedTabClass} data-tab="recommended" onclick={handleJobsTabClick}>
+                            Recommended Jobs (12)
+                        </button>
+                        <button class={allTabClass} data-tab="all" onclick={handleJobsTabClick}>
+                            All Jobs (43)
+                        </button>
+                    </div>
+                    <button class="view-all" onclick={handleViewAll}>
+                        <span>View All</span>
+                        <lightning-icon icon-name="utility:forward" size="x-small" class="white-icon"></lightning-icon>
+                    </button>
+                </div>
+
+                <div class="preferences">
+                    <span class="preferences__label">Your Preferences:</span>
+                    <span class="preferences__text">Information Technology, Manufacturing &amp; Engineering, Consumer Goods, EdTech</span>
+                </div>
+                <div class="jobs-card__body">
+                <div class="jobs-grid">
+                    <template for:each={visibleJobs} for:item="job">
+                        <article key={job.id} class="job-card">
+                            <div class="job-card__top">
+                                <div class="company">
+                                    <span class={job.badgeClass}>{job.initials}</span>
+                                    <span class="company__name">{job.company}</span>
+                                </div>
+                                <button class={job.bookmarkClass} data-id={job.id} onclick={handleBookmarkToggle} aria-pressed={job.isBookmarked}>
+                                    <lightning-icon icon-name={job.bookmarkIcon} size="x-small"></lightning-icon>
+                                </button>
+                            </div>
+
+                            <h3 class="job-title">{job.title}</h3>
+
+                            <div class="job-tags">
+                                <span class="tag">{job.domain}</span>
+                                <span class="tag">
+                                    <lightning-icon icon-name="utility:location" size="xx-small" class="tag-icon"></lightning-icon>
+                                    {job.location}
+                                </span>
+                                <span class="tag">{job.type}</span>
+                            </div>
+
+                            <div class="job-salary">{job.salary}</div>
+                            <div class="job-match">
+                                <span class="match-icon">
+                                    <lightning-icon icon-name="utility:check" size="xx-small" class="match-icon__inner"></lightning-icon>
+                                </span>
+                                <span>Skills match: {job.match}%</span>
+                            </div>
+                        </article>
+                    </template>
+                </div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="jobs-right">
+            <div class="side-card">
+                <div class="tabs">
+                    <button class={appliedTabClass} data-tab="applied" onclick={handleSideTabClick}>Applied Jobs</button>
+                    <button class={savedTabClass} data-tab="saved" onclick={handleSideTabClick}>Saved Jobs</button>
+                </div>
+                <template lwc:if={isAppliedTab}>
+                    <div class="empty-state" style="height: calc(60vh - 190px);overflow-y: auto;display: flex;
+    justify-content: center;">
+                       <img src={JobsNotFound1}/>
+                            
+                      
+                        <p>You have not applied for any jobs yet</p>
+                    </div>
+                </template>
+                <template lwc:if={isSavedTab}>
+                    <template lwc:if={hasSavedJobs}>
+                        <div class="saved-list">
+                            <template for:each={savedJobs} for:item="job">
+                                <div key={job.id} class="saved-item">
+                                    <span class={job.badgeClass}>{job.initials}</span>
+                                    <div class="saved-info">
+                                        <div class="saved-title">{job.title}</div>
+                                        <div class="saved-meta">{job.company} · {job.location}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:if={noSavedJobs}>
+                        <div class="empty-state" style="height: calc(60vh - 190px);overflow-y: auto;display: flex;
+    justify-content: center;">
+                            <img src={JobsNotFound1}/>
+                            <p>You have not saved any jobs yet</p>
+                        </div>
+                    </template>
+                </template>
+            </div>
+
+            <div class="side-card posted">
+                <div class="posted-header">Posted Jobs</div>
+                <div class="empty-state" style="height: calc(40vh - 185px);overflow-y: scroll;">
+                    <img src={JobsNotFound2}/>
+                    <p>You haven’t posted any jobs yet</p>
+                </div>
+                <button class="post-job" onclick={handlePostJob}>Post a Job</button>
+            </div>
+        </aside>
+    </section>
+</template>

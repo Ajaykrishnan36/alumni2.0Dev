@@ -1,0 +1,5 @@
+/* Pad only the inner content slot of the card — the lightning-card's own
+   chrome (white background, border, shadow) stays flush with the rail. */
+.linkedin-sync-content {
+    padding: 12px 0px 0px 12px;
+}

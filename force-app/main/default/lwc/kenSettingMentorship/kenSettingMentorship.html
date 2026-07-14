@@ -1,0 +1,141 @@
+<template>
+    <div class="mentorship-container">
+        <h1 class="header-title">Mentorship</h1>
+
+        <template if:true={error}>
+            <div class="error-banner">{error}</div>
+        </template>
+
+        <template if:true={isLoading}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={isSaving}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Saving" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="form-container">
+
+                <!-- Be a mentor -->
+                <div class="card toggle-card">
+                    <div class="toggle-wrapper">
+                        <label class="custom-toggle">
+                            <input type="checkbox" checked={isMentor} onchange={handleMentorToggle} />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-text">
+                        <h2 class="card-title">Be a Mentor</h2>
+                        <p class="card-desc">Share your experience with fellow alumni by offering guidance, career advice, or support.</p>
+                    </div>
+                </div>
+
+                <!-- Availability Days + Time -->
+                <div class="card">
+                    <h2 class="section-title">Mentorship Availability</h2>
+                    <div class="availability-row">
+                        <div class="form-group">
+                            <label class="field-label">Choose Days</label>
+                            <div class="custom-dropdown-wrapper">
+                                <div class={daysDropdownBoxClass} onclick={toggleDaysDropdown}>
+                                    <span class={dayLabelClass}>{dayLabel}</span>
+                                    <span class="dropdown-arrow">&#9660;</span>
+                                </div>
+                                <template if:true={showDaysDropdown}>
+                                    <div class="dropdown-menu">
+                                        <template for:each={dayOptions} for:item="opt">
+                                            <div key={opt.value} class="dropdown-item" onclick={handleToggleDay} data-value={opt.value}>
+                                                <span class={opt.tickClass}>&#10003;</span>
+                                                {opt.label}
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label">Choose Available Time</label>
+                            <div class="time-range-wrap">
+                                <lightning-input
+                                    type="time"
+                                    value={availabilityStartTime}
+                                    placeholder="Start time"
+                                    disabled={timeFieldsDisabled}
+                                    onchange={handleStartTimeChange}
+                                    class="time-input">
+                                </lightning-input>
+                                <span class="time-separator">–</span>
+                                <lightning-input
+                                    type="time"
+                                    value={availabilityEndTime}
+                                    placeholder="End time"
+                                    disabled={timeFieldsDisabled}
+                                    onchange={handleEndTimeChange}
+                                    class="time-input">
+                                </lightning-input>
+                            </div>
+                            <template if:true={timeError}>
+                                <div class="time-error">{timeError}</div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expertise Areas -->
+                <div class="card">
+                    <h2 class="section-title">Areas of Expertise</h2>
+                    <div class="form-group">
+                        <label class="field-label">Select expertise</label>
+                        <div class="custom-dropdown-wrapper">
+                            <div class={expertiseDropdownBoxClass} onclick={toggleExpertiseDropdown}>
+                                <span class={expertiseLabelClass}>{expertiseLabel}</span>
+                                <span class="dropdown-arrow">&#9660;</span>
+                            </div>
+                            <template if:true={showExpertiseDropdown}>
+                                <div class="dropdown-menu">
+                                    <template for:each={expertiseOptions} for:item="opt">
+                                        <div key={opt.value} class="dropdown-item" onclick={handleToggleExpertise} data-value={opt.value}>
+                                            <span class={opt.tickClass}>&#10003;</span>
+                                            {opt.label}
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Communication Modes -->
+                <div class="card">
+                    <h2 class="section-title">Mentorship Preferences</h2>
+                    <div class="form-group">
+                        <label class="field-label">Preferred method of communication</label>
+                        <div class="checkbox-group">
+                            <template for:each={commModes} for:item="opt">
+                                <label key={opt.value} class="custom-checkbox-wrapper">
+                                    <input type="checkbox" class="custom-checkbox-input" checked={opt.checked}
+                                           disabled={isNotMentor} data-value={opt.value} onchange={handleCommChange} />
+                                    <span class="custom-checkbox-box"></span>
+                                    <span class="custom-checkbox-label">{opt.label}</span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-actions">
+                    <button class="btn btn-outline" onclick={handleDiscard} disabled={isSaving}>Discard Changes</button>
+                    <button class="btn btn-primary" onclick={handleSave} disabled={isSaving}>Save Changes</button>
+                </div>
+
+            </div>
+        </template>
+    </div>
+
+    <c-ken-status-popup visible={showSuccessPopup} message="Mentorship preferences saved successfully" variant="success"></c-ken-status-popup>
+</template>

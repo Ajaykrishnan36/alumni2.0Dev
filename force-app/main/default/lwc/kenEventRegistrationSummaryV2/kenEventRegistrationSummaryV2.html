@@ -1,0 +1,84 @@
+<template>
+    <section class="reg-page">
+        <div class="reg-topbar">
+            <button type="button" class="reg-back" onclick={handleBack} title="Back to event">
+                <span class="reg-back__arrow">&larr;</span>
+                <span>Back to event</span>
+            </button>
+        </div>
+
+        <header class="reg-head">
+            <h1 class="reg-title">Registration Summary</h1>
+            <template lwc:if={event}>
+                <p class="reg-sub">{eventTitle} &middot; {eventMeta}</p>
+            </template>
+        </header>
+
+        <template lwc:if={hasRegistration}>
+            <div class="reg-grid">
+                <!-- LEFT (~65%) -->
+                <div class="reg-main">
+                    <div class="card">
+                        <h3 class="card__title">Participant Details</h3>
+                        <template lwc:if={hasParticipants}>
+                            <table class="parts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Contact</th>
+                                        <th>Type</th>
+                                        <th>Meals</th>
+                                        <th>Survey</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={participants} for:item="p">
+                                        <tr key={p.key}>
+                                            <td>{p.name}</td>
+                                            <td>{p.contact}</td>
+                                            <td>{p.type}</td>
+                                            <td>{p.meals}</td>
+                                            <td>{p.survey}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty">No participants on this registration.</div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- RIGHT (~35%) -->
+                <aside class="reg-side">
+                    <div class="card">
+                        <h3 class="card__title">Registered Sessions</h3>
+                        <template lwc:if={hasSessions}>
+                            <template for:each={registeredSessions} for:item="s">
+                                <div key={s.key} class="sess-row">
+                                    <div>
+                                        <div class="sess-row__title">{s.title}</div>
+                                        <div class="sess-row__time">{s.time}</div>
+                                    </div>
+                                    <span class="sess-row__price">{s.price}</span>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty">No sessions selected.</div>
+                        </template>
+                    </div>
+
+                    <div class="card">
+                        <h3 class="card__title">Registration</h3>
+                        <button type="button" class="btn btn--outline btn--block" onclick={handleCancelRegistration}>Cancel Registration</button>
+                    </div>
+                </aside>
+            </div>
+        </template>
+        <template lwc:else>
+            <div class="empty card">No registration details available for this event.</div>
+        </template>
+    </section>
+</template>

@@ -1,0 +1,55 @@
+<template>
+    <div class="my-campaigns-panel">
+        <h2 class="widget-title">My Campaigns</h2>
+
+        <!-- Loading skeletons -->
+        <template if:true={isLoading}>
+            <div class="cards-list">
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+            </div>
+        </template>
+
+        <!-- Error -->
+        <template if:true={error}>
+            <p class="error-msg">{error}</p>
+        </template>
+
+        <!-- Campaign cards -->
+        <template if:true={hasCampaigns}>
+            <div class="cards-list">
+                <template for:each={campaigns} for:item="camp">
+                    <div
+                        key={camp.id}
+                        class="card"
+                        data-id={camp.id}
+                        onclick={handleCardClick}>
+                        <!-- Left: text content -->
+                        <div class="card-text">
+                            <h3 class="card-title">{camp.name}</h3>
+                            <span class={camp.statusClass}>{camp.status}</span>
+                            <template if:true={camp.dateRange}>
+                                <span class="card-date">{camp.dateRange}</span>
+                            </template>
+                        </div>
+                        <!-- Right: small thumbnail -->
+                        <div class="card-thumb">
+                            <template if:true={camp.coverImage}>
+                                <img src={camp.coverImage} alt={camp.name} loading="lazy"/>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Empty state -->
+        <template if:false={hasCampaigns}>
+            <template if:false={isLoading}>
+                <div class="empty-state">No campaigns yet. Create your first one!</div>
+            </template>
+        </template>
+
+        <button class="view-all-btn" type="button" onclick={handleViewAll}>View All</button>
+    </div>
+</template>

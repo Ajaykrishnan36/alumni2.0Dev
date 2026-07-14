@@ -1,0 +1,509 @@
+<template>
+    <div class="register-event-page">
+        <div class="component-container">
+            <!-- Event Header -->
+            <div class="event-header">
+                <div class="event-header-left">
+                    <h1 class="event-title">{eventTitle}</h1>
+                </div>
+                <div class="event-header-right">
+                    <div class="event-meta-item">
+                        <lightning-icon icon-name="utility:date_input" size="x-small" class="meta-icon"></lightning-icon>
+                        <span class="meta-text">{eventDates}</span>
+                    </div>
+                    <div class="event-meta-item">
+                        <lightning-icon icon-name="utility:location" size="x-small" class="meta-icon"></lightning-icon>
+                        <span class="meta-text">{eventLocation}</span>
+                    </div>
+                    <div class="event-meta-item">
+                        <lightning-icon icon-name="utility:world" size="x-small" class="meta-icon"></lightning-icon>
+                        <span class="meta-text">{eventLanguage}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component Fixed Header with Stepper Component -->
+            <div class="component-header">
+                <c-ken-event-register-stepper 
+                    current-step={currentStep}
+                    is-step1-completed={isStep1Completed}
+                    is-step2-completed={isStep2Completed}
+                    is-step3-completed={isStep3Completed}>
+                </c-ken-event-register-stepper>
+            </div>
+
+            <!-- Component Scrollable Content -->
+            <div class="component-content">
+                <!-- Step 1: Participants -->
+                <template if:true={isStep1Active}>
+                    <div class="step-content step-content-step1">
+                        <h2 class="step-title">1. Who are you registering for?</h2>
+                        
+                        <!-- Registration Type Toggle -->
+                        <div class="registration-type-toggle">
+                            <button 
+                                type="button" 
+                                class={myselfButtonClass}
+                                onclick={handleMyselfClick}>
+                                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" class="toggle-icon">
+                                    <path d="M9.24789 8.64023C10.7689 7.90523 11.8182 6.34781 11.8182 4.54539C11.818 2.03508 9.78305 0 7.27266 0C4.76227 0 2.72727 2.03516 2.72727 4.54539C2.72727 6.34797 3.77656 7.90523 5.29758 8.64023C2.35797 8.72351 0 11.1309 0 14.0908V14.9999H14.5454V14.0908C14.5453 11.1311 12.1874 8.72367 9.24789 8.64023Z" fill="#E9BABE"/>
+                                    <path d="M9.24867 8.64023C10.7697 7.90523 11.819 6.34781 11.819 4.54539C11.8188 2.03508 9.78383 0 7.27344 0V15H14.5462V14.0909C14.5461 11.1311 12.1882 8.72367 9.24867 8.64023Z" fill="#B7202E"/>
+                                </svg>
+                                <span>Myself</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                class={bulkButtonClass}
+                                onclick={handleBulkClick}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="toggle-icon toggle-icon-bulk">
+                                    <path d="M4.89942 10.0215C6.12534 10.0215 7.11915 9.02769 7.11915 7.80176C7.11915 6.57584 6.12534 5.58203 4.89942 5.58203C3.67349 5.58203 2.67969 6.57584 2.67969 7.80176C2.67969 9.02769 3.67349 10.0215 4.89942 10.0215Z" fill="#E9BABE"/>
+                                    <path d="M8.08892 14.1183C8.08892 15.5778 7.76362 18.4878 7.76362 19.1031C7.76362 19.4372 7.49241 19.7084 7.15824 19.7084H2.85883C2.20421 19.7084 1.67188 19.1781 1.67188 18.5259V14.1183C1.67188 12.6166 2.9012 11.3945 4.41223 11.3945H5.34856C6.85959 11.3945 8.08892 12.6166 8.08892 14.1183Z" fill="#E9BABE"/>
+                                    <path d="M19.1104 10.0215C20.3363 10.0215 21.3301 9.02769 21.3301 7.80176C21.3301 6.57584 20.3363 5.58203 19.1104 5.58203C17.8844 5.58203 16.8906 6.57584 16.8906 7.80176C16.8906 9.02769 17.8844 10.0215 19.1104 10.0215Z" fill="#E9BABE"/>
+                                    <path d="M19.1094 10.0215V5.58203C20.3335 5.58203 21.3291 6.57768 21.3291 7.80176C21.3291 9.02584 20.3335 10.0215 19.1094 10.0215Z" fill="#B7202E"/>
+                                    <path d="M22.3389 14.1183V18.4839C22.3389 19.1591 21.7876 19.7084 21.1096 19.7084H16.8525C16.5184 19.7084 16.2472 19.4372 16.2472 19.1031C16.2472 18.5145 15.9219 15.5325 15.9219 14.1183C15.9219 12.6166 17.1512 11.3945 18.6622 11.3945H19.5986C21.1096 11.3945 22.3389 12.6166 22.3389 14.1183Z" fill="#E9BABE"/>
+                                    <path d="M22.3381 14.1183V18.4839C22.3381 19.1591 21.7868 19.7084 21.1087 19.7084H19.1094V11.3945H19.5977C21.1087 11.3945 22.3381 12.6166 22.3381 14.1183Z" fill="#B7202E"/>
+                                    <path d="M4.89844 10.0215V5.58203C6.12252 5.58203 7.11817 6.57768 7.11817 7.80176C7.11817 9.02584 6.12252 10.0215 4.89844 10.0215Z" fill="#B7202E"/>
+                                    <path d="M8.08678 14.1183C8.08678 15.5778 7.76149 18.4878 7.76149 19.1031C7.76149 19.4372 7.49028 19.7084 7.15611 19.7084H4.89844V11.3945H5.34642C6.85745 11.3945 8.08678 12.6166 8.08678 14.1183Z" fill="#B7202E"/>
+                                    <path d="M12.0034 10.0224C13.9426 10.0224 15.5146 8.4504 15.5146 6.51121C15.5146 4.57202 13.9426 3 12.0034 3C10.0642 3 8.49219 4.57202 8.49219 6.51121C8.49219 8.4504 10.0642 10.0224 12.0034 10.0224Z" fill="#E9BABE"/>
+                                    <path d="M12 10.0224V3C13.936 3 15.5112 4.5752 15.5112 6.51121C15.5112 8.44722 13.936 10.0224 12 10.0224Z" fill="#B7202E"/>
+                                    <path d="M17.6469 16.3842V19.692C17.6469 20.4713 17.0128 21.1054 16.2335 21.1054H8.16336C7.38404 21.1054 6.75 20.4713 6.75 19.692V16.3842C6.75 13.6911 8.94108 11.5 11.6342 11.5H12.7626C15.4558 11.5 17.6469 13.6911 17.6469 16.3842Z" fill="#E9BABE"/>
+                                    <path d="M17.4484 16.2787V19.5865C17.4484 20.3659 16.8144 20.9999 16.0351 20.9999H12V11.3945H12.5642C15.2574 11.3945 17.4484 13.5856 17.4484 16.2787Z" fill="#B7202E"/>
+                                </svg>
+                                <span>Bulk Registration</span>
+                            </button>
+                        </div>
+
+                        <!-- Two Column Layout -->
+                        <div class="step1-layout">
+                            <!-- Left Column -->
+                            <div class="step1-left-column">
+                                <!-- Participant Groups (Only shown for Bulk Registration) -->
+                                <template if:true={isBulkRegistration}>
+                                    <div class="participant-groups-section">
+                                        <h3 class="section-subtitle">Participant Groups</h3>
+                                        <template if:true={hasParticipantGroups}>
+                                            <div class="groups-list">
+                                                <template for:each={participantGroups} for:item="group">
+                                                    <div key={group.id} class="group-item">
+                                                        <label class="custom-checkbox">
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={group.selected}
+                                                                data-group-id={group.id}
+                                                                onchange={handleGroupToggle} />
+                                                            <span class="checkmark"></span>
+                                                        </label>
+                                                        <div class="group-info">
+                                                            <div class="group-name">{group.name}</div>
+                                                            <div class="group-members">{group.memberCount}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template if:false={hasParticipantGroups}>
+                                            <div class="empty-state">No participant groups available</div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- Add Individual Guest -->
+                                <div class="add-guest-section">
+                                    <div class="add-guest-header">
+                                        <h3 class="add-guest-title">Add Individual Guest</h3>
+                                        <p class="guest-limit">Upto 5 guests can be added</p>
+                                    </div>
+                                    <div class="guest-form">
+                                        <div class="form-field">
+                                            <label class="field-label">Name*</label>
+                                            <lightning-input
+                                                type="text"
+                                                value={guestName}
+                                                placeholder="Enter Name"
+                                                onchange={handleGuestNameChange}
+                                                variant="label-hidden"
+                                                class="custom-input">
+                                            </lightning-input>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="field-label">Email*</label>
+                                            <lightning-input
+                                                type="email"
+                                                value={guestEmail}
+                                                placeholder="Enter Email"
+                                                onchange={handleGuestEmailChange}
+                                                variant="label-hidden"
+                                                class="custom-input">
+                                            </lightning-input>
+                                        </div>
+                                        <div class="form-field">
+                                            <label class="field-label">Phone (Not visible publicly)*</label>
+                                            <c-ken-custom-phone-input
+                                                placeholder="Enter Phone"
+                                                initial-country="in"
+                                                required
+                                                onchange={handlePhoneInputChange}>
+                                            </c-ken-custom-phone-input>
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            class="btn-add-guest"
+                                            onclick={handleAddGuest}
+                                            disabled={isAddGuestDisabled}>
+                                            Add Guest
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="step1-right-column">
+                                <div class="participants-header">
+                                    <h3 class="participants-title-wrapper">
+                                        <span class="participants-title">Participants</span>
+                                        <span class="participants-count">({participantsCount} Participants)</span>
+                                    </h3>
+                                    <div class="header-right-section">
+                                        <div class="price-pill">
+                                            <span>{pricePerParticipant} / participant • All sessions</span>
+                                        </div>
+                                        <div class="search-bar">
+                                            <lightning-icon icon-name="utility:search" size="x-small" class="search-icon"></lightning-icon>
+                                            <input
+                                                type="search"
+                                                class="search-input"
+                                                placeholder="Search"
+                                                value={searchTerm}
+                                                oninput={handleSearchInput}
+                                            />
+                                            <lightning-icon icon-name="utility:mic" size="x-small" class="mic-icon"></lightning-icon>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Participants Table -->
+                                <div class="participants-table-wrapper">
+                                    <table class="participants-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="col-name">
+                                                    <div class="name-header">
+                                                        <label class="custom-checkbox">
+                                                            <input type="checkbox" checked={allSelected} onchange={handleSelectAll} />
+                                                            <span class="checkmark"></span>
+                                                        </label>
+                                                        <span>Name</span>
+                                                    </div>
+                                                </th>
+                                                <th class="col-contact">Contact</th>
+                                                <th class="col-type">Type</th>
+                                                <th class="col-meals">Meals</th>
+                                                <th class="col-dietary">Dietary Pref.</th>
+                                                <th class="col-survey">Custom Survey</th>
+                                                <th class="col-actions"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={displayedParticipants} for:item="participant">
+                                                <tr key={participant.id}>
+                                                    <td class="col-name">
+                                                        <div class="name-cell">
+                                                            <label class="custom-checkbox">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={participant.selected}
+                                                                    data-participant-id={participant.id}
+                                                                    onchange={handleParticipantToggle} />
+                                                                <span class="checkmark"></span>
+                                                            </label>
+                                                            <span class="participant-name">{participant.name}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="col-contact">
+                                                        <div class="participant-contact">
+                                                            <div class="contact-email">{participant.email}</div>
+                                                            <div class="contact-phone">{participant.phone}</div>
+                                                        </div>
+                                                    </td>
+                                                    <td class="col-type">
+                                                        <span class={participant.typeClass}>{participant.typeLabel}</span>
+                                                    </td>
+                                                    <td class="col-meals">
+                                                        <label class="switch-new meals-toggle-custom">
+                                                            <input 
+                                                                type="checkbox" 
+                                                                checked={participant.mealsEnabled}
+                                                                data-participant-id={participant.id}
+                                                                onchange={handleMealsToggle} />
+                                                            <span class="slider-new round-new"></span>
+                                                        </label>
+                                                    </td>
+                                                    <td class="col-dietary">
+                                                        <select
+                                                            class="custom-dietary-select"
+                                                            data-participant-id={participant.id}
+                                                            onchange={handleDietaryChange}
+                                                            value={participant.dietaryPreference}>
+                                                            <template for:each={dietaryOptions} for:item="option">
+                                                                <option key={option.value} value={option.value}>{option.label}</option>
+                                                            </template>
+                                                        </select>
+                                                    </td>
+                                                    <td class="col-survey">
+                                                        <div class="custom-survey-actions">
+                                                            <button 
+                                                                type="button" 
+                                                                class="btn-fill"
+                                                                data-participant-id={participant.id}
+                                                                onclick={handleFillSurvey}>
+                                                                Fill
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                class="action-icon share-icon"
+                                                                data-participant-id={participant.id}
+                                                                onclick={handleShareSurvey}>
+                                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M15 6.66699C16.3807 6.66699 17.5 5.5477 17.5 4.16699C17.5 2.78628 16.3807 1.66699 15 1.66699C13.6193 1.66699 12.5 2.78628 12.5 4.16699C12.5 5.5477 13.6193 6.66699 15 6.66699Z" stroke="#B7202E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                    <path d="M5 12.5C6.38071 12.5 7.5 11.3807 7.5 10C7.5 8.61929 6.38071 7.5 5 7.5C3.61929 7.5 2.5 8.61929 2.5 10C2.5 11.3807 3.61929 12.5 5 12.5Z" stroke="#B7202E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                    <path d="M15 18.333C16.3807 18.333 17.5 17.2137 17.5 15.833C17.5 14.4523 16.3807 13.333 15 13.333C13.6193 13.333 12.5 14.4523 12.5 15.833C12.5 17.2137 13.6193 18.333 15 18.333Z" stroke="#B7202E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                    <path d="M7.16016 11.2588L12.8518 14.5755" stroke="#B7202E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                    <path d="M12.8435 5.4248L7.16016 8.74147" stroke="#B7202E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                    <td class="col-actions delete-column">
+                                                        <button
+                                                            type="button"
+                                                            class="action-icon delete-icon"
+                                                            data-participant-id={participant.id}
+                                                            onclick={handleDeleteParticipant}>
+                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM8 9H16V19H8V9ZM15.5 4L14.5 3H9.5L8.5 4H5V6H19V4H15.5Z" fill="#C02B2B"/>
+                                                            </svg>
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Pagination -->
+                                <div class="pagination">
+                                    <button 
+                                        type="button" 
+                                        class="pagination-btn"
+                                        onclick={handlePreviousPage}
+                                        disabled={isFirstPage}>
+                                        ← Previous
+                                    </button>
+                                    <div class="page-numbers">
+                                        <template for:each={pageNumbers} for:item="page">
+                                            <template if:true={page.isEllipsis}>
+                                                <span key={page.label} class="page-ellipsis">{page.label}</span>
+                                            </template>
+                                            <template if:false={page.isEllipsis}>
+                                                <button
+                                                    key={page.label}
+                                                    type="button"
+                                                    class={page.pageButtonClass}
+                                                    onclick={handlePageClick}
+                                                    data-page={page.value}>
+                                                    {page.label}
+                                                </button>
+                                            </template>
+                                        </template>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        class="pagination-btn"
+                                        onclick={handleNextPage}
+                                        disabled={isLastPage}>
+                                        Next →
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Step 2: Select Sessions -->
+                <template if:true={isStep2Active}>
+                    <div class="step-content step-content-step2">
+                        <h2 class="step-title">2. Select your sessions</h2>
+                        <div class="info-message">
+                            <lightning-icon icon-name="utility:info" size="x-small" class="info-icon"></lightning-icon>
+                            <span>Applies to everyone in the selected group. Prices will be calculated based on number of participants and sessions selected.</span>
+                        </div>
+
+                        <div class="sessions-container">
+                            <template for:each={sessionDateGroups} for:item="dateGroup">
+                                <div key={dateGroup.dateKey} class="date-group-card">
+                                    <div class="date-header">
+                                        <h3 class="date-title">{dateGroup.displayDate}</h3>
+                                    </div>
+                                    
+                                    <!-- All Sessions Option -->
+                                    <div class="all-sessions-option">
+                                        <label class="custom-checkbox">
+                                            <input
+                                                type="checkbox"
+                                                checked={dateGroup.allSelected}
+                                                data-date-key={dateGroup.dateKey}
+                                                onchange={handleAllSessionsToggle} />
+                                            <span class="checkmark"></span>
+                                        </label>
+                                        <span class="all-sessions-label">All Sessions</span>
+                                        <span class="all-sessions-price">{dateGroup.allSessionsPrice}</span>
+                                    </div>
+
+                                    <!-- Individual Sessions -->
+                                    <div class="sessions-list">
+                                        <template for:each={dateGroup.sessions} for:item="session">
+                                            <div key={session.id} class="session-item">
+                                                <label class="custom-checkbox">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={session.selected}
+                                                        data-session-id={session.id}
+                                                        data-date-key={dateGroup.dateKey}
+                                                        onchange={handleSessionToggle} />
+                                                    <span class="checkmark"></span>
+                                                </label>
+                                                <div class="session-info">
+                                                    <div class="session-name">{session.name}</div>
+                                                    <div class="session-time">{session.timeRange}</div>
+                                                </div>
+                                                <div class="session-price">{session.price}</div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Step 3: Summary -->
+                <template if:true={isStep3Active}>
+                    <div class="step-content step-content-step3">
+                        <div class="summary-layout">
+                            <!-- Left Column -->
+                            <div class="summary-left-column">
+                                <!-- Registration Details Card -->
+                                <div class="summary-card">
+                                    <h3 class="summary-card-title">Registration Details</h3>
+                                    <div class="summary-card-body">
+                                        <div class="summary-field">
+                                            <label class="summary-field-label">Number of Participants:</label>
+                                            <div class="summary-field-value">{participantsCount}</div>
+                                        </div>
+                                        <div class="summary-field">
+                                            <label class="summary-field-label">Meals Added:</label>
+                                            <div class="summary-field-value">{mealsStatus}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Sessions Selected Card -->
+                                <div class="summary-card">
+                                    <h3 class="summary-card-title">Sessions Selected</h3>
+                                    <div class="summary-card-body">
+                                        <template for:each={selectedSessionsByDate} for:item="dateGroup">
+                                            <div key={dateGroup.dateKey} class="sessions-date-group">
+                                                <h4 class="session-date-title">{dateGroup.displayDate}</h4>
+                                                <template for:each={dateGroup.sessions} for:item="session">
+                                                    <div key={session.id} class="session-summary-item">
+                                                        <div class="session-summary-info">
+                                                            <div class="session-summary-name">{session.name}</div>
+                                                            <div class="session-summary-time">{session.timeRange}</div>
+                                                        </div>
+                                                        <div class="session-summary-price">{session.price}</div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="summary-right-column">
+                                <!-- Payment Summary Card -->
+                                <div class="summary-card">
+                                    <h3 class="summary-card-title">Payment Summary</h3>
+                                    <div class="summary-card-body">
+                                        <div class="payment-row">
+                                            <div class="payment-label">Session Fee</div>
+                                            <div class="payment-details">
+                                                <span>{sessionFeePerSession} x {selectedSessionsCount} sessions</span>
+                                                <span class="payment-amount">{totalSessionFee}</span>
+                                            </div>
+                                        </div>
+                                        <div class="payment-row total-row">
+                                            <div class="payment-label total-label">Total Payable</div>
+                                            <div class="payment-details">
+                                                <span>{totalSessionFee} x {participantsCount} participants</span>
+                                                <span class="payment-amount total-amount">{totalPayable}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Important Note Card -->
+                                <div class="summary-card important-note-card">
+                                    <div class="important-note-header">
+                                        <div class="note-icon-wrapper">
+                                            <lightning-icon icon-name="utility:info" size="x-small" class="note-icon"></lightning-icon>
+                                        </div>
+                                        <h3 class="summary-card-title">Important Note</h3>
+                                    </div>
+                                    <div class="summary-card-body">
+                                        <ul class="note-list">
+                                            <li>This is a bulk registration. Any cancellation will apply to all participants.</li>
+                                            <li>The cancellation window closes 72 hours before the event.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Component Fixed Footer -->
+            <div class="component-footer">
+                <div class="footer-left">
+                    <template if:true={isStep3Active}>
+                        <div class="footer-summary">
+                            <span>Participants: {participantsCount}</span>
+                            <span>Sessions Selected: {selectedSessionsCount}</span>
+                            <span>Total Amount: {totalPayable}</span>
+                        </div>
+                    </template>
+                </div>
+                <div class="button-group">
+                    <!-- Step 1 Buttons -->
+                    <template if:true={isStep1Active}>
+                        <button class="secondary-button" onclick={handleCancel}>Cancel</button>
+                        <button class="btn btn-primary" onclick={handleNextStep}>Next</button>
+                    </template>
+
+                    <!-- Step 2 Buttons -->
+                    <template if:true={isStep2Active}>
+                        <button class="secondary-button" onclick={handlePreviousStep}>Back</button>
+                        <button class="btn btn-primary" onclick={handleNextStep}>Next</button>
+                    </template>
+
+                    <!-- Step 3 Buttons -->
+                    <template if:true={isStep3Active}>
+                        <button class="secondary-button" onclick={handlePreviousStep}>Back</button>
+                        <button class="btn btn-primary" onclick={handleProceedToPayment}>Proceed to Payment</button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

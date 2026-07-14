@@ -1,0 +1,7 @@
+<template>
+    <div class="tabs">
+        <template for:each={tabs} for:item="t">
+            <button key={t.id} type="button" class={t.cssClass} data-id={t.id} onclick={handleClick}>{t.label}</button>
+        </template>
+    </div>
+</template>

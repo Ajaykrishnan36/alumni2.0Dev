@@ -1,0 +1,206 @@
+<template>
+    <section class="wizard">
+        <!-- Stepper -->
+        <div class="stepper-row">
+            <div class="stepper">
+                <template for:each={steps} for:item="s">
+                    <div key={s.id} class={s.cls}>
+                        <span class="step__num">
+                            <template lwc:if={s.isDone}>✓</template>
+                            <template lwc:else>{s.id}</template>
+                        </span>
+                        <span class="step__label">{s.label}</span>
+                    </div>
+                </template>
+            </div>
+            <div class="progress-row">
+                <div class="progress"><div class="progress__bar" style={progressStyle}></div></div>
+                <span class="step-counter">{stepLabel}</span>
+            </div>
+        </div>
+
+        <!-- Step body -->
+        <div class="wizard__body">
+            <!-- STEP 1: About -->
+            <template lwc:if={isStep1}>
+                <h2 class="step__title">1. About the Survey</h2>
+                <div class="field">
+                    <label>Survey Title</label>
+                    <input type="text" placeholder="Enter title" value={title} oninput={handleTitle} />
+                </div>
+                <div class="field">
+                    <label>Survey Description</label>
+                    <textarea placeholder="Enter description" oninput={handleDesc}>{description}</textarea>
+                </div>
+                <div class="field">
+                    <label>Category</label>
+                    <select value={category} onchange={handleCategory}>
+                        <option>Engagement</option>
+                        <option>Mentorship</option>
+                        <option>Career</option>
+                        <option>Events</option>
+                        <option>General</option>
+                    </select>
+                </div>
+                <div class="grid-2">
+                    <div class="field">
+                        <label>Start Date</label>
+                        <input type="date" value={startDate} onchange={handleStart} />
+                    </div>
+                    <div class="field">
+                        <label>End Date</label>
+                        <input type="date" value={endDate} onchange={handleEnd} />
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Estimated Response Count</label>
+                    <input type="number" min="0" value={estimatedResponses} oninput={handleEstResp} />
+                </div>
+                <label class="switch-row">
+                    <span>Enable anonymous responses</span>
+                    <input type="checkbox" checked={anonymousAllowed} onchange={handleAnonymous} />
+                </label>
+            </template>
+
+            <!-- STEP 2: Audience -->
+            <template lwc:if={isStep2}>
+                <h2 class="step__title">2. Target Audience</h2>
+                <!-- Step 2 uses the canonical audience builder (roles / batches / groups /
+                     individuals / CSV) shared across modules. -->
+                <c-ken-event-step-details-v2 hide-heading audience-data={audienceData} onvaluechange={handleAudienceChange}></c-ken-event-step-details-v2>
+            </template>
+
+            <!-- STEP 3: Setup Questions -->
+            <template lwc:if={isStep3}>
+                <h2 class="step__title">3. Setup Survey Questions</h2>
+                <template for:each={questionsWithIndex} for:item="q">
+                    <div key={q.id} class="q-row">
+                        <div class="q-row__head">
+                            <span class="q-row__num">Question {q.number}</span>
+                            <button type="button" class="q-row__del" data-id={q.id} onclick={handleRemoveQuestion}>×</button>
+                        </div>
+                        <div class="field">
+                            <label>Question Text</label>
+                            <input type="text" placeholder="Enter your question" value={q.text} data-id={q.id} oninput={handleQText} />
+                        </div>
+                        <div class="grid-2">
+                            <div class="field">
+                                <label>Type</label>
+                                <select value={q.type} data-id={q.id} onchange={handleQType}>
+                                    <template for:each={questionTypeOptions} for:item="t">
+                                        <option key={t.value} value={t.value}>{t.label}</option>
+                                    </template>
+                                </select>
+                            </div>
+                            <label class="switch-row switch-row--inline">
+                                <span>Required</span>
+                                <input type="checkbox" checked={q.required} data-id={q.id} onchange={handleQRequired} />
+                            </label>
+                        </div>
+                        <template lwc:if={q.showOpts}>
+                            <div class="opts">
+                                <template for:each={q.opts} for:item="o" for:index="oi">
+                                    <div key={o.key} class="opt-input">
+                                        <span class="opt-input__dot"></span>
+                                        <input type="text" value={o.value} data-qid={q.id} data-oi={o.idx} oninput={handleOptText} />
+                                    </div>
+                                </template>
+                                <button type="button" class="add-opt" data-qid={q.id} onclick={handleAddOpt}>+ Add option</button>
+                            </div>
+                        </template>
+
+                        <!-- Linear Scale: min/max bounds + endpoint labels -->
+                        <template lwc:if={q.showScale}>
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label>Scale min</label>
+                                    <input type="number" min="0" max="10" value={q.scaleMin} data-id={q.id} oninput={handleScaleMin} />
+                                </div>
+                                <div class="field">
+                                    <label>Scale max</label>
+                                    <input type="number" min="1" max="10" value={q.scaleMax} data-id={q.id} oninput={handleScaleMax} />
+                                </div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="field">
+                                    <label>Min label (optional)</label>
+                                    <input type="text" placeholder="e.g. Strongly disagree" value={q.scaleMinLabel} data-id={q.id} oninput={handleScaleMinLabel} />
+                                </div>
+                                <div class="field">
+                                    <label>Max label (optional)</label>
+                                    <input type="text" placeholder="e.g. Strongly agree" value={q.scaleMaxLabel} data-id={q.id} oninput={handleScaleMaxLabel} />
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Short Text: disabled preview of the respondent's answer field -->
+                        <template lwc:if={q.showShort}>
+                            <div class="field">
+                                <label>Answer preview</label>
+                                <input type="text" placeholder="Short answer text" disabled />
+                            </div>
+                        </template>
+
+                        <!-- Yes / No: fixed two-option preview -->
+                        <template lwc:if={q.showYesNo}>
+                            <div class="opts opts--readonly">
+                                <label class="opt-radio"><input type="radio" disabled /> Yes</label>
+                                <label class="opt-radio"><input type="radio" disabled /> No</label>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <button type="button" class="add-q-btn" onclick={handleAddQuestion}>+ Add another question</button>
+            </template>
+
+            <!-- STEP 4: Summary -->
+            <template lwc:if={isStep4}>
+                <h2 class="step__title">4. Summary</h2>
+                <div class="summary-block">
+                    <h3>About</h3>
+                    <p><strong>Title:</strong> {title}</p>
+                    <p><strong>Description:</strong> {description}</p>
+                    <p><strong>Category:</strong> {category}</p>
+                    <p><strong>Period:</strong> {startDate} – {endDate}</p>
+                </div>
+                <div class="summary-block">
+                    <h3>Audience</h3>
+                    <div class="pills">
+                        <template for:each={audience} for:item="a">
+                            <span key={a} class="audience-pill">{a}</span>
+                        </template>
+                    </div>
+                </div>
+                <div class="summary-block">
+                    <h3>Questions ({reviewQuestions.length})</h3>
+                    <ol class="q-list">
+                        <template for:each={reviewQuestions} for:item="q">
+                            <li key={q.id}>
+                                <strong>{q.number}. {q.text}</strong> <em class="muted">({q.typeLabel})</em>
+                                <template lwc:if={q.hasOpts}>
+                                    <ul>
+                                        <template for:each={q.opts} for:item="o">
+                                            <li key={o}>{o}</li>
+                                        </template>
+                                    </ul>
+                                </template>
+                            </li>
+                        </template>
+                    </ol>
+                </div>
+            </template>
+        </div>
+
+        <!-- Footer nav -->
+        <div class="wizard__footer">
+            <button type="button" class="btn btn--ghost" onclick={handleCancel}>Cancel</button>
+            <template lwc:if={stepError}>
+                <span class="wizard__error">{stepError}</span>
+            </template>
+            <div class="footer-right">
+                <button type="button" class="btn btn--outline" onclick={handleBack} disabled={backDisabled}>Back</button>
+                <button type="button" class="btn btn--primary" onclick={handleContinue}>{continueLabel}</button>
+            </div>
+        </div>
+    </section>
+</template>

@@ -1,0 +1,78 @@
+<template>
+    <template lwc:if={decoratedGroup}>
+        <div class="modal-backdrop" onclick={handleBackdrop}>
+            <div class="modal modal--lg">
+                <div class="modal-cover" style={decoratedGroup.coverStyle}>
+                    <button class="modal-close" onclick={handleClose}>×</button>
+                    <div class="modal-cover-overlay">
+                        <div class="modal-cover-icon">{decoratedGroup.initial}</div>
+                        <div class="modal-cover-text">
+                            <div class="modal-cover-category">{decoratedGroup.category}</div>
+                            <div class="modal-cover-name">{decoratedGroup.name}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-head">
+                    <p class="modal-sub">{decoratedGroup.metaLine}</p>
+                    <button type="button" class={decoratedGroup.joinClass} onclick={handleJoin}>{decoratedGroup.joinLabel}</button>
+                </div>
+                <nav class="tabs detail-tabs">
+                    <template for:each={tabs} for:item="t">
+                        <button key={t.id} type="button" class={t.cssClass} data-id={t.id} onclick={handleTab}>{t.label}</button>
+                    </template>
+                </nav>
+                <div class="modal-body">
+                    <template lwc:if={isAbout}>
+                        <div class="about-grid">
+                            <div class="about-card">
+                                <h4>About the Group</h4>
+                                <p>{decoratedGroup.description}</p>
+                                <div class="footer-info">
+                                    <span class="footer-info__chip">Created on: {decoratedGroup.created}</span>
+                                    <span class="footer-info__chip">{decoratedGroup.membersLabel}</span>
+                                </div>
+                            </div>
+                            <div class="rules-card">
+                                <h4>Rules of the Group</h4>
+                                <ul>
+                                    <template for:each={decoratedGroup.rulesList} for:item="r">
+                                        <li key={r.id}>{r.text}</li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isFeed}>
+                        <template for:each={feedDecorated} for:item="u">
+                            <c-ken-group-update-row-v2 key={u.id} update={u}></c-ken-group-update-row-v2>
+                        </template>
+                    </template>
+
+                    <template lwc:if={isEvents}>
+                        <div class="events-grid">
+                            <template for:each={eventsDecorated} for:item="e">
+                                <article key={e.id} class="event">
+                                    <div class="event__cover" style={e.coverStyle}></div>
+                                    <div class="event__body">
+                                        <h4 class="event__name">{e.name}</h4>
+                                        <p class="event__meta">{e.date} · {e.time}</p>
+                                        <p class="event__location">{e.location}</p>
+                                    </div>
+                                </article>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isMembers}>
+                        <div class="members-grid">
+                            <template for:each={membersDecorated} for:item="m">
+                                <c-ken-group-member-avatar-v2 key={m.id} member={m}></c-ken-group-member-avatar-v2>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

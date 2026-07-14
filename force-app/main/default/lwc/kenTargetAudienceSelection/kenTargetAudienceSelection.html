@@ -1,0 +1,480 @@
+<template>
+    <div class="page">
+        <div class="slds-p-horizontal_medium slds-m-bottom_small">
+            <div class="slds-text-heading_medium">Target Audience Selection</div>
+            <div class="slds-text-body_small slds-text-color_weak">
+                Choose who this should go to. You can combine multiple groups of people.
+            </div>
+        </div>
+
+        <!-- Main container -->
+        <section class="slds-box slds-theme_default mainCard slds-m-horizontal_medium">
+            <div class="slds-grid slds-gutters">
+                <!-- Left nav -->
+                <div class="slds-col slds-size_2-of-12 leftCol">
+                    <c-ken-audience-left-nav value={navSection} onnavchange={handleNavChange}></c-ken-audience-left-nav>
+                </div>
+
+                <!-- Middle content -->
+                <div class="slds-col slds-size_7-of-12 middleCol">
+                    <template if:true={isRoleDetails}>
+                        <div class="slds-p-around_medium rolePanel">
+                            <div class="tabHeader">
+                                <div>
+                                    <div class="sectionTitle">Roles &amp; Details</div>
+                                    <div class="sectionSubtitle">
+                                        Who do you want to include?
+                                    </div>
+                                </div>
+                            </div>
+
+                            <c-ken-role-pills
+                                roles={rolesForPills}
+                                value={activeRole}
+                                onrolechange={handleRoleChange}
+                            ></c-ken-role-pills>
+
+                            <!-- All vs Custom selection cards -->
+                            <div class="slds-grid slds-gutters slds-m-top_medium modeRow">
+                                <div class="slds-col slds-size_1-of-2">
+                                    <article class={allCardClass} onclick={selectAllMode}>
+                                        <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_x-small">
+                                            <lightning-input
+                                                type="radio"
+                                                name="mode"
+                                                value="ALL"
+                                                checked={isAllMode}
+                                                class="slds-m-right_small"
+                                                onchange={handleModeChange}
+                                            ></lightning-input>
+                                            <div class="slds-text-heading_small">All {activeRoleLabel}</div>
+                                        </div>
+                                        <div class="slds-text-body_small slds-text-color_weak">
+                                            Includes all active {activeRoleLabelLower} across all years, programs, and campuses.
+                                        </div>
+
+                                        <template if:true={isAllMode}>
+                                            <div class="slds-m-top_medium">
+                                                <lightning-button
+                                                    label={addAllLabel}
+                                                    variant="brand-outline"
+                                                    onclick={handleAddAllToAudience}
+                                                ></lightning-button>
+                                            </div>
+                                        </template>
+                                    </article>
+                                </div>
+
+                                <div class="slds-col slds-size_1-of-2">
+                                    <article class={customCardClass} onclick={selectCustomMode}>
+                                        <div class="slds-grid slds-grid_vertical-align-center slds-m-bottom_x-small">
+                                            <lightning-input
+                                                type="radio"
+                                                name="mode"
+                                                value="CUSTOM"
+                                                checked={isCustomMode}
+                                                class="slds-m-right_small"
+                                                onchange={handleModeChange}
+                                            ></lightning-input>
+                                    <div class="slds-text-heading_small">Create Custom {activeRoleLabel} Audience</div>
+                                </div>
+                                <div class="slds-text-body_small slds-text-color_weak">
+                                    Create an audience by selecting specific criteria such as academic year, program, and campus.
+                                </div>
+                            </article>
+                                </div>
+                            </div>
+
+                            <!-- Custom group builder -->
+                            <template if:true={isCustomMode}>
+                                <div class="slds-m-top_large">
+                                    <div class="slds-text-heading_small slds-m-bottom_small">Create Custom {activeRoleLabel} Audience</div>
+
+                                    <c-ken-custom-group-builder
+                                        role-label={activeRoleLabel}
+                                        draft-group={draftGroup}
+                                        field-config={fieldConfigForRole}
+                                        saved-groups={savedGroupsForRole}
+                                        show-add-another={showAddAnotherForRole}
+                                        has-any-group={hasAnyGroupForRole}
+                                        ondraftchange={handleDraftChange}
+                                        onfieldsearch={handleFieldSearch}
+                                        onsavegroup={handleSaveGroup}
+                                        onaddanother={handleAddAnotherGroup}
+                                        oneditgroup={handleEditGroup}
+                                        ondeletegroup={handleDeleteGroup}
+                                    ></c-ken-custom-group-builder>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template if:true={isGroups}>
+                        <div class="slds-p-around_medium">
+                            <div class="tabHeader compact">
+                                <div class="sectionTitle">Groups</div>
+                            </div>
+                            <div class="slds-text-body_small slds-text-color_weak slds-m-bottom_medium">
+                                Add to members of specific groups or clubs.
+                            </div>
+
+                            <div class="searchRow">
+                                <lightning-icon icon-name="utility:search" size="x-small" class="searchIcon"></lightning-icon>
+                                <input
+                                    type="search"
+                                    class="searchInput"
+                                    placeholder="Search by group name"
+                                    value={groupsSearchTerm}
+                                    oninput={handleGroupsSearchInput}
+                                />
+                            </div>
+
+                            <template if:true={hasGroupResults}>
+                                <div class="groupGrid">
+                                    <template for:each={groupResultsWithState} for:item="group">
+                                        <article key={group.id} class="groupCard">
+                                            <button
+                                                type="button"
+                                                class={group.actionClass}
+                                                data-id={group.id}
+                                                onclick={handleToggleGroup}
+                                                aria-pressed={group.selected}
+                                            >
+                                                <lightning-icon icon-name={group.actionIcon} size="x-small"></lightning-icon>
+                                            </button>
+
+                                            <div class="groupDetails">
+                                                <div class="groupName">{group.name}</div>
+                                                <div class="groupMeta">{group.membersLabel}</div>
+                                            </div>
+                                        </article>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <template if:true={showGroupsEmptyState}>
+                                <div class="emptyState">
+                                    <div class="emptyTitle">No groups found</div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template if:true={isIndividuals}>
+                        <div class="slds-p-around_medium">
+                            <div class="tabHeader compact">
+                                <div class="sectionTitle">Specific Individuals</div>
+                            </div>
+                            <div class="slds-text-body_small slds-text-color_weak slds-m-bottom_medium">
+                                Search and add specific people by name, email, ID, or phone number.
+                            </div>
+
+                            <div class="roleTabs slds-m-bottom_medium">
+                                <template for:each={individualRoleTabs} for:item="tab">
+                                    <button
+                                        key={tab.value}
+                                        type="button"
+                                        class={tab.className}
+                                        data-value={tab.value}
+                                        onclick={handleIndividualsRoleChange}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                </template>
+                            </div>
+
+                            <div class="searchRow">
+                                <lightning-icon icon-name="utility:search" size="x-small" class="searchIcon"></lightning-icon>
+                                <input
+                                    type="search"
+                                    class="searchInput"
+                                    placeholder="Search by name, email, ID or phone number"
+                                    value={individualsSearchTerm}
+                                    oninput={handleIndividualsSearchInput}
+                                />
+                            </div>
+
+                            <button
+                                class="advancedToggle slds-button_reset"
+                                type="button"
+                                onclick={toggleIndividualsAdvanced}
+                            >
+                                {individualsAdvancedLabel}
+                            </button>
+
+                            <template if:true={showIndividualsAdvanced}>
+                                <div class="advancedPanel">
+                                    <div class="slds-grid slds-wrap slds-gutters">
+                                        <template for:each={individualFiltersForUi} for:item="filter">
+                                            <div key={filter.key} class="slds-col slds-size_1-of-2 slds-m-bottom_small">
+                                                <c-ken-multi-select-picklist
+                                                    label={filter.label}
+                                                    placeholder={filter.placeholder}
+                                                    options={filter.options}
+                                                    value={filter.value}
+                                                    data-key={filter.key}
+                                                    onchange={handleIndividualsFilterChange}
+                                                ></c-ken-multi-select-picklist>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <template if:true={hasIndividualsResults}>
+                                <div class="resultGrid">
+                                    <template for:each={individualResultsWithState} for:item="row">
+                                        <article key={row.id} class="resultCard">
+                                            <button
+                                                type="button"
+                                                class={row.actionClass}
+                                                data-id={row.id}
+                                                onclick={handleToggleIndividual}
+                                                aria-pressed={row.selected}
+                                            >
+                                                <lightning-icon icon-name={row.actionIcon} size="x-small"></lightning-icon>
+                                            </button>
+
+                                            <div class="resultDetails">
+                                                <div class="resultName">{row.name}</div>
+                                                <template if:true={row.subtitle}>
+                                                    <div class="resultMeta">{row.subtitle}</div>
+                                                </template>
+                                                <template if:true={row.email}>
+                                                    <div class="resultMeta">{row.email}</div>
+                                                </template>
+                                            </div>
+
+                                            <span class="resultTag">{row.roleLabel}</span>
+                                        </article>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <template if:true={showIndividualsEmptyState}>
+                                <div class="emptyState">
+                                    <div class="emptyTitle">Start Your Search</div>
+                                </div>
+                            </template>
+
+                            <template if:true={hasSelectedIndividuals}>
+                                <div class="individualsSaveBar">
+                                    <span class="individualsSelectedCount">{selectedIndividualsLabel}</span>
+                                    <lightning-button label="Save Audience" variant="brand"
+                                        onclick={handleSaveIndividuals}></lightning-button>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template if:true={isSaved}>
+                        <div class="slds-p-around_medium">
+                            <div class="tabHeader compact">
+                                <div class="sectionTitle">Saved Audience</div>
+                            </div>
+                            <div class="slds-text-body_small slds-text-color_weak slds-m-bottom_medium">
+                                Add previous saved audience by name.
+                            </div>
+
+                            <div class="searchRow">
+                                <lightning-icon icon-name="utility:search" size="x-small" class="searchIcon"></lightning-icon>
+                                <input
+                                    type="search"
+                                    class="searchInput"
+                                    placeholder="Search by audience name"
+                                    value={savedSearchTerm}
+                                    oninput={handleSavedSearchInput}
+                                />
+                            </div>
+
+                            <template if:true={hasSavedAudiences}>
+                                <div class="savedGrid">
+                                    <template for:each={savedAudiences} for:item="aud">
+                                        <article key={aud.id} class="savedCard">
+                                            <div>
+                                                <div class="savedName">{aud.name}</div>
+                                                <div class="savedMeta">{aud.memberLabel}</div>
+                                                <template if:true={aud.roleBadges}>
+                                                    <div class="savedRoles">
+                                                        <template for:each={aud.roleBadges} for:item="role">
+                                                            <span key={role.label} class="savedRolePill">{role.label}</span>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                class="reviewButton"
+                                                data-id={aud.id}
+                                                onclick={handleReviewSavedAudience}
+                                            >
+                                                Review &amp; Add
+                                            </button>
+                                        </article>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <template if:true={showSavedEmptyState}>
+                                <div class="emptyState">
+                                    <div class="emptyTitle">No saved audiences found</div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Right panel -->
+                <div class="slds-col slds-size_3-of-12 rightCol">
+                    <c-ken-audience-selected-panel
+                        items={selectedAudience}
+                        segmentation-name={segmentationName}
+                        onremove={handleRemoveSelected}
+                    ></c-ken-audience-selected-panel>
+                    <!-- Save Audience Template button hidden per requirement -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer slds-m-horizontal_medium slds-m-top_medium slds-p-vertical_small"></footer>
+
+        <c-ken-status-popup visible={popup.visible} message={popup.message} variant={popup.variant}></c-ken-status-popup>
+
+        <template if:true={showSegmentationNameModal}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button
+                            class="slds-button slds-button_icon slds-modal__close"
+                            title="Close"
+                            onclick={closeSegmentationNameModal}
+                        >
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                        <h2 class="slds-text-heading_medium">Save Segmentation</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-input
+                            label="Segmentation Name"
+                            data-id="segmentationName"
+                            value={segmentationNameInput}
+                            placeholder="Enter segmentation name"
+                            onchange={handleSegmentationNameInput}
+                            required
+                        ></lightning-input>
+                    </div>
+                    <footer class="slds-modal__footer modalFooter">
+                        <lightning-button label="Cancel" variant="neutral" onclick={closeSegmentationNameModal}></lightning-button>
+                        <lightning-button label="Save" variant="brand" onclick={confirmSegmentationName}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <template if:true={showSavedModal}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+                <div class="slds-modal__container savedModal">
+                    <header class="slds-modal__header">
+                        <button
+                            class="slds-button slds-button_icon slds-modal__close"
+                            title="Close"
+                            onclick={closeSavedModal}
+                        >
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                        <h2 class="slds-text-heading_medium">Review Saved Audience &amp; Add</h2>
+                    </header>
+
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <div class="savedModalTitle">{savedModalName}</div>
+
+                        <template if:true={hasSavedModalGroups}>
+                            <div class="savedSection">
+                                <div class="savedSectionTitle">Groups Added</div>
+                                <template for:each={savedModalGroups} for:item="grp">
+                                    <div key={grp.id} class="savedRow">
+                                        <div class="savedRowName">{grp.title}</div>
+                                        <div class="savedRowMeta">{grp.membersLabel}</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template if:true={hasSavedModalIndividuals}>
+                            <div class="savedSection">
+                                <div class="savedSectionTitle">Individuals Added</div>
+                                <template for:each={savedModalIndividuals} for:item="ind">
+                                    <div key={ind.id} class="savedRow">
+                                        <div class="savedRowName">{ind.title}</div>
+                                        <div class="savedRowMeta">{ind.roleLabel}</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template if:true={hasSavedModalCustomGroups}>
+                            <div class="savedSection">
+                                <div class="savedSectionTitle">Custom Groups</div>
+                                <template for:each={savedModalCustomGroups} for:item="grp">
+                                    <div key={grp.id} class="savedCustomCard">
+                                        <div class="savedCustomHeader">
+                                            <div class="savedRowName">{grp.title}</div>
+                                            <div class="savedRowMeta">{grp.membersLabel}</div>
+                                        </div>
+                                        <template if:true={grp.hasCriteria}>
+                                            <div class="criteriaList">
+                                                <template for:each={grp.criteria} for:item="c">
+                                                    <div key={c.label} class="criteriaItem">
+                                                        <div class="criteriaLabel">{c.label}</div>
+                                                        <div class="criteriaPills">
+                                                            <template for:each={c.values} for:item="v">
+                                                                <span key={v} class="criteriaPill">{v}</span>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <footer class="slds-modal__footer savedModalFooter">
+                        <lightning-button label="Back" variant="neutral" onclick={closeSavedModal}></lightning-button>
+                        <lightning-button label="Add Audience" variant="brand" onclick={handleAddSavedAudience}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <template if:true={showConfirmModal}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button
+                            class="slds-button slds-button_icon slds-modal__close"
+                            title="Close"
+                            onclick={closeConfirmModal}
+                        >
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                        <h2 class="slds-text-heading_medium">Confirm</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <p>{confirmMessage}</p>
+                    </div>
+                    <footer class="slds-modal__footer modalFooter">
+                        <lightning-button label="Cancel" variant="neutral" onclick={closeConfirmModal}></lightning-button>
+                        <lightning-button label="Yes" variant="brand" onclick={confirmModalProceed}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+    </div>
+</template>

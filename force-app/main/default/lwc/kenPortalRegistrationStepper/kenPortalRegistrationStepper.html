@@ -1,0 +1,146 @@
+<template>
+	<template if:true={isInitializing}>
+		<div class="registration-container">
+			<lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+		</div>
+	</template>
+	<template if:false={isInitializing}>
+	<div class="registration-container">
+		<template if:true={showOtpScreen}>
+			<div class="reset-page-wrapper">
+				<div class="slds-grid slds-wrap reset-grid">
+					<div class="slds-col slds-size_12-of-12 slds-medium-size_12-of-12 slds-large-size_6-of-12 left-image-container">
+						<img src={carouselImage} class="left-loginImage" alt="Welcome background" />
+						<div class="image-overlay">
+							<div class="overlay-content">
+								<div class="institution-alias" style="margin-bottom: 2rem; color: #FFFFFF;">{institutionName}</div> 
+								<div class="overlay-text-large">Together,</div>
+								<div class="overlay-text-large">we empower the future</div>
+								<div class="overlay-underline"></div>
+								<div class="overlay-text-bottom">Connect • Collaborate • Give Back</div>
+							</div>
+						</div>
+					</div>
+					<div class="slds-col slds-size_12-of-12 slds-medium-size_12-of-12 slds-large-size_6-of-12">
+						<div class="loginPageRightContainer">
+							<img src={KenLogo} class="ken-logo-image" alt="Ken42 Logo" style="margin-bottom: 2rem;"/>
+							<div class="section-width">
+								<template if:true={isLoading}>
+									<lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+								</template>
+
+								<p class="reset-title">Verify your email</p>
+								<p class="reset-subtitle">Enter your email to get a one-time passcode and continue onboarding.</p>
+
+								<template if:false={showOtpInputs}>
+									<div class="slds-grid slds-wrap">
+										<div class="slds-col slds-size_1-of-1">
+											<lightning-input
+												type="email"
+												placeholder="Enter your email"
+												data-id="email"
+												value={userEmail}
+												variant="label-hidden"
+												onchange={handleEmailChange}
+												class="studentportalInputsLogin">
+											</lightning-input>
+										</div>
+									</div>
+									<div style="margin-top: 25px;">
+										<lightning-button
+											variant="brand"
+											disable-animation="true"
+											label="Send OTP"
+											type="submit"
+											onclick={handleRequestOtp}
+											stretch
+											class="studentportal-BlueButtonLogin"
+											disabled={isLoading}>
+										</lightning-button>
+									</div>
+									<div class="back-to-login">
+										<button type="button" class="back-link" onclick={handleBackToLogin}>Back to Login</button>
+									</div>
+								</template>
+
+								<template if:true={showOtpInputs}>
+									<div class="otp-container">
+										<div class="otp-email-section">
+											<span class="otp-email-text">OTP sent to </span>
+											<span class="otp-email-address">{userEmail}</span>
+											<button type="button" class="edit-email-btn" onclick={handleEditEmail} aria-label="Edit email">
+												<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+													<path d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.12 5.13L18.87 8.88L20.71 7.04Z" fill="currentColor"/>
+												</svg>
+											</button>
+										</div>
+										<div class="otp-input-container" onpaste={handleOtpPaste}>
+											<template for:each={otpInputs} for:item="input">
+												<input
+													key={input.id}
+													type="text"
+													class="otp-input"
+													maxlength="1"
+													value={input.value}
+													data-index={input.id}
+													oninput={handleOtpInput}
+													onkeydown={handleOtpKeyDown}
+												/>
+											</template>
+										</div>
+										<div class="otp-timer-section">
+											<template if:true={canResendOtp}>
+												<span class="resend-text">Did not receive it yet? <button type="button" class="resend-link" onclick={handleRequestOtp}>Resend OTP</button></span>
+											</template>
+											<template if:false={canResendOtp}>
+												<span class="timer-text">Resend OTP in <span class="timer-value">{timerDisplay}</span></span>
+											</template>
+										</div>
+										<div style="margin-top: 25px;">
+											<lightning-button
+												variant="brand"
+												disable-animation="true"
+												label="Verify & Continue"
+												type="submit"
+												onclick={handleVerifyOtp}
+												stretch
+												class="studentportal-BlueButtonLogin"
+												disabled={isLoading}>
+											</lightning-button>
+										</div>
+										<div class="back-to-login">
+											<button type="button" class="back-link" onclick={handleBackToLogin}>Back to Login</button>
+										</div>
+									</div>
+								</template>
+							</div>
+							<div class="powered-by-section">
+								<span class="powered-by-text">Powered by</span>
+								<img src={kenPoweredbyLogo} alt="ken42" class="ken42-logo-image" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</template>
+
+		<template if:true={showStepper}>
+			<c-ken-registration-header
+				first-name={headerFirstName}
+				last-name={headerLastName}
+				profile-image-url={headerProfileImageUrl}
+				onlogout={handleLogout}>
+			</c-ken-registration-header>
+			<c-ken-registration-stepper oncomplete={handleComplete} onprofilechange={handleProfileChange}></c-ken-registration-stepper>
+		</template>
+	</div>
+
+	<!-- Toast Notification -->
+	<c-ken-toast-notification 
+		is-visible={showToast}
+		toast-title={toastTitle}
+		toast-message={toastMessage}
+		toast-variant={toastVariant}>
+	</c-ken-toast-notification>
+</template>
+	</template>

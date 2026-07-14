@@ -1,0 +1,184 @@
+<template>
+    <div class="page">
+        <template if:true={showFilters}>
+            <div class="filter-backdrop" onclick={closeFilters}></div>
+        </template>
+
+        <div class="toolbar">
+            <div class="tabs" role="tablist">
+                <template for:each={tabItems} for:item="tab">
+                    <button
+                        key={tab.value}
+                        data-tab={tab.value}
+                        class={tab.className}
+                        aria-selected={tab.selected}
+                        role="tab"
+                        onclick={handleTabChange}
+                    >
+                        {tab.label}
+                    </button>
+                </template>
+            </div>
+
+            <div class="actions">
+                <div class="search">
+                    <svg class="icon" viewBox="0 0 20 20" aria-hidden="true">
+                        <path d="M9 2a7 7 0 015.196 11.62l2.591 2.592a1 1 0 01-1.414 1.414l-2.592-2.591A7 7 0 119 2zm0 2a5 5 0 100 10 5 5 0 000-10z" fill="currentColor"></path>
+                    </svg>
+                    <input
+                        type="search"
+                        placeholder="Search"
+                        value={searchTerm}
+                        oninput={handleSearch}
+                        aria-label="Search campaigns"
+                    />
+                </div>
+
+                <div class="filter-anchor">
+                    <button class="ghost" onclick={openFilters}>
+                        <span>Filters</span>
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M3 6h18v2H3V6zm4 5h10v2H7v-2zm3 5h4v2h-4v-2z" fill="currentColor"></path>
+                        </svg>
+                        <template if:true={hasActiveFilters}>
+                            <span class="filter-badge">{activeFilterCount}</span>
+                        </template>
+                    </button>
+
+                    <template if:true={showFilters}>
+                        <section class="filter-panel" onclick={stopPropagation} aria-label="Filters">
+                            <div class="panel-header">
+                                <h2>Filters</h2>
+                            </div>
+
+                            <div class="filter-fields">
+                                <div class="field date-field">
+                                    <div class="date-display">
+                                        <span class={createdOnDisplayClass}>{createdOnDisplayText}</span>
+                                    </div>
+                                    <div class="input-icon input-icon_hidden">
+                                        <input
+                                            id="createdOn"
+                                            name="createdOn"
+                                            type="date"
+                                            value={draftFilters.createdOn}
+                                            onchange={handleDraftChange}
+                                        />
+                                    </div>
+                                    <svg class="field-icon" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path d="M7 4a1 1 0 012 0h6a1 1 0 112 0h1a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h1zm12 6H5v8a1 1 0 001 1h12a1 1 0 001-1v-8zM5 8h14V6H5v2z" fill="currentColor"></path>
+                                    </svg>
+                                </div>
+
+                                <template if:true={isApprovedTab}>
+                                    <div class="field select-field">
+                                        <div class="select-wrapper">
+                                            <select id="status" name="status" onchange={handleDraftChange}>
+                                                <option value="">Any</option>
+                                                <template for:each={statusOptions} for:item="option">
+                                                    <option key={option} value={option}>{option}</option>
+                                                </template>
+                                            </select>
+                                            <span class="select-placeholder">{draftFilters.status}</span>
+                                            <span class="select-placeholder select-placeholder_default" if:false={draftFilters.status}>Status</span>
+                                            <span class="chevron"></span>
+                                        </div>
+                                    </div>
+                                </template>
+
+                                <div class="field select-field">
+                                    <div class="select-wrapper">
+                                        <select id="category" name="category" onchange={handleDraftChange}>
+                                            <option value="">Any</option>
+                                            <template for:each={categoryOptions} for:item="option">
+                                                <option key={option.id} value={option.id}>{option.name}</option>
+                                            </template>
+                                        </select>
+                                        <span class="select-placeholder">{draftCategoryLabel}</span>
+                                        <span class="select-placeholder select-placeholder_default" if:false={draftFilters.category}>Category</span>
+                                        <span class="chevron"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-footer">
+                                <button class="ghost" onclick={resetDraft}>Reset Filters</button>
+                                <button class="primary" onclick={applyFilters}>Apply</button>
+                            </div>
+                        </section>
+                    </template>
+                </div>
+
+                <button class="primary" onclick={handleOpenCreateCampaign}>
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 5a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H6a1 1 0 110-2h5V6a1 1 0 011-1z" fill="currentColor"></path>
+                    </svg>
+                    Create New Campaign
+                </button>
+            </div>
+        </div>
+
+        <div class="header-divider"></div>
+
+        <template if:true={pills.length}>
+            <div class="pill-row" aria-label="Active filters">
+                <template for:each={pills} for:item="pill">
+                    <span key={pill.key} class="pill">
+                        {pill.label}
+                        <button data-name={pill.type} onclick={removePill} aria-label={pill.ariaLabel}>&#215;</button>
+                    </span>
+                </template>
+            </div>
+        </template>
+
+        <template if:true={isLoading}>
+            <div class="loading-state">
+                <lightning-spinner alternative-text="Loading campaigns..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+        <div class="cards" role="list">
+            <template if:true={filteredCampaigns.length}>
+                <template for:each={filteredCampaigns} for:item="campaign">
+                    <article key={campaign.id} class="card" role="listitem" data-id={campaign.id} onclick={handleCardClick}>
+                        <div class="image-wrapper">
+                            <span class="tag">{campaign.category}</span>
+                            <img src={campaign.image} alt={campaign.title} loading="lazy" onerror={handleImageError} />
+                            <template if:true={campaign.showStatusBadge}>
+                                <span class={campaign.statusClass}>{campaign.campaignStatus}</span>
+                            </template>
+                        </div>
+                        <div class="card-body">
+                            <h3>{campaign.title}</h3>
+                            <template if:true={campaign.owner}>
+                                <div class="owner">
+                                    <img src={campaign.owner.avatar} alt={campaign.owner.name} />
+                                    <span>{campaign.owner.name}</span>
+                                </div>
+                            </template>
+                            <div class="date-pill">
+                                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M7 4a1 1 0 012 0h6a1 1 0 112 0h1a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h1zm12 6H5v8a1 1 0 001 1h12a1 1 0 001-1v-8zM5 8h14V6H5v2z" fill="currentColor"></path>
+                                </svg>
+                                <span>{campaign.dateRange}</span>
+                            </div>
+                        </div>
+                    </article>
+                </template>
+            </template>
+            <template if:false={filteredCampaigns.length}>
+                <div class="empty">
+                    <template if:true={hasActiveFilters}>
+                        <p>No campaigns match your filters.</p>
+                        <button class="ghost" onclick={resetAll}>Reset filters</button>
+                    </template>
+                    <template if:false={hasActiveFilters}>
+                        <p>No {activeTab} campaigns yet.</p>
+                    </template>
+                </div>
+            </template>
+        </div>
+        </template>
+    </div>
+</template>

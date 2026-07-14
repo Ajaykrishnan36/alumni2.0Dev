@@ -1,0 +1,423 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-container {
+    background-color: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #373A45;
+    margin: 0;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.close-button:hover {
+    background-color: #f5f7fa;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+}
+
+.two-column-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.form-field-spacer {
+    visibility: hidden;
+}
+
+.assign-to-options {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.assign-to-field {
+    gap: 0.5rem;
+}
+
+.assign-to-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'GeneralSansCustom', sans-serif;
+    font-size: 0.95rem;
+    color: #373A45;
+    cursor: pointer;
+}
+
+.assign-to-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: #3A63F3;
+}
+
+.field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #373A45;
+    font-family: 'GeneralSansCustom', sans-serif;
+    margin: 0 0 6px 0;
+    line-height: 1.25;
+}
+
+.field-error-note {
+    margin: 0.375rem 0 0 0;
+    color: #c62828;
+    font-size: 0.78rem;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.required {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+.custom-input,
+.custom-select {
+    --slds-c-input-radius-border: 8px;
+    --slds-c-input-sizing-min-height: 32px;
+    --slds-c-input-spacing-inline-start: 12px;
+    --slds-c-input-spacing-inline-end: 12px;
+    --slds-c-input-color-border: #D8D8D8;
+    --slds-c-input-color-border-focus: #D8D8D8;
+    --slds-c-input-shadow-focus: none;
+    --sds-c-input-radius-border: 8px;
+    --sds-c-input-sizing-min-height: 32px;
+    --sds-c-input-spacing-inline-start: 12px;
+    --sds-c-input-spacing-inline-end: 12px;
+    --sds-c-input-color-border: #D8D8D8;
+    --sds-c-input-color-border-focus: #D8D8D8;
+    --sds-c-input-shadow-focus: none;
+    margin-top: 0;
+}
+
+.custom-select {
+    --slds-c-combobox-input-radius-border: 8px;
+    --slds-c-combobox-input-sizing-min-height: 32px;
+    --slds-c-combobox-input-spacing-inline-start: 12px;
+    --slds-c-combobox-input-spacing-inline-end: 12px;
+    --sds-c-combobox-input-radius-border: 8px;
+    --sds-c-combobox-input-sizing-min-height: 32px;
+    --sds-c-combobox-input-spacing-inline-start: 12px;
+    --sds-c-combobox-input-spacing-inline-end: 12px;
+}
+
+.custom-input.error,
+.custom-select.error {
+    --sds-c-input-color-border: #dc3545;
+    --sds-c-input-color-border-focus: #dc3545;
+}
+
+.custom-input.error input,
+.custom-select.error input,
+.custom-select.error button {
+    border-color: #dc3545 !important;
+}
+
+.custom-input.error input:focus,
+.custom-select.error input:focus,
+.custom-select.error button:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.75rem;
+    margin-top: 0.125rem;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+
+
+.date-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.date-input-group .custom-input {
+    flex: 1;
+}
+
+.input-icon {
+    position: absolute;
+    right: 0.75rem;
+    color: #6c757d;
+    pointer-events: none;
+}
+
+.rich-text-editor-container {
+    border: 1px solid #D8D8D8;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+}
+
+.rich-text-area {
+    min-height: 120px;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: #373A45;
+    font-family: 'GeneralSansCustom', sans-serif;
+    line-height: 1.5;
+    outline: none;
+    overflow-y: auto;
+    background-color: transparent;
+}
+
+.rich-text-area:empty:before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.rich-text-area:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.rich-text-area ul,
+.rich-text-area ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+    display: block;
+    list-style-type: disc;
+}
+
+.rich-text-area ol {
+    list-style-type: decimal;
+}
+
+.rich-text-area li {
+    margin: 0.25rem 0;
+    display: list-item;
+    list-style-position: outside;
+}
+
+.rich-text-area ul li {
+    list-style-type: disc;
+}
+
+.rich-text-area ol li {
+    list-style-type: decimal;
+}
+
+.rich-text-area b,
+.rich-text-area strong {
+    font-weight: 800;
+}
+
+.rich-text-area i,
+.rich-text-area em {
+    font-style: italic;
+}
+
+.text-editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-top: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+}
+
+.toolbar-button {
+    background: white;
+    border: 1px solid #d8d8d8;
+    border-radius: 4px;
+    padding: 0;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: #373A45;
+}
+
+.toolbar-button:hover {
+    background-color: #f5f7fa;
+    border-color: var(--primary-color);
+}
+
+.toolbar-button.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.toolbar-button.active .bold-text,
+.toolbar-button.active .italic-text {
+    color: white;
+}
+
+.toolbar-button.active svg {
+    stroke: white;
+}
+
+.toolbar-button svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+}
+
+.bold-text {
+    font-weight: 800;
+    font-size: 0.9375rem;
+    color: #373A45;
+}
+
+.toolbar-button.active .bold-text {
+    color: white;
+}
+
+.italic-text {
+    font-style: italic;
+    font-size: 0.9375rem;
+    color: #373A45;
+}
+
+.toolbar-button.active .italic-text {
+    color: white;
+}
+
+.toolbar-spacer {
+    flex: 1;
+}
+
+.ai-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.375rem 0.75rem;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.ai-button:hover {
+    text-decoration: underline;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.cancel-button {
+    padding: 0.5rem 1rem;
+    min-height: 32px;
+    background-color: white;
+    border: 1px solid #D8D8D8;
+    border-radius: 8px;
+    color: #373A45;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.cancel-button:hover {
+    background-color: #f5f7fa;
+    border-color: var(--primary-color);
+}
+
+.save-button {
+    padding: 0.5rem 1rem;
+    min-height: 32px;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.save-button:hover {
+    background-color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .modal-container {
+        width: 95%;
+        max-height: 95vh;
+    }
+
+    .two-column-row {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+
+    .form-field-spacer {
+        display: none;
+    }
+}

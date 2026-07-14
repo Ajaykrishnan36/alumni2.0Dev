@@ -1,0 +1,24 @@
+<template>
+    <h3 class="step-h">Choose a resume</h3>
+    <template lwc:if={hasResumes}>
+        <template for:each={resumes} for:item="r">
+            <button key={r.id} type="button" class={r.cls} data-id={r.id} onclick={handleResumePick}>
+                <div>
+                    <div class="opt-title">{r.name}</div>
+                    <div class="opt-desc">{r.updated}</div>
+                </div>
+            </button>
+        </template>
+    </template>
+    <template lwc:elseif={showEmpty}>
+        <div class="opt-row opt-row--empty">
+            <div>
+                <div class="opt-title">No resumes in your library yet</div>
+                <div class="opt-desc">Upload a resume in the Resume Library, then come back to apply.</div>
+            </div>
+        </div>
+    </template>
+    <template lwc:else>
+        <div class="opt-desc">Loading your resumes…</div>
+    </template>
+</template>

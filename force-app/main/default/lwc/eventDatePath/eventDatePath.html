@@ -1,0 +1,10 @@
+<template>
+    <div class="date-path">
+        <!-- Loop through each date in the datePath array -->
+        <template for:each={datePath} for:item="item">
+            <button key={item.date} class={item.className} data-date={item.date} onclick={handleDateClick}>
+                {item.date}
+            </button>
+        </template>
+    </div>
+</template>

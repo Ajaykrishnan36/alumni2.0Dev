@@ -1,0 +1,397 @@
+<template>
+    <div class="reg-overlay">
+        <!-- HEADER -->
+        <div class="reg-header">
+            <div class="reg-event-title">{eventTitle}</div>
+            <div class="reg-header-right">
+                <template if:true={eventDateRange}>
+                    <div class="reg-meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z" fill="#585A64"/></svg>
+                        <span>{eventDateRange}</span>
+                    </div>
+                </template>
+                <template if:true={eventLocation}>
+                    <div class="reg-meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#585A64"/></svg>
+                        <span>{eventLocation}</span>
+                    </div>
+                </template>
+                <template if:true={formattedLanguage}>
+                    <div class="reg-meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="#585A64"/></svg>
+                        <span>{formattedLanguage}</span>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- STEPPER -->
+        <div class="reg-stepper-container">
+            <div class="reg-stepper">
+                <div class="step-item">
+                    <div class={step1CircleClass}>
+                        <template if:true={isStep1Complete}>&#10003;</template>
+                        <template if:false={isStep1Complete}>1</template>
+                    </div>
+                    <div class={step1TextClass}>Participants</div>
+                </div>
+                <div class={connector12Class}></div>
+                <div class="step-item">
+                    <div class={step2CircleClass}>
+                        <template if:true={isStep2Complete}>&#10003;</template>
+                        <template if:false={isStep2Complete}>2</template>
+                    </div>
+                    <div class={step2TextClass}>Select Sessions</div>
+                </div>
+                <div class={connector23Class}></div>
+                <div class="step-item">
+                    <div class={step3CircleClass}>3</div>
+                    <div class={step3TextClass}>Summary</div>
+                </div>
+            </div>
+            <div class="reg-progress-bar">
+                <div class="reg-progress-fill" style={progressStyle}></div>
+            </div>
+            <div class="reg-step-count">Step {currentStep} out of 3</div>
+        </div>
+
+        <!-- BODY -->
+        <div class="reg-body">
+
+            <!-- STEP 1 -->
+            <template if:true={isStep1}>
+                <div class="step-question">1. Who are you registering for?</div>
+                <div class="mode-toggle">
+                    <button class={myselfBtnClass} onclick={handleMyselfMode}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                        Myself
+                    </button>
+                    <button class={bulkBtnClass} onclick={handleBulkMode}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                        Bulk Registration
+                    </button>
+                </div>
+
+                <div class="step1-layout">
+                    <div class="step1-left">
+                        <template if:true={isBulkMode}>
+                            <div class="groups-panel">
+                                <h3 class="panel-title">Participant Groups</h3>
+                                <div class="group-search-wrapper">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="#8C8E94"/></svg>
+                                    <input type="text" class="group-search-input" placeholder="Search groups" value={groupSearchTerm} oninput={handleGroupSearch} />
+                                </div>
+                                <div class="group-list-scroll">
+                                    <template for:each={filteredGroups} for:item="grp">
+                                        <div key={grp.id} class="group-item" data-id={grp.id} onclick={handleGroupRowClick}>
+                                            <input type="checkbox" checked={grp.selected} data-id={grp.id} onclick={stopPropagation} onchange={handleGroupToggle} />
+                                            <div class="group-info">
+                                                <div class="group-name">{grp.name}</div>
+                                                <div class="group-count">{grp.membersLabel}</div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template if:false={hasFilteredGroups}>
+                                        <div class="no-groups">No groups found</div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div class="add-guest-panel" if:true={isMyselfMode}>
+                            <h3 class="panel-title">Add Individual Guest</h3>
+                            <p class="panel-subtitle">{guestLimitLabel}</p>
+                            <div class="form-field">
+                                <label>Name<span class="required">*</span></label>
+                                <input type="text" class="form-input" placeholder="Enter Name" value={guestName} onchange={handleGuestNameChange} />
+                            </div>
+                            <div class="form-field">
+                                <label>Email<span class="required">*</span></label>
+                                <input type="email" class="form-input" placeholder="Enter Email" value={guestEmail} oninput={handleGuestEmailChange} />
+                                <template if:true={guestEmailError}>
+                                    <p class="field-error">{guestEmailError}</p>
+                                </template>
+                            </div>
+                            <div class="form-field">
+                                <label>Phone (Not visible publicly)</label>
+                                <c-ken-custom-phone-input
+                                    value={guestPhone}
+                                    placeholder="Enter Phone"
+                                    onphonechange={handleGuestPhoneChange}>
+                                </c-ken-custom-phone-input>
+                            </div>
+                            <button class="add-guest-btn" onclick={handleAddGuest}>Add Guest</button>
+                        </div>
+                    </div>
+
+                    <div class="step1-right">
+                        <div class="participants-table-header">
+                            <div class="participants-title">Participants <span class="participants-count">({participantCount} Participants)</span></div>
+                            <div class="participants-header-right">
+                                <template if:true={showFeeLabel}>
+                                    <span class="fee-pill">&#8377;{sessionPriceLabel} / participant &middot; All sessions</span>
+                                </template>
+                                <div class="search-wrapper">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="#8C8E94"/></svg>
+                                    <input type="text" class="search-input" placeholder="Search" value={searchQuery} onchange={handleSearchChange} />
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 15c1.66 0 2.99-1.34 2.99-3L15 6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.42 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z" fill="#8C8E94"/></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="participants-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" checked={allSelected} onchange={handleSelectAll} /></th>
+                                    <th>Name</th>
+                                    <th>Contact</th>
+                                    <th>Type</th>
+                                    <template if:true={showMealsColumn}><th>Meals</th></template>
+                                    <template if:true={showDietaryColumn}><th>Dietary Pref.<span class="dietary-required-mark">*</span></th></template>
+                                    <template if:true={hasSurvey}><th>Custom Survey</th></template>
+                                    <th class="th-delete"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={pagedParticipants} for:item="p">
+                                    <tr key={p.id}>
+                                        <td><input type="checkbox" checked={p.selected} data-id={p.id} onchange={handleParticipantSelect} /></td>
+                                        <td class="td-name">{p.name}</td>
+                                        <td class="td-contact">
+                                            <div>{p.email}</div>
+                                            <div class="td-phone">{p.phone}</div>
+                                        </td>
+                                        <td><span class={p.typeClass}>{p.typeLabel}</span></td>
+                                        <template if:true={showMealsColumn}>
+                                            <td>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" checked={p.meals} data-id={p.id} onchange={handleMealsToggle} />
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </td>
+                                        </template>
+                                        <template if:true={showDietaryColumn}>
+                                            <td>
+                                                <select class="dietary-select" data-id={p.id} onchange={handleDietaryChange} disabled={p.dietaryDisabled}>
+                                                    <option value="">Select</option>
+                                                    <template for:each={p.dietaryOptions} for:item="opt">
+                                                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                                    </template>
+                                                </select>
+                                            </td>
+                                        </template>
+                                        <template if:true={hasSurvey}>
+                                            <td class="td-survey-actions">
+                                                <template if:true={p.surveySubmitted}>
+                                                    <button class="action-btn fill-btn submitted" disabled>Submitted</button>
+                                                </template>
+                                                <template if:false={p.surveySubmitted}>
+                                                    <button class="action-btn fill-btn" data-id={p.id} onclick={handleFillSurvey}>Fill</button>
+                                                </template>
+                                                <button class="action-btn share-btn" data-id={p.id} onclick={handleShareSurvey}>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+                                                </button>
+                                            </td>
+                                        </template>
+                                        <td class="td-delete">
+                                            <template if:true={p.canDelete}>
+                                                <button class="action-btn delete-btn" data-id={p.id} onclick={handleDeleteParticipant}>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                                </button>
+                                            </template>
+                                            <template if:false={p.canDelete}>
+                                                <button class="action-btn delete-btn disabled" disabled>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                                                </button>
+                                            </template>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <template if:false={hasParticipants}>
+                                    <tr>
+                                        <td colspan="7" class="no-participants">No participants added yet.</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                        <template if:true={showPagination}>
+                            <div class="pagination">
+                                <button class="page-btn" onclick={handlePrevPage} disabled={isPrevDisabled}>&#8592; Previous</button>
+                                <div class="page-numbers">
+                                    <template for:each={pageNumbers} for:item="pg">
+                                        <button key={pg.label} class={pg.cls} data-page={pg.value} onclick={handlePageClick}>{pg.label}</button>
+                                    </template>
+                                </div>
+                                <button class="page-btn" onclick={handleNextPage} disabled={isNextDisabled}>Next &#8594;</button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+            <!-- STEP 2 -->
+            <template if:true={isStep2}>
+                <div class="step-question">2. Select your sessions</div>
+                <div class="step2-info-note">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="#5867dd"/></svg>
+                    <template if:true={showFees}>
+                        <span>Applies to everyone in the selected group. Prices will be calculated based on number of participants and sessions selected.</span>
+                    </template>
+                    <template if:false={showFees}>
+                        <span>Applies to everyone in the selected group. Select the sessions you would like to attend.</span>
+                    </template>
+                </div>
+                <div class="sessions-list">
+                    <template for:each={dateGroups} for:item="dg">
+                        <div key={dg.dateKey} class="session-date-card">
+                            <span class="session-date-badge">{dg.displayDate}</span>
+                            <div class="session-row all-sessions-row" data-datekey={dg.dateKey} onclick={handleAllSessionsRowClick}>
+                                <input type="checkbox" checked={dg.allSelected} data-datekey={dg.dateKey} onclick={stopPropagation} onchange={handleAllSessionsChange} />
+                                <span class="session-row-title">All Sessions</span>
+                                <template if:true={showFees}>
+                                    <span class="session-row-price">&#8377;{dg.totalPrice}</span>
+                                </template>
+                            </div>
+                            <hr class="session-divider" />
+                            <template for:each={dg.sessions} for:item="sess">
+                                <div key={sess.id} class="session-row" data-id={sess.id} data-datekey={dg.dateKey} onclick={handleSessionRowClick}>
+                                    <input type="checkbox" checked={sess.checked} data-id={sess.id} data-datekey={dg.dateKey} onclick={stopPropagation} onchange={handleSessionChange} />
+                                    <div class="session-row-info">
+                                        <div class="session-row-title">{sess.title}</div>
+                                        <div class="session-row-time">{sess.startTime} - {sess.endTime}</div>
+                                    </div>
+                                    <template if:true={showFees}>
+                                        <template if:true={sess.price}>
+                                            <span class="session-row-price">&#8377;{sess.price}</span>
+                                        </template>
+                                        <template if:false={sess.price}>
+                                            <span class="session-row-price free">Free</span>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasDateGroups}>
+                        <div class="no-sessions">No sessions available for this event.</div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- STEP 3 -->
+            <template if:true={isStep3}>
+                <div class="step3-layout slds-grid slds-wrap slds-gutters_large">
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_7-of-12">
+                        <div class="summary-card">
+                            <h3 class="summary-card-title">Registration Details</h3>
+                            <hr/>
+                            <div class="summary-detail-row">
+                                <span class="detail-label">Number of Participants:</span>
+                                <span class="detail-value">{participantCount}</span>
+                            </div>
+                            <template if:true={showMealsColumn}>
+                                <div class="summary-detail-row">
+                                    <span class="detail-label">Meals Added:</span>
+                                    <span class="detail-value">{mealsAddedText}</span>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="summary-card">
+                            <h3 class="summary-card-title">Sessions Selected</h3>
+                            <template for:each={selectedSessionsByDate} for:item="dg">
+                                <div key={dg.dateKey}>
+                                    <div class="summary-date-label">{dg.displayDate}</div>
+                                    <template for:each={dg.sessions} for:item="sess">
+                                        <div key={sess.id} class="summary-session-row">
+                                            <div class="summary-session-info">
+                                                <div class="summary-session-title">{sess.title}</div>
+                                                <div class="summary-session-time">{sess.startTime} - {sess.endTime}</div>
+                                            </div>
+                                            <template if:true={showFees}>
+                                                <template if:true={sess.price}>
+                                                    <span class="summary-session-price">&#8377;{sess.price}</span>
+                                                </template>
+                                                <template if:false={sess.price}>
+                                                    <span class="summary-session-price">Free</span>
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:false={hasSelectedSessions}>
+                                <div class="no-sessions">No sessions selected.</div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="slds-col slds-size_1-of-1 slds-medium-size_5-of-12">
+                        <template if:true={showFees}>
+                            <div class="payment-card">
+                                <h3 class="payment-card-title">Payment Summary</h3>
+                                <div class="payment-row">
+                                    <span class="payment-label">Session Fee</span>
+                                    <span class="payment-breakdown">&#8377;{sessionSubtotal} &times; {participantCount} participants</span>
+                                    <span class="payment-amount">&#8377;{sessionGrandTotalFormatted}</span>
+                                </div>
+                                <template if:true={showMealFeeRow}>
+                                    <div class="payment-row">
+                                        <span class="payment-label">Meal Fee</span>
+                                        <span class="payment-breakdown">&#8377;{mealFeePerHeadFormatted} &times; {mealHeadCount} meals</span>
+                                        <span class="payment-amount">&#8377;{mealFeeTotalFormatted}</span>
+                                    </div>
+                                </template>
+                                <hr class="payment-divider"/>
+                                <div class="payment-row total-row">
+                                    <span class="payment-label total-label">Total Payable</span>
+                                    <span class="payment-breakdown">Sessions + meals for {participantCount} participants</span>
+                                    <span class="payment-amount total-amount">&#8377;{totalAmountFormatted}</span>
+                                </div>
+                            </div>
+                        </template>
+                        <div class="note-card">
+                            <div class="note-header">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" fill="#856404"/></svg>
+                                <span class="note-title">Important Note</span>
+                            </div>
+                            <ul class="note-list">
+                                <li>This is a bulk registration. Any cancellation will apply to all participants.</li>
+                                <li>The cancellation window closes 72 hours before the event.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="reg-footer">
+            <div class="reg-footer-left">
+                <span>Participants: <strong>{participantCount}</strong></span>
+                <template if:true={showSessionFooterInfo}>
+                    <span class="reg-footer-sep">|</span>
+                    <span>Sessions: <strong>{selectedSessionCount}</strong></span>
+                    <template if:true={showFees}>
+                        <span class="reg-footer-sep">|</span>
+                        <span>Total: <strong>&#8377;{totalAmountFormatted}</strong></span>
+                    </template>
+                </template>
+            </div>
+            <div class="reg-footer-right">
+                <template if:false={showBackButton}>
+                    <button class="reg-btn-cancel" onclick={closeModal}>Cancel</button>
+                </template>
+                <template if:true={showBackButton}>
+                    <button class="reg-btn-back" onclick={handleBack}>Back</button>
+                </template>
+                <template if:false={isStep3}>
+                    <button class="reg-btn-next" onclick={handleNext}>Next</button>
+                </template>
+                <!-- Payment flow disabled for now: button registers directly instead of "Proceed to Payment" -->
+                <template if:true={isStep3}>
+                    <button class="reg-btn-register" onclick={handleFinalRegister}>Register</button>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

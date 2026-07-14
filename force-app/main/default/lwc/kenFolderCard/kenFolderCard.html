@@ -1,0 +1,45 @@
+<template>
+    <div class="folder-card" onclick={handleCardClick}>
+        <!-- Folder Info -->
+        <div class="folder-info">
+            <h3 class="folder-name">{folderName}</h3>
+            <p class="folder-date">Last updated on: {lastUpdatedDate}</p>
+        </div>
+
+        <!-- Folder Icon -->
+        <div class="folder-icon-container">
+            <lightning-icon
+                icon-name="utility:folder"
+                size="large"
+                class="folder-icon"
+                alternative-text="Folder"
+            ></lightning-icon>
+        </div>
+
+        <!-- Folder Meta -->
+        <div class="folder-meta">
+            <div class="owner-info">
+                <div class="owner-avatar-container">
+                    <img
+                        src={ownerProfileImageUrl}
+                        alt={ownerName}
+                        class="owner-avatar"
+                        data-profile-image="true"
+                        onerror={handleAvatarError}
+                    />
+                </div>
+                <span class="owner-name">{ownerName}</span>
+            </div>
+            <template if:true={hasCollaborators}>
+                <div class="collaborators-info">
+                    <lightning-icon
+                        icon-name="utility:groups"
+                        size="xx-small"
+                        class="collaborators-icon"
+                    ></lightning-icon>
+                    <span class="collaborators-count">{collaboratorsCount} collaborators</span>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

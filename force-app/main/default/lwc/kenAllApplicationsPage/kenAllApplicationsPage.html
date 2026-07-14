@@ -1,0 +1,134 @@
+<template>
+    <section class="applications-page">
+        <div class="applications-header">
+            <h2>All Applications</h2>
+            <div class="header-actions">
+                <div class="dropdown">
+                    <button class="dropdown-trigger" type="button" onclick={toggleCompanyTypeMenu}>
+                        <span>{companyTypeLabel}</span>
+                        <lightning-icon icon-name="utility:down" size="x-small"></lightning-icon>
+                    </button>
+                    <template lwc:if={isCompanyTypeOpen}>
+                        <div class="dropdown-menu">
+                            <label class="checkbox-row">
+                                <input type="checkbox" data-type="Startup" checked={companyTypeSelection.Startup} onchange={handleCompanyTypeChange}>
+                                <span>Startups</span>
+                            </label>
+                            <label class="checkbox-row">
+                                <input type="checkbox" data-type="Corporate" checked={companyTypeSelection.Corporate} onchange={handleCompanyTypeChange}>
+                                <span>Corporates</span>
+                            </label>
+                            <label class="checkbox-row">
+                                <input type="checkbox" data-type="SME" checked={companyTypeSelection.SME} onchange={handleCompanyTypeChange}>
+                                <span>SMEs</span>
+                            </label>
+                            <label class="checkbox-row">
+                                <input type="checkbox" data-type="PSU" checked={companyTypeSelection.PSU} onchange={handleCompanyTypeChange}>
+                                <span>PSUs</span>
+                            </label>
+                        </div>
+                    </template>
+                </div>
+                <button class="filter-btn" type="button" onclick={toggleFilters}>
+                    <span>Filters</span>
+                    <lightning-icon icon-name="utility:filterList" size="x-small"></lightning-icon>
+                </button>
+            </div>
+        </div>
+
+        <div class="table-shell">
+            <div class="table-header table-row">
+                <div>Company Name</div>
+                <div>Profile</div>
+                <div>Applied On</div>
+                <div>Current stage</div>
+                <div>Action</div>
+            </div>
+<div class="table-body">
+            <template for:each={visibleApplications} for:item="item">
+                <div key={item.id} class="table-row table-body-row">
+                    <div class="company-cell">
+                        <span class={item.logoClass}>{item.companyInitial}</span>
+                        <span>{item.company}</span>
+                    </div>
+                    <div>{item.profile}</div>
+                    <div>{item.appliedOn}</div>
+                    <div>
+                        <span class={item.stageClass}>{item.stageLabel}</span>
+                    </div>
+                    <div class="actions-cell">
+                        <template for:each={item.actions} for:item="action">
+                            <button key={action.id} class={action.className} type="button">{action.label}</button>
+                        </template>
+                    </div>
+                </div>
+            </template>
+            </div>
+        </div>
+
+        <template lwc:if={isFiltersOpen}>
+            <section class="filters-drawer">
+                <div class="filters-header">Filters</div>
+
+                <label class="mentor-toggle">
+                    <input type="checkbox" checked={draftShowMentors} onchange={handleDraftMentorsToggle}>
+                    <span>Show mentors near me</span>
+                </label>
+
+                <select class="filter-input" data-field="company" value={draftFilters.company} onchange={handleDraftFilterChange}>
+                    <option value="">Company</option>
+                    <template for:each={companyOptions} for:item="option">
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    </template>
+                </select>
+
+                <select class="filter-input" data-field="industry" value={draftFilters.industry} onchange={handleDraftFilterChange}>
+                    <option value="">Industry</option>
+                    <template for:each={industryOptions} for:item="option">
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    </template>
+                </select>
+
+                <select class="filter-input" data-field="jobFunction" value={draftFilters.jobFunction} onchange={handleDraftFilterChange}>
+                    <option value="">Job function</option>
+                    <template for:each={jobFunctionOptions} for:item="option">
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    </template>
+                </select>
+
+                <select class="filter-input" data-field="program" value={draftFilters.program} onchange={handleDraftFilterChange}>
+                    <option value="">Program last attended</option>
+                    <template for:each={programOptions} for:item="option">
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    </template>
+                </select>
+
+                <select class="filter-input" data-field="specialization" value={draftFilters.specialization} onchange={handleDraftFilterChange}>
+                    <option value="">Specialisation</option>
+                    <template for:each={specializationOptions} for:item="option">
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    </template>
+                </select>
+
+                <select class="filter-input" data-field="graduationYear" value={draftFilters.graduationYear} onchange={handleDraftFilterChange}>
+                    <option value="">Graduation year</option>
+                    <template for:each={graduationYearOptions} for:item="option">
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    </template>
+                </select>
+
+                <select class="filter-input" data-field="city" value={draftFilters.city} onchange={handleDraftFilterChange}>
+                    <option value="">Current city / Town of residence</option>
+                    <template for:each={cityOptions} for:item="option">
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    </template>
+                </select>
+
+                <div class="filters-actions">
+                    <button class="btn-reset" type="button" onclick={resetDraftFilters}>Reset Filters</button>
+                    <button class="btn-apply" type="button" onclick={applyFilters}>Apply</button>
+                </div>
+            </section>
+        </template>
+    </section>
+</template>

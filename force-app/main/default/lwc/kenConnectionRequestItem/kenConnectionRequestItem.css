@@ -1,0 +1,102 @@
+.connection-request-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    transition: background-color 0.2s;
+}
+
+.connection-request-item:hover {
+    background-color: #F6F8FB;
+}
+
+.request-avatar-container {
+    position: relative;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+}
+
+.request-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #e5e7eb;
+    display: block;
+}
+
+.request-online-dot {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    background-color: #10b981;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+.request-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.request-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 4px 0;
+}
+
+.request-time {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-btn.decline {
+    background-color: #ffffff;
+}
+
+.action-btn.decline:hover {
+    background-color: #fee2e2;
+    border-color: #fecaca;
+}
+
+.action-btn.accept {
+    background-color: #1f2937;
+    border-color: #1f2937;
+}
+
+.action-btn.accept:hover {
+    background-color: #374151;
+    border-color: #374151;
+}
+
+.action-btn.accept lightning-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+.action-btn.decline lightning-icon {
+    --slds-c-icon-color-foreground-default: #374151;
+}

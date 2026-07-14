@@ -1,0 +1,60 @@
+<apex:page controller="KenResumeController" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false">
+<html><head>
+<style type="text/css">
+@page { size: A4; margin: 0; }
+body { font-family: Arial, Helvetica, sans-serif; color:#2b2540; font-size:11px; margin:0; }
+table.layout { width:100%; border-collapse:collapse; }
+td.side { width:34%; background:#7A1FA2; color:#F3E8FB; padding:26px 20px; vertical-align:top; }
+td.main { width:66%; padding:26px 28px; vertical-align:top; }
+.s-name { font-size:22px; font-weight:bold; color:#ffffff; margin:0 0 4px; }
+.s-headline { font-size:11px; color:#EAD7F5; margin:0 0 16px; }
+.s-h { font-size:11px; font-weight:bold; color:#ffffff; text-transform:uppercase; letter-spacing:1px; margin:16px 0 6px; border-bottom:1px solid #B86FD0; padding-bottom:3px; }
+.s-line { font-size:10px; margin:0 0 4px; }
+.s-skill { font-size:10px; margin:0 0 4px; color:#F3E8FB; }
+.m-h { font-size:13px; font-weight:bold; color:#7A1FA2; text-transform:uppercase; letter-spacing:1px; border-bottom:2px solid #B033C8; padding-bottom:4px; margin:0 0 8px; }
+.m-sec { margin-bottom:16px; }
+.m-item { margin-bottom:10px; }
+.m-item-h { font-size:12px; font-weight:bold; }
+.m-item-sub { font-size:11px; color:#6B5E7A; }
+.m-item-date { font-size:10px; color:#9A8FB0; }
+.m-desc { font-size:11px; margin:3px 0 0; }
+.summary { font-size:11px; line-height:1.5; }
+</style>
+</head><body>
+<table class="layout"><tr>
+  <td class="side">
+    <p class="s-name">{!IF(rec.Full_Name__c == null, "Your Name", rec.Full_Name__c)}</p>
+    <p class="s-headline">{!rec.Headline__c}</p>
+    <div class="s-h">Contact</div>
+    <p class="s-line">{!rec.Email__c}</p>
+    <p class="s-line">{!rec.Phone__c}</p>
+    <p class="s-line">{!rec.Location__c}</p>
+    <apex:outputPanel rendered="{!skills.size > 0}">
+      <div class="s-h">Skills</div>
+      <apex:repeat value="{!skills}" var="s"><p class="s-skill">&bull; {!s}</p></apex:repeat>
+    </apex:outputPanel>
+  </td>
+  <td class="main">
+    <apex:outputPanel rendered="{!rec.Summary__c != null}">
+      <div class="m-sec"><p class="m-h">Profile</p><p class="summary">{!rec.Summary__c}</p></div>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!experiences.size > 0}">
+      <div class="m-sec"><p class="m-h">Experience</p>
+        <apex:repeat value="{!experiences}" var="e">
+          <div class="m-item"><span class="m-item-h">{!e.title}</span> <span class="m-item-sub">&mdash; {!e.company}</span>
+            <div class="m-item-date">{!e.dates}</div><p class="m-desc">{!e.description}</p></div>
+        </apex:repeat>
+      </div>
+    </apex:outputPanel>
+    <apex:outputPanel rendered="{!educations.size > 0}">
+      <div class="m-sec"><p class="m-h">Education</p>
+        <apex:repeat value="{!educations}" var="d">
+          <div class="m-item"><span class="m-item-h">{!d.degree}</span> <span class="m-item-sub">&mdash; {!d.institution}</span>
+            <div class="m-item-date">{!d.dates}</div></div>
+        </apex:repeat>
+      </div>
+    </apex:outputPanel>
+  </td>
+</tr></table>
+</body></html>
+</apex:page>

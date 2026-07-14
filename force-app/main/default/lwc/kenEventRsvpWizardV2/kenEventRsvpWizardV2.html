@@ -1,0 +1,95 @@
+<template>
+    <div class="modal-backdrop">
+        <div class="modal modal--md" onclick={stopBubble}>
+            <button class="modal__close" onclick={handleClose}>×</button>
+
+            <div class="wiz-header">
+                <h2 class="wiz-title">{eventTitle}</h2>
+                <p class="wiz-sub">{stepLabel}</p>
+            </div>
+
+            <div class="stepper">
+                <template for:each={stepper} for:item="s">
+                    <div key={s.id} class={s.cls}>
+                        <span class="step__num">{s.num}</span>
+                        <span>{s.label}</span>
+                    </div>
+                </template>
+            </div>
+            <div class="progress"><div class="progress__bar" style={progressStyle}></div></div>
+
+            <div class="wiz-body">
+                <template lwc:if={rsvpStep1}>
+                    <template for:each={participants} for:item="p">
+                        <div key={p.key} class="guest-form">
+                            <div class="gform__head">
+                                <p class="gform__title">Your Details</p>
+                            </div>
+                            <div class="field">
+                                <label>Name <span class="req">*</span></label>
+                                <input type="text" placeholder="Enter name" value={p.name} data-key={p.key} oninput={handleNameInput}/>
+                                <template lwc:if={p.nameError}><span class="field-err">{p.nameError}</span></template>
+                            </div>
+                            <div class="field">
+                                <label>Email <span class="req">*</span></label>
+                                <input type="email" placeholder="Enter email" value={p.email} data-key={p.key} oninput={handleEmailInput}/>
+                                <template lwc:if={p.emailError}><span class="field-err">{p.emailError}</span></template>
+                            </div>
+                        </div>
+                    </template>
+                    <template lwc:if={formError}>
+                        <p class="form-error" role="alert">{formError}</p>
+                    </template>
+                </template>
+
+                <template lwc:if={rsvpStep2}>
+                    <h3>Select your sessions</h3>
+                    <p class="muted">Choose the sessions you'd like to attend.</p>
+                    <label class="session-row">
+                        <input type="checkbox" checked/>
+                        <div><p class="session-row__title">All Sessions</p></div>
+                    </label>
+                </template>
+
+                <template lwc:if={rsvpStep3}>
+                    <h3>Summary</h3>
+                    <div class="card">
+                        <div class="kv"><span>Participants:</span><strong>{participantCount}</strong></div>
+                        <div class="summary-list">
+                            <template for:each={summaryParticipants} for:item="p">
+                                <div key={p.key} class="summary-row">
+                                    <span class="summary-row__name">{p.label}</span>
+                                    <span class="summary-row__email">{p.email}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:if={rsvpStep4}>
+                    <div class="success-screen">
+                        <div class="success-seal">✓</div>
+                        <h2>Registered Successfully!</h2>
+                        <p>Your registration for <strong>{eventTitle}</strong> is confirmed.</p>
+                    </div>
+                </template>
+            </div>
+
+            <template lwc:if={hideFooter}></template>
+            <template lwc:else>
+                <footer class="wiz-footer">
+                    <button type="button" class="btn btn--outline" onclick={handleClose}>Cancel</button>
+                    <div class="wiz-footer__right">
+                        <button type="button" class="btn btn--outline" onclick={handleBack} disabled={backDisabled}>Back</button>
+                        <template lwc:if={showNext}>
+                            <button type="button" class="btn btn--primary" onclick={handleNext}>Next →</button>
+                        </template>
+                        <template lwc:if={showSubmit}>
+                            <button type="button" class="btn btn--primary" onclick={handleSubmit}>Confirm Registration</button>
+                        </template>
+                    </div>
+                </footer>
+            </template>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,25 @@
+<template>
+    <div class="rte-editor">
+        <div class="rte-area" contenteditable="true" data-placeholder={placeholder}
+            oninput={handleInput} onfocus={handleFocus}
+            onmouseup={handleSelection} onkeyup={handleSelection}
+            onblur={handleBlur} lwc:dom="manual"></div>
+        <template if:true={hasCounter}>
+            <p class="rte-charcount"><span class="rte-charcount-current">{currentLength}</span>/{maxLength} characters</p>
+        </template>
+        <div class="rte-toolbar">
+            <button type="button" class={boldClass} onclick={handleBold} aria-label="Bold">
+                <span class="rte-bold">B</span>
+            </button>
+            <button type="button" class={italicClass} onclick={handleItalic} aria-label="Italic">
+                <span class="rte-italic">I</span>
+            </button>
+            <!-- <span class="rte-ai" onclick={handleAiClick}>
+                <svg class="rte-ai-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2l1.6 5.2L19 9l-5.4 1.8L12 16l-1.6-5.2L5 9l5.4-1.8L12 2z"></path>
+                </svg>
+                Continue writing with AI
+            </span> -->
+        </div>
+    </div>
+</template>

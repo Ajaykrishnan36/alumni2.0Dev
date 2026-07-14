@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 - Alumni Card</masterLabel>
+    <description>Single alumni card in the network grid.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordId" type="String" label="Record Id"/>
+            <property name="name" type="String" label="Name"/>
+            <property name="title" type="String" label="Title"/>
+            <property name="company" type="String" label="Company"/>
+            <property name="expertise" type="String" label="Expertise"/>
+            <property name="education" type="String" label="Education"/>
+            <property name="graduationYear" type="String" label="Graduation Year"/>
+            <property name="location" type="String" label="Location"/>
+            <property name="batch" type="String" label="Batch"/>
+            <property name="profileImage" type="String" label="Profile Image URL"/>
+            <property name="willingToHelp" type="Boolean" label="Willing To Help" default="false"/>
+            <property name="isMentor" type="Boolean" label="Is Mentor" default="false"/>
+            <property name="isOnline" type="Boolean" label="Is Online" default="false"/>
+            <property name="linkedin" type="String" label="LinkedIn URL"/>
+            <property name="avatarColor" type="String" label="Avatar Color"/>
+            <property name="initial" type="String" label="Avatar Initial"/>
+            <property name="connected" type="Boolean" label="Connected" default="false"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

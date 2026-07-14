@@ -1,0 +1,108 @@
+.groups-joined-container {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.discover-btn {
+    background: #4A90E2;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.line {
+    height: 1px;
+    background: #E5E5E5;
+    margin-bottom: 1rem;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 2rem 0;
+    color: #999;
+}
+
+.empty-img {
+    width: 60%;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.group-list {
+    margin-bottom: 1rem;
+}
+
+.group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.group-item:last-child {
+    border-bottom: none;
+}
+
+.group-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.group-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.group-status {
+    display: inline-block;
+    background: #E0F2F1;
+    color: #00796B;
+    font-size: 0.7rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 1rem;
+    width: fit-content;
+    margin-bottom: 0.25rem;
+}
+
+.group-meta {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.group-thumb {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.view-all-btn {
+    width: 100%;
+    padding: 0.5rem;
+    background: #F6F8FB;
+    color: #4A90E2;
+    border: 1px solid #4A90E2;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+}

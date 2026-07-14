@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 — Welcome Carousel</masterLabel>
+    <description>Post-onboarding intro carousel introducing platform features.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="institutionName" type="String" label="Institution Name" default="&lt;Institution Name&gt;"/>
+            <property name="institutionLogoUrl" type="String" label="Institution Logo URL" default=""/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

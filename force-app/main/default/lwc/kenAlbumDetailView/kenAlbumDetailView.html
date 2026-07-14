@@ -1,0 +1,75 @@
+<template>
+    <div class={albumDetailContainerClass}>
+        <!-- Photo Upload Page -->
+        <template if:true={showUploadPage}>
+            <c-ken-photo-upload-page
+                is-saving={isSavingPhotos}
+                onback={handleBackFromUploadPage}
+                onpost={handlePhotoPost}
+            ></c-ken-photo-upload-page>
+        </template>
+
+        <!-- Album Detail Content -->
+        <template if:false={showUploadPage}>
+            <!-- Album Header -->
+            <div class="album-header">
+                <h1 class="album-title">{albumName}</h1>
+            </div>
+
+            <!-- Empty State -->
+            <template if:true={isEmpty}>
+                <div class="empty-state-container">
+                    <div class="empty-state-content">
+                        <h2 class="empty-title">No files available</h2>
+                        <p class="empty-description">Start by uploading your first file</p>
+                        <lightning-button
+                            variant="brand"
+                            label="Add Files"
+                            icon-name="utility:add"
+                            onclick={handleAddPhotos}
+                            class="add-photos-button"
+                            disabled={addFilesDisabled}
+                            title={addFilesDisabledTitle}
+                        ></lightning-button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Photos Header and Grid -->
+            <template if:false={isEmpty}>
+                <div class="album-photos-header">
+                    <h2 class="photos-count">{photosCount} {photosLabel}</h2>
+                    <lightning-button
+                        variant="brand"
+                        label="Add Files"
+                        icon-name="utility:add"
+                        onclick={handleAddPhotos}
+                        class="add-photos-button"
+                        disabled={addFilesDisabled}
+                        title={addFilesDisabledTitle}
+                    ></lightning-button>
+                </div>
+                <div class="album-photos-grid">
+                    <template for:each={albumPhotos} for:item="photo">
+                        <div key={photo.id} class="photo-item">
+                            <c-ken-photo-card
+                                photo={photo}
+                                onmenuselect={handlePhotoMenu}
+                                onphotoclick={handlePhotoClick}
+                            ></c-ken-photo-card>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </template>
+
+        <!-- Photo Detail Viewer -->
+        <c-ken-photo-detail-modal
+            show-modal={showPhotoDetail}
+            photo={selectedPhoto}
+            all-photos={albumPhotos}
+            onclose={handleClosePhotoDetail}
+            onphotochange={handlePhotoChange}
+        ></c-ken-photo-detail-modal>
+    </div>
+</template>

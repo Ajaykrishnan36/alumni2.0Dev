@@ -1,0 +1,95 @@
+<template>
+    <template lwc:if={hasMentor}>
+        <div class="modal-backdrop" onclick={handleBackdrop}>
+            <div class="modal modal--xl" onclick={handleStop}>
+                <button type="button" class="modal__close" onclick={handleClose}>×</button>
+                <div class="mp-grid">
+                    <!-- MAIN COLUMN -->
+                    <div class="mp__main">
+                        <!-- Hero -->
+                        <div class="mp__hero">
+                            <div class="mp__av" style={avatarStyle}>{mentor.initial}</div>
+                            <div class="mp__id">
+                                <h1 class="mp__name">
+                                    {mentor.name}
+                                    <template lwc:if={mentor.verified}>
+                                        <span class="mp__verified" title="Verified">✓</span>
+                                    </template>
+                                </h1>
+                                <p class="mp__role">{roleLine}</p>
+                                <p class="mp__meta">
+                                    <span>📍 {mentor.city}</span>
+                                    <span>🎓 {mentor.batch}</span>
+                                    <span>⏱ {mentor.experience}</span>
+                                    <span>🗣 {mentor.languages}</span>
+                                </p>
+                                <div class="mp__stats">
+                                    <div class="stt"><strong>{ratingDisplay} ★</strong>Rating · {reviewCount} reviews</div>
+                                    <div class="stt"><strong>{mentor.sessionsHeld}</strong>Sessions held</div>
+                                    <div class="stt"><strong>{mentor.responseRate}</strong>Response rate</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Expertise -->
+                        <div class="sec">
+                            <h3>Areas of expertise</h3>
+                            <div class="exp-tags">
+                                <template for:each={expertise} for:item="e">
+                                    <span key={e} class="exp-tag">{e}</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- About -->
+                        <div class="sec">
+                            <h3>About</h3>
+                            <p>{mentor.bio}</p>
+                        </div>
+
+                        <!-- Reviews -->
+                        <template lwc:if={hasReviews}>
+                            <div class="sec">
+                                <h3>{reviewsHeading}</h3>
+                                <template for:each={reviews} for:item="r">
+                                    <div key={r.id} class="rev">
+                                        <span class="rev__av" style={r.avStyle}>{r.initial}</span>
+                                        <div class="rev__b">
+                                            <div class="rev__h">
+                                                <h4 class="rev__n">{r.name}</h4>
+                                                <span class="rev__r">{r.rating}</span>
+                                            </div>
+                                            <p class="rev__t">{r.text}</p>
+                                            <p class="rev__d">{r.date}</p>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- SIDEBAR -->
+                    <aside class="mp__side">
+                        <div class="book">
+                            <h3>Book a session</h3>
+                            <p class="book__price">From <strong>{mentor.priceLabel}</strong> · {mentor.sessionLength}</p>
+                            <button type="button" class="book__cta" onclick={handleBook}>Book Session</button>
+                            <button type="button" class="book__cta2" onclick={handleMessage}>💬 Send message</button>
+                        </div>
+                        <div class="cal">
+                            <h3>This week's availability</h3>
+                            <div class="cal-grid">
+                                <template for:each={availability} for:item="d">
+                                    <div key={d.id} class={d.cls}>
+                                        <span class="cd__d">{d.num}</span>
+                                        <span class="cd__l">{d.day} · {d.label}</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

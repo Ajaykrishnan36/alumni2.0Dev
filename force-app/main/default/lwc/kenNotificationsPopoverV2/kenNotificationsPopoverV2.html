@@ -1,0 +1,87 @@
+<template>
+    <div class="np-pop" onclick={handleStop}>
+        <!-- 50/50 segmented control -->
+        <div class="np-tabs">
+            <button type="button" class={notifTabClass} onclick={showNotifTab}>Notifications</button>
+            <button type="button" class={reqTabClass} onclick={showReqTab}>Connection Requests</button>
+        </div>
+
+        <div class="np-body">
+            <!-- ===== TAB 1: Notifications ===== -->
+            <template lwc:if={isNotifTab}>
+                <template lwc:if={hasNotifications}>
+                    <template for:each={notifGroups} for:item="g">
+                        <div key={g.key} class="np-group">
+                            <p class="np-divider">{g.label}</p>
+                            <template for:each={g.items} for:item="n">
+                                <div key={n.key} class="np-item">
+                                    <span class="np-avatar" style={n.avatarStyle}>{n.initial}</span>
+                                    <div class="np-item__body">
+                                        <p class="np-item__text">{n.title}</p>
+                                        <template lwc:if={n.body}>
+                                            <p class="np-item__sub">{n.body}</p>
+                                        </template>
+                                        <p class="np-item__time">{n.timeLabel}</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <div class="np-empty">
+                        <svg width="84" height="84" viewBox="0 0 120 120" aria-hidden="true">
+                            <circle cx="60" cy="60" r="56" fill="#F3F4F6"/>
+                            <path d="M60 34a14 14 0 0 0-14 14c0 12-5 15-5 15h38s-5-3-5-15a14 14 0 0 0-14-14z" fill="#fff" stroke="#CBD5E1" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="M54 80a6 6 0 0 0 12 0" fill="none" stroke="#CBD5E1" stroke-width="2.5" stroke-linecap="round"/>
+                            <circle cx="53" cy="52" r="2" fill="#94A3B8"/>
+                            <circle cx="67" cy="52" r="2" fill="#94A3B8"/>
+                            <path d="M52 60a8 5 0 0 1 16 0" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" transform="rotate(180 60 59)"/>
+                        </svg>
+                        <p class="np-empty__text">You're all caught up! No new notifications at the moment.</p>
+                    </div>
+                </template>
+            </template>
+
+            <!-- ===== TAB 2: Connection Requests ===== -->
+            <template lwc:if={isReqTab}>
+                <template lwc:if={hasRequests}>
+                    <template for:each={requestGroups} for:item="g">
+                        <div key={g.key} class="np-group">
+                            <p class="np-divider">{g.label}</p>
+                            <template for:each={g.items} for:item="r">
+                                <div key={r.id} class="np-item np-item--req">
+                                    <span class="np-avatar" style={r.avatarStyle}>{r.requesterInitial}</span>
+                                    <div class="np-item__body">
+                                        <p class="np-item__text">
+                                            <strong>{r.requesterName}</strong>&nbsp;{r.fullMessage}
+                                        </p>
+                                        <p class="np-item__time">{r.timeLabel}</p>
+                                    </div>
+                                    <div class="np-actions">
+                                        <button type="button" class="np-btn np-btn--accept" data-id={r.id}
+                                                onclick={handleAccept} disabled={r.busy}>Accept</button>
+                                        <button type="button" class="np-btn np-btn--decline" data-id={r.id}
+                                                onclick={handleDecline} disabled={r.busy}>Decline</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <div class="np-empty">
+                        <svg width="84" height="84" viewBox="0 0 120 120" aria-hidden="true">
+                            <circle cx="60" cy="60" r="56" fill="#F3F4F6"/>
+                            <path d="M60 34a14 14 0 0 0-14 14c0 12-5 15-5 15h38s-5-3-5-15a14 14 0 0 0-14-14z" fill="#fff" stroke="#CBD5E1" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="M54 80a6 6 0 0 0 12 0" fill="none" stroke="#CBD5E1" stroke-width="2.5" stroke-linecap="round"/>
+                            <circle cx="53" cy="52" r="2" fill="#94A3B8"/>
+                            <circle cx="67" cy="52" r="2" fill="#94A3B8"/>
+                        </svg>
+                        <p class="np-empty__text">You're all caught up! No new connection requests at the moment.</p>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>

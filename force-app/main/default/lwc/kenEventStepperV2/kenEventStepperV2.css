@@ -1,0 +1,12 @@
+:host { display: block; }
+.stepper-wrap { background: #fff; border-radius: 12px 12px 0 0; border: 1px solid #E5E6E8; padding: 14px 24px 8px; }
+.host-stepper { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+.hstep { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; font-size: 12px; color: #9DA0A8; flex: 1; min-width: 110px; }
+.hstep__num { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid #C2C5CC; background: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 11px; }
+.hstep--active { color: #373A45; font-weight: 600; }
+.hstep--active .hstep__num { background: #3061FF; border-color: #3061FF; color: #fff; }
+.hstep--done .hstep__num { background: #19A974; border-color: #19A974; color: #fff; }
+.hstep--done { color: #19A974; }
+.progress { height: 3px; background: #E5E6E8; margin-top: 12px; border-radius: 2px; overflow: hidden; }
+.progress__bar { height: 100%; background: #19A974; transition: width 0.25s ease; }
+.step-counter { text-align: center; font-weight: 500; font-size: 11px; color: #5F6271; padding: 6px 0 0; margin: 0; }

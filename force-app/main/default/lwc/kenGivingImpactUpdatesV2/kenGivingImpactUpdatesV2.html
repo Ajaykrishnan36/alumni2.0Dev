@@ -1,0 +1,44 @@
+<template lwc:render-mode="light">
+    <section class="iu-wrap">
+        <header class="iu-head">
+            <div>
+                <h2 class="iu-title">🛡 Impact and transparency</h2>
+                <p class="iu-sub">Recent updates from institution-approved campaigns.</p>
+            </div>
+        </header>
+
+        <template lwc:if={hasNoUpdates}>
+            <div class="iu-empty">
+                <div class="iu-empty__icon">📈</div>
+                <h3 class="iu-empty__title">No impact updates yet</h3>
+                <p class="iu-empty__body">As campaigns deploy funds, the institution will share updates here.</p>
+            </div>
+        </template>
+
+        <template lwc:if={hasUpdates}>
+            <div class="iu-grid">
+                <template for:each={updates} for:item="u">
+                    <article key={u.id} class="iu-card">
+                        <template lwc:if={u.hasImage}>
+                            <div class="iu-card__img" style={u.imgStyle}></div>
+                        </template>
+                        <template lwc:else>
+                            <div class="iu-card__img iu-card__img--gradient"></div>
+                        </template>
+                        <div class="iu-card__body">
+                            <div class="iu-card__meta">
+                                <span class="iu-card__date">{u.date}</span>
+                                <template lwc:if={u.hasMetric}>
+                                    <span class="iu-card__metric">{u.metric}</span>
+                                </template>
+                            </div>
+                            <h3 class="iu-card__headline">{u.headline}</h3>
+                            <p class="iu-card__text">{u.body}</p>
+                            <a href="#" class="iu-card__link">{u.campaignTitle} ›</a>
+                        </div>
+                    </article>
+                </template>
+            </div>
+        </template>
+    </section>
+</template>

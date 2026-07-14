@@ -1,0 +1,31 @@
+<template>
+    <div class="similar-businesses-panel">
+        <div class="panel-header">
+            <h3 class="panel-title">Similar businesses</h3>
+            <button class="view-more-btn" onclick={handleViewMore}>View More</button>
+        </div>
+        <div class="similar-businesses-list">
+            <template if:true={hasSimilar}>
+            <template for:each={similarBusinesses} for:item="business">
+                <div key={business.id} class="similar-business-item" onclick={handleBusinessClick} data-business-id={business.id}>
+                    <div class="business-icon">
+                        <img src={business.logo} alt={business.name} class="business-icon-image" onerror={handleImageError} />
+                    </div>
+                    <div class="business-info">
+                        <h4 class="business-name-small">{business.name}</h4>
+                        <div class="business-location-small">
+                            <lightning-icon icon-name="utility:location" size="xx-small" class="location-icon-small"></lightning-icon>
+                            <span>{business.location}</span>
+                        </div>
+                        <div class="business-category-tag">{business.category}</div>
+                    </div>
+                    <lightning-icon icon-name="utility:chevronright" size="x-small" class="arrow-icon"></lightning-icon>
+                </div>
+            </template>
+            </template>
+            <template if:false={hasSimilar}>
+                <p class="no-similar-message">No similar businesses found.</p>
+            </template>
+        </div>
+    </div>
+</template>

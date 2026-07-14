@@ -1,0 +1,17 @@
+<template>
+    <article class="dgroup" onclick={handleCardClick}>
+        <div class="dgroup__cover" style={coverStyle}>
+            <span class="dgroup__initial">{initial}</span>
+        </div>
+        <div class="dgroup__body">
+            <div class="dgroup__top">
+                <c-ken-group-badge-v2 label={category} tone="category"></c-ken-group-badge-v2>
+                <span class={visClass}>{visibility}</span>
+            </div>
+            <h3 class="dgroup__name">{name}</h3>
+            <p class="dgroup__desc">{description}</p>
+            <p class="dgroup__stats">{statsLabel}</p>
+            <button type="button" class={joinClass} onclick={handleJoinClick}>{joinLabel}</button>
+        </div>
+    </article>
+</template>

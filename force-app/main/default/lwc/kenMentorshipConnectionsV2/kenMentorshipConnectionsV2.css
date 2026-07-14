@@ -1,0 +1,233 @@
+:host {
+    display: block;
+    --mc-font: var(--lwc-fontFamily, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
+.mc-card {
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+    padding: 20px 20px 16px;
+    font-family: var(--mc-font) !important;
+}
+
+.mc-head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.mc-head__title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+.mc-title {
+    margin: 0;
+    font-family: var(--mc-font) !important;
+    font-size: clamp(1.125rem, 1.2vw + 0.4rem, 1.25rem) !important;
+    font-weight: 600 !important;
+    color: #111827;
+}
+.mc-count {
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    font-weight: 500 !important;
+    color: #6B7280;
+}
+
+.mc-head__controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.mc-search {
+    position: relative;
+    flex: 1 1 240px;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 0 12px;
+    height: 40px;
+}
+.mc-search__icon { color: #9CA3AF; display: flex; }
+.mc-search__input {
+    border: 0;
+    outline: 0;
+    background: transparent;
+    flex: 1;
+    padding: 0 8px;
+    font-family: var(--mc-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    color: #111827;
+}
+.mc-search__mic {
+    border: 0;
+    background: transparent;
+    color: #6B7280;
+    cursor: pointer;
+    padding: 4px;
+    display: flex;
+}
+.mc-search__mic:hover { color: #2563EB; }
+
+.mc-sort {
+    height: 40px;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    background: #fff;
+    padding: 0 12px;
+    font-family: var(--mc-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    color: #374151;
+    cursor: pointer;
+}
+.mc-filters {
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid #E5E7EB;
+    border-radius: 999px;
+    background: #fff;
+    font-family: var(--mc-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    font-weight: 500 !important;
+    color: #374151;
+    cursor: pointer;
+}
+.mc-filters:hover { background: #F9FAFB; }
+
+.mc-rail {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 8px;
+    margin: 0 -4px;
+}
+.mc-rail::-webkit-scrollbar { display: none; }
+.mc-rail { scrollbar-width: none; }
+
+.mc-card-item {
+    position: relative;
+    flex: 0 0 auto;
+    width: 240px;
+    scroll-snap-align: start;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    font-family: var(--mc-font) !important;
+}
+.mc-card-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(17, 24, 39, 0.08);
+    border-color: #D1D5DB;
+}
+
+.mc-pill {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #10B981;
+    color: #fff;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+    font-family: var(--mc-font) !important;
+}
+
+.mc-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+    background-color: #E5E7EB;
+    background-size: cover;
+    background-position: center;
+    color: #fff;
+}
+
+.mc-name {
+    margin: 0 0 4px;
+    font-family: var(--mc-font) !important;
+    font-size: clamp(0.875rem, 1vw + 0.3rem, 1rem) !important;
+    font-weight: 600 !important;
+    color: #111827;
+}
+.mc-role {
+    margin: 0 0 6px;
+    font-family: var(--mc-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    font-weight: 500 !important;
+    color: #4B5563;
+}
+.mc-city {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mc-font) !important;
+    font-size: clamp(0.6875rem, 0.5vw + 0.3rem, 0.75rem) !important;
+    font-weight: 400 !important;
+    color: #6B7280;
+}
+.mc-pin { color: #9CA3AF; }
+
+.mc-empty {
+    padding: 28px 16px;
+    text-align: center;
+    color: #6B7280;
+    font-family: var(--mc-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+}
+.mc-empty__link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #2563EB;
+    text-decoration: none;
+    font-weight: 600;
+}
+.mc-empty__link:hover { text-decoration: underline; }
+
+/* ===== Role filter panel (toggled by the Filters button) ===== */
+.mc-filters--on { background: #eef2ff; border-color: #c7d2fe; color: #3730a3; }
+.mc-filters--active::after {
+    content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: #4f46e5; margin-left: 6px; vertical-align: middle;
+}
+.mc-filter-panel {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 10px 12px; margin-top: 8px;
+    background: #fafaff; border: 1px solid #ece6f2; border-radius: 10px;
+}
+.mc-filter-panel__label { font-size: 12px; color: #6b7280; margin-right: 2px; font-weight: 600; }
+.rf-pill {
+    border: 1px solid #d9c9e6; background: #fff; color: #444;
+    padding: 5px 12px; font-size: 12px; font-weight: 600; border-radius: 999px;
+    cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.rf-pill:hover { background: #f5f6ff; }
+.rf-pill--on { background: #4f46e5; color: #fff; border-color: #4f46e5; }
+.mc-filter-panel__clear {
+    margin-left: auto;
+    background: transparent; border: none; color: #6b7280; font-size: 12px;
+    font-weight: 600; cursor: pointer; padding: 5px 8px;
+}
+.mc-filter-panel__clear:hover { color: #3730a3; text-decoration: underline; }

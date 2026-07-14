@@ -1,0 +1,48 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal modal--md" onclick={stopBubble}>
+            <div class="modal-head-row">
+                <div>
+                    <div class="give-step-label">{stepLabel}</div>
+                    <h2 class="modal-title">Apply: {jobTitle}</h2>
+                    <div class="give-sub">{jobCompany}</div>
+                </div>
+                <button class="modal-close" onclick={handleClose}>×</button>
+            </div>
+
+            <c-ken-event-stepper-v2 steps={steps} current-index={currentStep} hide-counter></c-ken-event-stepper-v2>
+
+            <div class="modal-body">
+                <template lwc:if={isStep1}>
+                    <c-ken-job-apply-step-resume-v2
+                        selected-resume-id={selectedResumeId}
+                        onvaluechange={handleValueChange}>
+                    </c-ken-job-apply-step-resume-v2>
+                </template>
+
+                <template lwc:if={isStep2}>
+                    <c-ken-job-apply-step-details-v2
+                        cover-letter={coverLetter}
+                        apply-notes={applyNotes}
+                        onvaluechange={handleValueChange}>
+                    </c-ken-job-apply-step-details-v2>
+                </template>
+
+                <template lwc:if={isStep3}>
+                    <c-ken-job-apply-step-review-v2
+                        job-title={jobTitle}
+                        job-company={jobCompany}
+                        resume-name={selectedResumeName}
+                        cover-letter={coverLetter}
+                        apply-notes={applyNotes}>
+                    </c-ken-job-apply-step-review-v2>
+                </template>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--ghost" onclick={handleBack} disabled={backDisabled}>Back</button>
+                <button class="btn btn--primary" onclick={handleNext} disabled={nextDisabled}>{nextLabel}</button>
+                <a class="footer-link" onclick={handleClose}>Cancel</a>
+            </div>
+        </div>
+    </div>
+</template>

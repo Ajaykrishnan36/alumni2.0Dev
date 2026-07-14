@@ -1,0 +1,118 @@
+<template>
+    <div class="panel">
+        <div class="panelHeader">
+            <div class="panelTitle">Selected Audience</div>
+            <template if:true={segmentationName}>
+                <div class="panelSubtitle">{segmentationName}</div>
+            </template>
+            <template if:true={statusLabel}>
+                <div class={statusClass}>{statusLabel}</div>
+            </template>
+        </div>
+
+        <div class="panelBody">
+            <template if:true={hasItems}>
+                <div class="sectionsCard">
+                    <template for:each={sections} for:item="section">
+                        <div key={section.key} class="section">
+                            <button
+                                type="button"
+                                class="sectionHeader slds-button_reset"
+                                data-key={section.key}
+                                onclick={handleToggleSection}
+                                aria-expanded={section.expanded}
+                            >
+                                <lightning-icon icon-name={section.chevronIcon} size="xx-small" class="sectionChevron"></lightning-icon>
+                                <span class="sectionLabel">{section.label}</span>
+                                <span class="sectionCount">{section.count}</span>
+                            </button>
+
+                            <template if:true={section.expanded}>
+                                <div class="sectionItems">
+                                    <template for:each={section.items} for:item="item">
+                                        <div key={item.id} class="itemRow">
+                                            <div class="itemMain">
+                                                <template if:true={item.showChevron}>
+                                                    <button
+                                                        type="button"
+                                                        class="itemToggle slds-button_reset"
+                                                        data-id={item.id}
+                                                        onclick={handleToggle}
+                                                    >
+                                                        <lightning-icon icon-name={item.chevronIcon} size="xx-small" class="itemChevron"></lightning-icon>
+                                                    </button>
+                                                </template>
+                                                <div class="itemText">
+                                                    <div class="itemTitleRow">
+                                                        <span class="itemTitle" title={item.title}>{item.title}</span>
+                                                        <template if:true={item.countLabel}>
+                                                            <span class="itemCount">{item.countLabel}</span>
+                                                        </template>
+                                                    </div>
+                                                    <template if:true={item.isIndividual}>
+                                                        <span class="rolePill">{item.roleLabel}</span>
+                                                    </template>
+                                                </div>
+                                                <div class="menuWrapper">
+                                                    <button
+                                                        type="button"
+                                                        class="menuTrigger slds-button slds-button_icon slds-button_icon-small"
+                                                        title="Actions"
+                                                        data-id={item.id}
+                                                        onclick={toggleMenu}
+                                                        aria-haspopup="true"
+                                                        aria-expanded={item.menuOpen}
+                                                    >
+                                                        <lightning-icon icon-name="utility:threedots_vertical" size="x-small" class="groupMenuIcon"></lightning-icon>
+                                                    </button>
+                                                    <template if:true={item.menuOpen}>
+                                                        <div class="menuBackdrop" onclick={handleCloseMenu} role="presentation"></div>
+                                                        <div class="menuDropdown" role="menu">
+                                                            <button type="button" class="menuItem" role="menuitem" data-id={item.id} onclick={handleRemoveAction}>Remove</button>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </div>
+
+                                            <template if:true={item.expanded}>
+                                                <template if:true={item.hasCriteria}>
+                                                    <div class="criteriaList">
+                                                        <template for:each={item.criteria} for:item="c">
+                                                            <div key={c.label} class="criteriaItem">
+                                                                <div class="criteriaLabel">{c.label}</div>
+                                                                <div class="criteriaPills">
+                                                                    <template for:each={c.values} for:item="v">
+                                                                        <span key={v} class="criteriaPill">{v}</span>
+                                                                    </template>
+                                                                </div>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <template if:false={hasItems}>
+                <div class="emptyCard">No Audience Selected</div>
+            </template>
+        </div>
+
+        <template if:true={hasItems}>
+            <div class="saveWrap">
+                <button
+                    type="button"
+                    class="saveAudienceButton"
+                    disabled={saveDisabled}
+                    onclick={handleSaveClick}
+                >{saveLabel}</button>
+            </div>
+        </template>
+    </div>
+</template>

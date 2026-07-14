@@ -1,0 +1,3 @@
+<apex:page controller="EDU_Admissions_Swift_Setup_CTRL" action="{!execute}">
+  <h1>Education Cloud has been enabled. You can close this tab.</h1>
+</apex:page>

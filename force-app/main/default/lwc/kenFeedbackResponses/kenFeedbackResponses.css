@@ -1,0 +1,117 @@
+.fb-card {
+    background: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: var(--portal-radius, 12px);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    padding: 20px 22px;
+}
+
+.fb-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.fb-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.fb-download {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f6f8fb;
+    color: var(--primary-color, #3061ff);
+    border: 1px solid var(--portal-border-color, #e6e8ee);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.fb-download:hover {
+    background: #eef1f8;
+}
+
+.fb-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: var(--primary-color, #3061ff);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.fb-respondent {
+    border: 1px solid var(--portal-border-color, #e6e8ee);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+
+.fb-respondent:last-child {
+    margin-bottom: 0;
+}
+
+.fb-respondent-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.fb-respondent-name {
+    font-weight: 600;
+    color: #111827;
+    font-size: 0.875rem;
+}
+
+.fb-date {
+    color: #6b7280;
+    font-size: 0.75rem;
+}
+
+.fb-qa {
+    padding: 8px 0;
+    border-top: 1px solid var(--portal-border-color, #f1f5f9);
+}
+
+.fb-qa:first-of-type {
+    border-top: none;
+}
+
+.fb-q {
+    margin: 0 0 4px 0;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.fb-a {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #111827;
+}
+
+.fb-empty {
+    color: #6b7280;
+    font-size: 0.875rem;
+    margin: 0;
+    padding: 12px 0;
+}
+
+.fb-loading {
+    position: relative;
+    min-height: 60px;
+}

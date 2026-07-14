@@ -1,0 +1,26 @@
+<template>
+    <div class="sidebar-section">
+        <h2 class="section-title">Connection Requests ({requestsCount})</h2>
+        <div class="connection-requests-list">
+            <template if:true={hasRequests}>
+                <template for:each={requests} for:item="request">
+                    <c-ken-connection-request-item
+                        key={request.id}
+                        name={request.name}
+                        date-time={request.dateTime}
+                        profile-image={request.profileImage}
+                        is-online={request.isOnline}
+                        request-id={request.id}
+                        onaccept={handleAccept}
+                        ondecline={handleDecline}
+                    ></c-ken-connection-request-item>
+                </template>
+            </template>
+            <template if:false={hasRequests}>
+                <div class="no-requests-found">
+                    <p class="no-requests-text">No request found</p>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

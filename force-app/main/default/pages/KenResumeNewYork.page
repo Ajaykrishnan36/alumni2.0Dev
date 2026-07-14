@@ -1,0 +1,57 @@
+<apex:page controller="KenResumeController" renderAs="pdf" showHeader="false" sidebar="false" standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false">
+<html><head>
+<style type="text/css">
+@page { size: A4; margin: 0; }
+body { font-family: Arial, Helvetica, sans-serif; color:#2b2540; font-size:11px; margin:0; }
+.band { background:#7A1FA2; color:#ffffff; padding:26px 36px; }
+.name { font-size:26px; font-weight:bold; margin:0; letter-spacing:0.5px; }
+.headline { font-size:13px; margin:4px 0 0; color:#EAD7F5; }
+.contact { font-size:10px; margin:10px 0 0; color:#F3E8FB; }
+.body { padding:24px 36px; }
+.sec { margin-bottom:18px; }
+.sec-title { font-size:13px; font-weight:bold; color:#7A1FA2; text-transform:uppercase; letter-spacing:1px; border-bottom:2px solid #B033C8; padding-bottom:4px; margin:0 0 8px; }
+.item { margin-bottom:10px; }
+.item-h { font-size:12px; font-weight:bold; color:#2b2540; }
+.item-sub { font-size:11px; color:#6B5E7A; }
+.item-date { font-size:10px; color:#9A8FB0; }
+.item-desc { font-size:11px; margin:3px 0 0; }
+.skill { display:inline-block; background:#FBF1FE; border:1px solid #EAD7F5; color:#7A1FA2; padding:3px 10px; border-radius:10px; font-size:10px; margin:0 6px 6px 0; }
+.summary { font-size:11px; line-height:1.5; }
+</style>
+</head><body>
+<div class="band">
+  <p class="name">{!IF(rec.Full_Name__c == null, "Your Name", rec.Full_Name__c)}</p>
+  <p class="headline">{!rec.Headline__c}</p>
+  <p class="contact">{!rec.Email__c} &nbsp;|&nbsp; {!rec.Phone__c} &nbsp;|&nbsp; {!rec.Location__c}</p>
+</div>
+<div class="body">
+  <apex:outputPanel rendered="{!rec.Summary__c != null}">
+    <div class="sec"><p class="sec-title">Summary</p><p class="summary">{!rec.Summary__c}</p></div>
+  </apex:outputPanel>
+  <apex:outputPanel rendered="{!experiences.size > 0}">
+    <div class="sec"><p class="sec-title">Experience</p>
+      <apex:repeat value="{!experiences}" var="e">
+        <div class="item"><span class="item-h">{!e.title}</span> <span class="item-sub">&mdash; {!e.company}</span>
+          <div class="item-date">{!e.dates}</div>
+          <p class="item-desc">{!e.description}</p>
+        </div>
+      </apex:repeat>
+    </div>
+  </apex:outputPanel>
+  <apex:outputPanel rendered="{!educations.size > 0}">
+    <div class="sec"><p class="sec-title">Education</p>
+      <apex:repeat value="{!educations}" var="d">
+        <div class="item"><span class="item-h">{!d.degree}</span> <span class="item-sub">&mdash; {!d.institution}</span>
+          <div class="item-date">{!d.dates}</div>
+        </div>
+      </apex:repeat>
+    </div>
+  </apex:outputPanel>
+  <apex:outputPanel rendered="{!skills.size > 0}">
+    <div class="sec"><p class="sec-title">Skills</p>
+      <apex:repeat value="{!skills}" var="s"><span class="skill">{!s}</span></apex:repeat>
+    </div>
+  </apex:outputPanel>
+</div>
+</body></html>
+</apex:page>

@@ -1,0 +1,62 @@
+<template>
+    <div class="groups-feed-container">
+        <h2 class="feed-title">Latest Updates from your Groups</h2>
+
+        <div class="create-post-card">
+            <span class="card-label">Share your Thoughts</span>
+            <div class="input-wrapper">
+                <input type="text" placeholder="What's on your mind?" class="post-input" />
+            </div>
+        </div>
+
+        <div class="feed-list">
+            <template for:each={posts} for:item="post">
+                <div key={post.id} class="post-card">
+                    <div class="post-header">
+                        <img src={post.authorImage} class="author-avatar" />
+                        <div class="header-info">
+                            <div class="author-row">
+                                <span class="author-name">{post.author}</span>
+                                <span class="post-time">{post.time}</span>
+                            </div>
+                            <span class="posted-in">Posted in <strong>{post.group}</strong></span>
+                        </div>
+                    </div>
+
+                    <div class="post-content">
+                        <p>{post.content}</p>
+                        <p class="post-tags">{post.tags}</p>
+                    </div>
+
+                    <template if:true={post.image}>
+                        <div class="post-image-wrapper">
+                            <img src={post.image} class="post-image" />
+                        </div>
+                    </template>
+
+                    <div class="post-actions">
+                        <div class="action-btn">
+                            <lightning-icon icon-name="utility:like" size="x-small"></lightning-icon>
+                            <span>Like</span>
+                        </div>
+                        <div class="action-btn">
+                            <lightning-icon icon-name="utility:comments" size="x-small"></lightning-icon>
+                            <span>Comment</span>
+                        </div>
+                        <div class="action-btn">
+                            <lightning-icon icon-name="utility:share" size="x-small"></lightning-icon>
+                            <span>Share</span>
+                        </div>
+                    </div>
+
+                    <div class="post-stats" if:true={post.likes}>
+                        <span>{post.likes}</span>
+                        <span class="dot">•</span>
+                        <span>{post.comments}</span>
+                    </div>
+
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

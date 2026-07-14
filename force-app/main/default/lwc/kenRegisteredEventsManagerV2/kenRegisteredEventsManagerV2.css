@@ -1,0 +1,7 @@
+:host { display:block; }
+.re-page { padding:24px; }
+.re-toast {
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+    background:#1F2937; color:#fff; padding:12px 20px; border-radius:8px;
+    font-size:13px; font-weight:500; z-index:10000; box-shadow:0 4px 20px rgba(0,0,0,.2);
+}

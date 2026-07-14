@@ -1,0 +1,109 @@
+<template>
+    <section class="opp">
+        <header class="opp-hd">
+            <div>
+                <p class="opp-hd__eyebrow">Live this season</p>
+                <h2 class="opp-hd__title">Opportunities to support</h2>
+                <p class="opp-hd__sub">{headerCountLine}</p>
+            </div>
+            <nav class="opp-filters" role="tablist" aria-label="Filter campaigns by category">
+                <template for:each={filters} for:item="f">
+                    <button key={f.key} type="button" class={f.cls}
+                        data-key={f.key} onclick={handleFilter}>{f.label}</button>
+                </template>
+            </nav>
+            <!-- QA Bug #129: free-text search across opportunities -->
+            <div class="opp-search" style="margin-top: 12px;">
+                <input type="text" class="opp-search__input"
+                    style="width: 100%; box-sizing: border-box; padding: 10px 14px;
+                           font-size: 14px; border: 1px solid #d1d5db; border-radius: 8px;
+                           background: #fff;"
+                    placeholder="Search campaigns by title, cause, department…"
+                    value={searchTerm} oninput={handleSearch} />
+            </div>
+        </header>
+
+        <!-- Featured / hero -->
+        <template lwc:if={hasFeatured}>
+            <article class="opp-hero">
+                <div class="opp-hero__img" style={featuredDecorated.imgStyle}>
+                    <template lwc:if={featuredDecorated.hasImage}></template>
+                    <template lwc:else>
+                        <span class="opp-img-glyph" aria-hidden="true">🏛️</span>
+                    </template>
+                </div>
+                <div class="opp-hero__body">
+                    <div class="opp-hero__row">
+                        <span class="opp-chip opp-chip--featured">Featured</span>
+                        <span class="opp-chip opp-chip--category">{featuredDecorated.category}</span>
+                    </div>
+                    <h3 class="opp-hero__title">{featuredDecorated.title}</h3>
+                    <p class="opp-hero__desc">{featuredDecorated.shortDescription}</p>
+
+                    <p class="opp-hero__lbl">Raised</p>
+                    <div class="opp-hero__amts">
+                        <span class="opp-hero__raised">{featuredDecorated.raisedDisplay}</span>
+                        <span class="opp-hero__goal">{featuredDecorated.goalDisplay}</span>
+                    </div>
+                    <div class="opp-bar"><span class="opp-bar__fill" style={featuredDecorated.progressStyle}></span></div>
+                    <div class="opp-hero__meta">
+                        <span>{featuredDecorated.contributorsCount} contributors</span>
+                        <span>·</span>
+                        <span>Institution-approved</span>
+                        <span>·</span>
+                        <span>{featuredDecorated.daysLeft} days left</span>
+                    </div>
+                    <div class="opp-hero__actions">
+                        <button type="button" class="opp-btn opp-btn--solid" onclick={handleGiveFeatured}>Give now</button>
+                        <button type="button" class="opp-btn opp-btn--ghost"
+                            data-id={featuredDecorated.id} onclick={handleDetails}>See full story →</button>
+                    </div>
+                </div>
+            </article>
+        </template>
+
+        <!-- Uniform grid -->
+        <template lwc:if={hasGrid}>
+            <div class="opp-grid">
+                <template for:each={gridCards} for:item="c">
+                    <article key={c.cardKey} class="opp-card">
+                        <div class="opp-card__img" style={c.imgStyle}>
+                            <template lwc:if={c.hasImage}></template>
+                            <template lwc:else>
+                                <span class="opp-img-glyph" aria-hidden="true">🎓</span>
+                            </template>
+                        </div>
+                        <div class="opp-card__top">
+                            <span class="opp-chip opp-chip--category">{c.category}</span>
+                            <span class="opp-chip opp-chip--ok">Approved</span>
+                        </div>
+                        <div class="opp-card__body">
+                            <h4 class="opp-card__title">{c.title}</h4>
+                            <p class="opp-card__desc">{c.shortDescription}</p>
+                            <div class="opp-card__amts">
+                                <span class="opp-card__raised">{c.raisedDisplay}</span>
+                                <span class="opp-card__pct">{c.pctLabel}</span>
+                            </div>
+                            <p class="opp-card__goal">{c.goalDisplay}</p>
+                            <div class="opp-bar"><span class="opp-bar__fill" style={c.progressStyle}></span></div>
+                            <div class="opp-card__meta">
+                                <span>{c.contributorsLabel}</span>
+                                <span>{c.daysLabel}</span>
+                            </div>
+                            <button type="button" class="opp-btn opp-btn--solid opp-btn--full"
+                                data-id={c.id} onclick={handleGiveCard}>Give now</button>
+                        </div>
+                    </article>
+                </template>
+            </div>
+        </template>
+
+        <template lwc:if={loading}>
+            <p class="opp-empty">Loading opportunities…</p>
+        </template>
+        <template lwc:elseif={hasAny}></template>
+        <template lwc:else>
+            <p class="opp-empty">No campaigns match this filter yet.</p>
+        </template>
+    </section>
+</template>

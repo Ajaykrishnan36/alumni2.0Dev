@@ -1,0 +1,102 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="groups" has-rail={showRail}>
+        <template lwc:if={viewState.isMainDashboard}>
+            <section class="page">
+                <header class="page__head">
+                    <div>
+                        <h1 class="page__title">Groups</h1>
+                        <p class="page__subtitle">Communities within the alumni network</p>
+                    </div>
+                    <button type="button" class="btn btn--primary" onclick={handleOpenCreate}>+ Create a Group</button>
+                </header>
+
+                <c-ken-groups-top-tabs-v2 active-tab={activeTopTab} ontabchange={handleTabChange}></c-ken-groups-top-tabs-v2>
+
+                <template lwc:if={isDiscoverTab}>
+                    <c-ken-groups-filter-bar-v2 active-category={activeCategory} oncategorychange={handleCategoryChange} onsearch={handleSearch}></c-ken-groups-filter-bar-v2>
+                    <h2 class="gp__feed-title">Discover Groups</h2>
+                    <template lwc:if={isLoading}>
+                        <div class="skeleton-list">
+                            <div class="skeleton-card"></div>
+                            <div class="skeleton-card"></div>
+                            <div class="skeleton-card"></div>
+                        </div>
+                    </template>
+                    <template lwc:elseif={hasGroups}>
+                        <div class="discover-grid">
+                            <template for:each={filteredGroups} for:item="g">
+                                <c-ken-group-card-v2 key={g.id} record-id={g.id} name={g.name} category={g.category} visibility={g.visibility} members={g.members} posts={g.posts} description={g.description} image={g.image} cover={g.cover} joined={g.joined}
+                                    ongroupclick={handleOpenGroup} onjoin={handleJoin} onleave={handleLeave}>
+                                </c-ken-group-card-v2>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-state-card">
+                            <div class="empty-state-card__icon" aria-hidden="true">&#127757;</div>
+                            <h3 class="empty-state-card__title">No groups joined yet</h3>
+                            <p class="empty-state-card__sub">Discover communities or start your own.</p>
+                            <button type="button" class="btn btn--primary" onclick={handleOpenCreate}>+ Create a Group</button>
+                        </div>
+                    </template>
+                </template>
+
+                <template lwc:else>
+                    <h2 class="gp__feed-title">{feedTitle}</h2>
+                    <div class="share-card">
+                        <p class="share-card__title">Share your Thoughts</p>
+                        <div class="share-card__input">
+                            <span>What's on your mind?, Joshua</span>
+                            <button type="button" class="share-card__icon" aria-label="Add photo">&#128247;</button>
+                        </div>
+                    </div>
+                    <template lwc:if={hasUpdates}>
+                        <template for:each={filteredUpdates} for:item="u">
+                            <c-ken-group-update-row-v2 key={u.id} update={u} ongroupclick={handleOpenGroup}></c-ken-group-update-row-v2>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-state-card">
+                            <div class="empty-state-card__icon" aria-hidden="true">&#128240;</div>
+                            <h3 class="empty-state-card__title">{emptyFeedMessage}</h3>
+                            <p class="empty-state-card__sub">Updates from your groups will show up here.</p>
+                            <button type="button" class="btn btn--primary" onclick={handleDiscover}>Discover groups</button>
+                        </div>
+                    </template>
+                </template>
+            </section>
+        </template>
+
+        <template lwc:if={viewState.isGroupDetail}>
+            <c-ken-group-detail-page-v2 group={detailGroup} joined={isDetailJoined}
+                feed={detailFeed} updates={detailFeed} events={detailEvents} members={detailMembers}
+                is-loading-sub-tabs={groupTabLoading}
+                onback={handleBackToMain} onjoin={handleJoin} onleave={handleLeave}
+                onopeninvite={handleOpenInvite} onapprovejoin={handleApproveJoin} onrejectjoin={handleRejectJoin}>
+            </c-ken-group-detail-page-v2>
+        </template>
+
+        <template lwc:if={showInviteModal}>
+            <c-ken-group-invite-modal-v2 group-name={inviteGroupName}
+                onclose={handleCloseInvite} oninvite={handleInviteSend}
+                onvalidationerror={handleValidationError}>
+            </c-ken-group-invite-modal-v2>
+        </template>
+
+        <template lwc:if={showRail}>
+            <c-ken-groups-rail-v2 slot="rail" joined-groups={joinedGroups} created-groups={createdGroups}
+                oncreategroup={handleOpenCreate} onviewall={handleViewAll} ondiscover={handleDiscover} ongroupclick={handleOpenGroup}>
+            </c-ken-groups-rail-v2>
+        </template>
+
+        <template lwc:if={showCreate}>
+            <c-ken-group-create-wizard-v2 onclose={handleCloseCreate} onsubmit={handleSubmitCreate}
+                onvalidationerror={handleValidationError}>
+            </c-ken-group-create-wizard-v2>
+        </template>
+
+        <template lwc:if={toastVisible}>
+            <div class={toastClass} role="status">{toastMessage}</div>
+        </template>
+    </c-ken42-alumni-shell-v2>
+</template>

@@ -1,0 +1,147 @@
+.comments {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f1f5;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.comment-composer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f7f8fb;
+    border: 1px solid #e5e7ef;
+    border-radius: 999px;
+    padding: 6px 8px 6px 16px;
+}
+
+.comment-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    font-family: inherit;
+    color: #1f2330;
+    padding: 6px 0;
+}
+
+.comment-send {
+    background: #4f46e5;
+    color: #ffffff;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.comment-send[disabled] {
+    background: #c4c6cf;
+    cursor: not-allowed;
+}
+
+.comment-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+}
+
+.comment-avatar-wrap {
+    flex-shrink: 0;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+.comment-avatar-fallback {
+    background: #d1d5db;
+}
+
+.comment-bubble {
+    flex: 1;
+    background: #f3f4f8;
+    border-radius: 12px;
+    padding: 8px 12px;
+    min-width: 0;
+}
+
+.comment-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.comment-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2330;
+}
+
+.comment-batch {
+    font-size: 12px;
+    color: #6b6d78;
+}
+
+.comment-delete {
+    margin-left: auto;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #8a8d99;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+.comment-delete:hover {
+    color: #b3261e;
+    background: #fff;
+}
+
+.comment-body {
+    margin: 0;
+    font-size: 14px;
+    color: #1f2330;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.loading-row {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.load-more-comments {
+    background: transparent;
+    border: none;
+    color: #4f46e5;
+    cursor: pointer;
+    font-size: 13px;
+    align-self: flex-start;
+    padding: 4px 0;
+}
+
+.load-more-comments:hover:not([disabled]) {
+    text-decoration: underline;
+}

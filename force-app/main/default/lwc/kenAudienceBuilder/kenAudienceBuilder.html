@@ -1,0 +1,165 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 12-18-2025
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+-->
+<template>
+  <div class="slds-p-around_medium page">
+
+    <!-- Header -->
+    <section class="slds-card headerCard">
+      <div class="slds-card__header slds-p-around_medium">
+        <h2 class="slds-text-heading_medium">Audience Builder</h2>
+        <p class="slds-text-body_small slds-text-color_weak">
+          Select Target Role → choose fields → add filters → preview → save group
+        </p>
+      </div>
+
+      <div class="slds-card__body slds-p-horizontal_medium slds-p-bottom_medium">
+        <div class="slds-grid slds-wrap slds-gutters">
+          <div class="slds-col slds-size_1-of-1 slds-large-size_5-of-12">
+            <lightning-input
+              label="Audience Name"
+              value={audienceName}
+              onchange={onAudienceNameChange}
+              required
+            ></lightning-input>
+          </div>
+
+          <div class="slds-col slds-size_1-of-1 slds-large-size_4-of-12">
+            <lightning-combobox
+              label="Target Role"
+              value={targetRole}
+              options={targetRoleOptions}
+              onchange={onTargetRoleChange}
+              placeholder="Select role"
+              required
+            ></lightning-combobox>
+
+            <template if:true={targetRole}>
+              <div class="slds-text-body_small slds-text-color_weak slds-m-top_x-small">
+                Matching Attribute Categories: {categoryCount}
+              </div>
+            </template>
+          </div>
+
+          <div class="slds-col slds-size_1-of-1 slds-large-size_3-of-12">
+            <lightning-input type="toggle" label="Active" checked={active} onchange={onActiveChange}></lightning-input>
+          </div>
+
+          <div class="slds-col slds-size_1-of-1">
+            <lightning-textarea label="Description" value={description} onchange={onDescriptionChange}></lightning-textarea>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="slds-grid slds-wrap slds-gutters slds-m-top_medium">
+
+      <!-- Filters -->
+      <div class="slds-col slds-size_1-of-1 slds-large-size_7-of-12">
+        <section class="slds-card bodyCard">
+          <div class="slds-card__header slds-p-around_medium">
+            <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+              <div>
+                <h3 class="slds-text-heading_small">Filters</h3>
+                <p class="slds-text-body_small slds-text-color_weak">
+                  Fields come from the configured field set ({fieldSetLabel}) on {targetObject}
+                </p>
+              </div>
+
+              <div class="slds-button-group" role="group">
+                <lightning-button label="All (AND)" variant={andVariant} data-mode="AND" onclick={onMatchModeClick}></lightning-button>
+                <lightning-button label="Any (OR)" variant={orVariant} data-mode="OR" onclick={onMatchModeClick}></lightning-button>
+                <lightning-button label="Custom" variant={customVariant} data-mode="CUSTOM" onclick={onMatchModeClick}></lightning-button>
+              </div>
+            </div>
+          </div>
+
+          <div class="slds-card__body slds-p-horizontal_medium slds-p-bottom_medium">
+
+            <template if:true={isCustomMode}>
+              <lightning-input
+                class="slds-m-bottom_small"
+                label="Filter Logic"
+                value={customLogic}
+                onchange={onCustomLogicChange}
+                placeholder="Example: 1 AND (2 OR 3)"
+              ></lightning-input>
+            </template>
+
+            <template if:true={loadingFields}>
+              <lightning-spinner alternative-text="Loading role fields"></lightning-spinner>
+            </template>
+
+            <template if:true={hasNoFields}>
+              <div class="slds-text-color_weak slds-p-vertical_small">
+                Select a Target Role to load available fields.
+              </div>
+            </template>
+
+            <template for:each={filters} for:item="f" for:index="index">
+              <c-ken-audience-filter-row
+                key={f.id}
+                row={f}
+                index={index}
+                field-options={fieldOptions}
+                operator-options={f.operatorOptions}
+                onrowchange={onRowChange}
+                onremove={onRemoveRow}
+              ></c-ken-audience-filter-row>
+            </template>
+
+            <div class="slds-m-top_small">
+              <lightning-button label="+ Add Filter" onclick={onAddFilter} disabled={disableAddFilter}></lightning-button>
+            </div>
+
+            <div class="slds-m-top_medium slds-grid slds-grid_align-end slds-gutters_small">
+              <lightning-button label="Preview Audience" variant="neutral" onclick={onPreview} disabled={disablePreview}></lightning-button>
+              <lightning-button label="Save Group" variant="brand" onclick={onSave} disabled={disableSave}></lightning-button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Preview -->
+      <div class="slds-col slds-size_1-of-1 slds-large-size_5-of-12">
+        <section class="slds-card bodyCard">
+          <div class="slds-card__header slds-p-around_medium">
+            <h3 class="slds-text-heading_small">Preview</h3>
+            <p class="slds-text-body_small slds-text-color_weak">Count and latest 10 {targetObject} records</p>
+          </div>
+
+          <div class="slds-card__body slds-p-horizontal_medium slds-p-bottom_medium">
+            <template if:true={loadingPreview}>
+              <lightning-spinner alternative-text="Loading preview"></lightning-spinner>
+            </template>
+
+            <div class="slds-m-bottom_medium">
+              <div class="slds-text-title_caps slds-text-color_weak">Count</div>
+              <div class="slds-text-heading_large">{previewCount}</div>
+
+              <template if:true={hasPills}>
+                <div class="slds-m-top_small">
+                  <template for:each={previewPills} for:item="p">
+                    <span key={p} class="slds-badge pill">{p}</span>
+                  </template>
+                </div>
+              </template>
+            </div>
+
+            <lightning-datatable
+              key-field="id"
+              data={previewRows}
+              columns={previewColumns}
+              hide-checkbox-column
+            ></lightning-datatable>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</template>

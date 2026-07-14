@@ -1,0 +1,20 @@
+<template>
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+        <template for:each={computedItems} for:item="item">
+            <span key={item.key} class="crumb-wrap">
+                <template lwc:if={item.isClickable}>
+                    <a href="#"
+                       class="crumb crumb-link"
+                       data-index={item.index}
+                       onclick={handleClick}>{item.label}</a>
+                </template>
+                <template lwc:else>
+                    <span class="crumb crumb-current" aria-current="page">{item.label}</span>
+                </template>
+                <template lwc:if={item.showSeparator}>
+                    <span class="sep" aria-hidden="true">&gt;</span>
+                </template>
+            </span>
+        </template>
+    </nav>
+</template>

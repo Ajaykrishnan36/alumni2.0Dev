@@ -1,0 +1,42 @@
+<template>
+    <section class="bottom-row">
+        <div class="card recent-card">
+            <div class="card-head">
+                <h3 class="card-title">Recent contributors</h3>
+                <span class="card-sub">{anonText}</span>
+            </div>
+            <ul class="rc-list">
+                <template for:each={contributors} for:item="c">
+                    <c-ken-contributor-row-v2 key={c.name} contributor={c}></c-ken-contributor-row-v2>
+                </template>
+            </ul>
+        </div>
+        <div class="card">
+            <div class="card-head"><h3 class="card-title">Top batches</h3></div>
+            <ul class="tb-list">
+                <template for:each={rankedBatches} for:item="b">
+                    <li key={b.batch} class="tb-row">
+                        <span class="tb-rank">{b.rank}</span>
+                        <div class="tb-info">
+                            <div class="tb-name">Batch of {b.batch}</div>
+                            <div class="tb-meta">{b.participants} contributors</div>
+                        </div>
+                        <span class="tb-raised">{b.raised}</span>
+                    </li>
+                </template>
+            </ul>
+        </div>
+        <div class="card">
+            <div class="card-head"><h3 class="card-title">Corporate supporters</h3></div>
+            <div class="corp-pills">
+                <template for:each={corporateSupporters} for:item="c">
+                    <span key={c} class="corp-pill">{c}</span>
+                </template>
+            </div>
+            <div class="privacy-card">
+                <div class="privacy-title">Privacy you control</div>
+                <div class="privacy-body">Choose how your name appears on the recognition wall, or keep your contribution fully private.</div>
+            </div>
+        </div>
+    </section>
+</template>

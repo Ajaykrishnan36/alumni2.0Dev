@@ -1,0 +1,75 @@
+<template>
+    <div class="cw">
+        <header class="cw-hero">
+            <span class="cw-hero__eyebrow">Fundraiser Initiator</span>
+            <h1 class="cw-hero__title">Start a campaign</h1>
+            <p class="cw-hero__sub">Propose a fundraiser for our community. Your submission is reviewed by the alumni office before it goes live.</p>
+        </header>
+
+        <div class="cw-card">
+            <template lwc:if={done}>
+                <div class="cw-success">
+                    <div class="cw-success__check" aria-hidden="true">&#10003;</div>
+                    <h2>Submitted for review</h2>
+                    <p>Thank you! Your campaign proposal has been sent to the alumni office. You will be notified once it is approved and published.</p>
+                    <button type="button" class="cw-btn cw-btn--primary" onclick={handleStartAnother}>Propose another</button>
+                </div>
+            </template>
+
+            <template lwc:elseif={submitting}>
+                <div class="cw-processing"><div class="cw-spinner" aria-hidden="true"></div><p>Submitting your campaign…</p></div>
+            </template>
+
+            <template lwc:else>
+                <div class="cw-steps">
+                    <span class={isStep1Cls}>1 Basics</span>
+                    <span class={isStep2Cls}>2 Story</span>
+                    <span class={isStep3Cls}>3 Review</span>
+                </div>
+
+                <template lwc:if={isStep1}>
+                    <label class="cw-field"><span>Campaign title *</span>
+                        <input type="text" data-field="title" value={title} oninput={handleField} placeholder="Eg: Class of 2026 Scholarship Fund"/></label>
+                    <label class="cw-field"><span>Category</span>
+                        <select data-field="category" onchange={handleField}>
+                            <template for:each={categoryOptions} for:item="c"><option key={c.value} value={c.value} selected={c.selected}>{c.value}</option></template>
+                        </select></label>
+                    <label class="cw-field"><span>Fundraising goal *</span>
+                        <div class="cw-amount"><span class="cw-cur">&#8377;</span><input type="number" min="1" data-field="goalAmount" value={goalAmount} oninput={handleField} placeholder="0"/></div></label>
+                </template>
+
+                <template lwc:if={isStep2}>
+                    <label class="cw-field"><span>Short description</span>
+                        <textarea data-field="description" value={description} oninput={handleField} placeholder="One or two lines that summarise the cause."></textarea></label>
+                    <label class="cw-field"><span>Full story</span>
+                        <textarea class="cw-tall" data-field="story" value={story} oninput={handleField} placeholder="Tell donors why this matters…"></textarea></label>
+                    <label class="cw-field"><span>Hero image URL (optional)</span>
+                        <input type="url" data-field="heroImageUrl" value={heroImageUrl} oninput={handleField} placeholder="https://…"/></label>
+                </template>
+
+                <template lwc:if={isStep3}>
+                    <div class="cw-review">
+                        <div class="cw-review__row"><span>Title</span><strong>{title}</strong></div>
+                        <div class="cw-review__row"><span>Category</span><strong>{category}</strong></div>
+                        <div class="cw-review__row"><span>Goal</span><strong>{goalDisplay}</strong></div>
+                        <div class="cw-review__row"><span>Description</span><strong>{description}</strong></div>
+                    </div>
+                    <p class="cw-note">After you submit, the alumni office reviews and publishes your campaign. It will not appear on the portal until approved.</p>
+                </template>
+
+                <template lwc:if={errorMsg}><p class="cw-error">{errorMsg}</p></template>
+
+                <div class="cw-foot">
+                    <template lwc:if={isStep1}><span></span></template>
+                    <template lwc:else><button type="button" class="cw-btn cw-btn--ghost" onclick={handleBack}>Back</button></template>
+                    <template lwc:if={isStep3}>
+                        <button type="button" class="cw-btn cw-btn--primary" onclick={handleSubmit}>Submit for review</button>
+                    </template>
+                    <template lwc:else>
+                        <button type="button" class="cw-btn cw-btn--primary" onclick={handleNext}>Continue</button>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

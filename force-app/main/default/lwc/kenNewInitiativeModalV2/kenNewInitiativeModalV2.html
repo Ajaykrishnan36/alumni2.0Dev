@@ -1,0 +1,42 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal modal--sm">
+            <div class="modal-head-row">
+                <div>
+                    <h2 class="modal-title">Start a giving initiative</h2>
+                    <div class="give-sub">Goes to the institution for review</div>
+                </div>
+                <button class="modal-close" onclick={handleClose}>x</button>
+            </div>
+            <div class="modal-body">
+                <label class="field-label">Initiative title</label>
+                <input class="text-input" data-field="initTitle" value={initTitle} oninput={handleField}/>
+                <label class="field-label">Category</label>
+                <select class="text-input" data-field="initCategory" value={initCategory} onchange={handleField}>
+                    <option value="Batch Fund">Batch Fund</option>
+                    <option value="Scholarships">Scholarships</option>
+                    <option value="Infrastructure">Infrastructure</option>
+                    <option value="Campus Development">Campus Development</option>
+                    <option value="Student Support">Student Support</option>
+                </select>
+                <label class="field-label">Suggested target</label>
+                <input class="text-input" type="number" data-field="initTarget" value={initTarget} oninput={handleField}/>
+                <label class="field-label">Short description</label>
+                <textarea class="text-input" rows="2" data-field="initDescription" value={initDescription} oninput={handleField}></textarea>
+                <label class="field-label">Why this matters</label>
+                <textarea class="text-input" rows="3" data-field="initWhy" value={initWhy} oninput={handleField}></textarea>
+                <label class="field-label">Beneficiary group</label>
+                <input class="text-input" data-field="initBeneficiary" value={initBeneficiary} oninput={handleField}/>
+                <label class="field-label">Batch or program (optional)</label>
+                <input class="text-input" data-field="initBatch" value={initBatch} oninput={handleField}/>
+                <label class="cbx"><input type="checkbox" data-field="linkedReunion" checked={initLinkedReunion} onchange={handleField}/> Linked to a reunion event</label>
+                <label class="cbx"><input type="checkbox" data-field="listAsInitiator" checked={initListAsInitiator} onchange={handleField}/> List me as the initiator</label>
+                <label class="cbx"><input type="checkbox" data-field="invite" checked={initInvite} onchange={handleField}/> Invite batchmates to join</label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--ghost" onclick={handleClose}>Cancel</button>
+                <button class="btn btn--dark" onclick={handleSubmit}>Submit for review</button>
+            </div>
+        </div>
+    </div>
+</template>

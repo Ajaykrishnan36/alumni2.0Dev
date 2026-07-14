@@ -1,0 +1,285 @@
+<template>
+    <template lwc:if={event}>
+        <section class="ev-page">
+            <div class="ev-topbar">
+                <button type="button" class="ev-back" onclick={handleBack} title="Back">
+                    <span class="ev-back__arrow">&larr;</span>
+                    <span>Back</span>
+                </button>
+            </div>
+
+            <div class="ev-card">
+                <div class="ev-hero" style={heroStyle}>
+                    <div class="ev-hero__chips">
+                        <span class="ev-hero__price">{displayPrice}</span>
+                        <span class="ev-hero__tag">{displayCategory}</span>
+                        <template lwc:if={isHappeningNow}>
+                            <span class="ev-hero__live">● Happening Now</span>
+                        </template>
+                        <template lwc:if={showStatusPill}>
+                            <span class={statusPillClass}>{statusPillLabel}</span>
+                        </template>
+                    </div>
+                    <h2 class="ev-hero__title">{displayTitle}</h2>
+                </div>
+
+                <nav class="tabs">
+                    <template for:each={tabs} for:item="t">
+                        <button key={t.id} type="button" class={t.cssClass} data-id={t.id} onclick={handleTab}>{t.label}</button>
+                    </template>
+                </nav>
+
+                <div class="ev-body">
+                    <template lwc:if={isAbout}>
+                        <div class="about-grid">
+                            <div class="about-card">
+                                <h4>About the Event</h4>
+                                <template lwc:if={hasFullDescription}>
+                                    <template for:each={descriptionParagraphs} for:item="p">
+                                        <p key={p.key}>{p.text}</p>
+                                    </template>
+                                </template>
+                                <template lwc:else>
+                                    <p>{organizerLine}</p>
+                                </template>
+
+                                <!-- Meals for Attendees -->
+                                <template lwc:if={hasMeals}>
+                                    <div class="meals-block">
+                                        <div class="meals-block__head">
+                                            <h4>Meals for Attendees</h4>
+                                            <span class="meals-badge">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                                Meals Included
+                                            </span>
+                                        </div>
+                                        <ul class="meals-list">
+                                            <template for:each={meals} for:item="m">
+                                                <li key={m.key}>{m.line}</li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="about-side">
+                                <!-- QA Bug — Host Details + Event Information -->
+                                <template lwc:if={hasHostInfo}>
+                                    <div class="expect-card host-info-card">
+                                        <h4>Host Details</h4>
+                                        <template lwc:if={hostName}>
+                                            <p class="host-line"><strong>Hosted by:</strong> {hostName}</p>
+                                        </template>
+                                        <template lwc:if={hostEmail}>
+                                            <p class="host-line"><strong>Contact:</strong> {hostEmail}</p>
+                                        </template>
+                                        <template lwc:if={hostTypeLabel}>
+                                            <p class="host-line"><strong>Mode:</strong> {hostTypeLabel}</p>
+                                        </template>
+                                        <template lwc:if={eventLocation}>
+                                            <p class="host-line"><strong>Location:</strong> {eventLocation}</p>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <div class="expect-card">
+                                    <h4>What to Expect</h4>
+                                    <!-- QA Bug — prefer the real configured text; fall back to synthetic bullets -->
+                                    <template lwc:if={hasWhatToExpectText}>
+                                        <template for:each={whatToExpectTextParagraphs} for:item="p">
+                                            <p key={p.key}>{p.text}</p>
+                                        </template>
+                                    </template>
+                                    <template lwc:elseif={hasWhatToExpect}>
+                                        <ul class="expect-list">
+                                            <template for:each={whatToExpectDecorated} for:item="w">
+                                                <li key={w.key} class="expect-item">
+                                                    <span class="expect-icon">{w.icon}</span>
+                                                    <div class="expect-text">
+                                                        <strong>{w.title}</strong>
+                                                        <p>{w.desc}</p>
+                                                    </div>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </template>
+                                    <template lwc:else>
+                                        <p class="empty-inline">Details coming soon.</p>
+                                    </template>
+                                </div>
+
+                                <!-- QA Bug — Agenda section -->
+                                <template lwc:if={hasAgenda}>
+                                    <div class="expect-card agenda-card">
+                                        <h4>Agenda</h4>
+                                        <template for:each={agendaParagraphs} for:item="p">
+                                            <p key={p.key}>{p.text}</p>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:if={hasSpeakers}>
+                                    <div class="speakers-card">
+                                        <h4>Speakers</h4>
+                                        <ul class="speakers-list">
+                                            <template for:each={speakersDecorated} for:item="sp">
+                                                <li key={sp.key} class="speaker">
+                                                    <div class="speaker__avatar" style={sp.avatarStyle}>{sp.initial}</div>
+                                                    <div>
+                                                        <div class="speaker__name">{sp.name}</div>
+                                                        <div class="speaker__role">{sp.role}</div>
+                                                    </div>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isSchedule}>
+                        <div class="sched-grid">
+                            <div class="sched-main">
+                                <h3 class="section-title">Event Schedule</h3>
+                                <template lwc:if={hasSchedule}>
+                                    <template for:each={scheduleDecorated} for:item="s">
+                                        <div key={s.key} class="sched-row">
+                                            <span class="sched-time">{s.time}</span>
+                                            <div>
+                                                <strong>{s.title}</strong>
+                                                <p>{s.desc}</p>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
+                                <template lwc:else>
+                                    <div class="empty">No schedule has been published yet.</div>
+                                </template>
+                            </div>
+
+                            <!-- Meeting status card (scheduled time + live status) -->
+                            <aside class="meeting-card">
+                                <p class="meeting-card__eyebrow">{meetingPanelLabel}</p>
+                                <p class="meeting-card__time">🕒 {meetingTimeText}</p>
+                                <template lwc:if={isHappeningNow}>
+                                    <span class="meeting-card__live">● Happening Now</span>
+                                </template>
+                                <template lwc:else>
+                                    <span class="meeting-card__status">{meetingStatusText}</span>
+                                </template>
+                                <template lwc:if={showJoinNow}>
+                                    <button type="button" class="btn btn--join meeting-card__join" onclick={handleJoinNow}>● Join Now</button>
+                                </template>
+                            </aside>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isParticipants}>
+                        <h3 class="section-title">Participants ({participantsCount})</h3>
+                        <template lwc:if={hasParticipants}>
+                            <div class="parts-grid">
+                                <template for:each={participantsDecorated} for:item="p">
+                                    <div key={p.key} class="part">
+                                        <div class="part__avatar">{p.initial}</div>
+                                        <div>
+                                            <div class="part__name">{p.name}</div>
+                                            <div class="part__sub">{p.type}</div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty">No participants to show yet.</div>
+                        </template>
+                    </template>
+
+                    <template lwc:if={isUpdates}>
+                        <h3 class="section-title">Event Updates</h3>
+                        <template lwc:if={hasUpdatesList}>
+                            <template for:each={updatesDecorated} for:item="u">
+                                <div key={u.key} class="upd-row">
+                                    <div class="upd-row__time">{u.time}</div>
+                                    <div>
+                                        <strong>{u.title}</strong>
+                                        <p>{u.text}</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty">No updates posted yet.</div>
+                        </template>
+                    </template>
+
+                    <!-- Eligible Audience — host/admin-only, read-only. NOT participants. -->
+                    <template lwc:if={isAudience}>
+                        <h3 class="section-title">Who can see &amp; register</h3>
+
+                        <template lwc:if={audienceIsOpen}>
+                            <div class="slds-box slds-theme_shade slds-m-bottom_small aud-note">
+                                This event is open to all alumni — no specific audience was targeted.
+                            </div>
+                        </template>
+
+                        <template lwc:else>
+                            <template lwc:if={hasAudienceRules}>
+                                <ul class="aud-chips slds-m-bottom_medium">
+                                    <template for:each={audienceRules} for:item="r">
+                                        <li key={r.key} class="aud-chip">{r.text}</li>
+                                    </template>
+                                </ul>
+                            </template>
+
+                            <div class="aud-count slds-m-bottom_x-small">{audienceCountLabel}</div>
+                            <template lwc:if={audienceTruncated}>
+                                <div class="aud-trunc slds-text-body_small slds-m-bottom_small">{audienceTruncatedLabel}</div>
+                            </template>
+
+                            <template lwc:if={hasAudienceMembers}>
+                                <div class="parts-grid">
+                                    <template for:each={audienceMembers} for:item="m">
+                                        <div key={m.key} class="part">
+                                            <div class="part__avatar">{m.initial}</div>
+                                            <div>
+                                                <div class="part__name">{m.name}</div>
+                                                <div class="part__sub">{m.email}</div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:if={audienceNoMatches}>
+                                <div class="empty">No matching members found for the selected audience.</div>
+                            </template>
+                        </template>
+                    </template>
+                </div>
+
+                <footer class="event-action-bar">
+                    <button type="button" class="btn btn--ghost" onclick={handleViewQuestionnaire}>View Survey Results</button>
+                    <button type="button" class="btn btn--secondary" onclick={handleViewRegistration}>Manage Registration</button>
+                    <template lwc:if={showJoinNow}>
+                        <button type="button" class="btn btn--join" onclick={handleJoinNow}>● Join Now</button>
+                    </template>
+                    <!-- QA Bug — host sees Cancel/Delete; attendees see Register Now -->
+                    <template lwc:if={isHostView}>
+                        <button type="button" class="btn btn--outline" onclick={handleCancel}>Cancel Event</button>
+                        <button type="button" class="btn btn--danger-outline" onclick={handleDelete}>Delete Event</button>
+                    </template>
+                    <template lwc:else>
+                        <!-- Completed → show status + feedback; open → Register; cancelled → status only -->
+                        <template lwc:if={showRegisterButton}>
+                            <button type="button" class="btn btn--primary" onclick={handleRegister}>{registerLabel}</button>
+                        </template>
+                        <template lwc:else>
+                            <span class={statusPillClass}>{statusPillLabel}</span>
+                            <template lwc:if={showFeedbackButton}>
+                                <button type="button" class="btn btn--primary" onclick={handleFeedback}>Submit Feedback</button>
+                            </template>
+                        </template>
+                    </template>
+                </footer>
+            </div>
+        </section>
+    </template>
+</template>

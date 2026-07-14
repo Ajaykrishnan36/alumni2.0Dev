@@ -1,0 +1,200 @@
+<template>
+    <div class="wizard">
+        <!-- Top header bar -->
+        <header class="topbar">
+            <div class="topbar__logo">
+                <template lwc:if={institutionLogoUrl}>
+                    <img src={institutionLogoUrl} alt="Institution Logo" />
+                </template>
+                <template lwc:else>
+                    <span>Institution Logo</span>
+                </template>
+            </div>
+            <div class="topbar__right">
+                <button type="button" class="logout" onclick={handleLogout}>
+                    Logout
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#373A45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                </button>
+                <div class="user">
+                    <span class="user__avatar">{userInitial}</span>
+                    <span class="user__name">{userFullName}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main card -->
+        <main class="content">
+            <div class="card">
+                <!-- Blue banner -->
+                <div class="banner">
+                    <span class="banner__dots" aria-hidden="true"></span>
+                    <h1 class="banner__title">The Gateway to Your Alumni Network</h1>
+                </div>
+
+                <!-- Stepper -->
+                <nav class="stepper">
+                    <template for:each={steps} for:item="s">
+                        <div key={s.id} class={s.stepClass}>
+                            <span class="step__indicator">
+                                <template lwc:if={s.isComplete}>{s.number}</template>
+                                <template lwc:else>
+                                    <template lwc:if={s.isActive}>&#9679;</template>
+                                </template>
+                            </span>
+                            <span class="step__label">{s.label}</span>
+                        </div>
+                    </template>
+                </nav>
+
+                <!-- Step body -->
+                <div class="body">
+                    <!-- ========== STEP 1: BASIC ========== -->
+                    <template lwc:if={isBasic}>
+                        <div class="basic">
+                            <div class="avatar">
+                                <span class="avatar__circle">{userInitial}</span>
+                                <button type="button" class="avatar__upload" aria-label="Upload photo">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                        <circle cx="12" cy="13" r="4"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <p class="basic__greeting">Hello {basic.firstName}! Let's get Started.</p>
+
+                            <div class="grid">
+                                <div class="field">
+                                    <label>First Name<span class="req">*</span></label>
+                                    <input data-field="firstName" type="text" value={basic.firstName} oninput={handleBasicInput} />
+                                </div>
+                                <div class="field">
+                                    <label>Last Name<span class="req">*</span></label>
+                                    <input data-field="lastName" type="text" value={basic.lastName} oninput={handleBasicInput} />
+                                </div>
+                                <div class="field">
+                                    <label>Email<span class="req">*</span></label>
+                                    <input data-field="email" type="email" value={basic.email} oninput={handleBasicInput} />
+                                </div>
+                                <div class="field">
+                                    <label>Phone (Not visible publicly)<span class="req">*</span></label>
+                                    <div class="phone">
+                                        <select class="phone__code" data-field="countryCode" value={basic.countryCode} onchange={handleBasicInput}>
+                                            <option value="+91">🇮🇳 +91</option>
+                                            <option value="+1">🇺🇸 +1</option>
+                                            <option value="+44">🇬🇧 +44</option>
+                                            <option value="+971">🇦🇪 +971</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label>LinkedIn Profile <span class="opt">(Optional)</span></label>
+                                    <div class="with-icon">
+                                        <input data-field="linkedin" type="text" placeholder="linkedin.com/in/joshua-b" value={basic.linkedin} oninput={handleBasicInput} />
+                                        <svg class="with-icon__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B2B3B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label>Twitter (X) Profile <span class="opt">(Optional)</span></label>
+                                    <div class="with-icon">
+                                        <input data-field="twitter" type="text" placeholder="Enter URL" value={basic.twitter} oninput={handleBasicInput} />
+                                        <svg class="with-icon__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B2B3B7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- ========== STEP 2: EDUCATION ========== -->
+                    <template lwc:if={isEducation}>
+                        <template lwc:if={hasEducation}>
+                            <div class="list">
+                                <div class="list__header">
+                                    <h2 class="list__title">Educational Background</h2>
+                                    <button type="button" class="btn btn--primary btn--sm" onclick={handleAddEducation}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                        Add More
+                                    </button>
+                                </div>
+                                <template for:each={educationItems} for:item="it">
+                                    <div key={it.id} class="rec">
+                                        <div class="rec__body">
+                                            <p class="rec__title">{it.degree}</p>
+                                            <p class="rec__sub">{it.school}</p>
+                                            <p class="rec__meta">{it.period} | {it.score}</p>
+                                        </div>
+                                        <div class="rec__actions">
+                                            <button type="button" class="icon-btn" data-id={it.id} onclick={handleDeleteEducation} aria-label="Delete">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#373A45" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            </button>
+                                            <button type="button" class="icon-btn" data-id={it.id} onclick={handleEditEducation} aria-label="Edit">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#373A45" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty">
+                                <h2 class="empty__title">Add your Education Details</h2>
+                                <p class="empty__msg">Tell us about your academic background to complete your profile.</p>
+                                <button type="button" class="btn btn--primary" onclick={handleAddEducation}>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    Add Details
+                                </button>
+                            </div>
+                        </template>
+                    </template>
+
+                    <!-- ========== STEP 3: EMPLOYMENT ========== -->
+                    <template lwc:if={isEmployment}>
+                        <div class="empty">
+                            <h2 class="empty__title">Add your Career Information</h2>
+                            <p class="empty__msg">Help us understand your professional background to complete your profile.</p>
+                            <button type="button" class="btn btn--primary" onclick={handleAddEmployment}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                Add Career Information
+                            </button>
+                        </div>
+                    </template>
+
+                    <!-- ========== STEP 4: ENGAGEMENT ========== -->
+                    <template lwc:if={isEngagement}>
+                        <div class="engagement">
+                            <p class="engagement__lead">What do you want to do on the platform? This helps us personalise your experience.</p>
+                            <div class="engagement__grid">
+                                <template for:each={engagementItems} for:item="opt">
+                                    <button key={opt.id} type="button" class={opt.cardClass} data-id={opt.id} onclick={toggleEngagement}>
+                                        <span class={opt.checkClass}>
+                                            <template lwc:if={opt.selected}>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                            </template>
+                                        </span>
+                                        <span class="eng-card__label">{opt.label}</span>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Footer -->
+                <footer class="footer">
+                    <template lwc:if={showCancel}>
+                        <button type="button" class="btn btn--outline" onclick={handleCancel}>Cancel</button>
+                        <button type="button" class="btn btn--primary" onclick={handleNext}>{nextLabel}</button>
+                    </template>
+                    <template lwc:else>
+                        <button type="button" class="btn btn--ghost" onclick={handleSkip}>Skip</button>
+                        <button type="button" class="btn btn--outline" onclick={handlePrevious}>Previous Step</button>
+                        <button type="button" class="btn btn--primary" onclick={handleNext}>{nextLabel}</button>
+                    </template>
+                </footer>
+            </div>
+        </main>
+    </div>
+</template>

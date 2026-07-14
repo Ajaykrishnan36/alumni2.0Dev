@@ -1,0 +1,389 @@
+<template>
+    <div class="login-page">
+        <!-- Global floating error banner — single source of truth, decoupled from step flow -->
+        <template lwc:if={hasError}>
+            <div class="login-error-banner" role="alert" aria-live="assertive">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{errorMessage}</span>
+            </div>
+        </template>
+        <!-- HERO (left) -->
+        <aside class="hero">
+            <div class="hero__blob hero__blob--1"></div>
+            <div class="hero__blob hero__blob--2"></div>
+
+            <div class="hero__brand">
+                <div class="hero__logo">K</div>
+                <div class="hero__brand-name">Ken University Alumni</div>
+            </div>
+
+            <div class="hero__center">
+                <h1 class="hero__title">{heroTitle}</h1>
+                <p class="hero__sub">Reconnect with batchmates, mentor students, find opportunities, and stay close to the institution that shaped you.</p>
+                <div class="hero__stats">
+                    <div class="hero__stat">
+                        <div class="hero__stat-num">24K+</div>
+                        <div class="hero__stat-lbl">Verified alumni</div>
+                    </div>
+                    <div class="hero__stat">
+                        <div class="hero__stat-num">180+</div>
+                        <div class="hero__stat-lbl">Alumni chapters</div>
+                    </div>
+                    <div class="hero__stat">
+                        <div class="hero__stat-num">3.2K</div>
+                        <div class="hero__stat-lbl">Mentors active</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero__footer">Powered by Ken42 - lifelong alumni infrastructure</div>
+        </aside>
+
+        <!-- FORM (right) -->
+        <section class="form-side">
+            <div class="form-wrap">
+                <div class="progress">
+                    <div class="progress__fill" style={progressStyle}></div>
+                </div>
+
+                <div class="login-card">
+
+                    <!-- ============ METHOD PICKER (STEP 1 OF 5) ============ -->
+                    <template lwc:if={isMethodPicker}>
+                        <p class="step-eyebrow">STEP 1 OF 5</p>
+                        <h2 class="step-title">Sign in to your alumni account</h2>
+                        <p class="step-sub">Log in using the method enabled by your institution.</p>
+
+                        <div class="method-list">
+                            <button type="button" class={linkMethodClass} data-method="link" onclick={handleMethodSelect}>
+                                <span class="method__icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                </span>
+                                <span class="method__body">
+                                    <span class="method__title">Continue using your alumni access link</span>
+                                    <span class="method__desc">Recommended if you received a link from the institution</span>
+                                </span>
+                                <span class="method__pill">RECOMMENDED</span>
+                                <span class="method__radio"></span>
+                            </button>
+
+                            <button type="button" class={emailMethodClass} data-method="email" onclick={handleMethodSelect}>
+                                <span class="method__icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                </span>
+                                <span class="method__body">
+                                    <span class="method__title">Email + secure link</span>
+                                    <span class="method__desc">We'll send a one-time access link to your registered email</span>
+                                </span>
+                                <span class="method__radio"></span>
+                            </button>
+
+                            <button type="button" class={phoneMethodClass} data-method="phone" onclick={handleMethodSelect}>
+                                <span class="method__icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                                </span>
+                                <span class="method__body">
+                                    <span class="method__title">Phone number + OTP</span>
+                                    <span class="method__desc">Use the mobile number on your alumni record</span>
+                                </span>
+                                <span class="method__radio"></span>
+                            </button>
+
+                            <button type="button" class={passMethodClass} data-method="pass" onclick={handleMethodSelect}>
+                                <span class="method__icon">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                </span>
+                                <span class="method__body">
+                                    <span class="method__title">Username + password</span>
+                                    <span class="method__desc">If you've already set up an alumni account</span>
+                                </span>
+                                <span class="method__radio"></span>
+                            </button>
+                        </div>
+
+                        <div class="note">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            <span>Your institution chooses which methods to enable. Not all options may be available to you.</span>
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-primary" onclick={handleMethodContinue}>Continue →</button>
+                        </div>
+
+                        <div class="flow-switch">
+                            Don't have alumni access yet?
+                            <a onclick={handleSwitchToRequest}>Request access</a>
+                        </div>
+                    </template>
+
+                    <!-- ============ ALUMNI LINK (STEP 2) ============ -->
+                    <template lwc:if={isLinkStep}>
+                        <p class="step-eyebrow">STEP 2 OF 5</p>
+                        <h2 class="step-title">Paste your access link</h2>
+                        <p class="step-sub">Drop the alumni access link the institution sent you.</p>
+
+                        <template lwc:if={hasNotice}><div class="login-notice" role="status">{noticeMessage}</div></template>
+
+                        <div class="field">
+                            <label class="field__label">Access link</label>
+                            <input class="field__input" type="url" placeholder="https://alumni.example.edu/a/..." data-field="accessLink" value={accessLink} oninput={handleInput} />
+                        </div>
+                        <div class="field__hint">Tip: it usually arrives by email from your institution.</div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-ghost" onclick={handleBackToPicker}>Back</button>
+                            <button type="button" class="btn-primary" onclick={handleLinkSubmit}>Continue →</button>
+                        </div>
+                    </template>
+
+                    <!-- ============ EMAIL STEP 1 ============ -->
+                    <template lwc:if={isEmailStep1}>
+                        <p class="step-eyebrow">STEP 2 OF 5</p>
+                        <h2 class="step-title">Enter your registered email</h2>
+                        <p class="step-sub">We'll send a one-time access link to your registered email.</p>
+
+                        <template lwc:if={hasNotice}><div class="login-notice" role="status">{noticeMessage}</div></template>
+
+                        <div class="field">
+                            <label class="field__label">Email</label>
+                            <input class="field__input" type="email" placeholder="you@example.com" data-field="emailValue" value={emailValue} oninput={handleInput} />
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-ghost" onclick={handleBackToPicker}>Back</button>
+                            <button type="button" class="btn-primary" onclick={handleEmailStep1Submit}>Send code →</button>
+                        </div>
+                    </template>
+
+                    <!-- ============ EMAIL STEP 2 (OTP) ============ -->
+                    <template lwc:if={isEmailStep2}>
+                        <p class="step-eyebrow">STEP 3 OF 5</p>
+                        <h2 class="step-title">Verify it's you</h2>
+                        <p class="step-sub">We sent a 6-digit code to your registered email. It expires in 5 minutes.</p>
+
+                        <template lwc:if={hasNotice}><div class="login-notice" role="status">{noticeMessage}</div></template>
+
+                        <div class="field">
+                            <label class="field__label">Verification code</label>
+                            <input class="field__input" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" data-field="emailOtp" value={emailOtp} oninput={handleInput} />
+                        </div>
+                        <div class="field__hint">Didn't get the code? <a class="link-accent">Resend</a></div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-ghost" onclick={handleEmailBack}>Back</button>
+                            <button type="button" class="btn-primary" onclick={handleEmailStep2Submit}>Verify →</button>
+                        </div>
+                    </template>
+
+                    <!-- ============ PHONE STEP 1 ============ -->
+                    <template lwc:if={isPhoneStep1}>
+                        <p class="step-eyebrow">STEP 2 OF 5</p>
+                        <h2 class="step-title">Enter your mobile number</h2>
+                        <p class="step-sub">Use the mobile number on your alumni record.</p>
+
+                        <template lwc:if={hasNotice}><div class="login-notice" role="status">{noticeMessage}</div></template>
+
+                        <div class="field">
+                            <label class="field__label">Mobile number</label>
+                            <input class="field__input" type="tel" placeholder="+91 98xxx xxxxx" data-field="phoneValue" value={phoneValue} oninput={handleInput} />
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-ghost" onclick={handleBackToPicker}>Back</button>
+                            <button type="button" class="btn-primary" onclick={handlePhoneStep1Submit}>Send OTP →</button>
+                        </div>
+                    </template>
+
+                    <!-- ============ PHONE STEP 2 (OTP) ============ -->
+                    <template lwc:if={isPhoneStep2}>
+                        <p class="step-eyebrow">STEP 3 OF 5</p>
+                        <h2 class="step-title">Verify it's you</h2>
+                        <p class="step-sub">We sent a 6-digit code by SMS. It expires in 5 minutes.</p>
+
+                        <template lwc:if={hasNotice}><div class="login-notice" role="status">{noticeMessage}</div></template>
+
+                        <div class="field">
+                            <label class="field__label">Verification code</label>
+                            <input class="field__input" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" data-field="phoneOtp" value={phoneOtp} oninput={handleInput} />
+                        </div>
+                        <div class="field__hint">Didn't get the code? <a class="link-accent">Resend</a></div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-ghost" onclick={handlePhoneBack}>Back</button>
+                            <button type="button" class="btn-primary" onclick={handlePhoneStep2Submit}>Verify →</button>
+                        </div>
+                    </template>
+
+                    <!-- ============ USERNAME + PASSWORD (REAL AUTH) ============ -->
+                    <template lwc:if={isPasswordStep}>
+                        <p class="step-eyebrow">STEP 2 OF 5</p>
+                        <h2 class="step-title">Enter your credentials</h2>
+                        <p class="step-sub">Use the username and password set up on your alumni account.</p>
+
+                        <form onsubmit={handlePasswordSubmit}>
+
+                            <div class="field">
+                                <label class="field__label">Username</label>
+                                <input class="field__input" type="text" placeholder="your-handle" data-field="usernameValue" value={usernameValue} oninput={handleInput} autocomplete="username" />
+                            </div>
+                            <div class="field">
+                                <label class="field__label">Password</label>
+                                <div class="pwd-wrap">
+                                    <input class="field__input" type={passwordType} placeholder="Enter password" data-field="passwordValue" value={passwordValue} oninput={handleInput} autocomplete="current-password" />
+                                    <button type="button" class="pwd-eye" onclick={togglePassword} aria-label="Show or hide password">{passwordEyeIcon}</button>
+                                </div>
+                            </div>
+
+                            <div class="forgot-row">
+                                <a href="#forgot" class="forgot-link" onclick={handleForgotPassword}>Forgot Password?</a>
+                            </div>
+
+                            <div class="actions">
+                                <button type="button" class="btn-ghost" onclick={handleBackToPicker}>Back</button>
+                                <button type="submit" class="btn-primary" disabled={isSubmitting}>{submitLabel}</button>
+                            </div>
+                        </form>
+                    </template>
+
+                    <!-- ============ REQUEST ACCESS STEP 1 (HOW IT WORKS) ============ -->
+                    <template lwc:if={isRequestStep1}>
+                        <p class="step-eyebrow">REQUEST ALUMNI ACCESS</p>
+                        <h2 class="step-title">{heroJoinTitle}</h2>
+                        <p class="step-sub">Submit your details and the institution team will review your alumni access request.</p>
+
+                        <div class="how-card">
+                            <div class="how-step">
+                                <div class="how-step__num">1</div>
+                                <div class="how-step__body">
+                                    <div class="how-step__title">Share your basic details</div>
+                                    <div class="how-step__desc">Name, email, optional phone, year of graduation.</div>
+                                </div>
+                            </div>
+                            <div class="how-step">
+                                <div class="how-step__num">2</div>
+                                <div class="how-step__body">
+                                    <div class="how-step__title">Institution review</div>
+                                    <div class="how-step__desc">The alumni team verifies your record (2-3 working days).</div>
+                                </div>
+                            </div>
+                            <div class="how-step">
+                                <div class="how-step__num">3</div>
+                                <div class="how-step__body">
+                                    <div class="how-step__title">Receive your access link</div>
+                                    <div class="how-step__desc">We email a secure link to activate your account.</div>
+                                </div>
+                            </div>
+                            <div class="how-step">
+                                <div class="how-step__num">4</div>
+                                <div class="how-step__body">
+                                    <div class="how-step__title">Complete your profile</div>
+                                    <div class="how-step__desc">Add your current role, city, and preferences.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-primary" onclick={handleRequestNext1}>Start request →</button>
+                        </div>
+
+                        <div class="flow-switch">
+                            Already have an alumni link?
+                            <a onclick={handleSwitchToLogin}>Log in instead</a>
+                        </div>
+                    </template>
+
+                    <!-- ============ REQUEST ACCESS STEP 2 (DETAILS) ============ -->
+                    <template lwc:if={isRequestStep2}>
+                        <p class="step-eyebrow">STEP 2 OF 5</p>
+                        <h2 class="step-title">Tell us about you</h2>
+                        <p class="step-sub">A few details so the team can match you to your batch.</p>
+
+
+                        <div class="field">
+                            <label class="field__label">Full name</label>
+                            <input class="field__input" type="text" placeholder="Jane Doe" data-field="reqName" value={reqName} oninput={handleInput} />
+                        </div>
+                        <div class="field">
+                            <label class="field__label">Contact email</label>
+                            <input class="field__input" type="email" placeholder="you@example.com" data-field="reqEmail" value={reqEmail} oninput={handleInput} />
+                        </div>
+                        <div class="grid-2">
+                            <div class="field">
+                                <label class="field__label">Phone (optional)</label>
+                                <input class="field__input" type="tel" placeholder="+91 98xxx xxxxx" data-field="reqPhone" value={reqPhone} oninput={handleInput} />
+                            </div>
+                            <div class="field">
+                                <label class="field__label">Year of graduation</label>
+                                <input class="field__input" type="number" placeholder="2020" data-field="reqGradYear" value={reqGradYear} oninput={handleInput} />
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-ghost" onclick={handleRequestBack2}>Back</button>
+                            <button type="button" class="btn-primary" onclick={handleRequestNext2}>Continue →</button>
+                        </div>
+                    </template>
+
+                    <!-- ============ REQUEST ACCESS STEP 3 (LINKEDIN) ============ -->
+                    <template lwc:if={isRequestStep3}>
+                        <p class="step-eyebrow">STEP 3 OF 5</p>
+                        <h2 class="step-title">Help us verify your background</h2>
+                        <p class="step-sub">Share your LinkedIn so we can confirm your alumni status faster.</p>
+
+                        <div class="field">
+                            <label class="field__label">LinkedIn profile URL</label>
+                            <input class="field__input" type="url" placeholder="https://linkedin.com/in/your-handle" data-field="reqLinkedIn" value={reqLinkedIn} oninput={handleInput} />
+                        </div>
+                        <div class="field__hint">We only use this to match against alumni records - we will not post on your behalf.</div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-ghost" onclick={handleRequestBack3}>Back</button>
+                            <button type="button" class="btn-primary" onclick={handleRequestNext3}>Continue →</button>
+                        </div>
+                    </template>
+
+                    <!-- ============ REQUEST ACCESS STEP 4 (PROFILE) ============ -->
+                    <template lwc:if={isRequestStep4}>
+                        <p class="step-eyebrow">STEP 4 OF 5</p>
+                        <h2 class="step-title">Where are you now?</h2>
+                        <p class="step-sub">This helps your batch and chapter find you.</p>
+
+                        <div class="field">
+                            <label class="field__label">Current company</label>
+                            <input class="field__input" type="text" placeholder="Acme Inc." data-field="reqCompany" value={reqCompany} oninput={handleInput} />
+                        </div>
+                        <div class="field">
+                            <label class="field__label">Current role</label>
+                            <input class="field__input" type="text" placeholder="Product Manager" data-field="reqRole" value={reqRole} oninput={handleInput} />
+                        </div>
+                        <div class="field">
+                            <label class="field__label">City</label>
+                            <input class="field__input" type="text" placeholder="Bangalore" data-field="reqCity" value={reqCity} oninput={handleInput} />
+                        </div>
+
+                        <div class="actions">
+                            <button type="button" class="btn-ghost" onclick={handleRequestBack4}>Back</button>
+                            <button type="button" class="btn-primary" onclick={handleRequestNext4}>Finish →</button>
+                        </div>
+                    </template>
+
+                    <!-- ============ REQUEST SUCCESS ============ -->
+                    <template lwc:if={isRequestSuccess}>
+                        <div class="done">
+                            <div class="done__check">✓</div>
+                            <h2 class="done__title">Request submitted</h2>
+                            <p class="done__sub">Thanks - we'll review and email you within 2-3 working days with your access link.</p>
+                        </div>
+                        <div class="flow-switch">
+                            <a onclick={handleSwitchToLogin}>Back to login</a>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </section>
+    </div>
+</template>

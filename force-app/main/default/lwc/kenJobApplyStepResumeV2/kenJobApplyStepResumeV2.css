@@ -1,0 +1,6 @@
+:host { display: block; }
+.step-h { font-size: 15px; font-weight: 700; margin: 4px 0 14px; color: #111827; }
+.opt-row { width: 100%; text-align: left; background: #fff; border: 1px solid #E5E6E8; border-radius: 6px; padding: 12px 14px; cursor: pointer; font-family: inherit; margin-bottom: 8px; }
+.opt-row--active { border-color: #111827; background: #F6F8FB; }
+.opt-title { font-size: 13px; font-weight: 600; color: #111827; }
+.opt-desc { font-size: 11.5px; color: #6B7280; }

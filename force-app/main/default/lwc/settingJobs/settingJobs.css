@@ -1,0 +1,263 @@
+.jobs-container {
+    padding: 2rem 0;
+    display: block;
+    color: #1a1a1a;
+}
+
+.card {
+    background-color: #f5f7fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+/* Card Titles */
+.section-subtitle {
+    /* Mapping card titles */
+    font-size: 16px;
+    font-weight: 600;
+    color: #373A45;
+    margin: 0 0 1rem 0;
+}
+
+
+
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.toggle-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #373A45;
+}
+
+/* Tags */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.selected-tag {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.input-tag {
+    background-color: #F6F8FB;
+    color: #1976D2;
+}
+
+.tag-remove {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: inherit;
+    opacity: 0.8;
+}
+
+.tag-remove:hover {
+    opacity: 1;
+}
+
+/* Inputs */
+.input-with-suggestions {
+    position: relative;
+}
+
+.input-tags-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #E5E5E5;
+    border-radius: 8px;
+    min-height: 48px;
+    background: white;
+}
+
+.job-title-input,
+.skill-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.9375rem;
+    color: #373A45;
+    min-width: 150px;
+    padding: 0.25rem 0;
+    background: transparent;
+}
+
+.job-title-input::placeholder,
+.skill-input::placeholder {
+    color: #999;
+}
+
+.input-clear {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    color: #999;
+    display: flex;
+    align-items: center;
+}
+
+.input-clear:hover {
+    color: #373A45;
+}
+
+/* Suggestions Popover */
+.suggestions-popover {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #E5E5E5;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 0.5rem;
+    padding: 1rem;
+    z-index: 1000;
+}
+
+.suggestions-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 0.75rem;
+}
+
+.suggestions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.suggestion-tag {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #E5E5E5;
+    background: white;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: #373A45;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.suggestion-tag:hover {
+    background: #F5F5F5;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Checkboxes */
+.checkbox-group {
+    display: flex;
+    /* Updated to row for location types usually, or column? Figma shows on-site, hybrid, remote in a row */
+    flex-direction: row;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+}
+
+/* Location Search */
+.location-search-wrapper {
+    margin-top: 1rem;
+}
+
+.location-search {
+    width: 100%;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #E5E5E5;
+}
+
+.btn-discard {
+    padding: 0.75rem 1.5rem;
+    border: 1px solid #E5E5E5;
+    background: white;
+    color: var(--primary-color);
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-discard:hover {
+    background: #F5F5F5;
+    border-color: var(--primary-color);
+}
+
+.btn-save {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-save:hover {
+    background: #2551CC;
+}
+
+@media (max-width: 768px) {
+    .jobs-container {
+        padding: 1rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-discard,
+    .btn-save {
+        width: 100%;
+    }
+
+    .checkbox-group {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

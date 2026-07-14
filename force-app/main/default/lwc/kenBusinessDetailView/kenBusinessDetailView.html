@@ -1,0 +1,438 @@
+<template>
+  <!-- Business Listing Form -->
+  <template if:true={showBusinessListingForm}>
+    <c-ken-business-listing-form
+      style="width: 100%"
+      business={listingFormBusiness}
+      business-id={editBusinessId}
+      oncancel={handleCancelListingForm}
+      onsubmit={handleSubmitListingForm}
+      oncloseform={handleListingClose}
+    ></c-ken-business-listing-form>
+  </template>
+
+  <template if:true={hasBusinessData}>
+    <template if:false={showBusinessListingForm}>
+      <div class={pageContainerClass}>
+        <div class="business-detail-container">
+          <!-- Main Content Area -->
+          <div class="main-content">
+            <!-- Banner Section -->
+            <div class="banner-section">
+              <img
+                src={bannerImageUrl}
+                alt={businessData.name}
+                class="banner-image"
+                onerror={handleBannerError}
+              />
+              <div class="category-tag-banner">{businessData.category}</div>
+            </div>
+
+            <!-- Business Header Section -->
+            <div class="business-header">
+              <div class="logo-container">
+                <img
+                  src={logoUrl}
+                  alt={businessData.name}
+                  class="business-logo-large"
+                  onerror={handleLogoError}
+                />
+              </div>
+              <div class="business-header-info">
+                <h1 class="business-name-large">{businessData.name}</h1>
+                <p class="business-location-large">
+                  {businessData.location}
+                  <template if:false={isOwner}>
+                    <span class="loc-sep">|</span>
+                    <button class="get-directions-inline" onclick={handleGetDirections}>
+                      Get Directions
+                    </button>
+                  </template>
+                </p>
+                <template if:true={featureBadge.show}>
+                  <span class={featureBadge.cls}>{featureBadge.text}</span>
+                </template>
+                <template if:true={featureRejectionComment}>
+                  <p class="feature-reject-comment">
+                    Reason: {featureRejectionComment}
+                  </p>
+                </template>
+              </div>
+              <div class="action-buttons">
+                <template if:true={isOwner}>
+                  <template if:true={isBusinessActive}>
+                    <span title={featureToggleTooltip}>
+                      <button
+                        class={featureToggleClass}
+                        disabled={featureToggleDisabled}
+                        onclick={handleFeatureToggle}
+                        role="switch"
+                        aria-checked={featureToggleOn}
+                      >
+                        <span class="toggle-thumb"></span>
+                      </button>
+                    </span>
+                  </template>
+                </template>
+              </div>
+            </div>
+
+            <!-- Business rejection reason (owner only) -->
+            <template if:true={businessRejectionReason}>
+              <div class="rejection-box">
+                <p class="rejection-box-title">Reason for rejection:</p>
+                <p class="rejection-box-text">{businessRejectionReason}</p>
+              </div>
+            </template>
+
+            <!-- About Section — scrolls to fill remaining card space -->
+            <div class="about-section about-full">
+              <h2 class="about-title">About {businessData.name}</h2>
+              <div class="about-content">
+                <lightning-formatted-rich-text
+                  class="about-paragraph"
+                  value={aboutParagraph1}
+                ></lightning-formatted-rich-text>
+              </div>
+            </div>
+
+            <!-- Contact row — always visible at the bottom of the card -->
+            <div class="contact-bar">
+              <div class="contact-bar-left">
+                <span class="contact-item">
+                  <lightning-icon
+                    icon-name="utility:phone_portrait"
+                    size="x-small"
+                    class="contact-icon"
+                  ></lightning-icon>
+                  <span class="contact-text">{businessData.phone}</span>
+                </span>
+                <span class="contact-sep">|</span>
+                <span class="contact-item">
+                  <lightning-icon
+                    icon-name="utility:email"
+                    size="x-small"
+                    class="contact-icon"
+                  ></lightning-icon>
+                  <span class="contact-text">{businessData.email}</span>
+                </span>
+                <!-- Others' business: show the owner here on the left. -->
+                <template if:false={isOwner}>
+                  <span class="contact-sep">|</span>
+                  <span class="owner-info">
+                    <img
+                      src={ownerImageUrl}
+                      alt={businessData.ownerName}
+                      class="owner-image-sm"
+                      onerror={handleOwnerImageError}
+                    />
+                    <span class="owner-name">{businessData.ownerName}</span>
+                  </span>
+                </template>
+              </div>
+              <div class="contact-bar-right">
+                <!-- Owner: always show all buttons; disable with tooltip when locked -->
+                <template if:true={isOwner}>
+                  <span class={statusBadgeClass}>{statusLabel}</span>
+                  <!-- Admin: Approve / Dismiss deletion request -->
+                  <template if:true={showAdminDeletionActions}>
+                    <button class="delete-confirm-btn" onclick={handleAdminApproveDeletion}>Approve Deletion</button>
+                    <button class="edit-business-btn" onclick={handleAdminDismissDeletion}>Dismiss</button>
+                  </template>
+                  <span title={deleteTooltip}>
+                    <button class="delete-icon-btn" disabled={isDeleteDisabled} onclick={handleDelete}>
+                      <lightning-icon
+                        icon-name="utility:delete"
+                        size="x-small"
+                        class="delete-icon-red"
+                      ></lightning-icon>
+                    </button>
+                  </span>
+                  <span title={toggleActivateTooltip}>
+                    <button
+                      class={toggleActivateClass}
+                      disabled={isToggleActivateDisabled}
+                      onclick={handleToggleActivate}
+                    >{toggleActivateLabel}</button>
+                  </span>
+                  <span title={editTooltip}>
+                    <button class="edit-business-btn" disabled={isEditDisabled} onclick={handleEditBusiness}>
+                      Edit Business
+                    </button>
+                  </span>
+                </template>
+                <!-- Others' business: Chat + Express Interest (Get Directions is by the address) -->
+                <template if:false={isOwner}>
+                  <button class="chat-bottom-btn" onclick={handleChat}>
+                    Chat with {ownerFirstName}
+                  </button>
+                  <template if:false={businessData.isOwner}>
+                    <template if:true={alreadyExpressed}>
+                      <button class="interest-done-btn" disabled>
+                        Interest Expressed
+                        <lightning-icon
+                          icon-name="utility:check"
+                          size="xx-small"
+                          class="interest-check"
+                        ></lightning-icon>
+                      </button>
+                    </template>
+                    <template if:false={alreadyExpressed}>
+                      <button class="express-interest-btn" onclick={handleExpressInterest}>
+                        Express Interest
+                      </button>
+                    </template>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="sidebar">
+            <!-- Similar Businesses Panel -->
+            <c-ken-similar-businesses
+              business-id={businessData.id}
+              category={businessData.category}
+              onsimilarselect={handleSimilarSelect}
+              onviewmore={handleSimilarViewMore}
+            ></c-ken-similar-businesses>
+
+            <!-- List Your Business Panel -->
+            <c-ken-list-your-business
+              onlistbusiness={handleListBusiness}
+            ></c-ken-list-your-business>
+          </div>
+        </div>
+      </div>
+
+      <!-- Express Interest Modal -->
+      <template if:true={showExpressInterestModal}>
+        <div class="modal-overlay" onclick={handleModalOverlayClick}>
+          <div class="modal-container" onclick={handleModalContainerClick}>
+            <div class="modal-header">
+              <h2 class="modal-title">Get in touch with {businessData.name}</h2>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label">
+                  Subject<span class="required-asterisk">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-input"
+                  placeholder="Interested in your products..."
+                  value={subject}
+                  onchange={handleSubjectChange}
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label">
+                  Your message<span class="required-asterisk">*</span>
+                </label>
+                <textarea
+                  class="form-textarea"
+                  placeholder="Write your message here..."
+                  onchange={handleMessageChange}
+                ></textarea>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="cancel-btn" onclick={handleCancel}>Cancel</button>
+              <button class="submit-btn" onclick={handleSubmit}>Submit</button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Request Feature Modal (Subject + Message) -->
+      <template if:true={showFeatureModal}>
+        <div class="modal-overlay" onclick={closeFeatureModal}>
+          <div class="modal-container" onclick={handleModalContainerClick}>
+            <div class="modal-header">
+              <h2 class="modal-title">Request to feature {businessData.name}</h2>
+            </div>
+            <div class="modal-body">
+              <div class="form-field">
+                <label class="form-label">
+                  Subject<span class="required-asterisk">*</span>
+                </label>
+                <input
+                  type="text"
+                  class="form-input"
+                  placeholder="Why should we feature your business?"
+                  value={featureSubject}
+                  onchange={handleFeatureSubjectChange}
+                />
+              </div>
+              <div class="form-field">
+                <label class="form-label">
+                  Your message<span class="required-asterisk">*</span>
+                </label>
+                <textarea
+                  class="form-textarea"
+                  placeholder="Tell the admin more about your request..."
+                  onchange={handleFeatureMessageChange}
+                ></textarea>
+              </div>
+              <div class="form-row-dates">
+                <div class="form-field">
+                  <label class="form-label">
+                    Feature from<span class="required-asterisk">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    class="form-input"
+                    value={featureDateFrom}
+                    min={featureTodayStr}
+                    onchange={handleFeatureDateFromChange}
+                  />
+                </div>
+                <div class="form-field">
+                  <label class="form-label">
+                    Feature to<span class="required-asterisk">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    class="form-input"
+                    value={featureDateTo}
+                    min={featureDateFrom}
+                    onchange={handleFeatureDateToChange}
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button class="cancel-btn" onclick={closeFeatureModal} disabled={isSubmittingFeature}>Cancel</button>
+              <button class="submit-btn" onclick={submitFeatureRequest} disabled={isSubmittingFeature}>
+                {submitFeatureBtnLabel}
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Request Sent! confirmation popup -->
+      <template if:true={showRequestSent}>
+        <div class="modal-overlay" onclick={closeRequestSent}>
+          <div class="request-sent-popup" onclick={handleModalContainerClick}>
+            <lightning-icon
+              icon-name="utility:check"
+              size="small"
+              class="request-sent-icon"
+            ></lightning-icon>
+            <h2 class="request-sent-title">Request Sent!</h2>
+            <p class="request-sent-text">
+              The admin will review your request and respond soon.
+            </p>
+            <button class="submit-btn request-sent-ok-btn" onclick={closeRequestSent}>
+              OK
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- Deactivate Listing Modal -->
+      <template if:true={showDeactivateModal}>
+        <div class="modal-overlay" onclick={handleDeactivateModalOverlayClick}>
+          <div
+            class="modal-container deactivate-modal"
+            onclick={handleModalContainerClick}
+          >
+            <div class="modal-header">
+              <h2 class="modal-title">
+                Are you sure you want to deactivate this listing?
+              </h2>
+            </div>
+            <div class="modal-footer">
+              <button class="cancel-btn" onclick={handleCancelDeactivate}>
+                Cancel
+              </button>
+              <button
+                class="deactivate-confirm-btn"
+                onclick={handleConfirmDeactivate}
+              >
+                Deactivate Listing
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Re-Activate Modal -->
+      <template if:true={showReactivateModal}>
+        <div class="modal-overlay" onclick={handleReactivateModalOverlayClick}>
+          <div
+            class="modal-container deactivate-modal"
+            onclick={handleModalContainerClick}
+          >
+            <div class="modal-header">
+              <h2 class="modal-title">Re-activate this listing?</h2>
+              <p class="modal-subtitle">Your business will be visible in the directory again.</p>
+            </div>
+            <div class="modal-footer">
+              <button class="cancel-btn" onclick={handleCancelReactivate}>Cancel</button>
+              <button class="reactivate-confirm-btn" onclick={handleConfirmReactivate}>
+                Re-Activate
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Remove Featured Modal -->
+      <template if:true={showRemoveFeatureModal}>
+        <div class="modal-overlay" onclick={handleRemoveFeatureModalOverlayClick}>
+          <div
+            class="modal-container deactivate-modal"
+            onclick={handleModalContainerClick}
+          >
+            <div class="modal-header">
+              <h2 class="modal-title">Remove from Featured?</h2>
+              <p class="modal-subtitle">Your business will no longer appear in the featured carousel.</p>
+            </div>
+            <div class="modal-footer">
+              <button class="cancel-btn" onclick={handleCancelRemoveFeature}>Cancel</button>
+              <button class="remove-feature-confirm-btn" onclick={handleConfirmRemoveFeature}>
+                Remove Featured
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Delete Listing Modal -->
+      <template if:true={showDeleteModal}>
+        <div class="modal-overlay" onclick={handleDeleteModalOverlayClick}>
+          <div
+            class="modal-container delete-modal"
+            onclick={handleModalContainerClick}
+          >
+            <div class="modal-header">
+              <button class="close-button" onclick={handleCloseDeleteModal}>
+                <lightning-icon
+                  icon-name="utility:close"
+                  size="x-small"
+                ></lightning-icon>
+              </button>
+              <h2 class="modal-title">
+                Request to delete this listing?<br />This will be sent to an admin for review. You can deactivate it instead.
+              </h2>
+            </div>
+            <div class="modal-footer">
+              <button
+                class="deactivate-from-delete-btn"
+                onclick={handleDeactivateFromDelete}
+              >
+                Deactivate
+              </button>
+              <button class="delete-confirm-btn" onclick={handleConfirmDelete}>
+                Request Deletion
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+    </template>
+  </template>
+</template>

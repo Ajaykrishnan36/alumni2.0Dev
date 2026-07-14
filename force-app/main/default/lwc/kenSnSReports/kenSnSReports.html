@@ -1,0 +1,489 @@
+<template>
+    <div class="hr-shell">
+
+        <!-- ── Sidebar (Reports view only) ──────────────────────────────── -->
+        <template if:false={isDashboardView}>
+        <nav class={sidebarClass}>
+            <button class="hr-sidebar-toggle" onclick={handleSidebarToggle} title="Toggle navigation">&#8942;</button>
+            <div class="hr-nav-section">
+                <ul class="hr-nav-list">
+                    <template for:each={reportMenuItems} for:item="item">
+                        <li key={item.key}
+                            class={item.cssClass}
+                            data-key={item.key}
+                            onclick={handleReportSwitch}
+                            title={item.label}>
+                            <span class="hr-nav-icon" data-key={item.key}>{item.icon}</span>
+                            <span class="hr-nav-label" data-key={item.key}>{item.label}</span>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </nav>
+        </template>
+
+        <!-- ── Main content ──────────────────────────────────────────────── -->
+        <main class="hr-main">
+
+            <!-- Header -->
+            <div class="hr-report-header">
+                <div class="hr-report-title-row">
+                    <div class="hr-report-title-group">
+                        <template if:true={isDashboardView}>
+                            <h1 class="hr-report-title">Dashboard</h1>
+                            <p class="hr-report-subtitle">Service &amp; Support overview by status, category and record type</p>
+                        </template>
+                        <template if:false={isDashboardView}>
+                            <h1 class="hr-report-title">{activeReportLabel}</h1>
+                            <p class="hr-report-subtitle">{activeReportSubtitle}</p>
+                        </template>
+                    </div>
+                    <template if:false={isDashboardView}>
+                    <div class="hr-header-actions">
+                        <lightning-button-icon
+                            icon-name="utility:refresh"
+                            variant="border-filled"
+                            alternative-text="Refresh"
+                            title="Refresh"
+                            onclick={handleRefresh}>
+                        </lightning-button-icon>
+                        <lightning-button
+                            label="Export CSV"
+                            icon-name="utility:download"
+                            icon-position="left"
+                            variant="neutral"
+                            onclick={handleExport}
+                            disabled={isExporting}>
+                        </lightning-button>
+                    </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Dashboard filters -->
+            <template if:true={isDashboardView}>
+            <div class="hr-dashboard-filter-panel">
+                <lightning-combobox
+                    label="Record Type"
+                    value={dashboardRecordType}
+                    options={recordTypeOptions}
+                    data-field="recordType"
+                    onchange={handleDashboardFilterChange}>
+                </lightning-combobox>
+                <lightning-combobox
+                    label="Status"
+                    value={dashboardStatus}
+                    options={statusOptions}
+                    data-field="status"
+                    onchange={handleDashboardFilterChange}>
+                </lightning-combobox>
+                <lightning-combobox
+                    label="Service"
+                    value={dashboardService}
+                    options={serviceOfferingOptions}
+                    data-field="service"
+                    onchange={handleDashboardFilterChange}>
+                </lightning-combobox>
+                <lightning-combobox
+                    label="Date Range"
+                    value={dashboardDateRange}
+                    options={dateRangeOptions}
+                    data-field="dateRange"
+                    onchange={handleDashboardFilterChange}>
+                </lightning-combobox>
+                <div class="hr-dashboard-filter-actions">
+                    <lightning-button
+                        label="Clear"
+                        variant="neutral"
+                        onclick={handleClearDashboardFilters}>
+                    </lightning-button>
+                </div>
+            </div>
+            </template>
+
+            <!-- Dashboard sections -->
+            <template if:true={isDashboardView}>
+                <template if:true={isLoading}>
+                    <div class="hr-loading hr-dashboard-loading">
+                        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                    </div>
+                </template>
+                <template if:false={isLoading}>
+                    <div class="hr-dashboard-sections">
+                        <template for:each={dashboardSections} for:item="section">
+                            <section key={section.key} class={section.sectionClass} data-key={section.key}>
+                                <div class="hr-dashboard-section-header">
+                                    <div>
+                                        <h2 class="hr-dashboard-section-title">{section.label}</h2>
+                                        <p class="hr-dashboard-section-subtitle">{section.subtitle}</p>
+                                    </div>
+                                    <button
+                                        class="hr-section-action-btn"
+                                        type="button"
+                                        title="Refresh"
+                                        data-key={section.key}
+                                        onclick={handleDashboardSectionRefresh}>
+                                        <lightning-icon icon-name="utility:refresh" size="xx-small"></lightning-icon>
+                                    </button>
+                                </div>
+
+                                <template if:true={section.isSectionLoading}>
+                                    <div class="hr-loading hr-section-loading">
+                                        <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                    </div>
+                                </template>
+
+                                <!-- KPI stat cards -->
+                                <div class="hr-kpi-grid">
+                                    <template for:each={section.kpiItems} for:item="kpi">
+                                        <div key={kpi.chartKey} class="hr-kpi-card">
+                                            <div class={kpi.iconBoxCss}>
+                                                <lightning-icon icon-name={kpi.iconName} size="small" variant="inverse"></lightning-icon>
+                                            </div>
+                                            <div class="hr-kpi-content">
+                                                <span class="hr-kpi-label">{kpi.label}</span>
+                                                <span class="hr-kpi-value">{kpi.value}</span>
+                                                <span class="hr-kpi-sub">{kpi.sub}</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+
+                                <!-- Chart cards -->
+                                <div class="hr-charts-row">
+                                    <template for:each={section.kpiItems} for:item="kpi" for:index="idx">
+                                        <div key={kpi.chartKey} class="hr-chart-card">
+                                            <div class="hr-chart-header">
+                                                <div class="hr-chart-card-title">
+                                                    <span class="hr-chart-dot" style={kpi.dotStyle}></span>
+                                                    {kpi.label}
+                                                </div>
+                                                <div class="hr-chart-actions">
+                                                    <button
+                                                        class="hr-chart-action-btn"
+                                                        type="button"
+                                                        title="Expand"
+                                                        data-report-key={kpi.reportKey}
+                                                        data-chart-key={kpi.chartKey}
+                                                        onclick={handleDashboardChartExpand}>
+                                                        <lightning-icon icon-name="utility:expand_alt" size="xx-small"></lightning-icon>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <template if:true={kpi.isDonut}>
+                                                <div class="hr-donut-body">
+                                                    <div class="hr-donut-canvas-wrap">
+                                                        <canvas class="hr-chart-canvas" data-idx={idx} data-chart-key={kpi.chartKey} lwc:dom="manual"></canvas>
+                                                        <div class="hr-donut-center">
+                                                            <span class="hr-donut-center-val">{kpi.value}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="hr-donut-right">
+                                                        <div class="hr-donut-stat-sub">{kpi.sub}</div>
+                                                        <template if:true={kpi.hasLegend}>
+                                                            <div class="hr-donut-legend-list">
+                                                                <template for:each={kpi.legend} for:item="lg">
+                                                                    <div key={lg.label} class="hr-donut-legend-row">
+                                                                        <span class="hr-legend-dot" style={lg.dotStyle}></span>
+                                                                        <span class="hr-donut-legend-label">{lg.label}</span>
+                                                                        <span class="hr-donut-legend-val">{lg.value}</span>
+                                                                        <span class="hr-donut-legend-pct">{lg.pct}</span>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </template>
+
+                                            <template if:false={kpi.isDonut}>
+                                                <div class="hr-chart-stats">
+                                                    <span class="hr-chart-stat-val">{kpi.value}</span>
+                                                    <span class="hr-chart-stat-sub">{kpi.sub}</span>
+                                                </div>
+                                                <div class="hr-chart-wrap">
+                                                    <canvas class="hr-chart-canvas" data-idx={idx} data-chart-key={kpi.chartKey} lwc:dom="manual"></canvas>
+                                                </div>
+                                                <template if:true={kpi.hasBarLegend}>
+                                                    <div class="hr-bar-legend">
+                                                        <template for:each={kpi.barLegend} for:item="bl">
+                                                            <div key={bl.label} class="hr-bar-legend-row">
+                                                                <span class="hr-legend-dot" style={bl.dotStyle}></span>
+                                                                <span class="hr-bar-legend-label">{bl.label}</span>
+                                                                <span class="hr-bar-legend-val">{bl.value}</span>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </section>
+                        </template>
+                    </div>
+                </template>
+            </template>
+
+            <!-- Reports view: search + filters -->
+            <template if:false={isDashboardView}>
+            <div class="hr-filter-bar">
+                <div class="hr-filter-search">
+                    <lightning-input
+                        type="search"
+                        label=""
+                        placeholder="Search by case number, subject, case owner, account..."
+                        value={searchKey}
+                        onchange={handleSearchChange}
+                        class="hr-search-input">
+                    </lightning-input>
+                </div>
+                <div class="hr-filter-actions">
+                    <lightning-button
+                        label="Add Filter"
+                        icon-name="utility:filterList"
+                        icon-position="left"
+                        variant="neutral"
+                        onclick={handleAddFilter}>
+                    </lightning-button>
+                    <template if:true={hasActiveFilters}>
+                        <lightning-button label="Clear All" variant="neutral" onclick={handleClearFilters}></lightning-button>
+                    </template>
+                </div>
+            </div>
+
+            <template if:true={hasActiveFilters}>
+            <div class="hr-filters-panel">
+                <template for:each={activeFiltersView} for:item="af">
+                <div key={af.id} class="hr-filter-row">
+                    <lightning-combobox
+                        label=""
+                        value={af.field}
+                        options={filterFieldOptions}
+                        placeholder="Field"
+                        data-id={af.id}
+                        onchange={handleFilterFieldChange}
+                        class="hr-filter-combo">
+                    </lightning-combobox>
+                    <lightning-combobox
+                        label=""
+                        value={af.operator}
+                        options={operatorOptions}
+                        data-id={af.id}
+                        onchange={handleFilterOperatorChange}
+                        class="hr-filter-combo-sm">
+                    </lightning-combobox>
+                    <div class="hr-tag-input">
+                        <template for:each={af.valuesView} for:item="tv">
+                            <span key={tv.key} class="hr-filter-tag">
+                                {tv.val}
+                                <span class="hr-tag-x" data-fid={af.id} data-vidx={tv.idx} onclick={handleRemoveTag}>&#x2715;</span>
+                            </span>
+                        </template>
+                        <input class="hr-tag-text" data-fid={af.id} placeholder="Value (Enter/comma)" onkeydown={handleTagKeydown} />
+                    </div>
+                    <lightning-button label="Apply" variant={af.applyVariant} data-id={af.id} onclick={handleApplyFilter}></lightning-button>
+                    <button class="hr-filter-del" data-id={af.id} onclick={handleRemoveFilter}>&#x1F5D1;</button>
+                </div>
+                </template>
+            </div>
+            </template>
+            </template>
+
+            <!-- Record count -->
+            <template if:false={isDashboardView}>
+            <div class="hr-table-meta">
+                <span class="hr-record-count">{pageInfo}</span>
+            </div>
+            </template>
+
+            <!-- Grouped data table -->
+            <template if:false={isDashboardView}>
+            <div class="hr-table-container">
+                <template if:true={isLoading}>
+                    <div class="hr-loading">
+                        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                    </div>
+                </template>
+                <template if:false={isLoading}>
+                    <template if:true={hasRows}>
+                        <div class="hr-grouped-table-wrap">
+                            <table class="hr-grouped-table">
+                                <thead>
+                                    <tr>
+                                        <template for:each={tableColumns} for:item="col">
+                                            <th key={col.fieldName} class={col.thClass} data-field={col.fieldName} onclick={handleColumnSort}>
+                                                {col.label}
+                                                <template if:true={col.isSortable}>
+                                                    <span class={col.sortIconClass}> {col.sortIcon}</span>
+                                                </template>
+                                            </th>
+                                        </template>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={flatGroupedRows} for:item="frow">
+                                        <tr key={frow.id} class={frow.rowClass}>
+                                            <template for:each={frow.cells} for:item="cell">
+                                                <td key={cell.id} class={cell.cellClass}>{cell.value}</td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="hr-pagination">
+                            <button class="hr-page-btn" onclick={handlePrevPage} disabled={prevPageDisabled}>&#8592;</button>
+                            <template for:each={pageNumberItems} for:item="pg">
+                                <button key={pg.id} class={pg.css} data-page={pg.num} disabled={pg.disabled} onclick={handlePageClick}>
+                                    {pg.label}
+                                </button>
+                            </template>
+                            <button class="hr-page-btn" onclick={handleNextPage} disabled={nextPageDisabled}>&#8594;</button>
+                            <span class="hr-page-label">Page {currentPage} of {totalPages}</span>
+                        </div>
+                    </template>
+                    <template if:false={hasRows}>
+                        <div class="hr-empty-state">
+                            <span class="hr-empty-icon">&#128269;</span>
+                            <p class="hr-empty-title">No records found</p>
+                            <p class="hr-empty-sub">Try adjusting your filters or clear to show all results.</p>
+                        </div>
+                    </template>
+                </template>
+            </div>
+            </template>
+
+            <!-- Error toast -->
+            <template if:true={errorMessage}>
+                <div class="hr-error-toast">
+                    <span>&#9888; {errorMessage}</span>
+                    <button class="hr-error-close" onclick={handleDismissError}>&#x2715;</button>
+                </div>
+            </template>
+
+        </main>
+    </div>
+
+    <!-- ── Zoom modal (chart expand) ──────────────────────────────────────── -->
+    <template if:true={isZoomOpen}>
+        <div class="hr-zoom-overlay" onclick={handleZoomClose}>
+            <div class="hr-zoom-modal" onclick={stopProp}>
+                <div class="hr-zoom-header">
+                    <div>
+                        <div class="hr-zoom-section">{zoomCard.sectionLabel}</div>
+                        <h2 class="hr-zoom-title">{zoomCard.label}</h2>
+                    </div>
+                    <button class="hr-dd-close" type="button" onclick={handleZoomClose}>&#x2715;</button>
+                </div>
+                <template if:true={zoomCard.isDonut}>
+                    <div class="hr-zoom-donut-body">
+                        <div class="hr-zoom-canvas-wrap">
+                            <canvas class="hr-chart-canvas" data-chart-key={zoomCard.chartKey} lwc:dom="manual"></canvas>
+                            <div class="hr-donut-center">
+                                <span class="hr-donut-center-val">{zoomCard.value}</span>
+                            </div>
+                        </div>
+                        <div class="hr-donut-right">
+                            <div class="hr-donut-stat-sub">{zoomCard.sub}</div>
+                            <template if:true={zoomCard.hasLegend}>
+                                <div class="hr-donut-legend-list">
+                                    <template for:each={zoomCard.legend} for:item="lg">
+                                        <div key={lg.label} class="hr-donut-legend-row">
+                                            <span class="hr-legend-dot" style={lg.dotStyle}></span>
+                                            <span class="hr-donut-legend-label">{lg.label}</span>
+                                            <span class="hr-donut-legend-val">{lg.value}</span>
+                                            <span class="hr-donut-legend-pct">{lg.pct}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                <template if:false={zoomCard.isDonut}>
+                    <div class="hr-zoom-chart-stats">
+                        <span class="hr-chart-stat-val">{zoomCard.value}</span>
+                        <span class="hr-chart-stat-sub">{zoomCard.sub}</span>
+                    </div>
+                    <div class="hr-zoom-chart-wrap">
+                        <canvas class="hr-chart-canvas" data-chart-key={zoomCard.chartKey} lwc:dom="manual"></canvas>
+                    </div>
+                    <template if:true={zoomCard.hasBarLegend}>
+                        <div class="hr-bar-legend hr-zoom-bar-legend">
+                            <template for:each={zoomCard.barLegend} for:item="bl">
+                                <div key={bl.label} class="hr-bar-legend-row">
+                                    <span class="hr-legend-dot" style={bl.dotStyle}></span>
+                                    <span class="hr-bar-legend-label">{bl.label}</span>
+                                    <span class="hr-bar-legend-val">{bl.value}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <!-- ── Drill-down modal ──────────────────────────────────────────────── -->
+    <template if:true={isDrillDownOpen}>
+        <div class="hr-dd-overlay" onclick={handleDrillDownClose}>
+            <div class="hr-dd-modal" onclick={stopProp}>
+                <div class="hr-dd-header">
+                    <div class="hr-dd-title-wrap">
+                        <span class="hr-dd-title">{drillDownTitle}</span>
+                        <span class="hr-dd-count">{drillDownTotalCount} records</span>
+                    </div>
+                    <div class="hr-dd-header-actions">
+                        <lightning-button
+                            label="Export CSV"
+                            icon-name="utility:download"
+                            icon-position="left"
+                            variant="neutral"
+                            onclick={handleDrillDownExport}>
+                        </lightning-button>
+                        <button class="hr-dd-close" onclick={handleDrillDownClose}>&#x2715;</button>
+                    </div>
+                </div>
+                <div class="hr-dd-search">
+                    <lightning-input
+                        type="search"
+                        label=""
+                        placeholder="Search by case number, subject or case owner..."
+                        value={drillDownSearch}
+                        onchange={handleDrillDownSearchChange}>
+                    </lightning-input>
+                </div>
+                <div class="hr-dd-body">
+                    <template if:true={hasDrillDownRows}>
+                        <lightning-datatable
+                            key-field="id"
+                            data={drillDownPageRows}
+                            columns={drillDownColumns}
+                            hide-checkbox-column
+                            class="hr-datatable">
+                        </lightning-datatable>
+                    </template>
+                    <template if:false={hasDrillDownRows}>
+                        <div class="hr-empty-state">
+                            <span class="hr-empty-icon">&#128269;</span>
+                            <p class="hr-empty-title">No records found</p>
+                            <p class="hr-empty-sub">Try adjusting your search.</p>
+                        </div>
+                    </template>
+                </div>
+                <div class="hr-dd-footer">
+                    <span class="hr-record-count">{drillDownPageInfo}</span>
+                    <div class="hr-dd-pagination">
+                        <button class="hr-page-btn" onclick={handleDrillDownPrev} disabled={drillDownPrevDisabled}>&#8592;</button>
+                        <span class="hr-page-label">Page {drillDownPage} of {drillDownTotalPages}</span>
+                        <button class="hr-page-btn" onclick={handleDrillDownNext} disabled={drillDownNextDisabled}>&#8594;</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

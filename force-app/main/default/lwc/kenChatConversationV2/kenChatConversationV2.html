@@ -1,0 +1,38 @@
+<template lwc:render-mode="light">
+    <main class="convo">
+        <header class="convo__head">
+            <span class="convo__avatar" style={activeAvatarStyle}>{activeInitial}</span>
+            <div class="convo__info">
+                <p class="convo__name">{activeName}</p>
+                <p class="convo__status">{activeStatus}</p>
+            </div>
+            <div class="convo__actions">
+                <button type="button" aria-label="Call" onclick={handleCall}>📞</button>
+                <button type="button" aria-label="Video" onclick={handleVideo}>🎥</button>
+                <button type="button" aria-label="More" onclick={handleMore}>⋯</button>
+            </div>
+        </header>
+
+        <div class="convo__messages">
+            <template for:each={messages} for:item="m">
+                <div key={m.id} class={m.msgClass}>
+                    <p class="msg__text">{m.text}</p>
+                    <span class="msg__time">{m.time}</span>
+                </div>
+            </template>
+        </div>
+
+        <footer class="convo__compose">
+            <button type="button" class="compose__attach" aria-label="Attach" onclick={handleAttach}>📎</button>
+            <textarea
+                class="compose__input"
+                placeholder="Type a message..."
+                rows="1"
+                value={draft}
+                oninput={handleDraft}
+                onkeydown={handleEnter}
+            ></textarea>
+            <button type="button" class="compose__send" onclick={handleSend}>Send</button>
+        </footer>
+    </main>
+</template>

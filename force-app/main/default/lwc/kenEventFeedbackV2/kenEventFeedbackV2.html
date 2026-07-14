@@ -1,0 +1,63 @@
+<template>
+    <button type="button" class="back-btn" onclick={handleBack}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        Back
+    </button>
+
+    <article class="fb">
+        <template lwc:if={submitted}>
+            <div class="fb-done">
+                <div class="fb-done__icon">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#19A974" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="16 9 11 14 8 11"></polyline></svg>
+                </div>
+                <h2>Thank you for your feedback!</h2>
+                <p>Your responses help us craft better events for the alumni community.</p>
+                <button type="button" class="btn btn--primary" onclick={handleBack}>Done</button>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <header class="fb__head">
+                <h2 class="fb__title">Alumni Engagement Survey</h2>
+                <p class="fb__sub">{event.title}</p>
+                <div class="fb__progress">
+                    <div class="fb__bar"><div class="fb__bar-fill" style={progressStyle}></div></div>
+                    <span class="fb__count">{progressLabel}</span>
+                </div>
+            </header>
+
+            <!-- Anonymous toggle -->
+            <div class="anon-row">
+                <span class="anon-row__label">Submit response anonymously?</span>
+                <button type="button" class={anonToggleClass} onclick={toggleAnonymous} aria-pressed={anonymous}>
+                    <span class="toggle__knob"></span>
+                </button>
+            </div>
+
+            <!-- Q1: multi-select -->
+            <section class="q">
+                <p class="q__label"><span class="q__num">1.</span> Which types of alumni events interest you the most?</p>
+                <p class="q__hint">Select all that apply.</p>
+                <div class="opt-list">
+                    <template for:each={q1Options} for:item="o">
+                        <label key={o.label} class="opt">
+                            <input type="checkbox" value={o.label} checked={o.checked} onchange={handleQ1}/>
+                            <span>{o.label}</span>
+                        </label>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Q2: free text -->
+            <section class="q">
+                <p class="q__label"><span class="q__num">2.</span> Are there specific themes or topics you'd like future events to cover?</p>
+                <textarea class="q__textarea" rows="4" placeholder="Share your thoughts…" value={q2Text} oninput={handleQ2}></textarea>
+            </section>
+
+            <footer class="fb__footer">
+                <button type="button" class="btn btn--outline" onclick={handleCancel}>Cancel</button>
+                <button type="button" class="btn btn--primary" disabled={submitDisabled} onclick={handleSubmit}>Submit</button>
+            </footer>
+        </template>
+    </article>
+</template>

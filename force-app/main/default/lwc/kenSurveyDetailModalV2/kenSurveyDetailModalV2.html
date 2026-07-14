@@ -1,0 +1,25 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal modal--md" onclick={handleStop}>
+            <div class="modal-hero">
+                <span class="hero-pill">{pillLabel}</span>
+                <h2 class="hero-title">{title}</h2>
+                <p class="hero-desc">{desc}</p>
+                <button class="modal-close" onclick={handleClose}>x</button>
+            </div>
+            <div class="meta-row">
+                <div class="meta-item"><label>Questions</label><p>{questionsCount}</p></div>
+                <div class="meta-item"><label>Est. Time</label><p>~{minutes} min</p></div>
+                <div class="meta-item"><label>Audience</label><p>{audience}</p></div>
+                <div class="meta-item"><label>Responses</label><p>{responsesCount}</p></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--ghost" onclick={handleClose}>Cancel</button>
+                <!-- QA Bug #119: Edit + View Details on the survey summary modal -->
+                <button class="btn btn--ghost" onclick={handleEdit}>Edit</button>
+                <button class="btn btn--ghost" onclick={handleViewDetails}>View Details</button>
+                <button class="btn btn--primary" onclick={handleStart}>Start Survey</button>
+            </div>
+        </div>
+    </div>
+</template>

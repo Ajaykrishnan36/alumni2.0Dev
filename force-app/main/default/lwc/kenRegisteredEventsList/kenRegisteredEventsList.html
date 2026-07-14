@@ -1,0 +1,132 @@
+<template>
+    <div class="tab-wrapper">
+        <div class="tabs">
+            <div class={upcomingTabClass} data-tab="Upcoming" onclick={handleTabClick}>Upcoming</div>
+            <div class={cancelledTabClass} data-tab="Cancelled" onclick={handleTabClick}>Cancelled</div>
+            <div class={completedTabClass} data-tab="Completed" onclick={handleTabClick}>Completed</div>
+        </div>
+        <div class="container-regsiteredevent">
+            <div class="card-container">
+                <template if:true={hasFilteredEvents}>
+                    <template for:each={filteredEvents} for:item="event">
+                        <div class="event-card" key={event.id}>
+                            <img src={event.image} alt="Event Image" class="event-image" />
+
+                            <div class="event-details">
+                                <div class="event-title-block">
+                                    <div class="event-title">{event.title}</div>
+                                    <template if:true={event.subtitle}>
+                                        <div class="event-subtitle">{event.subtitle}</div>
+                                    </template>
+                                    <div class="event-meta-line">
+                                        <span class="event-date">{event.dateRange}</span>
+                                        <template if:true={event.mode}>
+                                            <span class="event-meta-sep">•</span>
+                                            <span class="event-mode">{event.mode}</span>
+                                        </template>
+                                    </div>
+                                    <template if:true={event.showInfoRow}>
+                                        <div class="event-info-row">
+                                            <template if:true={event.showParticipants}>
+                                                <span class="info-item">
+                                                    <lightning-icon icon-name="utility:user" size="xx-small" alternative-text="Participants"></lightning-icon>
+                                                    <span class="info-label">Participants:</span>
+                                                    <span class="info-value">{event.participantsCount}</span>
+                                                </span>
+                                            </template>
+                                            <span class="info-item">
+                                                <lightning-icon icon-name="utility:moneybag" size="xx-small" alternative-text="Amount Paid"></lightning-icon>
+                                                <span class="info-label">Amount Paid:</span>
+                                                <span class="info-value">{event.amountPaidText}</span>
+                                            </span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <div class="event-action">
+                                <template if:true={event.showHappeningBadge}>
+                                    <div class="badge badge-happening">
+                                        <span class="dot"></span>
+                                        <span>Happening now!</span>
+                                    </div>
+                                </template>
+                                <template if:true={event.showCompletedBadge}>
+                                    <div class="badge badge-completed">
+                                        <lightning-icon icon-name="utility:check" size="xx-small" variant="success"></lightning-icon>
+                                        <span>Completed</span>
+                                    </div>
+                                </template>
+                                <template if:true={event.showCancelledBadge}>
+                                    <div class="badge badge-cancelled">
+                                        <lightning-icon icon-name="utility:close" size="xx-small" variant="error"></lightning-icon>
+                                        <span>{event.cancelBadgeText}</span>
+                                    </div>
+                                </template>
+
+                                <div class="action-buttons">
+                                    <template if:true={event.showJoinButton}>
+                                        <button class="btn btn-outline" onclick={openEventLink} data-link={event.eventLink}>
+                                            Join Event
+                                            <lightning-icon icon-name="utility:video" size="xx-small"></lightning-icon>
+                                        </button>
+                                    </template>
+                                    <template if:true={event.showSubmitFeedback}>
+                                        <button class="btn btn-outline" onclick={handleSubmitFeedback}
+                                            data-id={event.id} data-title={event.title}>
+                                            Submit Feedback
+                                        </button>
+                                    </template>
+                                    <template if:true={event.showFeedbackSubmitted}>
+                                        <span class="feedback-submitted-pill">
+                                            <lightning-icon icon-name="utility:check" size="xx-small" variant="success"></lightning-icon>
+                                            Feedback submitted
+                                        </span>
+                                    </template>
+                                    <template if:true={event.showViewDetailsButton}>
+                                        <button class="btn btn-primary" onclick={handleViewdetails} data-id={event.eventId}>
+                                            View Details
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={hasFilteredEvents}>
+                    <div class="empty-state">
+                        <img src={SurveyEmptyImageUrl} alt={emptyStateMessage} class="empty-state-image" />
+                        <span class="empty-state-message">{emptyStateMessage}</span>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <template if:true={showFeedbackIntro}>
+        <div class="feedback-modal-overlay" onclick={handleCloseFeedbackIntro}>
+            <div class="feedback-modal" onclick={handleDialogStop}>
+                <div class="feedback-illustration">
+                    <svg width="180" height="120" viewBox="0 0 200 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="22" y="20" width="62" height="78" rx="6" fill="white" stroke="#3F3D56" stroke-width="2"/>
+                        <line x1="32" y1="34" x2="74" y2="34" stroke="#3F3D56" stroke-width="2"/>
+                        <line x1="32" y1="46" x2="74" y2="46" stroke="#3F3D56" stroke-width="2"/>
+                        <line x1="32" y1="58" x2="74" y2="58" stroke="#3F3D56" stroke-width="2"/>
+                        <rect x="116" y="6" width="62" height="78" rx="6" fill="white" stroke="#3F3D56" stroke-width="2"/>
+                        <line x1="126" y1="20" x2="168" y2="20" stroke="#3F3D56" stroke-width="2"/>
+                        <line x1="126" y1="32" x2="168" y2="32" stroke="#3F3D56" stroke-width="2"/>
+                        <line x1="126" y1="44" x2="168" y2="44" stroke="#3F3D56" stroke-width="2"/>
+                        <circle cx="100" cy="68" r="14" fill="#3D3D3D"/>
+                        <circle cx="86" cy="92" r="10" fill="#3D3D3D"/>
+                    </svg>
+                </div>
+                <h2 class="feedback-modal-title">Your Opinion Matters!</h2>
+                <p class="feedback-modal-message">Your responses is essential to help us enhance engagement &amp; better cater to your interest. Help us by answering a few questions.</p>
+                <div class="feedback-modal-actions">
+                    <button class="btn btn-outline" onclick={handleCloseFeedbackIntro}>Go Back</button>
+                    <button class="btn btn-primary" onclick={handleStartFeedback}>Get Started</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

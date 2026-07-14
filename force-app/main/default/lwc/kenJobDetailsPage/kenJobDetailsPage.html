@@ -1,0 +1,354 @@
+<template>
+    <article class="card hero-card" style="border-radius: 12px; margin-bottom: 15px;">
+        <div class="hero-top">
+            <div class="company-wrap">
+                <span class="company-logo">{companyInitial}</span>
+                <div>
+                    <h1 class="job-title">{job.title}</h1>
+                    <p class="company-meta">{job.company} | {job.location}</p>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <span class="match-link">{job.matchText}</span>
+                <button class="icon-btn" type="button" title="Save">
+                    <lightning-icon icon-name="utility:bookmark" size="x-small"></lightning-icon>
+                </button>
+                <button class="icon-btn" type="button" title="Share">
+                    <lightning-icon icon-name="utility:share" size="x-small"></lightning-icon>
+                </button>
+            </div>
+        </div>
+
+        <div class="tags-row">
+            <span class="tag">{job.location}</span>
+            <span class="tag">
+                <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                {job.domain}
+            </span>
+            <span class="tag">
+                <lightning-icon icon-name="utility:company" size="xx-small"></lightning-icon>
+                {job.type}
+            </span>
+            <span class="eligible">You are eligible to apply for this job</span>
+        </div>
+
+        <div class="salary-row">
+            <strong>{job.salary}</strong>
+            <div class="apply-wrap">
+                <span>{job.applicationClose}</span>
+                <template if:true={showStatusBadge}>
+                    <span class={statusBadgeClass}>{statusBadgeLabel}</span>
+                </template>
+                <template if:false={showStatusBadge}>
+                    <button class={applyButtonClass} type="button" onclick={handleApplyClick} disabled={isJobApplied}>
+                        <template if:true={isJobApplied}>
+                            <lightning-icon icon-name="utility:check" size="xx-small" class="applied-icon"></lightning-icon>
+                            <span>Applied</span>
+                        </template>
+                        <template if:false={isJobApplied}>
+                            <span>Apply</span>
+                        </template>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </article>
+    <section class="job-detail-shell">
+        
+
+        <article class="card" style="border-radius: 12px 12px 0px 0px;">
+            <h2>Application Process</h2>
+            <div class="process-track"></div>
+            <div class="process-grid">
+                <template for:each={processSteps} for:item="step">
+                    <div key={step.id} class="process-step">
+                        <span class={step.dotClass}></span>
+                        <div class={step.boxClass}>
+                            <div class="process-title">{step.label}</div>
+                            <div class="process-date">{step.date}</div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <div class="process-panel">
+                <template if:true={showRejectedBanner}>
+                    <div class="rejected-banner">
+                        <div class="rejected-title">Not Shortlisted</div>
+                        <div class="rejected-text">
+                            We appreciate your effort. While you were not shortlisted for this role, we encourage you to keep applying - the right fit is ahead.
+                        </div>
+                    </div>
+                </template>
+                <template if:false={showRejectedBanner}>
+                    <div class="process-panel-grid">
+                        <div class="panel-left">
+                            <div class="panel-title">{processPanelTitle}</div>
+                            <div class="panel-text">{processPanelSubtitle}</div>
+                            <template if:true={showBookSlotButton}>
+                                <button type="button" class="slot-btn" onclick={handleBookSlotClick}>Book Slot</button>
+                            </template>
+                            <template if:true={showJoinMeetButton}>
+                                <button type="button" class="slot-btn join-btn" disabled={isJoinMeetDisabled}>Join meet</button>
+                                <div class="join-help">The meeting link will be activated 15 minutes before your interview.</div>
+                            </template>
+                        </div>
+                        <template if:true={showPreparationTips}>
+                            <div class="panel-tips">
+                                <div class="tips-title">Preparation tips</div>
+                                <ol>
+                                    <template for:each={preparationTips} for:item="tip">
+                                        <li key={tip}>{tip}</li>
+                                    </template>
+                                </ol>
+                            </div>
+                        </template>
+                        <template if:true={showRightBanner}>
+                            <div class={rightBannerClass}>
+                                <div class="right-banner-title">{rightBannerTitle}</div>
+                                <div class="right-banner-text">{rightBannerText}</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </article>
+
+        <article class="card">
+            <h2>About the job</h2>
+            <p class="body-text">{aboutJobText}</p>
+        </article>
+
+        <article class="card">
+            <h2>Company details</h2>
+            <div class="company-details">
+                <div class="company-header">
+                    <span class="company-logo small">{companyInitial}</span>
+                    <span>{job.company}</span>
+                </div>
+                <div class="company-links">
+                    <a href={companyWebsite} target="_blank">{companyWebsite}</a>
+                    <span>
+                        <lightning-icon icon-name="utility:location" size="xx-small"></lightning-icon>
+                        Chennai, India
+                    </span>
+                    <span>
+                        <lightning-icon icon-name="utility:user" size="xx-small"></lightning-icon>
+                        3 alumni working here
+                    </span>
+                </div>
+            </div>
+        </article>
+
+        <article class="card">
+            <h2>Key Responsibilities</h2>
+            <ol>
+                <template for:each={keyResponsibilities} for:item="item">
+                    <li key={item}>{item}</li>
+                </template>
+            </ol>
+        </article>
+
+        <article class="card">
+            <h2>Skill(s) required</h2>
+            <div class="chip-wrap">
+                <template for:each={skillsRequired} for:item="skill">
+                    <span key={skill} class="chip">{skill}</span>
+                </template>
+            </div>
+        </article>
+
+        <article class="card">
+            <h2>Other requirements</h2>
+            <ol>
+                <template for:each={otherRequirements} for:item="item">
+                    <li key={item}>{item}</li>
+                </template>
+            </ol>
+        </article>
+
+        <article class="card" style="border-radius: 0px 0px 12px 12px;">
+            <h2>Perks</h2>
+            <div class="chip-wrap">
+                <template for:each={perks} for:item="perk">
+                    <span key={perk} class="chip">{perk}</span>
+                </template>
+            </div>
+        </article>
+    </section>
+
+    <template if:true={isBookSlotModalOpen}>
+        <div class="modal-overlay" onclick={closeBookSlotModal}>
+            <div class="book-slot-modal" onclick={handleModalContentClick}>
+                <div class="modal-header">
+                    <h3 class="modal-title">Select Interview Slot</h3>
+                    <button type="button" class="close-btn" onclick={closeBookSlotModal} title="Close">x</button>
+                </div>
+                <div class="slot-modal-grid">
+                    <div class="calendar-box">
+                        <div class="calendar-nav">
+                            <button type="button" class="calendar-arrow" aria-label="Previous month" onclick={handlePreviousMonth}>&larr;</button>
+                            <div class="calendar-title">{monthLabel}</div>
+                            <button type="button" class="calendar-arrow" aria-label="Next month" onclick={handleNextMonth}>&rarr;</button>
+                        </div>
+                        <div class="calendar-days">
+                            <template for:each={weekdayLabels} for:item="label">
+                                <span key={label}>{label}</span>
+                            </template>
+                        </div>
+                        <div class="calendar-dates">
+                            <template for:each={calendarCells} for:item="cell">
+                                <button
+                                    key={cell.key}
+                                    type="button"
+                                    class={cell.className}
+                                    data-date={cell.dateKey}
+                                    onclick={handleCalendarDateClick}
+                                    disabled={cell.isDisabled}
+                                >
+                                    {cell.label}
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="slots-box">
+                        <div class="slots-title">Immediately Available Slots</div>
+                        <template if:true={hasSlotsForSelectedDate}>
+                            <div class="slots-grid">
+                                <template for:each={slotOptions} for:item="slot">
+                                    <button key={slot.id} type="button" class={slot.className} data-value={slot.id} onclick={handleSlotSelect}>
+                                        <div class="slot-card-head">
+                                            <span>{slot.period}</span>
+                                            <template if:true={slot.isSelected}>
+                                                <span class="slot-selected-dot">✓</span>
+                                            </template>
+                                        </div>
+                                        <div class="slot-card-time">{slot.time}</div>
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:false={hasSlotsForSelectedDate}>
+                            <div class="no-slots-text">No slots available for selected date.</div>
+                        </template>
+                    </div>
+                </div>
+                <div class="available-dates-row">
+                    <input
+                        id="showAvailableOnly"
+                        type="checkbox"
+                        class="available-checkbox"
+                        checked={showOnlyAvailableDates}
+                        onchange={handleAvailableDatesToggle}
+                    />
+                    <label for="showAvailableOnly">{availableDatesLabel}</label>
+                </div>
+                <div class="note-box">
+                    <div class="note-title"><span class="note-icon">!</span> Please note:</div>
+                    <ul>
+                        <li>You are viewing a limited selection of available slots for your session.</li>
+                        <li>The displayed slots are the next available options at this time.</li>
+                        <li>Select a slot that works best for you to proceed.</li>
+                        <li>Additional slots may open later based on availability.</li>
+                    </ul>
+                </div>
+                <div class="book-actions">
+                    <button type="button" class="apply-resume-btn" onclick={handleConfirmSlotBooking}>Book Slot</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={isBookedToastOpen}>
+        <div class="modal-overlay" onclick={closeBookedToast}>
+            <div class="booked-toast" onclick={handleModalContentClick}>
+                <div class="booked-check">✓</div>
+                <div class="booked-title">Slot Booked Successfully</div>
+                <div class="booked-meta">{bookedSlotSummary}</div>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={isApplyModalOpen}>
+        <div class="modal-overlay" onclick={handleApplyModalOverlayClick}>
+            <div class="apply-modal" onclick={handleModalContentClick}>
+                <div class="modal-header">
+                    <h3 class="modal-title">Apply to {job.company}</h3>
+                    <button type="button" class="close-btn" onclick={closeApplyModal} title="Close">x</button>
+                </div>
+                <p class="modal-subtitle">Be sure to include an updated resume</p>
+
+                <div class="resume-list">
+                    <template for:each={mappedResumeOptions} for:item="resume">
+                        <div key={resume.id} class={resume.cardClass} data-resume-id={resume.id} onclick={handleResumeSelect}>
+                            <div class="resume-row">
+                                <div class="resume-meta">
+                                    <div class="pdf-icon">PDF</div>
+                                    <div>
+                                        <div class="resume-name">{resume.fileName}</div>
+                                        <div class="resume-date">{resume.detailText}</div>
+                                    </div>
+                                </div>
+                                <div class="resume-right">
+                                    <button
+                                        type="button"
+                                        class="resume-download-btn"
+                                        title="Download"
+                                        data-resume-id={resume.id}
+                                        onclick={handleResumeDownload}
+                                    >
+                                        <lightning-icon icon-name="utility:download" size="x-small"></lightning-icon>
+                                    </button>
+                                    <div class={resume.indicatorClass}></div>
+                                </div>
+                            </div>
+
+                            <template if:true={resume.showPreview}>
+                                <div class="resume-preview-wrap">
+                                    <div class="resume-preview-box">
+                                        <div class="preview-content">
+                                            <div class="preview-title">Preview will open in a new tab</div>
+                                            <button
+                                                type="button"
+                                                class="preview-open-btn"
+                                                data-resume-id={resume.id}
+                                                onclick={handleOpenPreview}
+                                            >
+                                                Open preview
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="modal-actions">
+                    <input
+                        class="resume-upload-input"
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onchange={handleResumeUploadChange}
+                    />
+                    <button type="button" class="upload-btn" onclick={handleUploadResumeClick}>Upload resume</button>
+                    <button type="button" class="apply-resume-btn" onclick={handleApplyUsingResume}>Apply using this resume</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template if:true={isAppliedModalOpen}>
+        <div class="modal-overlay" onclick={closeAppliedModal}>
+            <div class="success-modal" onclick={handleModalContentClick}>
+                <h3 class="success-title">You&apos;ve Applied!</h3>
+                <p class="success-subtitle">
+                    You have applied for the job successfully. You will be intimated further if you are shortlisted.
+                </p>
+                <div class="success-actions">
+                    <button type="button" class="close-action-btn" onclick={closeAppliedModal}>Close</button>
+                    <button type="button" class="similar-jobs-btn" onclick={handleExploreSimilarJobs}>Explore Similar Jobs</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

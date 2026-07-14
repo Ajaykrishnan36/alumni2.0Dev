@@ -1,0 +1,209 @@
+.composer {
+    background: #ffffff;
+    border: 1px solid #e5e7ef;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.composer.is-expanded {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+.composer-label {
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2330;
+}
+
+/* Collapsed: single-line input */
+.composer-collapsed-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 15px;
+    line-height: 1.4;
+    color: #1f2330;
+    background: transparent;
+    padding: 6px 0 8px;
+    box-sizing: border-box;
+}
+
+.composer-collapsed-input::placeholder {
+    color: #8a8d99;
+}
+
+/* Rich text wrapper: ensures the toolbar is always visible */
+.rich-text-wrap {
+    border: 1px solid #e5e7ef;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+    min-height: 200px;
+}
+
+.rich-text-wrap lightning-input-rich-text {
+    --slds-c-richtext-color-border: transparent;
+    display: block;
+    min-height: 200px;
+}
+
+/* SLDS overrides: force toolbar visibility */
+.rich-text-wrap .slds-rich-text-editor__toolbar,
+.rich-text-wrap .slds-form-element__label {
+    display: flex !important;
+}
+
+.composer-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0f1f5;
+    flex-wrap: wrap;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.icon-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid #d9dbe1;
+    background: #ffffff;
+    color: #4c5160;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover:not([disabled]) {
+    background: #f3f4f8;
+}
+
+.icon-btn[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pill-btn {
+    background: transparent;
+    border: 1px solid #d9dbe1;
+    border-radius: 999px;
+    padding: 6px 14px;
+    color: #4c5160;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.pill-btn:hover {
+    background: #f3f4f8;
+}
+
+.upload-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #6b6d78;
+    font-size: 13px;
+}
+
+.hidden-file-input {
+    display: none;
+}
+
+.char-counter {
+    font-size: 12px;
+    color: #8a8d99;
+}
+
+.btn {
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.btn-secondary {
+    background: #ffffff;
+    color: #4c5160;
+    border-color: #d9dbe1;
+}
+
+.btn-secondary:hover:not([disabled]) {
+    background: #f3f4f8;
+}
+
+.btn-primary {
+    background: #4f46e5;
+    color: #ffffff;
+}
+
+.btn-primary:hover:not([disabled]) {
+    background: #4338ca;
+}
+
+.btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.attachment-list {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.attachment-chip {
+    background: #f3f4f8;
+    border-radius: 999px;
+    padding: 4px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #1f2330;
+}
+
+.attachment-name {
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attachment-remove {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    color: #6b6d78;
+    display: inline-flex;
+}

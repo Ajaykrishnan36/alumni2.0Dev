@@ -1,0 +1,35 @@
+<template>
+    <template if:true={_poll}>
+        <div class="poll">
+            <ul class="poll-options">
+                <template for:each={_poll.options} for:item="opt">
+                    <li key={opt.optionId} class={opt.optionClass}>
+                        <button
+                            type="button"
+                            class="poll-option-btn"
+                            data-id={opt.optionId}
+                            onclick={handleVote}
+                            disabled={showResults}>
+                            <template if:true={opt.showResults}>
+                                <span class="poll-bar" style={opt.barStyle}></span>
+                            </template>
+                            <span class="poll-option-content">
+                                <span class="poll-option-text">{opt.optionText}</span>
+                                <template if:true={opt.showResults}>
+                                    <span class="poll-percent">{opt.votePercent}%</span>
+                                </template>
+                            </span>
+                        </button>
+                    </li>
+                </template>
+            </ul>
+            <p class="poll-footer">
+                <span>{votersLabel}</span>
+                <template if:true={statusLabel}>
+                    <span class="dot">·</span>
+                    <span>{statusLabel}</span>
+                </template>
+            </p>
+        </div>
+    </template>
+</template>

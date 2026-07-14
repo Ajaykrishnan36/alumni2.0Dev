@@ -1,0 +1,152 @@
+<template>
+    <div class="jobs-container">
+        <h2 class="section-title">Jobs</h2>
+
+        <!-- Open to work Section -->
+        <div class="card setting-section">
+            <div class="toggle-row">
+                <label class="toggle-label">Open to work</label>
+                <lightning-input type="toggle" checked={openToWork} onchange={handleOpenToWorkChange}
+                    variant="label-hidden">
+                </lightning-input>
+            </div>
+        </div>
+
+        <!-- Preferred job titles Section -->
+        <div class="card setting-section">
+            <h3 class="section-subtitle">Preferred job titles</h3>
+            <div class="tags-container">
+                <template for:each={selectedJobTitles} for:item="title">
+                    <div key={title} class="tag selected-tag">
+                        <span>{title}</span>
+                        <button type="button" class="tag-remove" onclick={handleRemoveJobTitle} data-title={title}>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            <div class="input-with-suggestions">
+                <div class="input-tags-wrapper">
+                    <template for:each={inputJobTitles} for:item="title">
+                        <div key={title} class="tag input-tag">
+                            <span>{title}</span>
+                            <button type="button" class="tag-remove" onclick={handleRemoveInputTitle}
+                                data-title={title}>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+                            </button>
+                        </div>
+                    </template>
+                    <input type="text" class="job-title-input" placeholder="Add job titles" value={jobTitleInput}
+                        oninput={handleJobTitleInput} onkeydown={handleJobTitleKeyDown} onfocus={handleInputFocus}
+                        onblur={handleInputBlur} />
+                    <button type="button" class="input-clear" onclick={handleClearInput} if:true={jobTitleInput}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5"
+                                stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
+                <template if:true={showSuggestions}>
+                    <div class="suggestions-popover">
+                        <div class="suggestions-header">Suggested categories</div>
+                        <div class="suggestions-grid">
+                            <template for:each={suggestedJobTitles} for:item="suggestion">
+                                <button key={suggestion} type="button" class="suggestion-tag"
+                                    onclick={handleAddSuggestion} data-title={suggestion}>
+                                    {suggestion}
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Skill set Section -->
+        <div class="card setting-section">
+            <h3 class="section-subtitle">Skill set</h3>
+            <div class="tags-container">
+                <template for:each={selectedSkills} for:item="skill">
+                    <div key={skill} class="tag selected-tag">
+                        <span>{skill}</span>
+                        <button type="button" class="tag-remove" onclick={handleRemoveSkill} data-skill={skill}>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            <div class="input-tags-wrapper">
+                <input type="text" class="skill-input" placeholder="Add skills" value={skillInput}
+                    oninput={handleSkillInput} onkeydown={handleSkillKeyDown} />
+            </div>
+        </div>
+
+        <!-- Preferred location types Section -->
+        <div class="card setting-section">
+            <h3 class="section-subtitle">Preferred location types</h3>
+            <div class="checkbox-group">
+                <template for:each={locationTypes} for:item="type">
+                    <div key={type.value} class="checkbox-item">
+                        <lightning-input type="checkbox" label={type.label} checked={type.checked}
+                            data-value={type.value} onchange={handleLocationTypeChange}>
+                        </lightning-input>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Location (on-site) Section -->
+        <div class="card setting-section">
+            <h3 class="section-subtitle">Location (on-site)</h3>
+            <div class="tags-container">
+                <template for:each={selectedLocations} for:item="location">
+                    <div key={location} class="tag selected-tag">
+                        <span>{location}</span>
+                        <button type="button" class="tag-remove" onclick={handleRemoveLocation}
+                            data-location={location}>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+            </div>
+            <div class="location-search-wrapper">
+                <lightning-combobox label="Search" value={locationSearch} options={locationOptions}
+                    onchange={handleLocationSearchChange} class="location-search" variant="label-hidden"
+                    placeholder="Search location">
+                </lightning-combobox>
+            </div>
+        </div>
+
+        <!-- Employment types Section -->
+        <div class="card setting-section">
+            <h3 class="section-subtitle">Employment types</h3>
+            <div class="checkbox-group">
+                <template for:each={employmentTypes} for:item="type">
+                    <div key={type.value} class="checkbox-item">
+                        <lightning-input type="checkbox" label={type.label} checked={type.checked}
+                            data-value={type.value} onchange={handleEmploymentTypeChange}>
+                        </lightning-input>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button type="button" class="btn-discard" onclick={handleDiscard}>Discard Changes</button>
+            <button type="button" class="btn-save" onclick={handleSave}>Save Changes</button>
+        </div>
+    </div>
+</template>

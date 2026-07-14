@@ -1,0 +1,85 @@
+/* Light-DOM child styles — kenHomeForYouBarV2 (matches preview .fyr) */
+.fyr, .fyr * { box-sizing: border-box; }
+.fyr button { font-family: inherit; cursor: pointer; border: 0; }
+
+.h-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; }
+
+.fyr {
+    padding: clamp(1rem, 1.5vw + 0.5rem, 1.5rem) !important;
+    display: flex;
+    align-items: center;
+    gap: clamp(0.625rem, 1vw + 0.25rem, 0.875rem);
+    flex-wrap: wrap;
+}
+.fyr__head { display: flex; flex-direction: column; min-width: 160px; }
+.fyr__title-row { display: flex; align-items: center; gap: 0.3125rem; min-width: 0; }
+.fyr__spark { font-size: clamp(0.875rem, 1vw + 0.3rem, 1rem) !important; color: #4f46e5; flex-shrink: 0; }
+.fyr__title {
+    font-weight: 600;
+    font-size: clamp(0.875rem, 1vw + 0.3rem, 1rem) !important;
+    line-height: 1.4;
+    color: #1a1a2e;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+.fyr__sub {
+    font-weight: 400 !important;
+    font-size: clamp(0.6875rem, 0.5vw + 0.3rem, 0.75rem) !important;
+    line-height: 1.5;
+    color: #6b7280;
+    margin-top: 0.0625rem;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.fyr__chips {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: clamp(0.5rem, 0.8vw, 0.625rem);
+    flex: 1;
+    min-width: 340px;
+}
+.fyr-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border: 1px solid;
+    border-radius: 6px;
+    padding: 0.375rem 0.625rem;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    line-height: 1.4;
+    font-weight: 500;
+    cursor: pointer;
+    min-width: 0;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.fyr-chip__ico { flex-shrink: 0; font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important; }
+.fyr-chip--em { background: #ecfdf5; color: #047857; border-color: rgba(4,120,87,0.15); }
+.fyr-chip--am { background: #fffbeb; color: #92400e; border-color: rgba(146,64,14,0.15); }
+.fyr-chip--vi { background: #f5f3ff; color: #6d28d9; border-color: rgba(109,40,217,0.15); }
+.fyr-chip--sk { background: #f0f9ff; color: #0369a1; border-color: rgba(3,105,161,0.15); }
+
+.fyr__cta {
+    background: #1a1a2e;
+    color: #fff;
+    border: 0;
+    border-radius: 6px;
+    padding: 0.5rem 0.875rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    line-height: 1.4;
+    cursor: pointer;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    flex-shrink: 0;
+}
+.fyr__cta:hover { background: #2a2a4e; }
+
+@media (max-width: 1180px) {
+    .fyr__chips { grid-template-columns: repeat(2, 1fr); min-width: 0; }
+}

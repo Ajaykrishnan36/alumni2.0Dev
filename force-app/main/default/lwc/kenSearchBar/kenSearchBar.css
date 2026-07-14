@@ -1,0 +1,30 @@
+.search-container {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 7px 16px;
+    gap: 12px;
+    flex: 1;
+    border: 1px solid #e5e7eb;
+}
+
+.search-icon,
+.mic-icon {
+    --slds-c-icon-color-foreground-default: #374151;
+    flex-shrink: 0;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    outline: none;
+    font-size: 14px;
+    color: #111827;
+    
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}

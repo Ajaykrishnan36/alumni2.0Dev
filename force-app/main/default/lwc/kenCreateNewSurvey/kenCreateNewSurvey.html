@@ -1,0 +1,55 @@
+<template>
+    <button type="button" class="create-survey-card" onclick={handleCardClick} aria-label="Create New Survey">
+        <div class="card-header">
+            <p class="card-title">Create New Survey</p>
+            <svg class="arrow-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" fill="currentColor"/>
+            </svg>
+        </div>
+        <div class="card-illustration">
+            <div class="illustration-wrapper">
+                <!-- Desktop Monitor -->
+                <div class="monitor">
+                    <div class="monitor-screen">
+                        <!-- Left side - gray bars (form fields) -->
+                        <div class="screen-left">
+                            <div class="form-line"></div>
+                            <div class="form-line"></div>
+                            <div class="form-line"></div>
+                            <div class="form-line short"></div>
+                        </div>
+                        <!-- Right side - white rectangular area -->
+                        <div class="screen-right"></div>
+                    </div>
+                    <div class="monitor-stand"></div>
+                </div>
+                
+                <!-- Figure 1 - Left-top (typing/selecting) -->
+                <div class="person person-top-left">
+                    <div class="person-head"></div>
+                    <div class="person-body">
+                        <div class="person-hands typing"></div>
+                    </div>
+                </div>
+                
+                <!-- Figure 2 - Left-bottom (reviewing with magnifying glass) -->
+                <div class="person person-bottom-left">
+                    <div class="person-head"></div>
+                    <div class="person-body">
+                        <div class="magnifying-glass"></div>
+                    </div>
+                </div>
+                
+                <!-- Figure 3 - Right (placing/dragging element) -->
+                <div class="person person-right">
+                    <div class="person-head"></div>
+                    <div class="person-body">
+                        <div class="person-hands dragging">
+                            <div class="dragged-element"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </button>
+</template>

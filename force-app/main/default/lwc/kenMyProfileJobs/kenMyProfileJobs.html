@@ -1,0 +1,307 @@
+<template>
+    <div class="career-container">
+        <h2 class="main-title">Career</h2>
+
+        <!-- Top Section: Tabs & Job Cards -->
+        <div class="jobs-section card-box">
+            <div class="tabs-header">
+                <div class={appliedTabClass} data-tab="Applied" onclick={handleTabChange}>Applied</div>
+                <div class={savedTabClass} data-tab="Saved" onclick={handleTabChange}>Saved</div>
+                <div class={postedTabClass} data-tab="Posted" onclick={handleTabChange}>Posted by Me</div>
+                <div class="view-more-container">
+                    <button class="view-more-btn">View More</button>
+                    <template lwc:if={isPostedTab}>
+                        <button class="post-job-btn" onclick={handlePostJob}>
+                            <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                            Post a Job
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="tab-content">
+                <!-- Job Cards Grid -->
+                <div class="jobs-grid">
+                    <template for:each={jobs} for:item="job">
+                        <div key={job.id} class="job-card">
+                            <div class="job-header">
+                                <img src={job.logoUrl} class="company-logo" alt={job.company}>
+                                <div class="job-id-header-info">
+                                    <span class="company-name">{job.company}</span>
+                                    <lightning-icon icon-name="utility:bookmark" size="x-small"
+                                        class="save-icon selected"></lightning-icon>
+                                    <!-- Logic for selected/unselected needed if dynamic -->
+                                </div>
+                            </div>
+                            <h3 class="job-title">{job.title}</h3>
+                            <div class="job-tags">
+                                <template for:each={job.types} for:item="type">
+                                    <span key={type} class="job-tag">{type}</span>
+                                </template>
+                            </div>
+                            <div class="job-salary">
+                                {job.salary}
+                            </div>
+                            <div class="job-footer">
+                                <span class="posted-by-label">Posted by:</span>
+                                <div class="poster-info">
+                                    <img src={job.postedByAvatar} class="poster-avatar">
+                                    <span class="poster-name">{job.postedBy}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resume Library -->
+        <div class="resume-section card-box">
+            <div class="section-header">
+                <h3>Resume Library</h3>
+                <button class="icon-btn-add">
+                    <lightning-icon icon-name="utility:add" size="small"></lightning-icon>
+                </button>
+            </div>
+            <div class="resume-list">
+                <template for:each={resumes} for:item="resume">
+                    <div key={resume.id} class="resume-item">
+                        <div class="resume-left">
+                            <lightning-icon icon-name="doctype:pdf" size="medium" class="pdf-icon"></lightning-icon>
+                            <div class="resume-info">
+                                <span class="resume-name">{resume.name}</span>
+                                <span class="resume-usage">{resume.lastUsed}</span>
+                            </div>
+                        </div>
+                        <div class="resume-actions">
+                            <lightning-icon icon-name="utility:delete" size="x-small" class="action-icon delete-icon"
+                                data-id={resume.id} onclick={handleDeleteResume}></lightning-icon>
+                            <lightning-icon icon-name="utility:download" size="x-small"
+                                class="action-icon"></lightning-icon>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Employment Details -->
+        <div class="employment-section card-box">
+            <div class="section-header">
+                <h3>Employment Details</h3>
+                <div class="header-actions">
+                    <button class="icon-btn-edit">
+                        <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                    </button>
+                    <button class="icon-btn-add" onclick={handleAddEmployment}>
+                        <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="employment-list">
+                <template for:each={employments} for:item="emp">
+                    <div key={emp.id} class="employment-item">
+                        <div class="emp-logo-wrapper">
+                            <img src={emp.logoUrl} class="emp-logo">
+                        </div>
+                        <div class="emp-details">
+                            <div class="emp-header">
+                                <h4 class="emp-title">{emp.title}</h4>
+                                <template lwc:if={emp.isCurrent}>
+                                    <span class="current-badge">Currently working here</span>
+                                </template>
+                            </div>
+                            <span class="emp-company">{emp.company} | {emp.type}</span>
+                            <div class="emp-meta">
+                                <div class="emp-location">{emp.location}</div>
+                            </div>
+                        </div>
+                        <div class="emp-dates">
+                            <lightning-icon icon-name="utility:date_input" size="xx-small"
+                                class="date-icon"></lightning-icon>
+                            <span>{emp.period}</span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Certificates -->
+        <div class="certificates-section card-box">
+            <div class="section-header">
+                <h3>Certificates</h3>
+                <div class="header-actions">
+                    <button class="icon-btn-edit">
+                        <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                    </button>
+                    <button class="icon-btn-add" onclick={handleAddCertificate}>
+                        <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="cert-list">
+                <template for:each={certificates} for:item="cert">
+                    <div key={cert.id} class="cert-item">
+                        <div class="cert-logo-wrapper">
+                            <img src={cert.logoUrl} class="cert-logo">
+                        </div>
+                        <div class="cert-details">
+                            <h4 class="cert-name">{cert.name}</h4>
+                            <span class="cert-issuer">{cert.issuer}</span>
+                        </div>
+                        <div class="cert-date">
+                            <span class="issue-badge">{cert.date}</span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="skills-section card-box">
+            <div class="section-header">
+                <h3>Skills</h3>
+                <div class="header-actions">
+                    <button class="icon-btn-edit" onclick={handleEditSkills}>
+                        <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                    </button>
+                    <button class="icon-btn-add" onclick={handleAddSkills}>
+                        <lightning-icon icon-name="utility:add" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="skills-list">
+                <template for:each={skills} for:item="skill">
+                    <span key={skill} class="skill-badge">{skill}</span>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Resume Modal -->
+    <template lwc:if={showResumeDeleteModal}>
+        <div class="modal-overlay">
+            <div class="modal-content delete-modal">
+                <h3>Are you sure your want to delete the resume "{resumeToDelete.name}"?</h3>
+                <div class="delete-actions">
+                    <button class="cancel-btn" onclick={closeResumeDeleteModal}>No, Don't</button>
+                    <button class="delete-btn" onclick={confirmDeleteResume}>Yes, Delete It</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Employment Modal -->
+    <template lwc:if={showEmploymentModal}>
+        <div class="modal-overlay">
+            <div class="modal-content form-modal">
+                <div class="modal-header">
+                    <h2>Career Information</h2> <!-- Or Add Employment -->
+                </div>
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Current Job Title*</label>
+                            <input type="text" class="text-input" value={tempEmployment.title} data-field="title"
+                                data-target="employment" onchange={handleInputChange}>
+                        </div>
+                        <div class="form-group">
+                            <label>Organization*</label>
+                            <input type="text" class="text-input" value={tempEmployment.company} data-field="company"
+                                data-target="employment" onchange={handleInputChange}>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" class="text-input" value={tempEmployment.location} data-field="location"
+                                data-target="employment" onchange={handleInputChange}>
+                        </div>
+                        <div class="form-group">
+                            <label>Location Type</label>
+                            <select class="text-input" onchange={handleInputChange} data-field="type"
+                                data-target="employment">
+                                <option>Select</option>
+                                <option>Onsite</option>
+                                <option>Remote</option>
+                                <option>Hybrid</option>
+                            </select>
+                        </div>
+                        <div class="form-group checkbox-group" style="grid-column: span 2;">
+                            <input type="checkbox" id="working" checked={tempEmployment.isCurrent}
+                                data-field="isCurrent" data-target="employment" onchange={handleInputChange}>
+                            <label for="working">I'm currently working here</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Start Date</label>
+                            <div class="date-row">
+                                <select class="text-input">
+                                    <option>Month</option>
+                                </select>
+                                <select class="text-input">
+                                    <option>Year</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <div class="date-row">
+                                <select class="text-input">
+                                    <option>Month</option>
+                                </select>
+                                <select class="text-input">
+                                    <option>Year</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Role Summary</label>
+                            <textarea class="text-input" rows="4"></textarea>
+                            <div class="ai-assist">
+                                <lightning-icon icon-name="utility:magicwand" size="xx-small"></lightning-icon> Continue
+                                writing with AI
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="cancel-btn" onclick={closeEmploymentModal}>Cancel</button>
+                    <button class="save-modal-btn" onclick={saveEmployment}>Save</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Certificate Modal -->
+    <template lwc:if={showCertificateModal}>
+        <div class="modal-overlay">
+            <div class="modal-content form-modal">
+                <div class="modal-header">
+                    <h2>Add Certificate</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Certification name</label>
+                            <input type="text" class="text-input" value={tempCertificate.name} data-field="name"
+                                data-target="certificate" onchange={handleInputChange}>
+                        </div>
+                        <div class="form-group">
+                            <label>Issuing organization</label>
+                            <input type="text" class="text-input" value={tempCertificate.issuer} data-field="issuer"
+                                data-target="certificate" onchange={handleInputChange}>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Issue date</label>
+                            <div class="date-input-wrapper">
+                                <input type="date" class="text-input">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="cancel-btn" onclick={closeCertificateModal}>Cancel</button>
+                    <button class="save-modal-btn" onclick={saveCertificate}>Save</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+</template>

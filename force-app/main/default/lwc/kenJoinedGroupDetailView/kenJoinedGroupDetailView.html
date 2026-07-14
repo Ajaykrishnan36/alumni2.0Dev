@@ -1,0 +1,241 @@
+<template>
+    <div class="detail-container">
+
+        <!-- Banner -->
+        <div class="banner-section">
+            <img src={coverUrl} alt="Cover" class="banner-img" />
+            <div class="banner-overlay"></div>
+            <div class="banner-top-badges">
+                <div class="tags">
+                    <span class="tag-pill">Bootstrappers</span>
+                    <span class="tag-pill">Networking</span>
+                </div>
+                <span class="privacy-badge">Private</span>
+            </div>
+            <div class="banner-bottom-info">
+                <h1 class="group-title">Batch 2018</h1>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs-nav">
+            <button class={tabAboutClass} onclick={openAboutTab}>About</button>
+            <button class={tabFeedClass} onclick={openFeedTab}>Feed</button>
+            <button class={tabEventsClass} onclick={openEventsTab}>Events</button>
+            <button class={tabMembersClass} onclick={openMembersTab}>Members</button>
+        </div>
+
+        <!-- Content -->
+        <div class="content-section">
+
+            <!-- About Tab -->
+            <template if:true={showAbout}>
+                <div class="about-grid">
+                    <div class="about-left">
+                        <h2 class="section-title">About the Group</h2>
+                        <p class="about-text">
+                            The Batch 2018 Alumni Group is a space created to bring together graduates from the Class of 2018,
+                            helping everyone stay connected beyond college life. It serves as a platform to share personal and
+                            professional updates, celebrate achievements, and support one another in various life journeys.
+                        </p>
+                    </div>
+                    <div class="about-right">
+                        <div class="rules-card">
+                            <h2 class="section-title">Rules of the Group</h2>
+                            <ul class="rules-list">
+                                <li>
+                                    <svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C757D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>Use the group to plan reunions or virtual meetups, and be mindful of everyone's time and schedules.</span>
+                                </li>
+                                <li>
+                                    <svg class="check-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6C757D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span>Admins reserve the right to moderate content, remove inappropriate messages, and take action if rules are violated.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Feed Tab -->
+            <template if:true={showFeed}>
+                <div class="feed-container">
+                    <div class="share-box">
+                        <label class="share-box-label">Share your Thoughts</label>
+                        <input type="text" class="share-input" placeholder="What's on your mind? Joshua" />
+                    </div>
+                    <div class="feed-post-card">
+                        <div class="post-header">
+                            <div class="author-info">
+                                <img src={coverUrl} class="author-avatar" alt="Avatar" />
+                                <span class="author-name">Ananya Rao</span>
+                            </div>
+                            <span class="post-time">26 Jan 2023, 10:45 AM</span>
+                        </div>
+                        <div class="post-content">
+                            Hey Batch of 2018! 👋<br/><br/>
+                            It's been a while since we all connected, and we thought this would be the perfect moment to bring everyone together again! 🎉<br/><br/>
+                            We're planning a virtual catch-up next week where everyone can share life updates, career journeys, achievements, challenges, or even fun stories from the good old campus days.<br/><br/>
+                            <span class="post-tags">#Batch2018 #AlumniMeetup #StayConnected</span>
+                        </div>
+                        <img src={coverUrl} class="post-image" alt="Post attachment" />
+                    </div>
+                </div>
+            </template>
+
+            <!-- Events Tab -->
+            <template if:true={showEvents}>
+                <div class="events-container">
+                    <h2 class="section-title">Active events</h2>
+                    <div class="events-grid">
+                        <div class="event-card">
+                            <div class="event-image-wrap">
+                                <img src={coverUrl} class="event-image" alt="Workshop" />
+                                <span class="event-tag">One-day</span>
+                            </div>
+                            <div class="event-body">
+                                <h3 class="event-title">Workshop: Working with Designe...</h3>
+                                <div class="event-location">
+                                    <lightning-icon icon-name="utility:checkin" size="xx-small"></lightning-icon>
+                                    <span>Bangalore, India</span>
+                                </div>
+                            </div>
+                            <div class="event-footer-row">
+                                <span class="event-pill"><lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon> 12 Oct 2025</span>
+                                <span class="event-pill"><lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon> 4pm IST</span>
+                            </div>
+                        </div>
+                        <div class="event-card">
+                            <div class="event-image-wrap">
+                                <img src={coverUrl} class="event-image" alt="Workshop" />
+                                <span class="event-tag">One-day</span>
+                            </div>
+                            <div class="event-body">
+                                <h3 class="event-title">Career Development Workshop</h3>
+                                <div class="event-location">
+                                    <lightning-icon icon-name="utility:checkin" size="xx-small"></lightning-icon>
+                                    <span>Bangalore, India</span>
+                                </div>
+                            </div>
+                            <div class="event-footer-row">
+                                <span class="event-pill"><lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon> 12 Oct 2025</span>
+                                <span class="event-pill"><lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon> 4pm IST</span>
+                            </div>
+                        </div>
+                        <div class="event-card">
+                            <div class="event-image-wrap">
+                                <img src={coverUrl} class="event-image" alt="Bootcamp" />
+                                <span class="event-tag">One-day</span>
+                                <span class="price-tag">₹</span>
+                            </div>
+                            <div class="event-body">
+                                <h3 class="event-title">Entrepreneurship Bootcamp</h3>
+                                <div class="event-location">
+                                    <lightning-icon icon-name="utility:checkin" size="xx-small"></lightning-icon>
+                                    <span>Mumbai, India</span>
+                                </div>
+                            </div>
+                            <div class="event-footer-row">
+                                <span class="event-pill"><lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon> 12 Oct 2025</span>
+                                <span class="event-pill"><lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon> 4pm IST</span>
+                            </div>
+                        </div>
+                        <div class="event-card">
+                            <div class="event-image-wrap">
+                                <img src={coverUrl} class="event-image" alt="Leadership" />
+                                <span class="event-tag">One-day</span>
+                                <span class="price-tag">₹</span>
+                            </div>
+                            <div class="event-body">
+                                <h3 class="event-title">Personal Development and Leade...</h3>
+                                <div class="event-location">
+                                    <lightning-icon icon-name="utility:checkin" size="xx-small"></lightning-icon>
+                                    <span>Bangalore, India</span>
+                                </div>
+                            </div>
+                            <div class="event-footer-row">
+                                <span class="event-pill"><lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon> 12, 13, 14 Oct, 2025</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Members Tab -->
+            <template if:true={showMembers}>
+                <div class="members-container">
+                    <div class="members-grid">
+                        <template for:each={mockMembersList} for:item="member">
+                            <div key={member.id} class="member-card">
+                                <img src={member.avatar} alt={member.name} class="member-avatar" />
+                                <div class="member-info">
+                                    <div class="member-name">{member.name}</div>
+                                    <div class="member-batch">{member.batch}</div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </template>
+
+        </div>
+
+        <!-- Sticky Footer -->
+        <div class="sticky-footer">
+            <div class="footer-left">
+                <span class="footer-detail">Created on: {dateString}</span>
+                <span class="footer-divider">|</span>
+                <span class="footer-detail members-info">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="users-icon">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    {membersCountText}
+                </span>
+            </div>
+            <div class="footer-right">
+                <div class="creator-info">
+                    <span class="creator-label">Created by:</span>
+                    <img src={coverUrl} class="creator-avatar" alt="Liam" />
+                    <span class="creator-name">Liam Carter</span>
+                </div>
+                <button class="leave-btn" onclick={handleLeaveClick}>Leave Group</button>
+            </div>
+        </div>
+
+        <!-- Leave Confirmation Modal -->
+        <template if:true={showLeaveConfirm}>
+            <div class="modal-overlay" onclick={cancelLeave}>
+                <div class="modal-card" onclick={stopPropagation}>
+                    <p class="confirm-text">Are you sure you want to leave from <strong>Batch 2018</strong> group?</p>
+                    <div class="confirm-actions">
+                        <button class="cancel-btn" onclick={cancelLeave}>Cancel</button>
+                        <button class="confirm-yes-btn" onclick={confirmLeave}>Yes</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Left Group Success Modal -->
+        <template if:true={showLeaveSuccess}>
+            <div class="modal-overlay">
+                <div class="modal-card success-card">
+                    <div class="success-icon-wrap">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="11" fill="#22C55E"/>
+                            <path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <p class="success-text">Left Group Successfully!</p>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

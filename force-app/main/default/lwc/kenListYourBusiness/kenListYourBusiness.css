@@ -1,0 +1,76 @@
+.list-your-business-card {
+    background-color: var(--primary-color);
+    border-radius: var(--portal-radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    overflow: hidden;
+    position: relative;
+}
+
+.list-your-business-card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    margin-bottom: 24px;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.card-title {
+    
+    font-weight: 500;
+    font-style: normal;
+    font-size: 20px;
+    line-height: 140%;
+    letter-spacing: 0%;
+    text-transform: capitalize;
+    color: #ffffff;
+    margin: 0;
+}
+
+.arrow-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+    filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.6));
+}
+
+.header-line {
+    width: 100%;
+    height: 0.5px;
+    border-bottom: 0.5px solid #FFFFFF;
+    opacity: 0.5;
+}
+
+.illustration-container {
+    width: 100%;
+    height: 200px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.list-business-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+}
+
+@media (max-width: 768px) {
+    .illustration-container {
+        height: 150px;
+    }
+
+    .monitor-screen {
+        width: 140px;
+        height: 90px;
+    }
+}

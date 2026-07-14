@@ -1,0 +1,42 @@
+<template>
+    <template if:true={showModal}>
+        <div class="modal-overlay" onclick={handleOverlayClick}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <div class="modal-content">
+                    <h2 class="modal-title">Edit album</h2>
+
+                    <div class="form-container">
+                        <div class="form-field">
+                            <label class="field-label">Album name<span class="required">*</span></label>
+                            <lightning-input
+                                type="text"
+                                label="Album name"
+                                variant="label-hidden"
+                                placeholder="Name your album"
+                                value={nameValue}
+                                onchange={handleNameChange}
+                                required
+                            ></lightning-input>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <lightning-button
+                            variant="neutral"
+                            label="Cancel"
+                            onclick={handleCancel}
+                            class="cancel-button"
+                        ></lightning-button>
+                        <lightning-button
+                            variant="brand"
+                            label="Save"
+                            onclick={handleSave}
+                            class="create-button"
+                            disabled={isSaveDisabled}
+                        ></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

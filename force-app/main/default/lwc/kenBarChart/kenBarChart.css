@@ -1,0 +1,98 @@
+:host { display: block; }
+.chart-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.08); height: 100%; display: flex; flex-direction: column; position: relative; }
+.card-header { margin-bottom: 14px; }
+.card-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.card-title { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #1e293b; }
+.card-desc { margin: 0; font-size: 12px; color: #64748b; line-height: 1.4; }
+.chart-export-btn { flex-shrink: 0; background: #fff; border: 1px solid #e2e8f0; color: #475569; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; }
+.chart-export-btn:hover { border-color: #5b3bff; color: #5b3bff; }
+.chart-body { flex: 1; overflow: auto; }
+.bar-svg { width: 100%; height: auto; min-height: 160px; display: block; }
+.bar { transition: opacity .15s; cursor: pointer; }
+.bar-val { font-size: 9px; fill: #475569; dominant-baseline: middle; }
+.bar-lbl { font-size: 9px; fill: #334155; dominant-baseline: middle; }
+.bar-svg-v .bar-lbl { font-size: 7px; }
+.bar-svg-v .bar-val { font-size: 7px; }
+.axis-line { stroke: #cbd5e1; stroke-width: 1; }
+.grid { stroke: #f1f5f9; stroke-width: 1; }
+.axis-num { font-size: 8px; fill: #94a3b8; dominant-baseline: auto; }
+.loading-state { display: flex; justify-content: center; align-items: center; height: 120px; }
+.spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.empty-state { text-align: center; color: #94a3b8; padding: 32px 0; font-size: 13px; }
+.bar-clickable { cursor: pointer; }
+.bar-clickable:hover .bar { opacity: .75; }
+.bar-clickable:hover .line-dot { r: 6; opacity: .8; }
+.v-val { font-size: 7px; fill: #475569; dominant-baseline: auto; }
+.line-path { fill: none; stroke: #2563eb; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.line-area { fill: rgba(37,99,235,.08); }
+.line-dot { }
+
+/* ── Table chart ─────────────────────────────────────────────────────────── */
+.table-wrap { overflow-y: auto; max-height: 260px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table thead th {
+    position: sticky; top: 0;
+    background: #f8fafc;
+    font-size: 11px; font-weight: 600; color: #475569;
+    text-transform: uppercase; letter-spacing: .4px;
+    padding: 7px 10px; border-bottom: 2px solid #e2e8f0;
+    text-align: left; white-space: nowrap;
+}
+.tbl-row { border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background .12s; }
+.tbl-row:last-child { border-bottom: none; }
+.tbl-row:hover { background: #f8fafc; }
+.col-rank  { width: 28px; padding: 9px 4px 9px 10px; color: #94a3b8; font-size: 11px; font-weight: 700; }
+.col-name  { padding: 9px 10px; color: #1e293b; font-size: 13px; }
+.col-bar   { width: 90px; padding: 9px 8px; }
+.col-count { width: 52px; padding: 9px 10px; text-align: right; font-weight: 700; color: #1e293b; font-size: 13px; white-space: nowrap; }
+.bar-track { background: #f1f5f9; border-radius: 4px; height: 7px; overflow: hidden; }
+.bar-fill  { height: 100%; border-radius: 4px; min-width: 4px; transition: width .3s ease; }
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+.tip-box {
+    position: absolute;
+    background: #1e293b;
+    color: #f8fafc;
+    border-radius: 10px;
+    padding: 10px 14px;
+    pointer-events: none;
+    z-index: 200;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,.28);
+    border: 1px solid rgba(255,255,255,.08);
+}
+.tip-label { font-size: 11px; font-weight: 700; color: #cbd5e1; margin-bottom: 4px; letter-spacing: .2px; }
+.tip-row { display: flex; align-items: baseline; gap: 6px; }
+.tip-val { font-size: 22px; font-weight: 800; color: #fff; line-height: 1; }
+.tip-pct { font-size: 12px; color: #64748b; font-weight: 500; }
+
+/* ── Ken42 Admin Home theme ─────────────────────────────────── */
+:host {
+    --ken-brand: #F06F4F;
+    --ken-brand-strong: #E8602C;
+    --ken-border: #E5E7EB;
+    --ken-text: #111827;
+    --ken-muted: #6B7280;
+    --ken-shadow: 0 1px 2px rgba(17, 24, 39, 0.03);
+    display: block;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+}
+
+.chart-card {
+    border: 1px solid var(--ken-border);
+    border-radius: 8px;
+    box-shadow: var(--ken-shadow);
+    padding: 18px;
+}
+.card-title, .col-count { color: var(--ken-text); }
+.card-desc, .axis-num, .bar-val, .v-val { color: var(--ken-muted); fill: var(--ken-muted); }
+.line-path { stroke: var(--ken-brand); }
+.line-area { fill: rgba(240, 111, 79, 0.08); }
+.grid { stroke: #F3F4F6; }
+.spinner { border-top-color: var(--ken-brand); }
+.data-table thead th { background: #F9FAFB; border-bottom-color: var(--ken-border); color: var(--ken-muted); }
+.tbl-row { border-bottom-color: #F3F4F6; }
+.tbl-row:hover { background: #FFF6F2; }
+.bar-track { background: #F3F4F6; }
+.tip-box { background: var(--ken-text); border-radius: 8px; }

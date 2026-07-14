@@ -1,0 +1,62 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="home">
+        <div class="calendar-page">
+            <header class="cal-head">
+                <h1 class="cal-title">Calendar</h1>
+                <div class="cal-controls">
+                    <button class="cal-nav" title="Previous">&lsaquo;</button>
+                    <span class="cal-month">{monthLabel}</span>
+                    <button class="cal-nav" title="Next">&rsaquo;</button>
+                    <div class="cal-view-toggle">
+                        <button class="cal-view cal-view--active">Month</button>
+                        <button class="cal-view">Week</button>
+                        <button class="cal-view">Day</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="cal-body">
+                <div class="cal-grid-wrap">
+                    <div class="cal-weekdays">
+                        <template for:each={weekdayLabels} for:item="w">
+                            <div key={w.key} class="cal-weekday">{w.label}</div>
+                        </template>
+                    </div>
+                    <div class="cal-grid">
+                        <template for:each={gridCells} for:item="c">
+                            <div key={c.key} class={c.cellClass}>
+                                <span class="cal-cell__day">{c.dayNum}</span>
+                                <div class="cal-cell__events">
+                                    <template for:each={c.visible} for:item="ev">
+                                        <div key={ev.key} class={ev.stripeClass}>
+                                            <span class="cal-chip__title">{ev.title}</span>
+                                        </div>
+                                    </template>
+                                    <template lwc:if={c.showOverflow}>
+                                        <div class="cal-chip cal-chip--more">{c.overflowLabel}</div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <aside class="cal-events">
+                    <h3 class="cal-events__title">Upcoming events</h3>
+                    <ul class="cal-events__list">
+                        <template for:each={upcomingEvents} for:item="e">
+                            <li key={e.key} class="cal-evt">
+                                <span class={e.barClass}></span>
+                                <div class="cal-evt__body">
+                                    <div class="cal-evt__date">{e.dateLabel}</div>
+                                    <div class="cal-evt__title">{e.title}</div>
+                                    <div class="cal-evt__loc">{e.location}</div>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </aside>
+            </div>
+        </div>
+    </c-ken42-alumni-shell-v2>
+</template>

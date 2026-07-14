@@ -1,0 +1,7 @@
+:host { display: block; }
+.invite { background: #fff; border: 1px solid #E5E6E8; border-radius: 12px; padding: 18px; }
+.invite h4 { margin: 0 0 6px; font-size: 14px; font-weight: 600; color: #373A45; }
+.invite p { margin: 0 0 12px; font-size: 11px; color: #5C5F6B; line-height: 1.5; }
+.invite-row { display: flex; gap: 6px; }
+.invite-row input { flex: 1; height: 34px; border: 1px solid #E5E6E8; border-radius: 8px; padding: 0 10px; font-size: 11px; font-family: inherit; color: #5C5F6B; background: #F9FAFC; min-width: 0; }
+.invite-row button { width: 38px; height: 34px; border: 0; background: #3061FF; color: #fff; border-radius: 8px; cursor: pointer; font-size: 14px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; }

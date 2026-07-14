@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 - Home V2</masterLabel>
+    <description>Alumni Home dashboard (V2). Renders the Verify or Connect phase layout based on Ken_Alumni_CRM__c.Portal_Phase__c.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="viewMode" type="String" label="View Mode (optional override)" default="" description="Leave blank to use the user's Portal_Phase__c. Override with 'verify' or 'connect' for preview."/>
+            <property name="userFirstName" type="String" label="User First Name (fallback)" default=""/>
+            <property name="userLastName" type="String" label="User Last Name (fallback)" default=""/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

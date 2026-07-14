@@ -1,0 +1,102 @@
+<template>
+    <div class="slds-form-element">
+        <template if:true={label}>
+            <label class="slds-form-element__label" for="msInput">{label}</label>
+        </template>
+
+        <div class="slds-form-element__control">
+            <div class="slds-combobox_container">
+                <div class={comboboxClass}
+                     aria-expanded={isOpen}
+                     aria-haspopup="listbox"
+                     role="combobox">
+                    <div class="slds-combobox__form-element" role="none">
+                        <div
+                            id="msInput"
+                            class="pillInput"
+                            role="textbox"
+                            tabindex="0"
+                            onclick={toggleOpen}
+                        >
+                            <template if:true={hasSelection}>
+                                <div class="pillRowInline">
+                                    <template for:each={pillItems} for:item="item">
+                                        <span key={item.name} class="pillTag">
+                                            <span class="pillText">{item.label}</span>
+                                            <button
+                                                type="button"
+                                                class="pillRemove"
+                                                data-name={item.name}
+                                                onclick={handlePillRemoveClick}
+                                                aria-label="Remove"
+                                            >
+                                                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                                            </button>
+                                        </span>
+                                    </template>
+                                </div>
+                            </template>
+                            <template if:false={hasSelection}>
+                                <span class="pillPlaceholder">{placeholder}</span>
+                            </template>
+                            <lightning-icon
+                                class="pillCaret"
+                                size="x-small"
+                                icon-name="utility:down"
+                            ></lightning-icon>
+                        </div>
+                        <lightning-icon
+                            class="slds-assistive-text"
+                            size="x-small"
+                            icon-name="utility:down"
+                        ></lightning-icon>
+                    </div>
+
+                    <template if:true={isOpen}>
+                        <div class="slds-dropdown slds-dropdown_length-7 slds-dropdown_fluid" role="listbox">
+                            <div class="slds-p-around_x-small" onclick={stopPropagation}>
+                                <lightning-input
+                                    type="search"
+                                    variant="label-hidden"
+                                    placeholder="Search..."
+                                    value={searchText}
+                                    onchange={handleSearchInput}
+                                    oninput={handleSearchInput}
+                                    onclick={stopPropagation}
+                                ></lightning-input>
+                            </div>
+
+                            <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                <template for:each={filteredOptions} for:item="opt">
+                                    <li key={opt.value} role="presentation" class="slds-listbox__item">
+                                        <div
+                                            class="optionRow"
+                                            data-value={opt.value}
+                                            onclick={handleOptionRowClick}
+                                        >
+                                            <input
+                                                id={opt.id}
+                                                class="optionCheckbox"
+                                                type="checkbox"
+                                                data-value={opt.value}
+                                                checked={opt.selected}
+                                                disabled={disabled}
+                                            />
+                                            <label class="optionLabel" for={opt.id}>{opt.label}</label>
+                                        </div>
+                                    </li>
+                                </template>
+
+                                <template if:true={isEmpty}>
+                                    <li role="presentation" class="slds-listbox__item">
+                                        <div class="slds-p-around_small slds-text-color_weak">No results</div>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

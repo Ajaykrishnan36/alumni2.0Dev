@@ -1,0 +1,152 @@
+/* Stepper Navigation */
+.stepper-container {
+    margin-bottom: 0;
+}
+
+.stepper {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    background-color: var(--portal-page-bg, #F6F8FB);
+    border-radius: var(--portal-radius, 12px);
+    padding: 0.75rem;
+    gap: 0;
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    justify-content: center;
+}
+
+.stepper-item-wrapper {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.stepper-item {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.step {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    flex: 0 0 auto;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.step-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #E5E7EB;
+    border: 2px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #9CA3AF;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.step.active .step-icon {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.step.completed .step-icon {
+    background: #60A563;
+    border-color: #60A563;
+    color: white;
+}
+
+.step:not(.active):not(.completed) .step-icon {
+    background: transparent;
+    border-color: #D1D5DB;
+    color: #9CA3AF;
+}
+
+.step-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--portal-text-muted, #6b7280);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.step.active .step-label {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.step.completed .step-label {
+    color: var(--portal-text-muted, #6b7280);
+    font-weight: 500;
+}
+
+.step:not(.active):not(.completed) .step-label {
+    color: #9CA3AF;
+}
+
+.step-line {
+    height: 2px;
+    background: #E5E7EB;
+    flex: 1 1 auto;
+    min-width: 20px;
+    max-width: 100px;
+    transition: background 0.3s ease;
+    margin: 0 0.5rem;
+    flex-shrink: 1;
+}
+
+.step-line.completed {
+    background: #373A45;
+}
+
+/* Green Progress Bar */
+.progress-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #60A563;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.step-indicator {
+    background: #F3F4F6;
+    color: var(--portal-text-muted, #6b7280);
+    padding: 0.25rem 0.75rem;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 550;
+    white-space: nowrap;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .stepper {
+        justify-content: flex-start;
+    }
+}

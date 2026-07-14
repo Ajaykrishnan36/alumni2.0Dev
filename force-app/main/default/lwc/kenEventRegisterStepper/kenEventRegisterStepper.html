@@ -1,0 +1,34 @@
+<template>
+    <div class="stepper-container">
+        <div class="stepper">
+            <template for:each={stepperItems} for:item="step">
+                <div key={step.number} class="stepper-item-wrapper">
+                    <div class="stepper-item">
+                        <div class={step.statusClass}>
+                            <div class="step-icon">
+                                <template if:true={step.isCompleted}>
+                                    <span>&#10003;</span>
+                                </template>
+                                <template if:false={step.isCompleted}>
+                                    <span>{step.number}</span>
+                                </template>
+                            </div>
+                            <span class="step-label">{step.label}</span>
+                        </div>
+                    </div>
+                    <template if:false={step.isLast}>
+                        <div class={step.lineClass}></div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <!-- Green Progress Bar -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" style={progressFillStyle}></div>
+            </div>
+            <div class="step-indicator">{stepIndicatorLabel}</div>
+        </div>
+    </div>
+</template>

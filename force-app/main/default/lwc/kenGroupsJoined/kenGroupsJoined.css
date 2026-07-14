@@ -1,0 +1,177 @@
+.groups-joined-container {
+    background: var(--portal-surface, #fff);
+    border-radius: var(--portal-radius, 12px);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    padding: 1.25rem 1.25rem 1rem;
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* ── Header ── */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    margin-bottom: 0.75rem;
+}
+
+.card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.btn-view-all {
+    background: transparent;
+    color: var(--primary-color, white);
+    border: 1.5px solid var(--primary-color, white);
+    border-radius: 8px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.divider {
+    height: 1px;
+    background: #E5E7EB;
+    margin-bottom: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* ── Group list ── */
+.group-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    margin-bottom: 0.75rem;
+}
+
+.group-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-radius: 6px;
+}
+
+.group-item:hover {
+    background: #f8f9fa;
+}
+
+.group-item:last-child {
+    border-bottom: none;
+}
+
+.group-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.group-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: #111;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.type-badge {
+    display: inline-block;
+    background: var(--secondary-color, #CFFAFE);
+    color: var(--primary-color, white);
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    width: fit-content;
+}
+
+.group-meta {
+    font-size: 0.75rem;
+    color: #6B7280;
+    font-style: italic;
+}
+
+/* ── Thumbnail ── */
+.group-thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+    flex-shrink: 0;
+}
+
+/* ── Bottom button ── */
+.btn-discover {
+    width: 100%;
+    padding: 0.65rem;
+    background: var(--primary-color, white);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    flex-shrink: 0;
+    transition: filter 0.15s;
+}
+
+.btn-discover:hover {
+    filter: brightness(1.08);
+}
+
+.btn-discover-static {
+    margin-top: auto;
+}
+
+/* ── Empty state ── */
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    min-height: 0;
+}
+
+.empty-img {
+    width: 110px;
+    opacity: 0.75;
+}
+
+.empty-text {
+    font-size: 0.8rem;
+    color: #9CA3AF;
+    text-align: center;
+}
+
+@media (max-width: 767px) {
+    .groups-joined-container {
+        padding: 0.75rem 1rem;
+    }
+
+    .group-thumb {
+        width: 42px;
+        height: 42px;
+    }
+}

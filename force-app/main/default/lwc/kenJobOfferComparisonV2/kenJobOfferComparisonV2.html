@@ -1,0 +1,85 @@
+<template>
+    <section class="wrap">
+        <header class="head">
+            <h2>Compare Offers</h2>
+            <p class="sub">Review your offers side-by-side and ask the placement team a question.</p>
+        </header>
+
+        <template lwc:if={loading}>
+            <div class="muted">Loading offers…</div>
+        </template>
+
+        <template lwc:elseif={errorMsg}>
+            <div class="err">{errorMsg}</div>
+        </template>
+
+        <template lwc:else>
+            <template lwc:if={hasOffers}>
+                <div class="grid" style={gridStyle}>
+                    <template for:each={offers} for:item="o">
+                        <article key={o.id} class="ocard">
+                            <div class="ocard__hd">
+                                <span class="logo" style={o.logoStyle}>{o.logoLetter}</span>
+                                <div class="ocard__hd-txt">
+                                    <span class="company">{o.companyFmt}</span>
+                                    <h3>{o.roleFmt}</h3>
+                                    <span class="loc">{o.locationFmt}</span>
+                                </div>
+                            </div>
+
+                            <!-- Financial breakdown -->
+                            <div class="sect">
+                                <p class="sect__t">Financial Breakdown</p>
+                                <div class="ctc">{o.totalCtcFmt}</div>
+                                <div class="rowi"><span>Fixed</span><b>{o.fixedFmt}</b></div>
+                                <div class="rowi"><span>Variable</span><b>{o.variableFmt}</b></div>
+                                <div class="rowi"><span>Joining Bonus</span><b>{o.bonusFmt}</b></div>
+                            </div>
+
+                            <!-- Job attributes -->
+                            <div class="sect">
+                                <p class="sect__t">Job Attributes</p>
+                                <div class="rowi"><span>Work Type</span><b>{o.workTypeFmt}</b></div>
+                                <div class="rowi"><span>Bond</span><b>{o.bondFmt}</b></div>
+                                <div class="perks">
+                                    <span class="perks__lbl">Perks</span>
+                                    <template lwc:if={o.hasPerks}>
+                                        <ul>
+                                            <template for:each={o.perkItems} for:item="p">
+                                                <li key={p.key}>{p.label}</li>
+                                            </template>
+                                        </ul>
+                                    </template>
+                                    <template lwc:else>
+                                        <p class="muted sm">No perks listed.</p>
+                                    </template>
+                                </div>
+                            </div>
+                        </article>
+                    </template>
+                </div>
+
+                <!-- Inquiry panel -->
+                <div class="inq">
+                    <template lwc:if={inquirySent}>
+                        <div class="ok">Thanks! Your question has been sent to the placement team.</div>
+                    </template>
+                    <template lwc:else>
+                        <label class="inq__lbl" for="q">Ask a question about this comparison</label>
+                        <textarea id="q" class="inq__ta" rows="3" value={question}
+                            placeholder="e.g. Which offer has the better long-term growth?"
+                            onchange={handleQuestion} oninput={handleQuestion}></textarea>
+                        <button class="btn" onclick={handleSubmitInquiry} disabled={submitDisabled}>
+                            <template lwc:if={submitting}>Submitting…</template>
+                            <template lwc:else>Submit Question</template>
+                        </button>
+                    </template>
+                </div>
+            </template>
+
+            <template lwc:else>
+                <div class="muted">No offers selected to compare.</div>
+            </template>
+        </template>
+    </section>
+</template>

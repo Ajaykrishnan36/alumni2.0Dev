@@ -1,0 +1,39 @@
+<template>
+    <lightning-card title="Upload an Image" icon-name="utility:upload">
+        <div class="slds-m-around_medium">
+            <template if:true={fileData}>
+                <div class="slds-m-around_medium slds-grid slds-wrap slds-grid_align-spread slds-align_absolute-center">
+                    <img src={fileData.base64} alt="Preview" />
+                    <lightning-button
+                        label="Remove"
+                        variant="destructive"
+                        onclick={handleRemoveFile}
+                        class="slds-m-around_small"
+                        title="Remove Image"
+                        icon-name="utility:delete"
+                        icon-position="right">
+                    </lightning-button>
+                </div>
+            </template>
+
+            <template if:false={fileData}>
+                <lightning-input type="file" label="Select Image" accept="image/*" onchange={handleFileChange}></lightning-input>
+            </template>
+        </div>
+
+        <div class="slds-card__footer slds-grid slds-grid_align-end slds-p-around_medium">
+            <lightning-button
+                label="Cancel"
+                variant="neutral"
+                onclick={handleCancel}
+                class="slds-m-right_small">
+            </lightning-button>
+            <lightning-button
+                label="Upload Image"
+                variant="brand"
+                onclick={handleUpload}
+                disabled={isUploadDisabled}>
+            </lightning-button>
+        </div>
+    </lightning-card>
+</template>

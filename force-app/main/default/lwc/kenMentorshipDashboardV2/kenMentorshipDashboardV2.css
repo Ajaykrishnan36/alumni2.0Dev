@@ -1,0 +1,294 @@
+:host {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    box-sizing: border-box;
+    --dash-font: var(--lwc-fontFamily, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
+}
+
+.dash-loading {
+    padding: 48px;
+    text-align: center;
+    color: #6B7280;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(0.875rem, 1vw + 0.3rem, 1rem) !important;
+}
+
+/* MAIN column — Connections card stacked over Calendar card (Figma center region).
+   The 3-region split (nav | main | rail) is owned by the shell's has-rail grid,
+   so this only needs to stack its two cards and fill the column. */
+.m-main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 16px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* RIGHT RAIL — Tasks panel with the Edit-Preference / Become-a-Mentor action
+   pinned to the bottom (Figma right region). The shell gives the rail its
+   350px track + sticky full height; this fills it and bottom-anchors the CTA. */
+.m-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 100%;
+    min-width: 0;
+}
+/* Push the last child (Edit Preference button / Become-a-Mentor card) to the
+   bottom of the rail, matching the Figma layout. */
+.m-rail > c-ken-mentorship-tasks-v2 { flex: 0 0 auto; }
+.m-rail > .become-mentor-card,
+.m-rail > .m-edit-pref { margin-top: auto; }
+
+/* "Edit Mentorship Preference" — full-width primary button (mentor users). */
+.m-edit-pref {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: #2563EB;
+    color: #fff;
+    border: 0;
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(0.875rem, 1vw + 0.3rem, 1rem) !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: background .12s ease;
+}
+.m-edit-pref:hover { background: #1D4ED8; }
+
+.dash-loading--rail { padding: 24px; }
+
+.become-mentor-card {
+    background: linear-gradient(135deg, #EEF2FF 0%, #DBEAFE 100%);
+    border: 1px solid #C7D2FE;
+    border-radius: 16px;
+    padding: 24px;
+    text-align: center;
+    font-family: var(--dash-font) !important;
+}
+.become-mentor-card__icon { font-size: 2rem; margin-bottom: 8px; }
+.become-mentor-card__title {
+    margin: 0 0 8px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(1.125rem, 1.2vw + 0.4rem, 1.25rem) !important;
+    font-weight: 600 !important;
+    color: #1E3A8A;
+}
+.become-mentor-card__sub {
+    margin: 0 0 16px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    font-weight: 400 !important;
+    color: #1E40AF;
+    line-height: 1.4;
+}
+.become-mentor-card__cta {
+    background: #2563EB;
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+}
+.become-mentor-card__cta:hover { background: #1D4ED8; }
+
+.dash-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+.dash-modal {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    width: min(480px, 90vw);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    font-family: var(--dash-font) !important;
+}
+.dash-modal__close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #6B7280;
+}
+.dash-modal__title {
+    margin: 0 0 16px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(1.125rem, 1.2vw + 0.4rem, 1.25rem) !important;
+    font-weight: 600 !important;
+    color: #111827;
+}
+.dash-field { display: block; margin-bottom: 12px; }
+.dash-field__label {
+    display: block;
+    margin-bottom: 4px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    font-weight: 600 !important;
+    color: #374151;
+}
+.dash-field__input {
+    width: 100%;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    color: #111827;
+    box-sizing: border-box;
+}
+textarea.dash-field__input { min-height: 80px; resize: vertical; }
+.dash-modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+}
+.dash-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+}
+.dash-btn--outline { background: #fff; border: 1px solid #D1D5DB; color: #374151; }
+.dash-btn--outline:hover { background: #F9FAFB; }
+.dash-btn--primary { background: #2563EB; color: #fff; }
+.dash-btn--primary:hover { background: #1D4ED8; }
+
+.dash-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111827;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-family: var(--dash-font) !important;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    z-index: 10000;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Epic 1: Find a Mentor — matchmaking filters ===== */
+.mm-filters {
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #fff;
+    padding: 18px 20px;
+    margin-bottom: 18px;
+}
+.mm-filters__title { margin: 0 0 12px; font-size: 16px; color: #3730a3; }
+.mm-filters__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+}
+.mm-filters__actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+
+.mm-btn {
+    border-radius: 8px; padding: 9px 18px; font-size: 14px; font-weight: 700;
+    cursor: pointer; border: 1px solid #4f46e5;
+}
+.mm-btn--primary { background: #4f46e5; color: #fff; }
+.mm-btn--primary:hover:not(:disabled) { background: #3730a3; }
+.mm-btn--primary:disabled { background: #c3c7d9; border-color: #c3c7d9; cursor: not-allowed; }
+.mm-btn--ghost { background: #fff; color: #3730a3; }
+.mm-btn--ghost:hover { background: #eef2ff; }
+.mm-btn--full { width: 100%; margin-top: 10px; }
+
+.mm-results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+.mm-card {
+    border: 1px solid #ece6f2; border-radius: 12px; padding: 14px 16px; background: #fafaff;
+}
+.mm-card__head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.mm-card__avatar {
+    width: 38px; height: 38px; border-radius: 50%; flex: 0 0 auto;
+    background: #4f46e5; color: #fff; font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    text-transform: uppercase;
+}
+.mm-card__name { margin: 0; font-weight: 700; font-size: 14px; color: #1a1a2e; }
+.mm-card__cap { margin: 0; font-size: 12px; color: #6b7280; }
+.mm-card__row { margin: 4px 0; font-size: 13px; color: #444; }
+.mm-empty { margin-top: 14px; color: #9aa0a6; font-size: 14px; }
+
+/* ===== Preferences overlay ===== */
+.prefs-overlay {
+    position: fixed; inset: 0; z-index: 9000;
+    background: rgba(20, 16, 40, 0.55);
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 40px 16px; overflow-y: auto;
+}
+.prefs-overlay__panel {
+    position: relative; width: 100%; max-width: 780px;
+    background: #fff; border-radius: 16px; padding: 28px 24px 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.prefs-overlay__close {
+    position: absolute; top: 12px; right: 14px; width: 32px; height: 32px;
+    border: none; border-radius: 50%; background: #f1f3f7; color: #444;
+    font-size: 20px; line-height: 1; cursor: pointer; z-index: 1;
+}
+.prefs-overlay__close:hover { background: #e2e6ee; }
+
+/* ===== Native field styling for the matchmaking filter row =====
+   The previous attempt used lightning-input / lightning-combobox base components.
+   Their inner SVGs live in shadow DOM that this CSS file cannot reach, and in LWR
+   community pages those SVGs render at intrinsic size — ballooning over the layout.
+   The HTML was refactored to native <input>/<select>; this block styles them. */
+.mm-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mm-field__label {
+    font-size: 12px; font-weight: 600; color: #374151; letter-spacing: .2px;
+}
+.mm-field__input {
+    width: 100%; box-sizing: border-box;
+    height: 36px; padding: 0 10px;
+    font-size: 14px; color: #1a1a2e;
+    background: #fff;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    transition: border-color .15s, box-shadow .15s;
+    font-family: inherit;
+}
+.mm-field__input:focus {
+    outline: none; border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+.mm-field__input::placeholder { color: #9aa0a6; }
+/* Native select gets its own tiny inline-SVG chevron (no big icon, no shadow DOM). */
+.mm-field__select {
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    padding-right: 30px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path fill='%236b7280' d='M2 4l4 4 4-4z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px 12px;
+}

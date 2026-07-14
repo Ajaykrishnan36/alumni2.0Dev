@@ -1,0 +1,48 @@
+<template>
+    <div>
+        <h3>Job Description</h3>
+        <div class="field">
+            <label>Full Description<span class="req">*</span></label>
+            <textarea data-field="fullDescription" oninput={handleField} placeholder="Describe the role, team and what a typical day looks like...">{fullDescription}</textarea>
+            <template lwc:if={descError}>
+                <div class="slds-text-color_error" role="alert" style="margin-top:4px;font-size:0.8rem;">{descError}</div>
+            </template>
+        </div>
+    </div>
+    <div class="fields-grid">
+        <div class="field">
+            <label>Requirements<span class="req">*</span></label>
+            <textarea data-field="requirements" oninput={handleField} placeholder="Eg: 3+ years experience with React, strong CS fundamentals...">{requirements}</textarea>
+        </div>
+        <div class="field">
+            <label>Responsibilities<span class="req">*</span></label>
+            <textarea data-field="responsibilities" oninput={handleField} placeholder="Eg: Build features end-to-end, collaborate with design...">{responsibilities}</textarea>
+        </div>
+    </div>
+    <div class="field">
+        <label>Skills<span class="req">*</span></label>
+        <div class="chips">
+            <template for:each={skills} for:item="s">
+                <span key={s} class="chip">{s}<span class="x" data-skill={s} onclick={handleRemoveSkill}>×</span></span>
+            </template>
+            <input value={skillDraft} oninput={handleSkillInput} onkeydown={handleSkillKeydown} placeholder="Add a skill and press Enter"/>
+        </div>
+    </div>
+    <div class="fields-grid">
+        <div class="field">
+            <label>Experience Level<span class="req">*</span></label>
+            <select data-field="experienceLevel" value={experienceLevel} onchange={handleField}>
+                <option value="">Select level</option>
+                <option value="Fresher">Fresher</option>
+                <option value="0-2 yrs">0-2 yrs (Entry)</option>
+                <option value="2-5 yrs">2-5 yrs (Mid)</option>
+                <option value="5-10 yrs">5-10 yrs (Senior)</option>
+                <option value="10+ yrs">10+ yrs (Lead)</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Qualifications</label>
+            <textarea data-field="qualifications" oninput={handleField} placeholder="Eg: B.Tech / B.E. in Computer Science or equivalent">{qualifications}</textarea>
+        </div>
+    </div>
+</template>

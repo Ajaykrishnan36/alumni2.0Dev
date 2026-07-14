@@ -1,0 +1,225 @@
+/* Card wrapper — matches Salesforce sidebar card look */
+.qr-card {
+    background: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    font-family: 'Salesforce Sans', Arial, sans-serif;
+}
+
+/* Header */
+.qr-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid #e8e8e8;
+    background: #fafafa;
+}
+
+.qr-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qr-icon {
+    display: flex;
+    align-items: center;
+    color: #0070d2;
+    flex-shrink: 0;
+}
+
+.qr-title {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #080707;
+    letter-spacing: 0.01em;
+}
+
+.qr-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0070d2;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    line-height: 1;
+}
+
+.qr-collapse-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    color: #6a6a6a;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    transition: background 0.15s;
+}
+
+.qr-collapse-btn:hover {
+    background: #e8e8e8;
+    color: #333;
+}
+
+/* Chevron animation */
+.chevron {
+    transition: transform 0.2s ease;
+    display: block;
+}
+
+.chevron.rotated {
+    transform: rotate(-90deg);
+}
+
+/* Body — scrollable so all responses are always accessible */
+.qr-body {
+    padding: 4px 0 8px;
+    max-height: 420px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d0d0d0 transparent;
+}
+
+.qr-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.qr-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.qr-body::-webkit-scrollbar-thumb {
+    background: #d0d0d0;
+    border-radius: 4px;
+}
+
+/* Questionnaire group */
+.qr-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Questionnaire section header — shown when multiple questionnaires exist */
+.qr-section-header {
+    display: flex;
+    align-items: center;
+    padding: 6px 14px 4px;
+    background: #f4f6f9;
+    border-top: 1px solid #e8e8e8;
+    border-bottom: 1px solid #e8e8e8;
+    margin-top: 4px;
+}
+
+.qr-group:first-child .qr-section-header {
+    margin-top: 0;
+    border-top: none;
+}
+
+.qr-section-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0070d2;
+    letter-spacing: 0.01em;
+}
+
+/* Each Q&A row */
+.qr-item {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.qr-item:last-of-type {
+    border-bottom: none;
+}
+
+/* SF record page field label style */
+.qr-question {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: #706e6b;
+    margin-bottom: 4px;
+    line-height: 1.4;
+    letter-spacing: 0;
+}
+
+/* SF record page field value style */
+.qr-answer {
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #3e3e3c;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.qr-answer.empty {
+    color: #aeaeae;
+    font-style: italic;
+}
+
+/* File upload link */
+.qr-file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: #0070d2;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.qr-file-link:hover {
+    text-decoration: underline;
+    color: #005fb2;
+}
+
+/* Loading skeleton */
+.qr-loading {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.skeleton-line {
+    height: 10px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+    border-radius: 4px;
+}
+
+.skeleton-line.short {
+    width: 55%;
+}
+
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Empty state */
+.qr-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 20px 14px;
+    color: #aeaeae;
+}
+
+.qr-empty p {
+    font-size: 0.8rem;
+    margin: 0;
+}

@@ -1,0 +1,193 @@
+<template >
+    <div style="width: 100%;">
+    <c-ken-toast-notification
+        is-visible={isToastVisible}
+        toast-title={toastTitle}
+        toast-message={toastMessage}
+        toast-variant={toastVariant}>
+    </c-ken-toast-notification>
+    <div class="business-listing-form-page">
+        <div class="form-container">
+            <div class="form-content">
+            <div class="form-header-section">
+                <h1 class="form-title">Please fill in the form to setup your business</h1>
+
+                <!-- Cover Picture Upload Section -->
+                <div class="cover-picture-section">
+                    <template if:true={coverPreviewUrl}>
+                        <div class="cover-preview-area">
+                            <img src={coverPreviewUrl} alt="Cover preview" class="cover-preview-img" />
+                            <div class="cover-preview-overlay">
+                                <button type="button" class="upload-cover-btn" onclick={handleCoverPictureUpload}>
+                                    <lightning-icon icon-name="utility:upload" size="small" class="upload-icon"></lightning-icon>
+                                    Change cover picture
+                                </button>
+                                <button type="button" class="remove-cover-btn" onclick={handleRemoveCoverPicture}>
+                                    <lightning-icon icon-name="utility:delete" size="x-small" class="upload-icon"></lightning-icon>
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    <template if:false={coverPreviewUrl}>
+                        <div class="cover-picture-upload-area" onclick={handleCoverPictureUpload}>
+                            <button type="button" class="upload-cover-btn">
+                                <lightning-icon icon-name="utility:upload" size="small" class="upload-icon"></lightning-icon>
+                                Upload a cover picture (optional)
+                            </button>
+                            <div class="image-specs">
+                                <span class="spec-text">Max image size: <strong>5 MB</strong> | Min width: <strong>1028px</strong> | Image format: <strong>PNG, JPEG</strong></span>
+                            </div>
+                        </div>
+                    </template>
+                    <input type="file" class="file-input" accept="image/png,image/jpeg" onchange={handleCoverPictureChange} data-field="coverPicture" />
+                </div>
+            </div>
+
+            <!-- Business Details Form -->
+            <div class="business-details-form">
+                <div class="form-row">
+                    <!-- Left Column -->
+                    <div class="form-column">
+                        <!-- Upload Logo -->
+                        <div class="form-field">
+                            <label class="field-label">Upload your logo (optional)</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" class="file-input-field" accept="image/png,image/jpeg" onchange={handleLogoChange} data-field="logo" />
+                                <div class="file-input-display">
+                                    <span class="file-placeholder">Choose file</span>
+                                    <lightning-icon icon-name="utility:upload" size="x-small" class="file-upload-icon"></lightning-icon>
+                                </div>
+                            </div>
+                            <div class="field-specs">
+                                <span class="spec-text">Max image size: <strong>1 MB</strong> | Image format: <strong>PNG, JPEG</strong></span>
+                            </div>
+                        </div>
+
+                        <!-- Business Type -->
+                        <div class="form-field">
+                            <label class="field-label">Business type<span class="required-asterisk">*</span></label>
+                            <div class="select-wrapper">
+                                <select class="form-select" onchange={handleBusinessTypeChange}>
+                                    <option value="">Select</option>
+                                    <option value="Food & beverage">Food & beverage</option>
+                                    <option value="Technology & Software">Technology & Software</option>
+                                    <option value="Immersive experiences">Immersive experiences</option>
+                                    <option value="Wooden toys">Wooden toys</option>
+                                </select>
+                                <lightning-icon icon-name="utility:down" size="x-small" class="select-arrow"></lightning-icon>
+                            </div>
+                            <template if:true={typeError}>
+                                <div class="error-text">{typeError}</div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="form-column">
+                        <!-- Business Name -->
+                        <div class="form-field">
+                            <label class="field-label">Name of your business<span class="required-asterisk">*</span></label>
+                            <input type="text" class="form-input" placeholder="Enter name" value={formData.businessName} onchange={handleBusinessNameChange} />
+                            <template if:true={nameError}>
+                                <div class="error-text">{nameError}</div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phone Number and Email ID Row -->
+                <div class="form-row phone-email-row">
+                    <!-- Left Column: Phone Number and Website -->
+                    <div class="form-column">
+                        <!-- Phone Number -->
+                        <div class="form-field">
+                            <label class="field-label">Phone number</label>
+                            <div class="phone-input-wrapper">
+                                <input 
+                                    type="tel" 
+                                    class="form-input phone-input" 
+                                    data-id="phone-input"
+                                    placeholder="0000 0000 00"
+                                    value={formData.phone}
+                                    oninput={handlePhoneInput}
+                                />
+                            </div>
+                            <template if:true={phoneError}>
+                                <div class="error-text">{phoneError}</div>
+                            </template>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" class="form-checkbox" checked={formData.hidePhone} onchange={handleHidePhoneChange} />
+                                <label class="checkbox-label">Hide From My Profile</label>
+                            </div>
+                        </div>
+
+                        <!-- Website -->
+                        <div class="form-field">
+                            <label class="field-label">Website</label>
+                            <input type="url" class="form-input" placeholder="https://www.example.com" value={formData.website} onchange={handleWebsiteChange} />
+                            <template if:true={websiteError}>
+                                <div class="error-text">{websiteError}</div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Email ID -->
+                    <div class="form-column">
+                        <!-- Email ID -->
+                        <div class="form-field">
+                            <label class="field-label">Email ID</label>
+                            <input type="email" class="form-input" placeholder="Enter email ID" value={formData.email} onchange={handleEmailChange} />
+                            <template if:true={emailError}>
+                                <div class="error-text">{emailError}</div>
+                            </template>
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" class="form-checkbox" checked={formData.hideEmail} onchange={handleHideEmailChange} />
+                                <label class="checkbox-label">Hide From My Profile</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address and Map URL Row -->
+                <div class="form-row address-map-row">
+                    <!-- Address -->
+                    <div class="form-field">
+                        <label class="field-label">Address</label>
+                        <input type="text" class="form-input" placeholder="Enter business address" value={formData.address} onchange={handleAddressChange} />
+                    </div>
+
+                    <!-- Map URL -->
+                    <div class="form-field">
+                        <label class="field-label">Map URL</label>
+                        <input type="url" class="form-input" placeholder="https://maps.google.com/..." value={formData.mapUrl} onchange={handleMapUrlChange} />
+                        <template if:true={mapUrlError}>
+                            <div class="error-text">{mapUrlError}</div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Business Description -->
+                <div class="form-field full-width">
+                    <label class="field-label">Business description</label>
+                    <c-ken-rich-text-editor
+                        value={formData.description}
+                        placeholder="Enter business description"
+                        max-length="8000"
+                        onchange={handleDescriptionChange}>
+                    </c-ken-rich-text-editor>
+                </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions-section">
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn" onclick={handleCancel}>Cancel</button>
+                    <button type="button" class={saveButtonClass} onclick={handleSubmit} disabled={isSaveDisabled}>{saveButtonLabel}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</template>

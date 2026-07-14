@@ -1,0 +1,97 @@
+:host { display: block; width: 100%; }
+
+.cmp-page {
+    padding: 20px;
+    font-family: "General Sans", "Inter", system-ui, sans-serif;
+    color: #373A45;
+}
+
+.cmp-topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.back-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: #fff; border: 1px solid #E5E6E8; border-radius: 8px;
+    padding: 8px 14px; font-family: inherit; font-weight: 600; font-size: 13px;
+    color: #1F2937; cursor: pointer;
+}
+.back-btn:hover { background: #F6F8FB; }
+.back-btn__arrow { font-size: 16px; line-height: 1; }
+.cmp-title { font-size: 20px; font-weight: 700; margin: 0; color: #111827; }
+.cmp-note { font-size: 12px; color: #8A8D96; font-weight: 500; margin: 0 0 14px; text-align: center; }
+
+/* ===== GRID ===== */
+.cmp-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
+@media (max-width: 900px) { .cmp-grid { grid-template-columns: 1fr; } }
+
+.cmp-card {
+    background: #fff; border: 1px solid #E5E6E8; border-radius: 14px;
+    padding: 20px; display: flex; flex-direction: column; gap: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+/* ===== HEADER ===== */
+.cmp-card__head {
+    display: flex; align-items: center; gap: 12px;
+    padding-bottom: 12px; border-bottom: 1px solid #F1F5F9;
+    min-height: 64px;
+}
+.cmp-card__logo {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 16px; flex-shrink: 0;
+}
+.cmp-card__company { font-weight: 700; font-size: 15px; margin: 0; color: #111827; }
+.cmp-card__title   { font-weight: 500; font-size: 12px; color: #6B7280; margin: 2px 0 0; }
+
+/* ===== ROW SECTIONS ===== */
+/* Same min-height per row keeps cards aligned across the 3 columns */
+.cmp-row { padding: 12px 0; border-bottom: 1px dashed #E5E6E8; }
+.cmp-row:last-of-type { border-bottom: 0; }
+.cmp-row__h {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; color: #8A8D96; margin: 0 0 8px;
+}
+
+.cmp-row--ctc { min-height: 140px; background: #F6F8FB; border-radius: 10px;
+                padding: 14px; border-bottom: 0; }
+.cmp-row__big { font-size: 22px; font-weight: 700; color: #111827; margin: 0 0 10px; }
+.cmp-row__kv { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.cmp-row__kv li {
+    display: flex; justify-content: space-between; gap: 10px;
+    font-size: 12.5px; padding: 4px 0;
+    border-bottom: 1px dashed #E5E6E8;
+}
+.cmp-row__kv li:last-child { border-bottom: 0; }
+.cmp-row__kv span    { color: #6B7280; font-weight: 500; }
+.cmp-row__kv strong  { color: #111827; font-weight: 600; }
+
+.cmp-row--perks { min-height: 160px; }
+.cmp-row__perks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.cmp-row__perks li {
+    font-size: 12.5px; color: #5A5D68; font-weight: 500;
+    display: flex; align-items: flex-start; gap: 6px;
+}
+.cmp-row__perks li::before { content: '✓'; color: #19A974; font-weight: 700; flex-shrink: 0; }
+
+.cmp-row--small { min-height: 62px; }
+.cmp-row__val { font-size: 13.5px; font-weight: 600; color: #111827; margin: 0; }
+
+/* ===== FOOTER ===== */
+.cmp-card__foot {
+    display: flex; gap: 8px; margin-top: auto;
+    padding-top: 14px; border-top: 1px solid #F1F5F9;
+}
+.btn {
+    flex: 1; height: 36px; border-radius: 8px;
+    font-family: inherit; font-weight: 600; font-size: 12px; cursor: pointer;
+    border: 1.5px solid transparent; padding: 0 14px;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.btn--accept  { background: #19A974; color: #fff; border-color: #19A974; }
+.btn--accept:hover { background: #138257; }
+.btn--decline { background: #fff; color: #B91C1C; border-color: #FCA5A5; }
+.btn--decline:hover { background: #FEE2E2; }
+
+.cmp-empty {
+    background: #fff; border: 1px dashed #E5E6E8; border-radius: 12px;
+    padding: 40px; text-align: center; color: #8A8D96; font-weight: 500; font-size: 13px;
+}

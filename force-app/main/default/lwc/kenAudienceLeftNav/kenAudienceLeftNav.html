@@ -1,0 +1,20 @@
+<template>
+    <div class="slds-p-around_medium">
+        <div class="select-by-label slds-m-bottom_small">Select By</div>
+        <ul class="navList">
+            <template for:each={items} for:item="item">
+                <li key={item.value} class="slds-m-vertical_x-small">
+                    <button
+                        class={item.className}
+                        type="button"
+                        data-value={item.value}
+                        onclick={handleClick}
+                    >
+                        <span class="slds-truncate">{item.label}</span>
+                        <span class="activeMarker" if:true={item.isActive}></span>
+                    </button>
+                </li>
+            </template>
+        </ul>
+    </div>
+</template>

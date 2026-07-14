@@ -1,0 +1,74 @@
+<template>
+    <section class="take">
+        <!-- Header progress bar -->
+        <div class="take__progress-row">
+            <div class="progress"><div class="progress__bar" style={progressStyle}></div></div>
+            <span class="progress__label">{progressLabel}</span>
+        </div>
+
+        <div class="take__body card">
+            <!-- Anonymous toggle -->
+            <label class="anon-row">
+                <span>Submit response anonymously?</span>
+                <input type="checkbox" checked={anonymous} onchange={handleAnonymous} />
+            </label>
+
+            <!-- Questions, all stacked -->
+            <template for:each={renderedQuestions} for:item="q">
+                <div key={q._key} class="q-block">
+                    <h3 class="q-block__title">{q.number}. {q.title}</h3>
+                    <p class="q-block__hint">{q.hint}</p>
+
+                    <template lwc:if={q.isRating5}>
+                        <div class="rating">
+                            <template for:each={q.ratingOpts} for:item="r">
+                                <button key={r.key} type="button" class={r.cls} data-qid={q.id} data-n={r.n} onclick={handleRating}>{r.n}</button>
+                            </template>
+                        </div>
+                        <div class="rating-labels"><span>Dissatisfied</span><span>Satisfied</span></div>
+                    </template>
+
+                    <template lwc:if={q.isRadio}>
+                        <div class="opts">
+                            <template for:each={q.radioOpts} for:item="o">
+                                <button key={o.key} type="button" class={o.cls} data-qid={q.id} data-val={o.value} onclick={handleRadio}>
+                                    <span class="opt__bullet"></span><span>{o.label}</span>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={q.isCheckbox}>
+                        <div class="opts">
+                            <template for:each={q.checkboxOpts} for:item="o">
+                                <button key={o.key} type="button" class={o.cls} data-qid={q.id} data-val={o.value} onclick={handleCheckbox}>
+                                    <span class="opt__box"></span><span>{o.label}</span>
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={q.isYesNo}>
+                        <div class="yesno">
+                            <template for:each={q.radioOpts} for:item="o">
+                                <button key={o.key} type="button" class={o.cls} data-qid={q.id} data-val={o.value} onclick={handleRadio}>{o.label}</button>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={q.isText}>
+                        <textarea class="text-area" placeholder="Type your response..." value={q.textValue} data-qid={q.id} oninput={handleText}></textarea>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <footer class="take__footer">
+            <button type="button" class="btn btn--ghost" onclick={handleCancel}>Cancel</button>
+            <div class="take__footer-right">
+                <button type="button" class="btn btn--outline" onclick={handleSaveDraft}>Save Draft</button>
+                <button type="button" class="btn btn--primary" onclick={handleSubmit}>Submit Survey</button>
+            </div>
+        </footer>
+    </section>
+</template>

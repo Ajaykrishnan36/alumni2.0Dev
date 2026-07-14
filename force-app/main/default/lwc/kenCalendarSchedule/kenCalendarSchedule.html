@@ -1,0 +1,251 @@
+<template>
+    <div class="calendar-schedule-container">
+        <div class="calendar-section">
+            <div class="calendar-header">
+                <div class="month-year">
+                    <span>{currentMonthYear}</span>
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
+                        <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="calendar-nav">
+                    <button type="button" class="nav-button" onclick={handlePreviousMonth} aria-label="Previous month">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="nav-button" onclick={handleNextMonth} aria-label="Next month">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="calendar-grid">
+                <div class="weekdays">
+                    <template for:each={weekDays} for:item="day">
+                        <div key={day} class="weekday">{day}</div>
+                    </template>
+                </div>
+                <div class="calendar-days">
+                    <template for:each={calendarDays} for:item="day">
+                        <div
+                            key={day.key}
+                            class={day.class}
+                            onclick={handleDateClick}
+                            data-date={day.dateString}>
+                            {day.day}
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+        <div class="schedule-section">
+            <div class="schedule-title-row">
+                <h2 class="schedule-section-title">Scheduled calls</h2>
+                <button
+                    type="button"
+                    class="schedule-btn schedule-btn-inline"
+                    onclick={handleScheduleCall}
+                    disabled={isScheduleCallDisabled}
+                    title={scheduleCallButtonTitle}>
+                    Schedule a Call
+                </button>
+            </div>
+            <div class="schedule-header">
+                <button
+                    type="button"
+                    class="schedule-btn"
+                    onclick={handleScheduleCall}
+                    disabled={isScheduleCallDisabled}
+                    title={scheduleCallButtonTitle}>
+                    Schedule a Call
+                </button>
+            </div>
+            <div class="schedule-timeline">
+                <template if:true={showEmptySchedule}>
+                    <div class="schedule-empty-state">
+                        <img src={emptyCalendarImageUrl} alt="" aria-hidden="true" class="empty-schedule-image" />
+                        <p class="empty-schedule-text">No Calls Scheduled</p>
+                    </div>
+                </template>
+                <template if:false={showEmptySchedule}>
+                <template for:each={displayEvents} for:item="event">
+                    <div key={event.id} class="schedule-card">
+                        <div class="event-content">
+                            <div class="event-header">
+                                <div class="event-title">{event.title}</div>
+                                <div class="event-header-actions">
+                                    <template if:true={event.isHappening}>
+                                        <span class="status-badge happening">Happening now!</span>
+                                    </template>
+                                    <template if:true={event.showJoinIcon}>
+                                        <button
+                                            type="button"
+                                            class="video-call-icon"
+                                            title="Join video call"
+                                            aria-label="Join video call"
+                                            data-id={event.id}
+                                            onclick={handleJoinVideoCall}>
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                                <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" fill="currentColor"/>
+                                            </svg>
+                                        </button>
+                                    </template>
+                                    <template if:true={event.isCompleted}>
+                                        <template if:true={event.showFeedback}>
+                                            <button type="button" class="action-btn leave-feedback"
+                                                data-id={event.id} onclick={handleLeaveFeedback}>Leave Feedback</button>
+                                        </template>
+                                        <template if:true={event.feedbackSubmitted}>
+                                            <span class="status-badge awaiting">Feedback submitted</span>
+                                        </template>
+                                        <button type="button" class="action-btn completed">Completed</button>
+                                    </template>
+                                    <template if:true={event.isAwaiting}>
+                                        <span class="status-badge awaiting">Awaiting Approval</span>
+                                    </template>
+                                    <template if:true={event.isRequest}>
+                                        <button
+                                            type="button"
+                                            class="view-request-btn"
+                                            data-id={event.id}
+                                            onclick={handleViewRequest}>
+                                            View Request -&gt;
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <template if:true={event.mentor}>
+                                <div class="event-mentor">
+                                    <img src={event.mentorImage} alt="" class="mentor-avatar" />
+                                    <span>{event.mentor}</span>
+                                </div>
+                            </template>
+                            <div class="event-time-row">
+                                <svg class="clock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" fill="currentColor"/>
+                                </svg>
+                                <span class="event-time">{event.time}</span>
+                            </div>
+                            <template if:true={event.topic}>
+                                <div class="event-topic">Topic: {event.topic}</div>
+                            </template>
+                            <template if:true={event.note}>
+                                <div class="event-note">{event.note}</div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                </template>
+            </div>
+        </div>
+        <template if:true={showScheduleModal}>
+            <c-ken-schedule-call-modal
+                mentor-options={mentorOptions}
+                mentee-options={menteeOptions}
+                initial-date={datePickerValue}
+                is-submitting={isSubmittingCallRequest}
+                onclose={handleCloseScheduleModal}
+                onshowtoast={handleShowToast}
+                onsendrequest={handleSendRequest}>
+            </c-ken-schedule-call-modal>
+        </template>
+
+        <template if:true={showRequestModal}>
+            <div class="call-request-overlay" onclick={handleCloseRequestModal}>
+                <div class="call-request-modal" onclick={handleModalClick}>
+                    <div class="call-request-header">
+                        <h3>Call request</h3>
+                        <button type="button" class="modal-close-btn" onclick={handleCloseRequestModal} aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                        </button>
+                    </div>
+                    <div class="request-profile-row">
+                        <img src={selectedRequestEvent.mentorImage} alt="" class="request-avatar" />
+                        <div class="request-profile-meta">
+                            <div class="request-name">{selectedRequestEvent.mentor}</div>
+                            <div class="request-role">{selectedRequestEvent.counterpartTitle}</div>
+                        </div>
+                    </div>
+
+                    <div class="request-section">
+                        <p class="request-section-title">{requestModalTitle}</p>
+                        <p class="request-section-text">{requestModalDescription}</p>
+                    </div>
+
+                    <div class="request-section">
+                        <p class="request-section-label">Preferred slot</p>
+                        <p class="request-section-text">{preferredSlotLabel}</p>
+                    </div>
+
+                    <div class="request-section">
+                        <p class="request-section-label">Meet at</p>
+                        <p class="request-section-text">{requestMeetingLink}</p>
+                    </div>
+
+                    <div class="request-footer">
+                        <button type="button" class="suggest-btn" onclick={handleOpenRescheduleModal}>
+                            Suggest a different slot
+                        </button>
+                        <template if:true={selectedRequestEvent.canRespond}>
+                            <div class="request-footer-actions">
+                                <button type="button" class="decline-btn" onclick={handleDeclineRequest} disabled={isRespondingCallRequest}>
+                                    Decline Request
+                                </button>
+                                <button type="button" class="accept-btn" onclick={handleAcceptRequest} disabled={isRespondingCallRequest}>
+                                    Accept Request
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={showRescheduleModal}>
+            <div class="call-request-overlay" onclick={handleCloseRescheduleModal}>
+                <div class="call-request-modal reschedule-modal" onclick={handleModalClick}>
+                    <div class="call-request-header">
+                        <h3>{rescheduleModalTitle}</h3>
+                        <button type="button" class="modal-close-btn" onclick={handleCloseRescheduleModal} aria-label="Close">
+                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <div class="reschedule-field">
+                        <label>Title (Optional)</label>
+                        <lightning-input type="text" value={selectedRequestEvent.title} disabled class="custom-input"></lightning-input>
+                    </div>
+
+                    <div class="reschedule-field">
+                        <label>Choose a Preferred Slot*</label>
+                        <div class="reschedule-slots">
+                            <lightning-input type="date" value={rescheduleDate} min={minimumDate} onchange={handleRescheduleDateChange} class="custom-input"></lightning-input>
+                            <lightning-input type="time" value={rescheduleStartTime} onchange={handleRescheduleStartTimeChange} class="custom-input"></lightning-input>
+                            <lightning-input type="time" value={rescheduleEndTime} onchange={handleRescheduleEndTimeChange} class="custom-input"></lightning-input>
+                        </div>
+                    </div>
+
+                    <div class="reschedule-field">
+                        <label>Add Description (Optional)</label>
+                        <lightning-textarea value={requestModalDescription} disabled class="custom-input"></lightning-textarea>
+                    </div>
+
+                    <div class="reschedule-field">
+                        <label>How Would you Like to Meet?*</label>
+                        <lightning-input type="text" value={requestMeetingLink} disabled class="custom-input"></lightning-input>
+                    </div>
+
+                    <div class="reschedule-footer">
+                        <button type="button" class="cancel-reschedule-btn" onclick={handleCloseRescheduleModal}>Cancel</button>
+                        <button type="button" class="update-reschedule-btn" onclick={handleUpdateReschedule} disabled={isRescheduleUpdateDisabled}>
+                            Update Request
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </div>
+</template>

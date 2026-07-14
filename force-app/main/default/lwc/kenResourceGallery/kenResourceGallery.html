@@ -1,0 +1,259 @@
+<template>
+    <!-- Resource Gallery -->
+    <div class="resource-gallery-container">
+        <!-- Tabs Card - Hide when folder detail is shown -->
+        <template if:false={showFolderDetail}>
+        <div class="tabs-card">
+            <div class="nav-tabs">
+                <button
+                    class={filesTabClass}
+                    data-tab="files"
+                    onclick={handleTabChange}
+                    type="button"
+                >
+                    Files
+                </button>
+                <button
+                    class={foldersTabClass}
+                    data-tab="folders"
+                    onclick={handleTabChange}
+                    type="button"
+                >
+                    Folders
+                </button>
+            </div>
+        </div>
+        </template>
+
+        <!-- Content Card - Hide when folder detail is shown -->
+        <template if:false={showFolderDetail}>
+        <div class="content-card">
+            <!-- Title and Controls Row -->
+            <div class="title-controls-row">
+            <!-- Page Title Section -->
+            <div class="title-section">
+                <h1 class="page-title">
+                    <template if:true={isFilesTab}>All files</template>
+                    <template if:true={isFoldersTab}>All folders</template>
+                </h1>
+            </div>
+
+            <!-- Controls Section -->
+            <div class="controls-section">
+            <!-- Search Bar -->
+            <div class="search-container">
+                <lightning-icon
+                    icon-name="utility:search"
+                    size="x-small"
+                    class="search-icon"
+                    alternative-text="Search"
+                ></lightning-icon>
+                <input
+                    type="text"
+                    class="search-input"
+                    placeholder="Search"
+                    value={searchTerm}
+                    oninput={handleSearch}
+                />
+            </div>
+
+            <!-- Sort Button -->
+            <div class="sort-container">
+                <div class="sort-dropdown-wrapper">
+                    <button class="sort-button" type="button" onclick={handleSortButtonClick}>
+                        <span class="sort-label">Sort by</span>
+                        <lightning-icon
+                            icon-name="utility:sort"
+                            size="x-small"
+                            class="sort-icon"
+                            alternative-text="Sort"
+                        ></lightning-icon>
+                        <lightning-icon
+                            icon-name="utility:chevrondown"
+                            size="xx-small"
+                            class="sort-arrow"
+                            alternative-text=""
+                        ></lightning-icon>
+                    </button>
+                    <template if:true={showSortDropdown}>
+                        <div class="sort-dropdown-menu">
+                            <template for:each={sortOptions} for:item="option">
+                                <div
+                                    key={option.value}
+                                    class="sort-dropdown-item"
+                                    data-value={option.value}
+                                    onclick={handleSortOptionClick}
+                                >
+                                    <span class="sort-option-label">{option.label}</span>
+                                    <template if:true={option.isSelected}>
+                                        <lightning-icon
+                                            icon-name="utility:check"
+                                            size="x-small"
+                                            class="sort-check-icon"
+                                            alternative-text="Selected"
+                                        ></lightning-icon>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Filters Button - Only show on Files tab -->
+            <template if:true={isFilesTab}>
+                <button
+                    type="button"
+                    class="filters-button"
+                    onclick={handleFiltersClick}
+                >
+                    <span class="filters-button-text">Filters</span>
+                    <lightning-icon
+                        icon-name="utility:filterList"
+                        size="x-small"
+                        class="filters-button-icon"
+                        alternative-text="Filters"
+                    ></lightning-icon>
+                </button>
+            </template>
+            </div>
+            </div>
+
+            <!-- Files Tab Content -->
+            <template if:true={isFilesTab}>
+                <div class="file-grid">
+                    <template for:each={filteredFiles} for:item="file">
+                        <div key={file.id} class="file-grid-item">
+                            <c-ken-file-card
+                                file={file}
+                                onfileclick={handleFileClick}
+                            ></c-ken-file-card>
+                        </div>
+                    </template>
+                </div>
+
+                <template if:true={hasNoFiles}>
+                    <div class="empty-state">
+                        <p>No files found</p>
+                    </div>
+                </template>
+            </template>
+
+            <!-- Folders Tab Content -->
+            <template if:true={isFoldersTab}>
+                <div class="folder-grid">
+                    <template for:each={filteredFolders} for:item="folder">
+                        <div key={folder.id} class="folder-grid-item">
+                            <c-ken-folder-card
+                                folder={folder}
+                                onfolderclick={handleFolderClick}
+                            ></c-ken-folder-card>
+                        </div>
+                    </template>
+                </div>
+
+                <template if:true={hasNoFolders}>
+                    <div class="empty-state">
+                        <p>No folders found</p>
+                    </div>
+                </template>
+            </template>
+        </div>
+        </template>
+
+        <!-- Folder Detail View - Outside content card -->
+        <template if:true={showFolderDetail}>
+            <c-ken-folder-detail-view
+                folder={selectedFolder}
+                onback={handleBackFromFolder}
+                onfilesadded={handleFolderFilesAdded}
+                onfiledeleted={handleFolderFileDeleted}
+            ></c-ken-folder-detail-view>
+        </template>
+    </div>
+
+    <!-- Filters Popup - Only show on Files tab -->
+    <template if:true={showFiltersPopup}>
+        <template if:true={isFilesTab}>
+        <div class="filters-overlay" onclick={handleFiltersOverlayClick}>
+            <div class="filters-popup" onclick={handleFiltersPopupClick}>
+                <div class="filters-header">
+                    <h2 class="filters-title">Filters</h2>
+                </div>
+                <div class="filters-content">
+                    <!-- File Format -->
+                    <div class="filter-field">
+                        <lightning-combobox
+                            value={selectedFileFormat}
+                            options={fileFormatOptions}
+                            onchange={handleFileFormatChange}
+                            placeholder="File format"
+                            class="filter-input"
+                            label=""
+                            variant="label-hidden"
+                        ></lightning-combobox>
+                    </div>
+
+                    <!-- Choose Uploaded Date -->
+                    <div class="filter-field">
+                        <lightning-input
+                            type="date"
+                            value={selectedDate}
+                            onchange={handleDateChange}
+                            placeholder="Choose uploaded date"
+                            class="filter-input"
+                            label=""
+                            variant="label-hidden"
+                        ></lightning-input>
+                    </div>
+
+                    <!-- Posted By -->
+                    <div class="filter-field">
+                        <h3 class="filter-section-title">Posted by</h3>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="posted-by-others"
+                                    name="postedBy"
+                                    value="others"
+                                    checked={isOthersSelected}
+                                    onchange={handlePostedByChange}
+                                    class="radio-input"
+                                />
+                                <label for="posted-by-others" class="radio-label">Others</label>
+                            </div>
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="posted-by-myself"
+                                    name="postedBy"
+                                    value="myself"
+                                    checked={isMyselfSelected}
+                                    onchange={handlePostedByChange}
+                                    class="radio-input"
+                                />
+                                <label for="posted-by-myself" class="radio-label">Myself</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="filters-actions">
+                    <lightning-button
+                        variant="neutral"
+                        label="Reset Filters"
+                        onclick={handleResetFilters}
+                        class="reset-filters-button"
+                    ></lightning-button>
+                    <lightning-button
+                        variant="brand"
+                        label="Apply"
+                        onclick={handleApplyFilters}
+                        class="apply-filters-button"
+                    ></lightning-button>
+                </div>
+            </div>
+        </div>
+        </template>
+    </template>
+</template>

@@ -1,0 +1,115 @@
+.help-card {
+    width: 100%;
+    height: 100%;
+    min-height: 200px;
+    background: #FFFFFF;
+    border: 1px solid #DBE3EF;
+    border-radius: 14px;
+    padding: 1.25rem;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    font-family: inherit;
+    color: #111827;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    outline: none;
+}
+
+.help-card:focus,
+.help-card:focus-visible,
+.help-card:active {
+    outline: none;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+.help-card:hover {
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+    border-color: var(--primary-color, #E85D04);
+    transform: translateY(-2px);
+}
+
+.help-card:hover .card-title {
+    color: var(--primary-color, #E85D04);
+}
+
+.help-card:hover .arrow-circle {
+    background: var(--primary-color, #E85D04);
+}
+
+.help-card:hover .arrow-circle svg path {
+    stroke: #FFFFFF;
+}
+
+.card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.arrow-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #F3F4F6;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+}
+
+/* Centered body — icon then description below */
+.card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    padding: 0.75rem 0;
+    text-align: center;
+}
+
+.card-icon { display: flex; }
+
+.card-icon__circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background: #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-desc {
+    font-size: 12px;
+    color: #6B7280;
+    margin: 0;
+    line-height: 1.45;
+    max-width: 80%;
+}
+
+@media (max-width: 768px) {
+    .help-card {
+        min-height: 180px;
+        padding: 1rem;
+    }
+    .card-title { font-size: 16px; }
+    .card-desc { font-size: 12px; }
+    .card-icon__circle {
+        width: 48px;
+        height: 48px;
+    }
+}

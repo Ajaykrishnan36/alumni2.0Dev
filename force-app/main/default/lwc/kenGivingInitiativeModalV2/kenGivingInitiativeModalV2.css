@@ -1,0 +1,215 @@
+:host {
+    --violet: #4f46e5;
+    --violet-d: #3730a3;
+    --violet-l: #eef2ff;
+    --grey: #6b7280;
+    --line: #e5e7eb;
+    --text: #1a1a2e;
+    --red: #e74c3c;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text);
+}
+.ini-host, .ini-host *,
+.ini-host h2, .ini-host p, .ini-host label, .ini-host span,
+.ini-host input, .ini-host button, .ini-host textarea, .ini-host select {
+    font-family: inherit;
+}
+
+/* ===== Missing SLDS utility rules (LWR community doesn't ship these) ===== */
+.slds-assistive-text {
+    position: absolute !important;
+    width: 1px !important; height: 1px !important;
+    margin: -1px !important; padding: 0 !important; border: 0 !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+}
+.slds-required {
+    color: var(--red);
+    margin-right: 2px;
+    text-decoration: none;
+    border-bottom: 0;
+    font-weight: 600;
+    cursor: help;
+}
+/* SLDS spacing utilities used in the markup */
+.slds-m-bottom_medium { margin-bottom: 1.25rem !important; }
+.slds-m-bottom_small  { margin-bottom: 0.75rem !important; }
+
+/* ===== Modal frame ===== */
+.slds-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9001;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    opacity: 1; visibility: visible;
+    overflow-y: auto;
+}
+.slds-backdrop {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 9000;
+    background: rgba(17, 24, 39, 0.55);
+    display: block; visibility: visible; opacity: 1;
+}
+.ini-container {
+    position: relative;
+    max-width: 720px;
+    width: calc(100vw - 32px);
+    margin: 4rem auto 2rem;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    display: flex; flex-direction: column;
+}
+
+/* ===== Header ===== */
+.ini-hd {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 22px 28px 18px;
+    border-bottom: 1px solid var(--line);
+}
+.ini-hd__text { display: flex; flex-direction: column; gap: 4px; }
+.ini-hd__title { margin: 0; font-size: 18px; font-weight: 700; color: var(--text); line-height: 1.25; }
+.ini-hd__sub { margin: 0; color: var(--grey); font-size: 13px; }
+.ini-close {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: #f1f3f7; color: #444; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+}
+.ini-close:hover { background: #e2e6ee; }
+
+.ini-svg { width: 1rem !important; height: 1rem !important; max-width: 1rem !important; max-height: 1rem !important; }
+
+/* ===== Body ===== */
+.ini-body {
+    padding: 24px 28px 28px !important;
+    overflow: visible;
+}
+.ini-err {
+    background: #fdecea; color: #b3261e;
+    padding: 10px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+}
+
+/* ===== Form fields ===== */
+.slds-form-element__label {
+    display: block;
+    margin: 0 0 8px;
+    font-size: 13px; font-weight: 500; color: var(--text);
+    line-height: 1.4;
+}
+
+.slds-input, .slds-textarea, .slds-select {
+    width: 100%; box-sizing: border-box;
+    padding: 0.625rem 0.875rem;
+    font-size: 14px; color: var(--text);
+    background: #fff;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    font-family: inherit; line-height: 1.4;
+    transition: border-color .15s, box-shadow .15s;
+}
+.slds-input { height: 40px; }
+.slds-textarea { min-height: 96px; resize: vertical; padding: 0.625rem 0.875rem; }
+.slds-input:focus, .slds-textarea:focus, .slds-select:focus {
+    outline: none; border-color: var(--violet);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+.slds-input::placeholder, .slds-textarea::placeholder { color: #9aa0a6; }
+
+/* Select wrap + custom caret */
+.ini-select-wrap { position: relative; }
+.ini-select-wrap .slds-select {
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    padding-right: 36px; height: 40px;
+}
+.ini-select-caret {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* Two-column row */
+.ini-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .ini-row { grid-template-columns: 1fr; } }
+
+/* ===== Checkboxes ===== */
+.ini-toggles { display: flex; flex-direction: column; }
+.slds-checkbox { position: relative; display: block; }
+.slds-checkbox input[type="checkbox"] {
+    position: absolute; width: 18px; height: 18px; margin: 0;
+    opacity: 0; cursor: pointer; z-index: 2;
+    top: 1px; left: 0;
+}
+.slds-checkbox__label {
+    display: inline-flex; align-items: center; gap: 10px;
+    cursor: pointer; line-height: 1.3; padding-left: 0; margin: 0;
+}
+.slds-checkbox__label .slds-form-element__label {
+    margin: 0; font-size: 13px; color: var(--text); font-weight: 400;
+    line-height: 1.4;
+}
+.slds-checkbox_faux {
+    display: inline-block; flex: 0 0 auto;
+    width: 18px; height: 18px; border: 1.5px solid #c7c9d1; border-radius: 4px;
+    background: #fff; position: relative;
+    transition: background .15s, border-color .15s;
+}
+.slds-checkbox input[type="checkbox"]:checked + .slds-checkbox__label .slds-checkbox_faux {
+    background: var(--violet); border-color: var(--violet);
+}
+.slds-checkbox input[type="checkbox"]:checked + .slds-checkbox__label .slds-checkbox_faux::after {
+    content: ''; position: absolute; left: 5px; top: 1px;
+    width: 5px; height: 10px;
+    border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+
+/* ===== File upload ===== */
+.ini-upload {
+    display: inline-flex; align-items: center; gap: 10px;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    padding: 0.5rem 1rem;
+    background: #fff; color: var(--violet-d);
+    cursor: pointer; font-size: 13px; font-weight: 600;
+    transition: background .15s, border-color .15s;
+}
+.ini-upload:hover { background: var(--violet-l); border-color: var(--violet); }
+.ini-upload__txt { color: var(--text); font-weight: 500; }
+.ini-upload__input {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip: rect(0 0 0 0); border: 0; padding: 0; margin: -1px;
+}
+
+/* ===== Info note — SLDS media object pattern ===== */
+.slds-media { display: flex; align-items: center; }
+.slds-media_center { align-items: center; }
+.slds-media__figure { display: flex; align-items: center; margin-right: 0.75rem; flex: 0 0 auto; }
+.slds-media__body { flex: 1 1 auto; min-width: 0; }
+
+.ini-info {
+    background: #f3f4f6; border-radius: 10px; padding: 12px 16px;
+    color: #4b5563; font-size: 13px;
+}
+.ini-info__fig { color: var(--grey); }
+.ini-info__txt { color: #4b5563; line-height: 1.45; }
+
+/* ===== Footer ===== */
+.ini-ft {
+    display: flex; align-items: center; justify-content: flex-end; gap: 12px;
+    padding: 16px 28px 22px !important;
+    border-top: 1px solid var(--line);
+}
+.ini-btn {
+    padding: 0.625rem 1.25rem; font-size: 14px; font-weight: 600;
+    border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+    background: transparent; color: var(--text);
+    line-height: 1;
+}
+.ini-btn--ghost { background: #fff; color: var(--text); border-color: transparent; }
+.ini-btn--ghost:hover { background: #f5f6ff; }
+.ini-btn--solid {
+    background: #0f172a; color: #fff; border-color: #0f172a;
+}
+.ini-btn--solid:hover:not(:disabled) { background: #1e293b; border-color: #1e293b; }
+.ini-btn--solid:disabled { background: #cbd5e1; border-color: #cbd5e1; cursor: not-allowed; }

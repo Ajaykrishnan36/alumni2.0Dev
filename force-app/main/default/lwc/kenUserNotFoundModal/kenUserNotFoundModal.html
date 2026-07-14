@@ -1,0 +1,37 @@
+<template>
+    <template if:true={showModal}>
+        <div class="modal-overlay" onclick={handleOverlayClick}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <!-- Close Button -->
+                <button class="close-button" onclick={handleClose}>
+                    <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                </button>
+
+                <!-- Modal Content -->
+                <div class="modal-content">
+                    <h2 class="modal-title">User Not Found</h2>
+                    
+                    <!-- Profile Picture -->
+                    <div class="profile-picture-container">
+                        <img src={profileImageUrl} alt={userName} class="profile-picture" onerror={handleImageError} />
+                    </div>
+
+                    <!-- User Name -->
+                    <h3 class="user-name">{userName}</h3>
+
+                    <!-- Batch -->
+                    <p class="user-batch">{batch}</p>
+
+                    <!-- Message -->
+                    <p class="modal-message">This user does not exist in this platform. Would you like to invite them?</p>
+
+                    <!-- Copy Link Button -->
+                    <button class="copy-link-button" onclick={handleCopyLink}>
+                        <lightning-icon icon-name="utility:copy" size="x-small" class="copy-icon"></lightning-icon>
+                        <span>Copy Link</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

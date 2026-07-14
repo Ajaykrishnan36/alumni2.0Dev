@@ -1,0 +1,853 @@
+<template>
+    <div class="hw-root">
+        <!-- ===================== STEPPER ===================== -->
+        <div class="hw-stepper-bar">
+            <div class="hw-stepper">
+                <template for:each={stepperItems} for:item="s">
+                    <div key={s.num} class={s.stepClass}>
+                        <span class="hw-step__num">
+                            <template lwc:if={s.showCheck}>
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </template>
+                            <template lwc:else>{s.num}</template>
+                        </span>
+                        <span class="hw-step__label">{s.label}</span>
+                    </div>
+                    <template lwc:if={s.showConnector}><span key={s.label} class="hw-step__line"></span></template>
+                </template>
+            </div>
+            <div class="hw-progress-row">
+                <div class="hw-progress"><div class="hw-progress__bar" style={progressStyle}></div></div>
+                <span class="hw-step-counter">{stepCounter}</span>
+            </div>
+        </div>
+
+        <div class="hw-body">
+            <div class={bodyInnerClass}>
+            <!-- ===================== STEP 1 — EVENT SETUP ===================== -->
+            <template lwc:if={isStep1}>
+                <!-- Cover photo -->
+                <div class="hw-cover">
+                    <template lwc:if={hasCover}>
+                        <img src={coverPreviewUrl} class="hw-cover__img" alt="Cover preview" />
+                        <div class="hw-cover__name">{coverLabel}</div>
+                        <button type="button" class="hw-link-remove" onclick={removeCover}>Remove cover</button>
+                    </template>
+                    <template lwc:else>
+                        <label class="hw-cover__drop">
+                            <input type="file" accept="image/png,image/jpeg" class="slds-file-selector__input" onchange={handleCover} />
+                            <span class="hw-cover__cta">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#373A45" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                {coverLabel}
+                            </span>
+                        </label>
+                        <div class="hw-cover__hint">Max image size: 5 MB | Image format: PNG, JPEG</div>
+                    </template>
+                    <template lwc:if={coverError}><div class="hw-error-inline">{coverError}</div></template>
+                </div>
+
+                <!-- Title + Category -->
+                <div class="hw-grid2">
+                    <div class="hw-field">
+                        <label>Event Title<span class="req">*</span></label>
+                        <input type="text" data-field="title" value={ev.title} oninput={handleField} placeholder="Event title will be visible in the platform" />
+                    </div>
+                    <div class="hw-field">
+                        <label>Category<span class="req">*</span></label>
+                        <select data-field="category" onchange={handleField}>
+                            <option value="">Select category</option>
+                            <template for:each={categorySelectOptions} for:item="o">
+                                <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Calendar + dates -->
+                <div class="hw-cal-block">
+                    <div class="hw-cal">
+                        <div class="hw-cal__head">
+                            <span class="hw-cal__month">{calendarLabel}</span>
+                            <div class="hw-cal__nav">
+                                <button type="button" onclick={prevMonth} aria-label="Previous month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+                                <button type="button" onclick={nextMonth} aria-label="Next month"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
+                            </div>
+                        </div>
+                        <div class="hw-cal__dow">
+                            <template for:each={dowHeaders} for:item="h"><span key={h.k}>{h.d}</span></template>
+                        </div>
+                        <div class="hw-cal__grid">
+                            <template for:each={calendarCells} for:item="c">
+                                <template lwc:if={c.blank}><span key={c.k} class={c.cls}></span></template>
+                                <template lwc:else><button key={c.k} type="button" class={c.cls} data-iso={c.iso} onclick={toggleDate}>{c.day}</button></template>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="hw-cal-side">
+                        <p class="hw-cal-side__lead">Please select your preferred dates for the event:</p>
+                        <p class="hw-cal-side__note">Choose one date if it is a single-day event.</p>
+                        <p class="hw-cal-side__note">Choose multiple dates if it is a multi-day event.</p>
+                        <template lwc:if={hasDates}>
+                            <p class="hw-cal-side__sel">Dates selected</p>
+                            <div class="hw-date-pills">
+                                <template for:each={selectedDatePills} for:item="p">
+                                    <span key={p.iso} class="hw-date-pill">{p.label}<button type="button" data-iso={p.iso} onclick={removeDate}>×</button></span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Language + Max participants -->
+                <div class="hw-grid2">
+                    <div class="hw-field">
+                        <label>Language of Delivery (Optional)</label>
+                        <div class="hw-ms">
+                            <div class="hw-ms__control" onclick={toggleLangMenu}>
+                                <div class="hw-ms__values">
+                                    <template if:true={hasLanguages}>
+                                        <template for:each={selectedLanguageChips} for:item="chip">
+                                            <span key={chip.value} class="hw-ms__chip">
+                                                {chip.label}
+                                                <button type="button" class="hw-ms__chip-x" data-value={chip.value} onclick={removeLanguage}>×</button>
+                                            </span>
+                                        </template>
+                                    </template>
+                                    <template if:false={hasLanguages}>
+                                        <span class="hw-ms__placeholder">Select language</span>
+                                    </template>
+                                </div>
+                                <span class="hw-ms__caret">▾</span>
+                            </div>
+                            <template if:true={langMenuOpen}>
+                                <div class="hw-ms__menu">
+                                    <template for:each={languageMenuOptions} for:item="o">
+                                        <div key={o.value} class="hw-ms__option" data-value={o.value} onclick={toggleLanguage}>
+                                            <span class={o.boxClass}></span>
+                                            <span>{o.label}</span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="hw-field">
+                        <label>Maximum Number of Participants</label>
+                        <input type="number" min="1" data-field="maxParticipants" value={ev.maxParticipants} oninput={handleField} placeholder="Number of participants expected" />
+                    </div>
+                </div>
+
+                <!-- Brochure -->
+                <div class="hw-field">
+                    <label>Event Brochure</label>
+                    <label class="hw-file-line">
+                        <input type="file" accept="application/pdf" class="slds-file-selector__input" onchange={handleBrochure} />
+                        <span class="hw-file-line__text">{brochureLabel}</span>
+                        <span class="hw-file-line__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B5BFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+                    </label>
+                    <template lwc:if={hasBrochure}><button type="button" class="hw-link-remove" onclick={removeBrochure}>Remove brochure</button></template>
+                </div>
+
+                <!-- Description -->
+                <div class="hw-field">
+                    <label>Description</label>
+                    <div class="hw-rte">
+                        <textarea data-field="description" value={ev.description} oninput={handleField} placeholder="Tell attendees what this event is about…"></textarea>
+                        <div class="hw-rte__bar"><span></span>
+                            <button type="button" class="hw-ai" data-field="description" onclick={aiAssist}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 4.6L18 8.2l-4.4 1.6L12 14l-1.6-4.2L6 8.2l4.4-1.6L12 2z"/></svg>
+                                Continue writing with AI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agenda -->
+                <div class="hw-field">
+                    <label>Agenda</label>
+                    <div class="hw-rte">
+                        <textarea data-field="agenda" value={ev.agenda} oninput={handleField} placeholder="Outline the agenda. Max: 500 characters."></textarea>
+                        <div class="hw-rte__bar"><span></span>
+                            <button type="button" class="hw-ai" data-field="agenda" onclick={aiAssist}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 4.6L18 8.2l-4.4 1.6L12 14l-1.6-4.2L6 8.2l4.4-1.6L12 2z"/></svg>
+                                Continue writing with AI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guests -->
+                <div class="hw-grid2">
+                    <div class="hw-field">
+                        <label>Can alumni bring guests to this event?<span class="req">*</span></label>
+                        <div class="hw-radio-row hw-radio-row--inline">
+                            <label class="hw-radio">
+                                <input type="radio" name="guests" value="yes" checked={guestsYes} onchange={selectGuests} />
+                                <span class="hw-radio__dot"></span>
+                                <span>Yes</span>
+                            </label>
+                            <label class="hw-radio">
+                                <input type="radio" name="guests" value="no" checked={guestsNo} onchange={selectGuests} />
+                                <span class="hw-radio__dot"></span>
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <template lwc:if={guestsYes}>
+                        <div class="hw-field">
+                            <label>How many guests can each participant bring?<span class="req">*</span></label>
+                            <div class="hw-num">
+                                <button type="button" class="hw-num__btn" onclick={decGuests} aria-label="Decrease">−</button>
+                                <input type="number" min="1" data-field="maxGuests" value={ev.maxGuests} oninput={handleField} class="hw-num__val" />
+                                <button type="button" class="hw-num__btn hw-num__btn--plus" onclick={incGuests} aria-label="Increase">+</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- ===================== STEP 2 — TARGET AUDIENCE ===================== -->
+            <template lwc:if={isStep2}>
+                <div class="hw-sec">
+                    <h3 class="hw-sec__title">Target Audience Selection</h3>
+                    <p class="hw-sec__hint">Choose who this event should go to. Search saved audiences or build a new one — you can combine multiple groups.</p>
+                    <c-ken-event-step-details-v2 hide-heading audience-data={audienceData} onvaluechange={handleAudienceChange} onexpandchange={handleAudienceExpand}></c-ken-event-step-details-v2>
+                </div>
+            </template>
+
+            <!-- ===================== STEP 3 — SCHEDULE SETUP ===================== -->
+            <template lwc:if={isStep3}>
+                <div class="hw-daytabs">
+                    <template for:each={dayTabs} for:item="d">
+                        <button key={d.iso} class={d.cls} data-iso={d.iso} onclick={selectDay} type="button">{d.label}</button>
+                    </template>
+                </div>
+
+                <div class="hw-sessions-head">
+                    <span class="hw-sessions-head__label">Sessions<span class="req">*</span></span>
+                    <button class="hw-add-btn" onclick={addSession} type="button" title="Add session">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
+                </div>
+
+                <template lwc:if={hasActiveSessions}>
+                    <template for:each={activeSessions} for:item="s">
+                        <div key={s.id} class={s.cardClass}>
+                            <div class="hw-session__bar">
+                                <span class="hw-session__name">Session {s.index}</span>
+                                <div class="hw-session__actions">
+                                    <button class="hw-icon-btn" data-id={s.id} onclick={deleteSession} title="Delete session" type="button">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                    <button class="hw-session__toggle" data-id={s.id} onclick={toggleSession} title="Expand" type="button">
+                                        <svg class={s.chevronClass} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <template lwc:if={s.expanded}>
+                                <div class="hw-session__body">
+                                    <div class="hw-grid2">
+                                        <div class="hw-field">
+                                            <label>Session Title<span class="req">*</span></label>
+                                            <input type="text" data-id={s.id} data-field="title" value={s.title} oninput={sessionField} placeholder="Give a title for your session" />
+                                        </div>
+                                        <div class="hw-field">
+                                            <label>Select Time Zone<span class="req">*</span></label>
+                                            <select data-id={s.id} data-field="timeZone" onchange={sessionField}>
+                                                <option value="">Select a time zone</option>
+                                                <template for:each={s.tzOptions} for:item="t"><option key={t.value} value={t.value} selected={t.selected}>{t.label}</option></template>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="hw-grid2">
+                                        <div class="hw-grid2">
+                                            <div class="hw-field">
+                                                <label>Start Time<span class="req">*</span></label>
+                                                <input type="time" data-id={s.id} data-field="startTime" value={s.startTime} oninput={sessionField} onchange={sessionField} onclick={openTimePicker} />
+                                            </div>
+                                            <div class="hw-field">
+                                                <label>End Time (Optional)</label>
+                                                <input type="time" data-id={s.id} data-field="endTime" value={s.endTime} oninput={sessionField} onchange={sessionField} onclick={openTimePicker} />
+                                            </div>
+                                        </div>
+                                        <div class="hw-field">
+                                            <label>Maximum Number of Participants (Optional)</label>
+                                            <input type="number" min="1" data-id={s.id} data-field="maxParticipants" value={s.maxParticipants} oninput={sessionField} placeholder="Number of participants expected" />
+                                        </div>
+                                    </div>
+                                    <div class="hw-field">
+                                        <label>Agenda (Optional)</label>
+                                        <div class="hw-rte">
+                                            <textarea data-id={s.id} data-field="agenda" value={s.agenda} oninput={sessionField} placeholder="Outline session expectations. Max: 500 characters."></textarea>
+                                            <div class="hw-rte__bar">
+                                                <span></span>
+                                                <button type="button" class="hw-ai" data-id={s.id} onclick={sessionAi}>
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 4.6L18 8.2l-4.4 1.6L12 14l-1.6-4.2L6 8.2l4.4-1.6L12 2z"/></svg>
+                                                    Continue writing with AI
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Location Type (radio) -->
+                                    <div class="hw-field">
+                                        <label>Location Type<span class="req">*</span></label>
+                                        <div class="hw-radio-row">
+                                            <template for:each={s.locOptions} for:item="o">
+                                                <label key={o.value} class="hw-radio">
+                                                    <input type="radio" name={s.radioName} data-id={s.id} data-field="locationType" value={o.value} checked={o.selected} onchange={sessionField} />
+                                                    <span class="hw-radio__dot"></span>
+                                                    <span class="hw-radio__txt">{o.label}</span>
+                                                </label>
+                                            </template>
+                                        </div>
+                                    </div>
+                                    <template lwc:if={s.showLocationRow}>
+                                        <div class="hw-grid2">
+                                            <template lwc:if={s.showVenue}>
+                                                <input type="text" class="hw-loc-input" data-id={s.id} data-field="locationAddress" value={s.locationAddress} oninput={sessionField} placeholder="Enter address to the session venue" />
+                                            </template>
+                                            <template lwc:if={s.showLink}>
+                                                <div class="hw-link-input">
+                                                    <input type="url" data-id={s.id} data-field="sessionLink" value={s.sessionLink} oninput={sessionField} placeholder="Paste event link" />
+                                                    <span class="hw-link-input__icon">
+                                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                                                    </span>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    <!-- Speakers -->
+                                    <div class="hw-speakers">
+                                        <div class="hw-speakers__head">
+                                            <span class="hw-speakers__label">Speakers <span class="hw-opt">(Optional)</span></span>
+                                            <div class="hw-speakers__head-actions">
+                                                <label class="hw-invite-check"><input type="checkbox" data-id={s.id} checked={s.shareEmailInvite} onchange={toggleShareInvite} /><span>Share an Email Invite</span></label>
+                                                <template lwc:if={s.hasSpeakers}>
+                                                    <button class="hw-add-speaker-icon" data-id={s.id} onclick={openAddSpeaker} type="button" title="Add speaker">+</button>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <template lwc:if={s.hasSpeakers}>
+                                            <table class="hw-spk-table">
+                                                <thead>
+                                                    <tr><th>S No</th><th>Speaker</th><th>Image</th><th>Description</th><th>Action</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <template for:each={s.speakerRows} for:item="sp">
+                                                        <tr key={sp.key}>
+                                                            <td>{sp.sNo}</td>
+                                                            <td>
+                                                                <div class="hw-spk-td__name">{sp.name}</div>
+                                                                <template lwc:if={sp.email}><div class="hw-spk-td__email">{sp.email}</div></template>
+                                                            </td>
+                                                            <td>
+                                                                <template lwc:if={sp.hasImage}>
+                                                                    <a href={sp.imageUrl} target="_blank" class="hw-spk-td__img">{sp.imageLabel}</a>
+                                                                </template>
+                                                                <template lwc:else>
+                                                                    <span class="hw-spk-td__empty">—</span>
+                                                                </template>
+                                                            </td>
+                                                            <td class="hw-spk-td__desc">{sp.descriptionText}</td>
+                                                            <td>
+                                                                <div class="hw-spk-actions">
+                                                                    <button class="hw-icon-btn" data-id={s.id} data-idx={sp.idx} onclick={openEditSpeaker} title="Edit speaker" type="button">
+                                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3B5BFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                                                                    </button>
+                                                                    <button class="hw-icon-btn" data-id={s.id} data-idx={sp.idx} onclick={removeSpeaker} title="Remove speaker" type="button">
+                                                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </template>
+                                                </tbody>
+                                            </table>
+                                        </template>
+                                        <template lwc:else>
+                                            <div class="hw-spk-empty">
+                                                <p class="hw-spk-empty__text">Add Speakers for this Session</p>
+                                                <button class="hw-btn-addspeaker" data-id={s.id} onclick={openAddSpeaker} type="button">+ Add Speaker</button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+                <template lwc:else>
+                    <div class="hw-empty">No sessions for this day yet. Click <b>+</b> to add one.</div>
+                </template>
+
+                <!-- Add Speaker modal -->
+                <template lwc:if={speakerModalOpen}>
+                    <div class="hw-spk-backdrop" onclick={cancelSpeaker}>
+                        <div class="hw-spk-modal" onclick={stopBubble}>
+                            <h3 class="hw-spk-modal__title">{speakerModalTitle}</h3>
+                            <div class="hw-grid2">
+                                <div class="hw-field">
+                                    <label>Name of the Speaker<span class="req">*</span></label>
+                                    <div class="hw-spk-search">
+                                        <input type="text" data-field="name" value={speakerDraft.name} oninput={speakerNameInput} onfocus={speakerNameFocus} onblur={speakerNameBlur} placeholder="Enter speaker name" autocomplete="off" />
+                                        <template lwc:if={showSpeakerList}>
+                                            <div class="hw-spk-suggest">
+                                                <template lwc:if={speakerSearching}>
+                                                    <div class="hw-spk-suggest__msg">Searching…</div>
+                                                </template>
+                                                <template lwc:if={hasSpeakerResults}>
+                                                    <template for:each={speakerResultRows} for:item="p">
+                                                        <div key={p.id} class="hw-spk-option" data-id={p.id} data-name={p.name} data-email={p.email} onmousedown={pickSpeaker}>
+                                                            <span class="hw-spk-option__name">{p.name}</span>
+                                                            <template lwc:if={p.email}><span class="hw-spk-option__email">{p.email}</span></template>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                                <template lwc:if={showSpeakerEmpty}>
+                                                    <div class="hw-spk-suggest__msg">No matches found.</div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="hw-field">
+                                    <label>Image of the Speaker (Optional)</label>
+                                    <label class="hw-file-line">
+                                        <input type="file" accept="image/png,image/jpeg" class="slds-file-selector__input" onchange={speakerImage} />
+                                        <span class="hw-file-line__text">{speakerImageLabel}</span>
+                                        <span class="hw-file-line__icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B5BFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="hw-field">
+                                <label>Email ID of the speaker</label>
+                                <input type="email" data-field="email" value={speakerDraft.email} oninput={speakerDraftField} placeholder="Enter email" readonly={speakerEmailLocked} class="hw-spk-email" />
+                            </div>
+                            <div class="hw-field">
+                                <label>About the Speaker (Optional)</label>
+                                <textarea class="hw-spk-about" data-field="description" value={speakerDraft.description} oninput={speakerDraftField} placeholder="Give a brief introduction of the speaker"></textarea>
+                            </div>
+                            <div class="hw-spk-modal__actions">
+                                <button type="button" class="hw-spk-cancel" onclick={cancelSpeaker}>Cancel</button>
+                                <button type="button" class="hw-spk-save" onclick={saveSpeaker} disabled={speakerSaveDisabled}>Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </template>
+
+            <!-- ===================== STEP 4 — PRE EVENT SURVEYS ===================== -->
+            <template lwc:if={isStep4}>
+                <div class="hw-survey-toggle">
+                    <span class="hw-survey-toggle__label">Custom Survey</span>
+                    <label class="hw-switch"><input type="checkbox" checked={customSurveyOn} onchange={toggleCustomSurvey} /><span class="hw-switch__track"></span></label>
+                </div>
+                <template lwc:if={customSurveyOn}>
+                    <div class="hw-sessions-head"><span class="hw-sessions-head__label">Setup Preference Questions</span></div>
+                    <template for:each={surveyQuestions} for:item="q">
+                        <div key={q.id} class="hw-fbq">
+                            <span class="hw-fbq__grip" title="Drag to reorder">
+                                <svg width="10" height="16" viewBox="0 0 10 16" fill="#B6BCC9"><circle cx="2" cy="2" r="1.4"/><circle cx="8" cy="2" r="1.4"/><circle cx="2" cy="8" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="2" cy="14" r="1.4"/><circle cx="8" cy="14" r="1.4"/></svg>
+                            </span>
+                            <div class="hw-fbq__body">
+                                <div class="hw-fbq__top">
+                                    <div class="hw-fbq__type">
+                                        <label>Choose type</label>
+                                        <select data-id={q.id} data-field="type" onchange={surveyQuestionField}>
+                                            <template for:each={q.typeOptions} for:item="t"><option key={t.value} value={t.value} selected={t.selected}>{t.label}</option></template>
+                                        </select>
+                                    </div>
+                                    <div class="hw-fbq__q">
+                                        <label>Question {q.number}</label>
+                                        <input type="text" data-id={q.id} data-field="text" value={q.text} oninput={surveyQuestionField} placeholder="What did you like the most about this event?" />
+                                    </div>
+                                </div>
+                                <template lwc:if={q.showOptions}>
+                                    <div class="hw-fbq__opts">
+                                        <template for:each={q.optionRows} for:item="o">
+                                            <div key={o.key} class="hw-fbopt">
+                                                <span class={o.markClass}></span>
+                                                <span class="hw-fbopt__letter">{o.letter}</span>
+                                                <input type="text" class="hw-fbopt__input" data-id={q.id} data-idx={o.idx} value={o.value} oninput={surveyOptionInput} placeholder="Option text" />
+                                                <button class="hw-fbopt__rm" data-id={q.id} data-idx={o.idx} onclick={removeSurveyOption} type="button" title="Remove option">
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#98A2B3" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                            </div>
+                                        </template>
+                                        <button class="hw-fbopt__add" data-id={q.id} onclick={addSurveyOption} type="button">+ Add option</button>
+                                    </div>
+                                </template>
+                                <div class="hw-fbq__foot">
+                                    <span class="hw-fbq__req">Required
+                                        <label class="hw-switch"><input type="checkbox" data-id={q.id} checked={q.required} onchange={toggleSurveyRequired} /><span class="hw-switch__track"></span></label>
+                                    </span>
+                                    <button class="hw-icon-btn" data-id={q.id} onclick={removeSurveyQuestion} title="Delete question" type="button">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#98A2B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                    <button class="hw-add-question" onclick={addSurveyQuestion} type="button">+ Add new question</button>
+                </template>
+            </template>
+
+            <!-- ===================== STEP 5 — FEE SETUP ===================== -->
+            <template lwc:if={isStep5}>
+                <p class="hw-fee__prompt">How would you like to proceed?</p>
+                <div class="hw-feeopt-list">
+                    <button type="button" class={sessionCardClass} data-mode="session" onclick={selectPricingMode}>
+                        <span>Session-wise pricing for the event</span>
+                        <svg class="hw-feeopt__check" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#2F55F4"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button type="button" class={overallCardClass} data-mode="overall" onclick={selectPricingMode}>
+                        <span>Overall pricing for the entire event</span>
+                        <svg class="hw-feeopt__check" width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#2F55F4"/><path d="M7 12.5l3.2 3.2L17 9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+
+                <!-- ---------- Session-wise: grouped by day ---------- -->
+                <template lwc:if={isSessionWise}>
+                    <template lwc:if={feeSessions.length}>
+                        <div class="hw-feetbl">
+                            <div class="hw-feetbl__head">
+                                <span class="hw-feetbl__c1">Day &amp; session details</span>
+                                <span class="hw-feetbl__c2">Setup price</span>
+                                <span class="hw-feetbl__c3">Mark as free</span>
+                            </div>
+                            <template for:each={pricingDays} for:item="day">
+                                <div key={day.key} class="hw-feeday">
+                                    <template lwc:if={day.label}><div class="hw-feeday__date">{day.label}</div></template>
+                                    <template for:each={day.sessions} for:item="s">
+                                        <div key={s.id} class="hw-feerow">
+                                            <div class="hw-feerow__info">
+                                                <div class="hw-feerow__sno">{s.sNo}</div>
+                                                <div class="hw-feerow__name">{s.name}</div>
+                                            </div>
+                                            <div class="hw-feerow__price">
+                                                <input type="number" min="0" data-id={s.id} value={s.fee} oninput={sessionFeeInput} disabled={s.feeDisabled} placeholder="—" />
+                                                <span class="hw-feerow__cur">₹</span>
+                                            </div>
+                                            <div class="hw-feerow__free"><input type="checkbox" class="hw-check" data-id={s.id} checked={s.free} onchange={sessionFreeToggle} /></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="hw-feetotal">
+                            <span class="hw-feetotal__label">Total Event Cost</span>
+                            <span class="hw-feetotal__val">{totalEventCostDisplay}</span>
+                        </div>
+                    </template>
+                    <template lwc:else><div class="hw-empty">No sessions found. Add sessions in Step 3 to price them individually.</div></template>
+                </template>
+
+                <!-- ---------- Overall: single price for the whole event ---------- -->
+                <template lwc:if={isOverall}>
+                    <div class="hw-feetbl">
+                        <div class="hw-feetbl__head">
+                            <span class="hw-feetbl__c1">Event details</span>
+                            <span class="hw-feetbl__c2">Setup price</span>
+                            <span class="hw-feetbl__c3">Mark as free</span>
+                        </div>
+                        <div class="hw-feerow">
+                            <div class="hw-feerow__info"><div class="hw-feerow__name hw-feerow__name--big">{ev.title}</div></div>
+                            <div class="hw-feerow__price"><input type="number" min="0" value={pricing.overallFee} oninput={overallFeeInput} disabled={overallFeeDisabled} placeholder="—" /><span class="hw-feerow__cur">₹</span></div>
+                            <div class="hw-feerow__free"><input type="checkbox" class="hw-check" checked={pricing.overallFree} onchange={overallFreeToggle} /></div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="hw-feesummary__toggle" onclick={toggleFeeSummary}>
+                        {feeSummaryToggleLabel}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <template lwc:if={feeSummaryOpen}>
+                        <div class="hw-feesummary">
+                            <template for:each={feeSummaryDays} for:item="day">
+                                <div key={day.key} class="hw-feesummary__day">
+                                    <div class="hw-feesummary__date">{day.label}</div>
+                                    <template for:each={day.sessions} for:item="s">
+                                        <div key={s.key} class="hw-feesummary__sess">
+                                            <div class="hw-feesummary__sno">{s.sNo}</div>
+                                            <div class="hw-feesummary__name">{s.name}&nbsp;&nbsp;<span class="hw-feesummary__time">({s.time})</span></div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <div class="hw-feetotal">
+                        <span class="hw-feetotal__label">Total Event Cost</span>
+                        <span class="hw-feetotal__val">{totalEventCostDisplay}</span>
+                    </div>
+                </template>
+            </template>
+            <!-- ===================== STEP 6 — FEEDBACK FORM ===================== -->
+            <template lwc:if={isStep6}>
+                <template lwc:if={inFeedbackBuilder}>
+                    <div class="hw-fb-builder">
+                        <button class="hw-link-back" onclick={closeFeedbackForm} type="button">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                            Back to sessions
+                        </button>
+
+                        <div class="hw-fbhdr">
+                            <div class="hw-fbhdr__l">
+                                <div class="hw-fbhdr__meta">
+                                    <span class="hw-fbhdr__day">{activeFeedbackMeta.dayLabel}</span>
+                                    <span class="hw-fbhdr__sess">{activeFeedbackMeta.sessionOfTotal}</span>
+                                </div>
+                                <div class="hw-fbhdr__title">{activeFeedbackMeta.title}</div>
+                            </div>
+                            <div class="hw-fbhdr__r">
+                                <span class="hw-fbbadge hw-fbbadge--on">{activeFeedbackMeta.countLabel}</span>
+                                <div class="hw-fbhdr__when">{activeFeedbackMeta.dateLabel} &nbsp;•&nbsp; {activeFeedbackMeta.timeLabel}</div>
+                            </div>
+                        </div>
+
+                        <div class="hw-field">
+                            <label>How would you like to trigger the form?</label>
+                            <div class="hw-radio-row hw-radio-row--inline">
+                                <label class="hw-radio"><input type="radio" name="fbtrig" value="auto" checked={triggerAutoChecked} onchange={setTrigger} /><span class="hw-radio__dot"></span><span>Auto-trigger</span></label>
+                                <label class="hw-radio"><input type="radio" name="fbtrig" value="manual" checked={triggerManualChecked} onchange={setTrigger} /><span class="hw-radio__dot"></span><span>Trigger manually after session</span></label>
+                            </div>
+                        </div>
+                        <div class="hw-field">
+                            <label>When do you want to trigger?</label>
+                            <select class="hw-fbwhen" onchange={setTriggerWhen}>
+                                <option value="">Choose</option>
+                                <template for:each={triggerWhenOptions} for:item="o"><option key={o.value} value={o.value} selected={o.selected}>{o.label}</option></template>
+                            </select>
+                        </div>
+                        <div class="hw-grid2">
+                            <div class="hw-field"><label>End Date</label><input type="date" data-field="endDate" value={activeFeedbackForm.endDate} onchange={feedbackDateField} onclick={openTimePicker} /></div>
+                            <div class="hw-field"><label>End Time</label><input type="time" data-field="endTime" value={activeFeedbackForm.endTime} onchange={feedbackDateField} onclick={openTimePicker} /></div>
+                        </div>
+
+                        <div class="hw-sessions-head"><span class="hw-sessions-head__label">Setup Feedback Questions</span></div>
+                        <template for:each={activeQuestions} for:item="q">
+                            <div key={q.id} class="hw-fbq">
+                                <span class="hw-fbq__grip" title="Drag to reorder">
+                                    <svg width="10" height="16" viewBox="0 0 10 16" fill="#B6BCC9"><circle cx="2" cy="2" r="1.4"/><circle cx="8" cy="2" r="1.4"/><circle cx="2" cy="8" r="1.4"/><circle cx="8" cy="8" r="1.4"/><circle cx="2" cy="14" r="1.4"/><circle cx="8" cy="14" r="1.4"/></svg>
+                                </span>
+                                <div class="hw-fbq__body">
+                                    <div class="hw-fbq__top">
+                                        <div class="hw-fbq__type">
+                                            <label>Choose type</label>
+                                            <select data-id={q.id} data-field="type" onchange={questionField}>
+                                                <template for:each={q.typeOptions} for:item="t"><option key={t.value} value={t.value} selected={t.selected}>{t.label}</option></template>
+                                            </select>
+                                        </div>
+                                        <div class="hw-fbq__q">
+                                            <label>Question {q.number}</label>
+                                            <input type="text" data-id={q.id} data-field="text" value={q.text} oninput={questionField} placeholder="What did you like the most about this event?" />
+                                        </div>
+                                    </div>
+                                    <template lwc:if={q.isMcq}>
+                                        <div class="hw-fbq__opts">
+                                            <template for:each={q.optionRows} for:item="o">
+                                                <div key={o.key} class="hw-fbopt">
+                                                    <span class="hw-fbopt__radio"></span>
+                                                    <span class="hw-fbopt__letter">{o.letter}</span>
+                                                    <input type="text" class="hw-fbopt__input" data-id={q.id} data-idx={o.idx} value={o.value} oninput={optionInput} placeholder="Option text" />
+                                                    <button class="hw-fbopt__rm" data-id={q.id} data-idx={o.idx} onclick={removeOption} type="button" title="Remove option">
+                                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#98A2B3" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <button class="hw-fbopt__add" data-id={q.id} onclick={addOption} type="button">+ Add option</button>
+                                        </div>
+                                    </template>
+                                    <div class="hw-fbq__foot">
+                                        <span class="hw-fbq__req">Required
+                                            <label class="hw-switch"><input type="checkbox" data-id={q.id} checked={q.required} onchange={toggleRequired} /><span class="hw-switch__track"></span></label>
+                                        </span>
+                                        <button class="hw-icon-btn" data-id={q.id} onclick={removeQuestion} title="Delete question" type="button">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#98A2B3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <button class="hw-add-question" onclick={addQuestion} type="button">+ Add new question</button>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="hw-fb-banner">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2F55F4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                        <span>This feedback form will be shared with attendees only after the event is completed.</span>
+                    </div>
+                    <template lwc:if={feeSessions.length}>
+                        <template for:each={feedbackDays} for:item="day">
+                            <div key={day.key} class="hw-fbday">
+                                <div class="hw-fbday__date">{day.label}</div>
+                                <template for:each={day.sessions} for:item="s">
+                                    <div key={s.id} class="hw-fbsess">
+                                        <div class="hw-fbsess__text">
+                                            <div class="hw-fbsess__sno">{s.sNo}</div>
+                                            <div class="hw-fbsess__name">{s.name}</div>
+                                            <span class={s.badgeClass}>{s.badgeText}</span>
+                                        </div>
+                                        <template lwc:if={s.hasForm}>
+                                            <button class="hw-fbsess__edit" data-id={s.id} onclick={openFeedbackForm} type="button">
+                                                {s.btnLabel}
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                            </button>
+                                        </template>
+                                        <template lwc:else>
+                                            <button class="hw-btn hw-btn--outline" data-id={s.id} onclick={openFeedbackForm} type="button">{s.btnLabel}</button>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:else><div class="hw-empty">No sessions to configure. Add sessions in Step 3 first.</div></template>
+                </template>
+            </template>
+
+            <!-- ===================== STEP 7 — SUMMARY ===================== -->
+            <template lwc:if={isStep7}>
+                <!-- Event Setup -->
+                <div class="hw-sumcard">
+                    <div class="hw-sumcard__head"><h3>Event Setup</h3><button class="hw-edit" data-step="1" onclick={jumpToStep} type="button">Edit Details</button></div>
+                    <div class="hw-sumgrid">
+                        <div class="hw-sumfield"><span>Event Title</span><b>{ev.title}</b></div>
+                        <div class="hw-sumfield"><span>Category</span><b>{ev.category}</b></div>
+                        <div class="hw-sumfield"><span>Language of Delivery</span><b>{summaryLanguages}</b></div>
+                        <div class="hw-sumfield">
+                            <span>Brochure for the Event</span>
+                            <template lwc:if={hasSummaryBrochure}>
+                                <a class="hw-sumlink" href={brochureDownloadUrl} download={ev.brochureName}>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                                    {ev.brochureName}
+                                </a>
+                            </template>
+                            <template lwc:else><b>—</b></template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Target Audience -->
+                <div class="hw-sumcard">
+                    <div class="hw-sumcard__head"><h3>Target Audience</h3><button class="hw-edit" data-step="2" onclick={jumpToStep} type="button">Edit Details</button></div>
+                    <template lwc:if={hasSummaryAudience}>
+                        <template for:each={summaryAudienceGroups} for:item="g">
+                            <div key={g.key} class="hw-sumaud">
+                                <div class="hw-sumaud__name">{g.name}</div>
+                                <div class="hw-sumaud__chips">
+                                    <template for:each={g.chips} for:item="c">
+                                        <span key={c.key} class={c.cls}>{c.label}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:else><div class="hw-kv"><span>Audience</span><b>{summaryAudience}</b></div></template>
+                </div>
+
+                <!-- Dates Selected -->
+                <div class="hw-sumcard">
+                    <div class="hw-sumcard__head"><h3>Dates Selected</h3><button class="hw-edit" data-step="1" onclick={jumpToStep} type="button">Edit Details</button></div>
+                    <div class="hw-sumchips">
+                        <template for:each={selectedDatePills} for:item="d"><span key={d.iso} class="hw-chip">{d.label}</span></template>
+                    </div>
+                </div>
+
+                <!-- Pre Event Surveys -->
+                <div class="hw-sumcard">
+                    <div class="hw-sumcard__head"><h3>Pre Event Surveys</h3><button class="hw-edit" data-step="4" onclick={jumpToStep} type="button">Edit Details</button></div>
+                    <div class="hw-sumfield"><span>Custom Survey</span><b>{surveyQuestionCountLabel}</b></div>
+                </div>
+
+                <!-- Session Details (schedule · fees · feedback) -->
+                <div class="hw-sumcard">
+                    <div class="hw-sumcard__head"><h3>Session Details</h3></div>
+                    <div class="hw-sumtbl">
+                        <div class="hw-sumtbl__head">
+                            <div class="hw-sumtbl__c1"><span class="hw-sumtbl__lbl">Day &amp; Session Details</span><button class="hw-edit" data-step="3" onclick={jumpToStep} type="button">Edit Session</button></div>
+                            <div class="hw-sumtbl__c2"><span class="hw-sumtbl__lbl">Price</span><button class="hw-edit" data-step="5" onclick={jumpToStep} type="button">Edit Fees</button></div>
+                            <div class="hw-sumtbl__c3"><span class="hw-sumtbl__lbl">Feedback</span><button class="hw-edit" data-step="6" onclick={jumpToStep} type="button">Edit Feedback</button></div>
+                        </div>
+                        <template lwc:if={hasSummarySessions}>
+                            <template for:each={summarySessionDays} for:item="day">
+                                <div key={day.key} class="hw-sumday">
+                                    <div class="hw-sumday__date">{day.label}</div>
+                                    <template for:each={day.sessions} for:item="s">
+                                        <div key={s.id} class="hw-sumrow">
+                                            <div class="hw-sumrow__c1"><div class="hw-sumrow__sno">{s.sNo}</div><div class="hw-sumrow__name">{s.name}</div></div>
+                                            <div class="hw-sumrow__c2">{s.priceDisplay}</div>
+                                            <div class="hw-sumrow__c3">{s.feedbackDisplay}</div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <div class="hw-sumtotal">
+                                <span class="hw-sumtotal__label">Total Event Cost</span>
+                                <span class="hw-sumtotal__val">{totalEventCostDisplay}</span>
+                            </div>
+                        </template>
+                        <template lwc:else><div class="hw-empty">No sessions added.</div></template>
+                    </div>
+                </div>
+            </template>
+            </div>
+        </div>
+
+        <template lwc:if={errorMsg}><div class="hw-error" role="alert">{errorMsg}</div></template>
+
+        <!-- ===================== FOOTER ===================== -->
+        <div class="hw-footer">
+            <template lwc:if={isFeedbackBuilderActive}>
+                <div class="hw-footer__left"></div>
+                <div class="hw-footer__right">
+                    <button class="hw-btn hw-btn--outline" onclick={discardFeedbackForm} type="button">Discard Changes</button>
+                    <button class="hw-btn hw-btn--primary" onclick={saveFeedbackForm} type="button">Save Form</button>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="hw-footer__left">
+                    <button class="hw-btn hw-btn--outline" onclick={handleSaveDraft} disabled={saving} type="button">Save as Draft</button>
+                </div>
+                <div class="hw-footer__right">
+                    <template lwc:if={showBack}>
+                        <button class="hw-btn hw-btn--outline" onclick={handleBack} type="button">Previous Step</button>
+                    </template>
+                    <template lwc:else>
+                        <button class="hw-btn hw-btn--ghost" onclick={handleCancel} type="button">Cancel</button>
+                    </template>
+                    <button class="hw-btn hw-btn--primary" onclick={handlePrimary} disabled={saving} type="button">{primaryLabel}</button>
+                </div>
+            </template>
+        </div>
+
+        <!-- ===================== SUCCESS MODAL ===================== -->
+        <template lwc:if={showSuccess}>
+            <div class="hw-overlay">
+                <div class="hw-success">
+                    <span class="hw-success__check">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </span>
+                    <p class="hw-success__title">Event Submitted for Approval</p>
+                    <p class="hw-success__sub">Your event has been sent to the admin team for review. You'll be notified once it's approved.</p>
+                    <button class="hw-btn hw-btn--primary" onclick={closeSuccess} type="button">Go to Events</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- ===================== FEEDBACK SAVED TOAST ===================== -->
+        <template lwc:if={showFeedbackSavedToast}>
+            <div class="hw-toast-wrap">
+                <div class="hw-toast">
+                    <span class="hw-toast__check">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </span>
+                    <p class="hw-toast__text">Feedback Form Saved</p>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

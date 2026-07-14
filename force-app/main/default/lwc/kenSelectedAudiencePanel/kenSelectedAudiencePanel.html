@@ -1,0 +1,45 @@
+<template>
+    <div>
+        <div class="panelTitle">Selected Audience</div>
+
+        <div class="panelBody slds-m-top_small">
+            <template if:true={hasItems}>
+                <template for:each={itemsWithState} for:item="item">
+                    <div key={item.id} class="audItem">
+                        <div class="audRow">
+                            <div class="audText">
+                                <div class="audTitle">{item.title}</div>
+                                <div class="audSub">{item.subtitle}</div>
+                            </div>
+
+                            <div class="menuWrapper" data-item-id={item.id}>
+                                <button
+                                    type="button"
+                                    class="menuTrigger slds-button slds-button_icon slds-button_icon-small"
+                                    title="Actions"
+                                    data-id={item.id}
+                                    onclick={toggleMenu}
+                                    aria-haspopup="true"
+                                    aria-expanded={item.menuOpen}
+                                    aria-label="Actions menu"
+                                >
+                                    <lightning-icon icon-name="utility:threedots_vertical" size="x-small" class="groupMenuIcon"></lightning-icon>
+                                </button>
+                                <template if:true={item.menuOpen}>
+                                    <div class="menuBackdrop" onclick={handleCloseMenu} role="presentation"></div>
+                                    <div class="menuDropdown" role="menu">
+                                        <button type="button" class="menuItem" role="menuitem" data-id={item.id} onclick={handleRemoveAction}>Remove</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </template>
+
+            <template if:false={hasItems}>
+                <div class="emptyBox">No Audience Selected</div>
+            </template>
+        </div>
+    </div>
+</template>

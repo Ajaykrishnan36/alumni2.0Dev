@@ -1,0 +1,54 @@
+<template>
+    <div class={cardClass} onclick={handleCardClick} onkeydown={handleCardKeyDown} role="button" tabindex="0">
+        <template if:true={showMentorBadge}>
+            <div class="mentor-badge">
+                <svg class="mentor-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="8.2" r="3.2" stroke="currentColor" stroke-width="1.8" />
+                    <path d="M5.4 18.4C6.9 15.9 9.3 14.6 12 14.6C14.7 14.6 17.1 15.9 18.6 18.4" stroke="currentColor"
+                        stroke-width="1.8" stroke-linecap="round" />
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.6" />
+                </svg>
+                <span>{mentorBadgeLabel}</span>
+            </div>
+        </template>
+        <template if:true={showWillingBadge}>
+            <div class="willing-to-help-badge">{badgeLabel}</div>
+        </template>
+        <div class="profile-image-container">
+            <img src={resolvedProfileImage} alt={name} class="profile-image" />
+            <template if:true={showPresenceDot}>
+                <div class={presenceDotClass}></div>
+            </template>
+        </div>
+        <div class="alumni-name-row">
+            <h3 class="alumni-name">{name}</h3>
+            <template if:true={linkedinUrl}>
+                <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" class="alumni-linkedin-link" aria-label="LinkedIn profile" onclick={handleLinkedinClick}>
+                    <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M25.375 0.656351H2.625C2.10882 0.651098 1.61163 0.85083 1.24254 1.21172C0.873449 1.57261 0.662596 2.06518 0.65625 2.58135V25.4232C0.663744 25.9386 0.875101 26.4301 1.24407 26.79C1.61304 27.15 2.10957 27.3491 2.625 27.3439H25.375C25.8912 27.3479 26.3881 27.1475 26.757 26.7864C27.1259 26.4253 27.3368 25.9329 27.3438 25.4167V2.57479C27.3345 2.06013 27.1226 1.56991 26.7539 1.21068C26.3853 0.851442 25.8897 0.652234 25.375 0.656351Z" fill="#0076B2"/>
+                        <path d="M4.60797 10.6563H8.56953V23.4028H4.60797V10.6563ZM6.58984 4.3125C7.04422 4.3125 7.48838 4.44726 7.86615 4.69975C8.24391 4.95223 8.53831 5.31108 8.71209 5.7309C8.88587 6.15073 8.93123 6.61267 8.84242 7.05828C8.75362 7.50389 8.53465 7.91315 8.2132 8.23428C7.89176 8.55542 7.48229 8.774 7.0366 8.86238C6.59091 8.95076 6.12901 8.90496 5.70935 8.73078C5.28969 8.5566 4.93112 8.26187 4.679 7.88386C4.42688 7.50585 4.29254 7.06156 4.29297 6.60719C4.29355 5.9984 4.5358 5.41474 4.96648 4.98447C5.39717 4.55419 5.98105 4.3125 6.58984 4.3125ZM11.0545 10.6563H14.852V12.4063H14.9045C15.4339 11.4044 16.7245 10.3478 18.6517 10.3478C22.6636 10.3391 23.4073 12.9794 23.4073 16.4028V23.4028H19.4458V17.2013C19.4458 15.7247 19.4195 13.8238 17.3873 13.8238C15.3552 13.8238 15.0095 15.4338 15.0095 17.105V23.4028H11.0545V10.6563Z" fill="white"/>
+                    </svg>
+                </a>
+            </template>
+        </div>
+        <template if:true={showBatch}>
+            <p class="alumni-batch">{batchDisplay}</p>
+        </template>
+        <template if:false={showBatch}>
+            <p class="alumni-subtitle" title={subtitleText}>{subtitleDisplay}</p>
+            <p class="alumni-education" title={educationText}>{educationDisplay}</p>
+            <div class="alumni-location">
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M8.56775 15.1274L9.08263 14.5472C9.66688 13.8781 10.1924 13.2433 10.6599 12.6394L11.0459 12.1303C12.6574 9.95896 13.4636 8.23561 13.4636 6.96187C13.4636 4.24302 11.2719 2.03906 8.56775 2.03906C5.8636 2.03906 3.67188 4.24302 3.67188 6.96187C3.67188 8.23561 4.47806 9.95896 6.08962 12.1303L6.47558 12.6394C7.14259 13.4941 7.84044 14.3234 8.56775 15.1274Z"
+                        stroke="#585A64" stroke-width="1.33277" stroke-linecap="round" stroke-linejoin="round" />
+                    <path
+                        d="M8.56729 8.97443C9.69392 8.97443 10.6072 8.06111 10.6072 6.93448C10.6072 5.80785 9.69392 4.89453 8.56729 4.89453C7.44066 4.89453 6.52734 5.80785 6.52734 6.93448C6.52734 8.06111 7.44066 8.97443 8.56729 8.97443Z"
+                        stroke="#585A64" stroke-width="1.23757" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span title={displayLocationTooltip}>{locationDisplay}</span>
+            </div>
+        </template>
+    </div>
+</template>

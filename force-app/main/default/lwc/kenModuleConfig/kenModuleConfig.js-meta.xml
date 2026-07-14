@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <isExposed>false</isExposed>
+    <masterLabel>Ken Module Config</masterLabel>
+    <description>Shared cache so per-module show/hide flags are fetched once per page, not once per component.</description>
+</LightningComponentBundle>

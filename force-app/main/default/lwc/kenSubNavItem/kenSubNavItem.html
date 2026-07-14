@@ -1,0 +1,10 @@
+<template>
+    <div class={itemClass} onclick={handleClick}>
+        <div class="submenu-content">
+            <template if:true={iconUrl}>
+                <img src={iconUrl} alt={label} class="nav-icon" />
+            </template>
+            <span class={textClass}>{label}</span>
+        </div>
+    </div>
+</template>

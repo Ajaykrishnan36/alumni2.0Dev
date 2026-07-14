@@ -1,0 +1,137 @@
+.business-card {
+    background-color: var(--portal-surface, #ffffff);
+    border-radius: var(--portal-radius);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.business-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Cover image — overflow hidden so image respects top border-radius */
+.featured-image-section {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    border-radius: var(--portal-radius) var(--portal-radius) 0 0;
+    flex-shrink: 0;
+}
+
+.featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Category tag — top LEFT white pill */
+.category-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background-color: var(--portal-surface, #ffffff);
+    color: var(--portal-text-primary, #1f2333);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    z-index: 2;
+    white-space: nowrap;
+}
+
+/* Card body */
+.business-info {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background-color: var(--portal-surface, #ffffff);
+    flex: 1;
+    border-radius: 0 0 var(--portal-radius) var(--portal-radius);
+}
+
+.business-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--portal-text-primary, #1f2333);
+    margin: 0;
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.location-pin-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.location-text {
+    font-size: 14px;
+    color: var(--portal-text-muted, #6b7280);
+}
+
+/* Owner row */
+.owner-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+/* Small logo circle repeated in owner row */
+.owner-logo-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background-color: #f3f4f6;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+}
+
+.owner-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+/* Owner photo + name pill */
+.owner-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 4px;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: 20px;
+    background-color: var(--portal-bg);
+    min-width: 0;
+}
+
+.owner-photo {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.owner-name {
+    font-size: 13px;
+    color: var(--portal-text-secondary, #374151);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

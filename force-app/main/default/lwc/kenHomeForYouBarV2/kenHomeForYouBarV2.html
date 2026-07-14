@@ -1,0 +1,20 @@
+<template lwc:render-mode="light">
+    <section class="fyr h-card">
+        <div class="fyr__head">
+            <div class="fyr__title-row">
+                <span class="fyr__spark">&#10022;</span>
+                <span class="fyr__title">For you right now</span>
+            </div>
+            <div class="fyr__sub">{subtitle}</div>
+        </div>
+        <div class="fyr__chips">
+            <template for:each={chips} for:item="c">
+                <span key={c.key} class={c.chipClass}>
+                    <span class="fyr-chip__ico">{c.icon}</span>
+                    <span>{c.label}</span>
+                </span>
+            </template>
+        </div>
+        <button class="fyr__cta" onclick={handleCta}>{ctaLabel}</button>
+    </section>
+</template>

@@ -1,0 +1,445 @@
+.mentorship-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* Header */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 16px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.header-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 6px 12px;
+    background: white;
+    width: 200px;
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    font-size: 14px;
+    flex: 1;
+    margin: 0 8px;
+}
+
+.search-icon,
+.mic-icon {
+    --lwc-colorTextIconDefault: #888;
+}
+
+.control-btn {
+    background: #eef2ff;
+    border: 1px solid #d0d7f5;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.btn-icon-right {
+    --lwc-colorTextIconDefault: #555;
+}
+
+.preferences-btn {
+    background-color: #2f61d5;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Grid */
+.mentors-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.mentor-card {
+    background-color: #f8f9fa;
+    /* Very light gray */
+    border-radius: 12px;
+    padding: 32px 24px;
+    /* More padding top/bottom */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    /* Screenshot: Seems like plain cards, no heavy shadow */
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.mentor-badge {
+    background-color: #d1c4e9;
+    /* Light purple */
+    color: #673ab7;
+    /* Deep purple */
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    /* In screenshot it was left aligned tag */
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+    /* Screenshot 1: "Mentor" tag is Purple. Positioned Top Left. */
+    background-color: #e0b0ff;
+    /* Correcting to brighter purple from screenshot */
+    background-color: #a855f7;
+    /* Tailwind purple-500 equivalent approx */
+    background-color: #c084fc;
+    /* Actually screenshot label "Mentor" looks like a tag on top-left of image area? No, top left of card. */
+    background-color: #d8b4fe;
+    color: #581c87;
+}
+
+.avatar-wrapper {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+.mentor-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.online-indicator {
+    width: 12px;
+    height: 12px;
+    background-color: #4caf50;
+    /* Green */
+    border: 2px solid white;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+}
+
+.mentor-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 4px 0;
+}
+
+.mentor-designation {
+    font-size: 14px;
+    color: #555;
+    margin: 0 0 16px 0;
+}
+
+.mentor-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #777;
+}
+
+.location-icon {
+    --lwc-colorTextIconDefault: #777;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content.preferences-modal {
+    width: 800px;
+    max-width: 95vw;
+    max-height: 90vh;
+    background: white;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #eee;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.form-section {
+    margin-bottom: 32px;
+}
+
+.form-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 8px;
+}
+
+.text-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.grid-row {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
+.half-width {
+    flex: 1;
+}
+
+.checkbox-group-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+@media screen and (max-width: 768px) {
+    .checkbox-box{
+        display: block;
+    }
+}
+
+.checkbox-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #555;
+    cursor: pointer;
+}
+
+.counter-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.counter-input {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    overflow: hidden;
+    width: 120px;
+}
+
+.count-input {
+    border: none;
+    text-align: center;
+    width: 50px;
+    padding: 8px;
+}
+
+.stepper-controls {
+    display: flex;
+    border-left: 1px solid #ddd;
+}
+
+.step-btn {
+    border: none;
+    background: #f9f9f9;
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #555;
+    height: 100%;
+}
+
+.step-btn:hover {
+    background: #eee;
+}
+
+.step-btn.minus {
+    border-right: 1px solid #ddd;
+}
+
+.radio-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Privacy Toggles */
+.sub-label {
+    font-size: 13px;
+    color: #666;
+    margin-top: -12px;
+    margin-bottom: 16px;
+}
+
+.toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.toggle-row span {
+    font-size: 14px;
+    color: #333;
+}
+
+/* Toggle Switch CSS */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+input:checked+.slider {
+    background-color: #2f61d5;
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px #2f61d5;
+}
+
+input:checked+.slider:before {
+    -webkit-transform: translateX(20px);
+    -ms-transform: translateX(20px);
+    transform: translateX(20px);
+}
+
+.slider.round {
+    border-radius: 20px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.cancel-btn {
+    background: white;
+    border: 1px solid #ddd;
+    padding: 8px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.save-modal-btn {
+    background: #2f61d5;
+    color: white;
+    border: none;
+    padding: 8px 32px;
+    border-radius: 6px;
+    cursor: pointer;
+}

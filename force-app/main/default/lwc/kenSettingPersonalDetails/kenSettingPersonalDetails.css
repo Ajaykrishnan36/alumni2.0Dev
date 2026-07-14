@@ -1,0 +1,336 @@
+:host {
+    display: block;
+    color: #333;
+    position: relative;
+}
+
+.loading-spinner {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 9999;
+}
+
+.error-banner {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+.header-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #4a5568;
+}
+
+.card {
+    background-color: #fff;
+    border: 1px solid #e0e6ed;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    padding: 24px;
+}
+
+.section-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: #4a5568;
+}
+
+/* Basic Details */
+.profile-pic-section {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.profile-pic-wrapper {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-right: 20px;
+}
+
+.profile-img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.edit-pic-btn {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    background: #fff;
+    border: 1px solid #e0e6ed;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.edit-pic-btn lightning-icon {
+    --sds-c-icon-color-foreground-default: #555;
+}
+
+.pic-info h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #4a5568;
+}
+
+.pic-info p {
+    font-size: 12px;
+    color: #8898aa;
+}
+
+.basic-details-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.half-width {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 250px;
+}
+
+.field-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #4a5568;
+    margin-bottom: 8px;
+}
+
+.text-input {
+    padding: 10px 12px;
+    border: 1px solid #e0e6ed;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    border-color: #2f61d5;
+}
+
+.text-input:disabled {
+    background-color: transparent;
+    color: #4a5568;
+}
+
+.input-wrapper.disabled-wrapper {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e0e6ed;
+    border-radius: 6px;
+    background-color: #f7f9fa;
+    padding-right: 12px;
+}
+
+.input-wrapper.disabled-wrapper .text-input {
+    border: none;
+    background: transparent;
+    padding-right: 0;
+    flex: 1;
+}
+
+.input-suffix-text-btn {
+    background: none;
+    border: none;
+    color: #2f61d5;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Interests Grid */
+.interests-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.interest-card {
+    position: relative;
+    height: 140px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.interest-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.interest-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+.interest-checkbox-container {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    background: #fff;
+    border-radius: 4px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 2;
+}
+
+.custom-checkbox {
+    width: 18px;
+    height: 18px;
+    border: 1px solid #caced4;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    flex-shrink: 0;
+}
+
+.custom-checkbox.checked {
+    background: var(--primary-color, #ffffff);
+    border-color: var(--primary-color, #ffffff);
+}
+
+.custom-checkbox lightning-icon {
+    --sds-c-icon-color-foreground-default: #fff;
+    transform: scale(0.6);
+}
+
+.interest-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #4a5568;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Footer Actions */
+.footer-actions {
+    position: sticky;
+    bottom: -21px;
+    background: #fff;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    padding: 16px 30px;
+    margin-top: 24px;
+    margin-left: -30px;
+    margin-right: -30px;
+    margin-bottom: -21px;
+    border-top: 1px solid #e5e7eb;
+    z-index: 10;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.btn {
+    padding: 8px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+}
+
+.btn-outline {
+    background-color: var(--secondary-color, #ffffff);
+    border-color: var(--primary-color, #ffffff); 
+    color: var(--primary-color, #ffffff);
+}
+
+.btn-primary {
+    background-color: var(--primary-color, #ffffff);
+    color: #fff;
+}
+
+@media screen and (max-width: 768px) {
+    :host {
+        background-color: #ffffff;
+    }
+    .basic-details-form {
+        flex-direction: column;
+        gap: 16px;
+    }
+    .half-width {
+        width: 100%;
+        min-width: unset;
+        flex: none;
+    }
+    .interests-grid {
+        grid-template-columns: 1fr;
+    }
+    .interest-card {
+        height: 120px;
+    }
+    .header-title {
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 0;
+        border-bottom: 1px solid #e5e7eb;
+        background-color: #ffffff;
+    }
+    .footer-actions {
+        margin-left: 0;
+        margin-right: 0;
+        padding: 16px 0;
+        justify-content: space-between;
+        background-color: #ffffff;
+    }
+    .card {
+        padding: 16px 0;
+        border: none;
+        border-bottom: 1px solid #e5e7eb;
+        border-radius: 0;
+        margin-bottom: 0;
+        background-color: #ffffff;
+    }
+    .card:last-child {
+        border-bottom: none;
+    }
+}

@@ -1,0 +1,326 @@
+<template>
+    <div class="cc-container">
+        <!-- Header -->
+        <div class="cc-header">
+            <div class="cc-header-text">
+                <span class="cc-eyebrow">ADMIN DASHBOARD</span>
+                <h1 class="cc-title">Service Request Command Center</h1>
+                <p class="cc-subtitle">Check new requests, watch SLA risk, assign work, and solve cases from one admin workspace.</p>
+            </div>
+            <button class="cc-primary-btn" onclick={handleNewRequest}>+ New Request</button>
+        </div>
+
+        <!-- KPI cards -->
+        <div class="cc-kpi-grid">
+            <div class="cc-kpi-card">
+                <span class="kpi-label">OPEN REQUESTS</span>
+                <span class="kpi-value">{kpis.openRequests}</span>
+                <span class="kpi-sub">Need admin attention</span>
+                <div class="kpi-icon kpi-icon-blue">📋</div>
+            </div>
+            <div class="cc-kpi-card">
+                <span class="kpi-label">SLA RISK</span>
+                <span class="kpi-value">{kpis.slaRisk}</span>
+                <span class="kpi-sub">At risk or breached</span>
+                <div class="kpi-icon kpi-icon-red">🛡️</div>
+            </div>
+            <div class="cc-kpi-card">
+                <span class="kpi-label">HIGH PRIORITY</span>
+                <span class="kpi-value">{kpis.highPriority}</span>
+                <span class="kpi-sub">High or critical</span>
+                <div class="kpi-icon kpi-icon-orange">⏱️</div>
+            </div>
+            <div class="cc-kpi-card">
+                <span class="kpi-label">SOLVED</span>
+                <span class="kpi-value">{kpis.solved}</span>
+                <span class="kpi-sub">Fulfilled or closed</span>
+                <div class="kpi-icon kpi-icon-green">✓</div>
+            </div>
+        </div>
+
+        <!-- Tabs + quick chips -->
+        <div class="cc-tabset-row">
+            <div class="cc-tabs">
+                <button class={queueTabClass} data-tab="queue" onclick={handleTabClick}>Requests Queue</button>
+                <button class={overviewTabClass} data-tab="overview" onclick={handleTabClick}>Admin Overview</button>
+            </div>
+            <div class="cc-chips">
+                <button class={chipNewOnlyClass} onclick={handleChipNewOnly}>New only</button>
+                <button class={chipBreachedClass} onclick={handleChipBreached}>Breached SLA</button>
+                <button class={chipCriticalClass} onclick={handleChipCritical}>Critical</button>
+                <button class="chip chip-reset" onclick={handleChipReset}>Reset</button>
+            </div>
+        </div>
+
+        <!-- Main two-column layout -->
+        <template lwc:if={queueIsActive}>
+        <div class="cc-main">
+            <!-- Left: queue -->
+            <div class="cc-queue-panel">
+                <div class="cc-queue-card">
+                    <div class="queue-card-header">
+                        <div>
+                            <h3 class="queue-title">👥 Admin Request Queue</h3>
+                            <p class="queue-sub">Click a row to open the detail panel and solve the case.</p>
+                        </div>
+                        <div class="queue-search">
+                            <input type="text" placeholder="Search cases, requester, queue..." oninput={handleSearchChange} value={searchKey} />
+                        </div>
+                    </div>
+
+                    <div class="queue-filters">
+                        <span class="filters-label">▽ FILTERS</span>
+                        <lightning-combobox
+                            value={statusFilter}
+                            options={statusOptions}
+                            onchange={handleStatusChange}
+                            variant="label-hidden"
+                            class="filter-combo">
+                        </lightning-combobox>
+                        <lightning-combobox
+                            value={priorityFilter}
+                            options={priorityOptions}
+                            onchange={handlePriorityChange}
+                            variant="label-hidden"
+                            class="filter-combo">
+                        </lightning-combobox>
+                        <lightning-combobox
+                            value={slaFilter}
+                            options={slaOptions}
+                            onchange={handleSlaChange}
+                            variant="label-hidden"
+                            class="filter-combo">
+                        </lightning-combobox>
+                        <span class="filters-count">Showing {totalRows} requests</span>
+                    </div>
+
+                    <table class="queue-table">
+                        <thead>
+                            <tr>
+                                <th>Case</th>
+                                <th>Request</th>
+                                <th>Requester</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Queue</th>
+                                <th>SLA</th>
+                                <th class="action-col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={rows} for:item="r">
+                                <tr key={r.caseId} data-id={r.caseId} onclick={handleRowClick} class="queue-row">
+                                    <td><span class="case-number">{r.caseNumber}</span></td>
+                                    <td>
+                                        <div class="request-title">{r.subject}</div>
+                                        <div class="request-meta">Created {r.createdDateLabel}</div>
+                                    </td>
+                                    <td>
+                                        <div class="requester-name">{r.requesterName}</div>
+                                        <div class="requester-type">{r.requesterType}</div>
+                                    </td>
+                                    <td><span class={r.statusClass}>{r.status}</span></td>
+                                    <td><span class={r.priorityClass}>{r.priority}</span></td>
+                                    <td><span class="queue-name">{r.queueName}</span></td>
+                                    <td><span class={r.slaClass}>{r.slaStatus}</span></td>
+                                    <td class="action-col">
+                                        <div class="action-cell">
+                                            <template lwc:if={r.isSolved}>
+                                                <span class="solved-tag">Solved</span>
+                                            </template>
+                                            <template lwc:else>
+                                                <button class="solve-btn" data-id={r.caseId} onclick={handleSolve}>Solve</button>
+                                            </template>
+                                            <button class="view-btn" data-id={r.caseId} onclick={handleView}>View</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template lwc:if={isEmpty}>
+                                <tr>
+                                    <td colspan="8" class="empty-state">No requests match the current filters.</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: detail panel -->
+            <template lwc:if={isDetailOpen}>
+                <div class="cc-detail-panel">
+                    <button class="detail-close" onclick={handleCloseDetail}>✕</button>
+                    <template lwc:if={detail}>
+                        <div class="detail-header">
+                            <span class="detail-case-no">{detail.caseNumber}</span>
+                            <span class="detail-requester">· {detail.requesterName}</span>
+                        </div>
+                        <h2 class="detail-title">{detail.subject}</h2>
+                        <div class="detail-tags">
+                            <span class="tag tag-primary">{detail.serviceOfferingName}</span>
+                            <span class="tag tag-sla">{detail.slaStatus}</span>
+                        </div>
+
+                        <!-- Status path (click to change status) -->
+                        <div class="status-path">
+                            <template for:each={statusSteps} for:item="step">
+                                <button key={step.value}
+                                    class={step.cssClass}
+                                    data-status={step.value}
+                                    onclick={handleStatusStepClick}
+                                    type="button">{step.label}</button>
+                            </template>
+                        </div>
+
+                        <!-- Action buttons -->
+                        <div class="detail-actions">
+                            <button class="action-btn action-assign" onclick={handleAssignToMe}>👤 Assign to me</button>
+                            <button class="action-btn action-info" onclick={handleNeedInfo}>📩 Need info</button>
+                            <button class="action-btn action-solve" onclick={handleSolve}>✓ Solve case</button>
+                        </div>
+
+                        <!-- Detail tabs -->
+                        <div class="detail-tabs">
+                            <button class={detailsTabClass} data-tab="details" onclick={handleDetailTabClick} type="button">Details</button>
+                            <button class={activityTabClass} data-tab="activity" onclick={handleDetailTabClick} type="button">Activity / Feed</button>
+                            <button class={relatedTabClass} data-tab="related" onclick={handleDetailTabClick} type="button">Related</button>
+                        </div>
+
+                        <template lwc:if={isDetailsTab}>
+                            <!-- Record details -->
+                            <div class="record-details">
+                                <div class="rd-header">
+                                    <h4 class="rd-section-title">Record Details</h4>
+                                    <button class="rd-edit-btn" type="button" onclick={handleEditCase}>Edit</button>
+                                </div>
+                                <div class="rd-grid">
+                                    <div><span class="rd-label">STATUS</span><div class="rd-value">{detail.status}</div></div>
+                                    <div><span class="rd-label">PRIORITY</span><div class="rd-value">{detail.priority}</div></div>
+                                    <div><span class="rd-label">OWNER / QUEUE</span><div class="rd-value rd-link">{detail.queueName}</div></div>
+                                    <div><span class="rd-label">SLA TARGET</span><div class="rd-value">🕒 {detail.slaTargetLabel} <span class="tag tag-sla">{detail.slaStatus}</span></div></div>
+                                    <div class="rd-full"><span class="rd-label">SERVICE OFFERING</span><div class="rd-value">{detail.serviceOfferingName}</div></div>
+                                    <div class="rd-full"><span class="rd-label">DESCRIPTION</span><div class="rd-value">{detail.description}</div></div>
+                                </div>
+                            </div>
+
+                            <!-- Service Request Data: questionnaire responses -->
+                            <template lwc:if={hasResponses}>
+                                <div class="record-details">
+                                    <div class="rd-header">
+                                        <span class="srd-pill">🧾 Service Request Data</span>
+                                    </div>
+                                    <div class="rd-grid">
+                                        <template for:each={detail.responses} for:item="resp">
+                                            <div key={resp.responseId} class="rd-full">
+                                                <span class="rd-label">{resp.label}</span>
+                                                <div class="rd-value">{resp.answer}</div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+
+                        <template lwc:if={isActivityTab}>
+                            <div class="tab-placeholder">
+                                Activity / Feed coming soon. Use the Salesforce record page for full Chatter feed and activity timeline.
+                            </div>
+                        </template>
+
+                        <template lwc:if={isRelatedTab}>
+                            <div class="tab-placeholder">
+                                Related items (files, comments, history) — open the Case record for the full related view.
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </template>
+        </div>
+        </template>
+
+        <!-- Admin Overview view -->
+        <template lwc:if={overviewIsActive}>
+            <div class="cc-overview-grid">
+                <!-- Queue Workload -->
+                <div class="cc-overview-card">
+                    <div class="overview-card-header">
+                        <h3 class="overview-title">📊 Queue Workload</h3>
+                        <p class="overview-sub">Open volume and SLA risk per support queue.</p>
+                    </div>
+                    <template lwc:if={hasQueueWorkload}>
+                        <div class="workload-list">
+                            <template for:each={adminOverview.queueWorkload} for:item="w">
+                                <div key={w.queueId} class="workload-row">
+                                    <div class="workload-row-info">
+                                        <div class="workload-queue-name">{w.queueName}</div>
+                                        <div class="workload-queue-sub">{w.category} · {w.totalCases} total cases</div>
+                                    </div>
+                                    <div class="workload-badges">
+                                        <span class="workload-badge workload-badge-open">{w.openCount} open</span>
+                                        <template lwc:if={w.showSlaRisk}>
+                                            <span class="workload-badge workload-badge-risk">{w.slaRiskCount} SLA risk</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-state">No queues found. Configure Case queues in Setup to see workload here.</div>
+                    </template>
+                </div>
+
+                <!-- Solve Next -->
+                <div class="cc-overview-card">
+                    <div class="overview-card-header">
+                        <h3 class="overview-title">🪄 Solve Next</h3>
+                        <p class="overview-sub">Recommended triage order for admins.</p>
+                    </div>
+                    <template lwc:if={hasSolveNext}>
+                        <div class="solve-next-list">
+                            <template for:each={adminOverview.solveNext} for:item="t">
+                                <div key={t.caseId} class="solve-card" data-id={t.caseId} onclick={handleRowClick}>
+                                    <button class="solve-card-jump" data-id={t.caseId} onclick={handleRowClick} aria-label="Open case">↗</button>
+                                    <div class="solve-card-no">{t.caseNumber}</div>
+                                    <div class="solve-card-subject">{t.subject}</div>
+                                    <div class="solve-card-meta">{t.requesterName} · {t.updatedLabel}</div>
+                                    <div class="solve-card-tags">
+                                        <span class={t.priorityClass}>{t.priority}</span>
+                                        <span class={t.slaClass}>{t.slaStatus}</span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty-state">No open requests requiring triage right now. 🎉</div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- Record Type Picker Modal -->
+        <template lwc:if={showRecordTypePicker}>
+            <div class="rt-picker-backdrop" onclick={handleClosePicker}>
+                <div class="rt-picker-modal" onclick={_stop}>
+                    <div class="rt-picker-header">
+                        <h3>New Case</h3>
+                        <button class="rt-picker-close" onclick={handleClosePicker} aria-label="Close">✕</button>
+                    </div>
+                    <p class="rt-picker-sub">Choose the type of case you want to create.</p>
+                    <div class="rt-picker-list">
+                        <template for:each={recordTypeOptions} for:item="rt">
+                            <button key={rt.recordTypeId} class="rt-picker-option"
+                                    data-id={rt.recordTypeId}
+                                    onclick={handlePickRecordType}
+                                    type="button">
+                                <span class="rt-picker-radio"></span>
+                                <span class="rt-picker-name">{rt.label}</span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

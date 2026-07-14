@@ -1,0 +1,39 @@
+<template>
+    <div class="account-container">
+        <h2 class="section-title">Account settings</h2>
+
+        <!-- Legal & compliance Section -->
+        <div class="setting-section">
+            <h3 class="section-subtitle">Legal & compliance</h3>
+            <div class="link-list">
+                <div class="link-item" onclick={handleTermsClick}>
+                    <span class="link-text">Terms of service</span>
+                    <svg class="link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M6 12L10 8L6 4" stroke="#373A45" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <div class="link-item" onclick={handlePrivacyClick}>
+                    <span class="link-text">Privacy policy</span>
+                    <svg class="link-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M6 12L10 8L6 4" stroke="#373A45" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete my account Section -->
+        <div class="setting-section">
+            <h3 class="section-subtitle">Delete my account</h3>
+            <div class="link-list">
+                <div class="link-item delete-item" onclick={handleDeleteAccountClick}>
+                    <span class="link-text">Delete my account</span>
+                    <svg class="link-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M5.33333 3.33333V2.66667C5.33333 1.93029 5.93029 1.33333 6.66667 1.33333H9.33333C10.0697 1.33333 10.6667 1.93029 10.6667 2.66667V3.33333M2.66667 3.33333H13.3333M12 3.33333V13.3333C12 14.0697 11.403 14.6667 10.6667 14.6667H5.33333C4.59695 14.6667 4 14.0697 4 13.3333V3.33333H12Z" stroke="#B42318" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6.66667 7.33333V11.3333" stroke="#B42318" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9.33333 7.33333V11.3333" stroke="#B42318" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,86 @@
+.fee-setup-container {
+    display: flex;
+    align-items: center;
+    gap: 100px;
+    justify-content: center;
+}
+
+.fee-label {
+    padding: 0.5rem 1rem;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.fee-input {
+    padding: 0.5rem 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.fee-checkbox {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+
+.custom-flex-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.custom-flex-left {
+    flex: 1;
+}
+
+.custom-flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.slds-p-around_xx-small {
+    margin: 0 0.5rem;
+}
+.slds-p-around_medium {
+    display: flex;
+    flex-direction: column;
+}
+.sldsbox{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-right: 25%;
+    margin-left: 25%;
+}
+.input-container {
+    display: flex;
+    flex-direction: column; 
+    align-items: center; 
+}
+.input-label {
+    margin-bottom: 0.2rem; 
+    text-align: center; 
+}
+.checkbox-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+}
+
+
+/*.sldsbox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}*/
+
+.session-row {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 1rem;
+}

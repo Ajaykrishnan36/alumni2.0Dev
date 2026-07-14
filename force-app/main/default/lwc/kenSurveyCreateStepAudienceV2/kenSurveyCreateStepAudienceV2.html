@@ -1,0 +1,20 @@
+<template>
+    <div class="field">
+        <label>Audience</label>
+        <div class="chips">
+            <template for:each={audienceChips} for:item="c">
+                <button key={c.key} type="button" class={c.cls} data-val={c.label} onclick={handleToggleAudience}>{c.label}</button>
+            </template>
+        </div>
+    </div>
+    <div class="grid-2">
+        <div class="field"><label>Start Date</label><input type="date" value={startDate} onchange={handleStart}/></div>
+        <div class="field"><label>End Date</label><input type="date" value={endDate} onchange={handleEnd}/></div>
+    </div>
+    <div class="field toggle-field">
+        <label>Anonymous responses</label>
+        <button type="button" class="toggle" onclick={handleToggleAnonymous}>
+            <span class={toggleLabelClass}>{toggleLabel}</span>
+        </button>
+    </div>
+</template>

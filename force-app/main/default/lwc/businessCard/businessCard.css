@@ -1,0 +1,146 @@
+.business-card {
+    background-color: #F6F8FB;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.business-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.featured-image-section {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: visible;
+}
+
+.featured-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 12px 12px 0 0;
+}
+
+.category-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background-color: #ffffff;
+    color: #111827;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    
+    z-index: 2;
+}
+
+.logo-overlay {
+    position: absolute;
+    bottom: -20px;
+    left: 16px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    z-index: 3;
+}
+
+.business-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.business-info {
+    padding: 16px;
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: #F6F8FB;
+}
+
+.business-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.location-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+}
+
+.location-text {
+    font-size: 14px;
+    color: #6b7280;
+    
+}
+
+.owner-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.alumni-icon-small {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.cap-small-icon {
+    width: 16px;
+    height: 12px;
+    background-color: #111827;
+    border-radius: 50% 50% 0 0;
+    position: relative;
+}
+
+.cap-small-icon::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 2px;
+    background-color: #111827;
+    border-radius: 2px;
+}
+
+.alumni-text-small {
+    font-size: 10px;
+    font-weight: 700;
+    color: #111827;
+    
+    letter-spacing: 1px;
+}
+
+.owner-name {
+    font-size: 14px;
+    color: #6b7280;
+    
+}

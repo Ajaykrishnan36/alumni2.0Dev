@@ -1,0 +1,21 @@
+<template>
+  <lightning-card title="LinkedIn Sync" icon-name="standard:contact">
+    <div class="linkedin-sync-content slds-p-horizontal_medium slds-p-bottom_medium">
+      <p class="slds-text-body_small slds-m-bottom_x-small">
+        Last synced: <strong>{lastSyncLabel}</strong>
+      </p>
+      <template if:false={hasLinkedIn}>
+        <p class="slds-text-color_weak slds-text-body_small slds-m-bottom_x-small">
+          Add a LinkedIn Profile URL to enable sync.
+        </p>
+      </template>
+      <lightning-button
+        label="Sync from LinkedIn"
+        icon-name="utility:sync"
+        variant="brand"
+        onclick={handleSync}
+        disabled={syncDisabled}>
+      </lightning-button>
+    </div>
+  </lightning-card>
+</template>

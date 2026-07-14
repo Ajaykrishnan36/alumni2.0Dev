@@ -1,0 +1,177 @@
+<template>
+    <div class="jobs-container">
+        <h1 class="header-title">Jobs</h1>
+
+        <template if:true={error}>
+            <div class="error-banner">{error}</div>
+        </template>
+
+        <template if:true={isLoading}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={isSaving}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Saving" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="form-container">
+
+                <!-- Open to Work -->
+                <div class="card toggle-card">
+                    <h2 class="card-title">Open to Work</h2>
+                    <div class="toggle-wrapper">
+                        <label class="custom-toggle">
+                            <input type="checkbox" checked={openToWork} onchange={handleOpenToWorkChange} />
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Preferred Jobs -->
+                <div class="card">
+                    <h2 class="section-title">Preferred Jobs</h2>
+                    <div class="multi-select-wrapper">
+                        <div class="multi-select-box" onclick={toggleJobsDropdown}>
+                            <div class="pills-container">
+                                <template if:true={isJobTitlesEmpty}>
+                                    <span class="select-placeholder">Select</span>
+                                </template>
+                                <template for:each={selectedJobTitles} for:item="title">
+                                    <span key={title} class="pill">
+                                        {title}
+                                        <svg class="pill-close" viewBox="0 0 14 14" onclick={handleRemoveJobTitle} data-title={title}>
+                                            <circle cx="7" cy="7" r="7" fill="#6B7280"/>
+                                            <path d="M4.5 4.5L9.5 9.5M9.5 4.5L4.5 9.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                    </span>
+                                </template>
+                            </div>
+                            <span class="dropdown-arrow">&#9660;</span>
+                        </div>
+                        <template if:true={showJobsDropdown}>
+                            <div class="dropdown-menu">
+                                <template for:each={availableJobTitles} for:item="option">
+                                    <div key={option} class="dropdown-item" onclick={addJobTitle} data-value={option}>{option}</div>
+                                </template>
+                                <template if:false={availableJobTitles.length}>
+                                    <div class="dropdown-item-empty">No options found</div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Skill Set -->
+                <div class="card">
+                    <h2 class="section-title">Skill Set</h2>
+                    <div class="multi-select-wrapper">
+                        <div class="multi-select-box" onclick={toggleSkillsDropdown}>
+                            <div class="pills-container">
+                                <template if:true={isSkillsEmpty}>
+                                    <span class="select-placeholder">Select</span>
+                                </template>
+                                <template for:each={selectedSkills} for:item="skill">
+                                    <span key={skill} class="pill">
+                                        {skill}
+                                        <svg class="pill-close" viewBox="0 0 14 14" onclick={handleRemoveSkill} data-skill={skill}>
+                                            <circle cx="7" cy="7" r="7" fill="#6B7280"/>
+                                            <path d="M4.5 4.5L9.5 9.5M9.5 4.5L4.5 9.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                    </span>
+                                </template>
+                            </div>
+                            <span class="dropdown-arrow">&#9660;</span>
+                        </div>
+                        <template if:true={showSkillsDropdown}>
+                            <div class="dropdown-menu">
+                                <template for:each={availableSkills} for:item="option">
+                                    <div key={option} class="dropdown-item" onclick={addSkill} data-value={option}>{option}</div>
+                                </template>
+                                <template if:false={availableSkills.length}>
+                                    <div class="dropdown-item-empty">No options found</div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Preferred Location Types -->
+                <div class="card">
+                    <h2 class="section-title">Preferred Location Types</h2>
+                    <div class="checkbox-group">
+                        <template for:each={locationTypes} for:item="type">
+                            <label key={type.value} class="custom-checkbox-wrapper">
+                                <input type="checkbox" class="custom-checkbox-input" checked={type.checked}
+                                       data-value={type.value} onchange={handleLocationTypeChange} />
+                                <span class="custom-checkbox-box"></span>
+                                <span class="custom-checkbox-label">{type.label}</span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Location On-site -->
+                <div class="card">
+                    <h2 class="section-title">Location (On-site)</h2>
+                    <div class="multi-select-wrapper">
+                        <div class="multi-select-box" onclick={toggleLocationsDropdown}>
+                            <div class="pills-container">
+                                <template if:true={isLocationsEmpty}>
+                                    <span class="select-placeholder">Select</span>
+                                </template>
+                                <template for:each={selectedLocations} for:item="loc">
+                                    <span key={loc} class="pill">
+                                        {loc}
+                                        <svg class="pill-close" viewBox="0 0 14 14" onclick={handleRemoveLocation} data-location={loc}>
+                                            <circle cx="7" cy="7" r="7" fill="#6B7280"/>
+                                            <path d="M4.5 4.5L9.5 9.5M9.5 4.5L4.5 9.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                                        </svg>
+                                    </span>
+                                </template>
+                            </div>
+                            <span class="dropdown-arrow">&#9660;</span>
+                        </div>
+                        <template if:true={showLocationsDropdown}>
+                            <div class="dropdown-menu">
+                                <template for:each={availableLocations} for:item="option">
+                                    <div key={option} class="dropdown-item" onclick={addLocation} data-value={option}>{option}</div>
+                                </template>
+                                <template if:false={availableLocations.length}>
+                                    <div class="dropdown-item-empty">No options found</div>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Employment Types -->
+                <div class="card">
+                    <h2 class="section-title">Employment Types</h2>
+                    <div class="checkbox-group">
+                        <template for:each={employmentTypes} for:item="type">
+                            <label key={type.value} class="custom-checkbox-wrapper">
+                                <input type="checkbox" class="custom-checkbox-input" checked={type.checked}
+                                       data-value={type.value} onchange={handleEmploymentTypeChange} />
+                                <span class="custom-checkbox-box"></span>
+                                <span class="custom-checkbox-label">{type.label}</span>
+                            </label>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="footer-actions">
+                    <button class="btn btn-outline" onclick={handleDiscard} disabled={isSaving}>Discard Changes</button>
+                    <button class="btn btn-primary" onclick={handleSave} disabled={isSaving}>Save Changes</button>
+                </div>
+
+            </div>
+        </template>
+    </div>
+
+    <c-ken-status-popup visible={showSuccessPopup} message="Job preferences saved successfully" variant="success"></c-ken-status-popup>
+</template>

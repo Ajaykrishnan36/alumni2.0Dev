@@ -1,0 +1,205 @@
+<template>
+    <div class="preview-wrapper">
+        <h2 class="step-heading">3. Preview &amp; Save</h2>
+        <div class="preview-card-container">
+            <!-- New York -->
+            <template if:true={isNewYork}>
+                <article class="resume-template resume-newyork">
+                    <header class="resume-header">
+                        <div class="resume-name">{fullName}</div>
+                        <div class="resume-title">{roleTitle}</div>
+                        <div class="resume-contact">{contactLine}</div>
+                    </header>
+                    <template if:true={hasSummary}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">ABOUT ME</h3>
+                            <div class="section-content">{summary}</div>
+                        </section>
+                    </template>
+                    <template if:true={hasEducation}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">EDUCATION</h3>
+                            <template for:each={educationList} for:item="edu">
+                                <div key={edu.id} class="resume-item">
+                                    <div class="item-title">{edu.degree}</div>
+                                    <div class="item-sub">{edu.school} | {edu.yearRange}</div>
+                                    <template if:true={edu.gpa}><div class="item-meta">{edu.gpa}</div></template>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+                    <template if:true={hasExperience}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">WORK EXPERIENCE</h3>
+                            <template for:each={experienceList} for:item="exp">
+                                <div key={exp.id} class="resume-item">
+                                    <div class="item-title">{exp.title}</div>
+                                    <div class="item-sub">{exp.company} | {exp.dateLabel}</div>
+                                    <template if:true={exp.description}>
+                                        <div class="item-desc" lwc:dom="manual" data-exp-id={exp.id}></div>
+                                    </template>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+                    <template if:true={hasSkills}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">SKILLS</h3>
+                            <div class="skills-list">{skillsText}</div>
+                        </section>
+                    </template>
+                </article>
+            </template>
+            <!-- Toronto -->
+            <template if:true={isToronto}>
+                <article class="resume-template resume-toronto">
+                    <header class="resume-header">
+                        <div class="header-content">
+                            <div class="header-text">
+                                <div class="resume-name">{fullName}</div>
+                                <div class="resume-title">{roleTitle}</div>
+                                <div class="resume-contact">{contactLine}</div>
+                            </div>
+                            <img src={displayPhotoUrl} alt="" class="resume-photo" />
+                        </div>
+                    </header>
+                    <template if:true={hasSummary}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Summary</h3>
+                            <div class="section-content">{summary}</div>
+                        </section>
+                    </template>
+                    <template if:true={hasExperience}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Experience</h3>
+                            <template for:each={experienceList} for:item="exp">
+                                <div key={exp.id} class="resume-item">
+                                    <div class="item-main">
+                                        <span class="item-company">{exp.company}</span>
+                                        <span class="item-date">{exp.dateLabel}</span>
+                                    </div>
+                                    <div class="item-title">{exp.title}</div>
+                                    <template if:true={exp.description}>
+                                        <div class="item-desc" lwc:dom="manual" data-exp-id={exp.id}></div>
+                                    </template>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+                    <template if:true={hasEducation}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Education</h3>
+                            <template for:each={educationList} for:item="edu">
+                                <div key={edu.id} class="resume-item">
+                                    <div class="item-title">{edu.degree}</div>
+                                    <div class="item-sub">{edu.school} | {edu.yearRange}<template if:true={edu.gpa}> | {edu.gpa}</template></div>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+                    <template if:true={hasSkills}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Skills</h3>
+                            <div class="skills-list">{skillsText}</div>
+                        </section>
+                    </template>
+                </article>
+            </template>
+            <!-- Modern -->
+            <template if:true={isModern}>
+                <article class="resume-template resume-modern">
+                    <header class="resume-header">
+                        <img src={displayPhotoUrl} alt="" class="resume-photo" />
+                        <div class="resume-name">{fullName}</div>
+                        <div class="resume-title">{roleTitle}</div>
+                        <div class="resume-contact">{contactLine}</div>
+                    </header>
+                    <template if:true={hasSummary}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Summary</h3>
+                            <div class="section-content">{summary}</div>
+                        </section>
+                    </template>
+                    <template if:true={hasExperience}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Experience</h3>
+                            <template for:each={experienceList} for:item="exp">
+                                <div key={exp.id} class="resume-item">
+                                    <div class="item-title">{exp.title}</div>
+                                    <div class="item-sub">{exp.company} · {exp.dateLabel}</div>
+                                    <template if:true={exp.description}>
+                                        <div class="item-desc" lwc:dom="manual" data-exp-id={exp.id}></div>
+                                    </template>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+                    <template if:true={hasEducation}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Education</h3>
+                            <template for:each={educationList} for:item="edu">
+                                <div key={edu.id} class="resume-item">
+                                    <div class="item-title">{edu.degree}</div>
+                                    <div class="item-sub">{edu.school} · {edu.yearRange}<template if:true={edu.gpa}> · {edu.gpa}</template></div>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+                    <template if:true={hasSkills}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Skills</h3>
+                            <div class="skills-list">{skillsText}</div>
+                        </section>
+                    </template>
+                </article>
+            </template>
+            <!-- Classic -->
+            <template if:true={isClassic}>
+                <article class="resume-template resume-classic">
+                    <header class="resume-header">
+                        <div class="resume-name">{fullName}</div>
+                        <div class="resume-title">{roleTitle}</div>
+                        <div class="resume-contact">{contactLine}</div>
+                    </header>
+                    <template if:true={hasSummary}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Summary</h3>
+                            <div class="section-content">{summary}</div>
+                        </section>
+                    </template>
+                    <template if:true={hasExperience}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Work Experience</h3>
+                            <template for:each={experienceList} for:item="exp">
+                                <div key={exp.id} class="resume-item">
+                                    <div class="item-title">{exp.title}</div>
+                                    <div class="item-sub">{exp.company} — {exp.dateLabel}</div>
+                                    <template if:true={exp.description}>
+                                        <div class="item-desc" lwc:dom="manual" data-exp-id={exp.id}></div>
+                                    </template>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+                    <template if:true={hasEducation}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Education</h3>
+                            <template for:each={educationList} for:item="edu">
+                                <div key={edu.id} class="resume-item">
+                                    <div class="item-title">{edu.degree}</div>
+                                    <div class="item-sub">{edu.school}, {edu.yearRange}<template if:true={edu.gpa}> — {edu.gpa}</template></div>
+                                </div>
+                            </template>
+                        </section>
+                    </template>
+                    <template if:true={hasSkills}>
+                        <section class="resume-section">
+                            <h3 class="section-heading">Skills</h3>
+                            <div class="skills-list">{skillsText}</div>
+                        </section>
+                    </template>
+                </article>
+            </template>
+        </div>
+    </div>
+</template>

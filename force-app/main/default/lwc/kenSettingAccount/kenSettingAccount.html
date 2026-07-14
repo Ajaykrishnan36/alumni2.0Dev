@@ -1,0 +1,113 @@
+<template>
+    <div class="account-container">
+        <h1 class="header-title">Account Settings</h1>
+
+        <div class="form-container">
+            <!-- Legal & compliance Section -->
+            <div class="card settings-card">
+                <h2 class="card-title">Legal & Compliance</h2>
+                <div class="link-list">
+                    <div class="link-item" onclick={handleTermsClick}>
+                        <span class="link-text">Terms of Service</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="link-arrow">
+                            <path d="M5 12H19" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 5L19 12L12 19" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="link-item no-border" onclick={handlePrivacyClick}>
+                        <span class="link-text">Privacy Policy</span>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="link-arrow">
+                            <path d="M5 12H19" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M12 5L19 12L12 19" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete my account Section -->
+            <div class="card settings-card">
+                <div class="delete-item" onclick={handleDeleteAccountClick}>
+                    <span class="delete-text">Delete my Account</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="delete-icon">
+                        <path d="M3 6H21" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 6V20C19 21.1046 18.1046 22 17 22H7C5.89543 22 5 21.1046 5 20V6" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 6V4C8 2.89543 8.89543 2 10 2H14C15.1046 2 16 2.89543 16 4V6" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 11V17" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 11V17" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Account Modal -->
+        <template if:true={isDeleteModalOpen}>
+            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open custom-modal">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__content slds-p-around_large custom-modal-content">
+                        <div class="modal-header">
+                            <h2 class="modal-title">We're sorry to see you go :(</h2>
+                            <button class="close-btn" onclick={closeDeleteModal}>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path d="M18 6L6 18M6 6L18 18" stroke="#4B5563" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="form-group mb-24">
+                                <div class="select-wrapper">
+                                    <select class="custom-select" onchange={handleReasonChange}>
+                                        <option value="" disabled selected>Select a reason</option>
+                                        <option value="Takes too much of my time">Takes too much of my time</option>
+                                        <option value="Privacy concerns">Privacy concerns</option>
+                                        <option value="Not useful anymore">Not useful anymore</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group mb-8">
+                                <label class="field-label-dark">Enter OTP sent to user@gmail.com</label>
+                                <div class="otp-input-wrapper">
+                                    <input type="text" class="custom-text-input" placeholder="- - - -" value={otpInput} onchange={handleOtpChange} />
+                                    <span class="edit-btn">Edit</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn btn-outline footer-btn" onclick={openFeedbackModal}>Give us Another Chance</button>
+                            <button class="btn btn-primary footer-btn" onclick={confirmDeleteAccount}>Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open custom-backdrop"></div>
+        </template>
+
+        <!-- Feedback Modal -->
+        <template if:true={isFeedbackModalOpen}>
+            <section role="dialog" tabindex="-1" aria-modal="true" class="slds-modal slds-fade-in-open custom-modal">
+                <div class="slds-modal__container">
+                    <div class="slds-modal__content slds-p-around_large custom-modal-content feedback-modal">
+                        <div class="feedback-icon">
+                            <img src={celebrateGifUrl} alt="Celebrate" height="60" />
+                        </div>
+                        <h2 class="feedback-title">Thank you for staying back!</h2>
+                        <p class="feedback-subtitle">We'd love to know what wasn't working<br>— help us do better next time.</p>
+                        
+                        <div class="form-group mb-24 text-left">
+                            <textarea class="custom-textarea" placeholder="Tell us what made you consider leaving" onchange={handleFeedbackChange}></textarea>
+                        </div>
+
+                        <div class="feedback-footer">
+                            <button class="btn btn-outline feedback-btn" onclick={closeFeedbackModal}>Skip</button>
+                            <button class="btn btn-primary feedback-btn" onclick={submitFeedback}>Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open custom-backdrop"></div>
+        </template>
+    </div>
+</template>

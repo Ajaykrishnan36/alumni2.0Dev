@@ -1,0 +1,248 @@
+<template>
+    <template if:true={campaign}>
+        <div class="page">
+
+            <!-- Hero image -->
+            <div class="hero">
+                <template if:true={campaign.image}>
+                    <img src={campaign.image} alt={campaign.title} class="hero-img" onerror={handleHeroError}/>
+                </template>
+                <template if:false={campaign.image}>
+                    <div class="hero-placeholder"></div>
+                </template>
+                <div class="hero-overlay">
+                    <div class="hero-text">
+                        <h1>{campaign.title}</h1>
+                        <template if:true={campaign.category}>
+                            <span class="pill">{campaign.category}</span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="content">
+                <div class="left">
+
+                    <!-- Rejection reason banner -->
+                    <template if:true={showRejectionBanner}>
+                        <div class="rejection-banner">
+                            <div class="rejection-banner__header">
+                                <svg class="rejection-banner__icon" viewBox="0 0 20 20" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-4.75a.75.75 0 001.5 0v-4.5a.75.75 0 00-1.5 0v4.5zm.75-7a.75.75 0 100-1.5.75.75 0 000 1.5z" clip-rule="evenodd" fill="currentColor"/>
+                                </svg>
+                                <span class="rejection-banner__title">Reason for Rejection</span>
+                                <span class="rejection-banner__badge">Rejected</span>
+                            </div>
+                            <p class="rejection-banner__body">{campaign.rejectionReason}</p>
+                        </div>
+                    </template>
+
+                    <h3>About the campaign</h3>
+                    <p class="body">{campaign.description}</p>
+
+                    <!-- External link -->
+                    <template if:true={hasExternalLink}>
+                        <div class="ext-link-section">
+                            <span class="label">External Fundraiser Link</span>
+                            <a href={campaign.externalLink} target="_blank" rel="noopener noreferrer" class="ext-link">{campaign.externalLink}</a>
+                        </div>
+                    </template>
+
+                    <template if:true={hasOwner}>
+                        <div class="owner">
+                            <span class="label">Posted by</span>
+                            <div class="owner-row">
+                                <template if:true={campaign.owner.avatar}>
+                                    <img src={campaign.owner.avatar} alt={campaign.owner.name} class="owner-avatar" onerror={handleAvatarError}/>
+                                </template>
+                                <template if:false={campaign.owner.avatar}>
+                                    <div class="owner-initials">{ownerInitials}</div>
+                                </template>
+                                <span>{campaign.owner.name}</span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="right card">
+                    <span class="label">Goal</span>
+                    <h2>{campaign.goal}</h2>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <template if:true={campaign.dateRange}>
+                    <div class="date">
+                        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M7 4a1 1 0 012 0h6a1 1 0 112 0h1a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h1zm12 6H5v8a1 1 0 001 1h12a1 1 0 001-1v-8zM5 8h14V6H5v2z" fill="currentColor"></path>
+                        </svg>
+                        <span>{campaign.dateRange}</span>
+                    </div>
+                </template>
+
+                <div class="actions">
+                    <!-- Countdown (upcoming < 24h) -->
+                    <template if:true={showCountdown}>
+                        <span class="countdown">{countdownLabel}</span>
+                    </template>
+
+                    <!-- Status badge — hidden when deletion requested (replaced by the indicator below) -->
+                    <template if:false={isDeletionRequested}>
+                        <span class={statusClass}>{campaign.campaignStatus}</span>
+                    </template>
+
+                    <!-- Requested to Delete indicator replaces the status badge -->
+                    <template if:true={isDeletionRequested}>
+                        <span class="status deletionrequested">Requested to Delete</span>
+                    </template>
+
+                    <!-- Delete + Edit — only for owner on In Review / Upcoming -->
+                    <template if:true={showActions}>
+                        <div class="delete-wrap">
+                            <button
+                                class="action-btn delete-btn"
+                                onclick={handleDelete}
+                                disabled={isDeleteDisabled}
+                                aria-label="Delete campaign"
+                            >Delete</button>
+                            <template if:true={isDeleteDisabled}>
+                                <span class="tooltip-text">{deleteTooltip}</span>
+                            </template>
+                        </div>
+                        <button class="action-btn edit-btn" onclick={handleEdit}>Edit</button>
+                    </template>
+
+                    <!-- Close Campaign — owner only, ongoing campaigns -->
+                    <template if:true={showCloseCampaign}>
+                        <button class="action-btn close-campaign-btn" onclick={handleCloseCampaign}>Close Campaign</button>
+                    </template>
+
+                    <!-- Admin: Approve / Reject (In Review) -->
+                    <template if:true={showAdminApproveReject}>
+                        <button class="action-btn approve-btn" onclick={handleAdminApprove} disabled={_adminActionLoading}>
+                            <template if:true={_adminActionLoading}>Processing…</template>
+                            <template if:false={_adminActionLoading}>Approve</template>
+                        </button>
+                        <button class="action-btn delete-btn" onclick={openAdminRejectModal} disabled={_adminActionLoading}>Reject</button>
+                    </template>
+
+                    <!-- Admin: Approve Deletion / Dismiss (Deletion Requested) -->
+                    <template if:true={showAdminDeletionActions}>
+                        <button class="action-btn delete-btn" onclick={openAdminApproveDeleteModal} disabled={_adminActionLoading}>Approve Deletion</button>
+                        <button class="action-btn edit-btn" onclick={handleAdminDismissDeletion} disabled={_adminActionLoading}>Dismiss</button>
+                    </template>
+
+                    <template if:true={_adminActionError}>
+                        <span class="admin-error">{_adminActionError}</span>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Delete success popup -->
+        <template if:true={_showDeleteSuccessPopup}>
+            <div class="success-popup-overlay" onclick={handleCloseSuccessPopup}>
+                <div class="success-popup" onclick={_stopPropagation}>
+                    <div class="success-icon-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="12" cy="12" r="12" fill="#1b8457"/>
+                            <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3 class="success-title">Request Sent</h3>
+                    <p class="success-body">Your request to delete this campaign has been submitted and is pending admin review.</p>
+                </div>
+            </div>
+        </template>
+
+        <!-- Admin: Reject campaign modal -->
+        <template if:true={_showAdminRejectModal}>
+            <div class="modal-overlay" onclick={closeAdminRejectModal}>
+                <div class="modal" onclick={_stopPropagation}>
+                    <p class="modal-question">Reject this campaign?</p>
+                    <div class="admin-reason-field">
+                        <label class="admin-reason-label">Reason for rejection</label>
+                        <textarea
+                            class="admin-reason-input"
+                            onchange={handleAdminRejectReasonChange}
+                            placeholder="Enter a reason (optional)…"
+                        ></textarea>
+                    </div>
+                    <template if:true={_adminActionError}>
+                        <p class="modal-error">{_adminActionError}</p>
+                    </template>
+                    <div class="modal-actions">
+                        <button class="modal-btn go-back-btn" onclick={closeAdminRejectModal} disabled={_adminActionLoading}>Cancel</button>
+                        <button class="modal-btn confirm-delete-btn" onclick={confirmAdminReject} disabled={_adminActionLoading}>
+                            <template if:true={_adminActionLoading}>Processing…</template>
+                            <template if:false={_adminActionLoading}>Confirm Reject</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Admin: Approve deletion modal -->
+        <template if:true={_showAdminApproveDeleteModal}>
+            <div class="modal-overlay" onclick={closeAdminApproveDeleteModal}>
+                <div class="modal" onclick={_stopPropagation}>
+                    <p class="modal-question">Permanently delete this campaign?</p>
+                    <p class="modal-subtitle">This cannot be undone.</p>
+                    <template if:true={_adminActionError}>
+                        <p class="modal-error">{_adminActionError}</p>
+                    </template>
+                    <div class="modal-actions">
+                        <button class="modal-btn go-back-btn" onclick={closeAdminApproveDeleteModal} disabled={_adminActionLoading}>Cancel</button>
+                        <button class="modal-btn confirm-delete-btn" onclick={confirmAdminApproveDeletion} disabled={_adminActionLoading}>
+                            <template if:true={_adminActionLoading}>Deleting…</template>
+                            <template if:false={_adminActionLoading}>Delete Permanently</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Close Campaign confirmation modal -->
+        <template if:true={_showCloseModal}>
+            <div class="modal-overlay" onclick={handleCancelClose}>
+                <div class="modal" onclick={_stopPropagation}>
+                    <p class="modal-question">Close this campaign?</p>
+                    <p class="modal-subtitle">The campaign will be marked as Completed and can no longer accept donations.</p>
+                    <template if:true={_closeError}>
+                        <p class="modal-error">{_closeError}</p>
+                    </template>
+                    <div class="modal-actions">
+                        <button class="modal-btn go-back-btn" onclick={handleCancelClose} disabled={_isClosing}>Cancel</button>
+                        <button class="modal-btn confirm-delete-btn" onclick={handleConfirmClose} disabled={_isClosing}>
+                            <template if:true={_isClosing}>Closing…</template>
+                            <template if:false={_isClosing}>Close Campaign</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Delete confirmation modal -->
+        <template if:true={_showDeleteModal}>
+            <div class="modal-overlay" onclick={handleCancelDelete}>
+                <div class="modal" onclick={_stopPropagation}>
+                    <p class="modal-question">Are you sure you want to request to delete this campaign?</p>
+                    <template if:true={_deleteError}>
+                        <p class="modal-error">{_deleteError}</p>
+                    </template>
+                    <div class="modal-actions">
+                        <button class="modal-btn go-back-btn" onclick={handleCancelDelete} disabled={_isDeleting}>Go Back</button>
+                        <button class="modal-btn confirm-delete-btn" onclick={handleConfirmDelete} disabled={_isDeleting}>
+                            <template if:true={_isDeleting}>Deleting…</template>
+                            <template if:false={_isDeleting}>Request Deletion</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+    </template>
+</template>

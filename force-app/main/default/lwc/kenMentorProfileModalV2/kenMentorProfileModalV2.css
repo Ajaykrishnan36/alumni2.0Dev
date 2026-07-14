@@ -1,0 +1,86 @@
+.modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,0.6);
+    z-index:9999;
+    display:flex !important;
+    align-items:center !important;        /* center the modal in the viewport */
+    justify-content:center !important;
+    padding:32px 24px;
+    overflow:hidden !important;           /* backdrop never scrolls — modal handles it internally */
+}
+.modal{
+    background:#F6F8FB;
+    border-radius:14px;
+    width:100%;
+    position:relative;
+    max-height:90vh !important;           /* bound the panel to the viewport */
+    display:flex !important;
+    flex-direction:column !important;     /* stack close button + scrollable body */
+    overflow:hidden !important;           /* internal scroller takes over */
+}
+.modal--lg{max-width:720px}
+.modal--xl{max-width:1080px}
+.modal__close{position:absolute;top:12px;right:12px;width:32px;height:32px;background:#fff;border:1px solid #E5E6E8;border-radius:50%;font-size:18px;cursor:pointer;color:#1F2937;z-index:5}
+
+/* The grid holding the main + side columns is now the scrollable region */
+.mp-grid{
+    display:grid;
+    grid-template-columns:1fr 340px;
+    gap:14px;
+    padding:18px;
+    flex:1 1 auto !important;
+    min-height:0 !important;              /* required so flex child can actually shrink + scroll */
+    overflow-y:auto !important;           /* internal scrolling — modal stays anchored */
+    padding-right:14px;                   /* buffer so reviews don't slam into the scrollbar */
+}
+@media (max-width: 920px){ .mp-grid{grid-template-columns:1fr} }
+
+.mp__main{display:flex;flex-direction:column;gap:14px}
+
+.mp__hero{background:#fff;border-radius:12px;padding:24px;display:flex;gap:20px;align-items:center}
+.mp__av{width:120px;height:120px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:46px;flex-shrink:0}
+.mp__id{flex:1;min-width:0}
+.mp__name{font-weight:700;font-size:22px;margin:0 0 4px;display:flex;align-items:center;gap:6px}
+.mp__verified{background:#3061FF;color:#fff;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px}
+.mp__role{font-weight:600;font-size:14px;color:#3061FF;margin:0 0 6px}
+.mp__meta{font-weight:500;font-size:12.5px;color:#5F6271;margin:0 0 12px;display:flex;gap:14px;flex-wrap:wrap}
+.mp__stats{display:flex;gap:24px;flex-wrap:wrap}
+.stt{font-weight:500;font-size:12px;color:#5F6271}
+.stt strong{display:block;font-weight:700;font-size:18px;color:#1F2937}
+
+.sec{background:#fff;border-radius:12px;padding:22px 24px}
+.sec h3{font-weight:600;font-size:15px;margin:0 0 12px;color:#1F2937}
+.sec p{font-weight:500;font-size:13.5px;color:#373A45;line-height:1.6;margin:0}
+.exp-tags{display:flex;flex-wrap:wrap;gap:6px}
+.exp-tag{padding:5px 12px;background:#F3E8FF;color:#7C3AED;border-radius:999px;font-weight:600;font-size:12px}
+
+.rev{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #EEF0F3}
+.rev:last-child{border-bottom:0}
+.rev__av{width:38px;height:38px;border-radius:50%;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rev__b{flex:1;min-width:0}
+.rev__h{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px}
+.rev__n{font-weight:600;font-size:13px;margin:0;color:#1F2937}
+.rev__r{font-weight:700;font-size:12px;color:#F59E0B}
+.rev__t{font-weight:500;font-size:12.5px;color:#5F6271;margin:0;line-height:1.5}
+.rev__d{font-weight:500;font-size:11px;color:#9DA0A8;margin:4px 0 0}
+
+.mp__side{display:flex;flex-direction:column;gap:14px;position:sticky;top:14px;align-self:start}
+.book{background:#fff;border-radius:12px;padding:22px;border:1.5px solid #B5C5FF}
+.book h3{font-weight:700;font-size:16px;margin:0 0 4px;color:#1F2937}
+.book__price{font-weight:500;font-size:13px;color:#5F6271;margin:0 0 14px}
+.book__price strong{color:#1F2937;font-weight:700}
+.book__cta{width:100%;height:46px;border-radius:8px;background:#3061FF;color:#fff;font-weight:600;font-size:14px;border:0;cursor:pointer;margin-bottom:8px}
+.book__cta2{width:100%;height:42px;border-radius:8px;background:#fff;color:#3061FF;font-weight:600;font-size:13px;border:1.5px solid #B5C5FF;cursor:pointer}
+
+.cal{background:#fff;border-radius:12px;padding:20px}
+.cal h3{font-weight:600;font-size:14px;margin:0 0 12px;color:#1F2937}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cd{font-weight:500;font-size:11px;text-align:center;padding:8px 4px;border-radius:6px;border:1px solid #EEF0F3;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+.cd__d{display:block;font-weight:700;font-size:14px;color:#1F2937}
+.cd__l{font-size:10px;color:#9DA0A8;line-height:1.2}
+.cd--on{background:#3061FF;color:#fff;border-color:#3061FF}
+.cd--on .cd__d,.cd--on .cd__l{color:#fff}
+.cd--full{opacity:0.4;cursor:not-allowed}
+.cd--has{border-color:#19A974;background:#ECFDF5}
+.cd--has .cd__l{color:#19A974;font-weight:600}

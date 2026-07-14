@@ -1,0 +1,176 @@
+:host {
+    display: block;
+    width: 100%;
+    font-family: 'General Sans', sans-serif;
+}
+
+.sp-wrapper {
+    position: relative;
+    width: 100%;
+    paddin-bottom: 10px;
+}
+
+/* Trigger row — matches the phone field: white bg, 1px #D8D8D8, 8px radius */
+.sp-control {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 32px;
+    box-sizing: border-box;
+    padding: 0 16px;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    background: #ffffff;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.sp-control:focus,
+.is-open .sp-control {
+    border-color: var(--primary-color, #ffffff);
+}
+
+/* Inline validation error (driven by setCustomValidity/reportValidity) */
+.sp-control-error {
+    border-color: #C02B2B;
+}
+
+.sp-error {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #C02B2B;
+    font-family: 'General Sans', sans-serif;
+    padding-left: 4px;
+}
+
+.is-disabled .sp-control {
+    background: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.sp-trigger-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.875rem;
+    color: #373a45;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sp-trigger-text.sp-placeholder {
+    color: #9ca3af;
+    font-size: 0.875rem;
+    font-weight: 400;
+}
+
+.sp-icon-btn {
+    border: none;
+    background: transparent;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.sp-clear lightning-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+}
+
+.sp-arrow {
+    width: 12px;
+    height: 12px;
+    color: #6b7280;
+    flex-shrink: 0;
+    margin-left: 4px;
+    transition: transform 0.15s ease;
+}
+
+.is-open .sp-arrow {
+    transform: rotate(180deg);
+}
+
+/* Dropdown — fixed positioning escapes overflow/stacking-context clipping.
+   top/left/width are set inline by JS from the trigger's bounding rect. */
+.sp-dropdown {
+    position: fixed;
+    background: #ffffff;
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 9000;
+    max-height: 300px;
+    width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 1;
+}
+
+.sp-search-wrap {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.sp-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    border: 1px solid #d8d8d8;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'General Sans', sans-serif;
+    outline: none;
+}
+
+.sp-search:focus {
+    border-color: var(--primary-color, #ffffff);
+}
+
+.sp-list {
+    overflow-y: auto;
+    max-height: 250px;
+    background: #ffffff;
+}
+
+.sp-option {
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #111827;
+    cursor: pointer;
+    font-family: 'General Sans', sans-serif;
+    transition: background-color 0.15s ease;
+}
+
+.sp-option:hover,
+.sp-option.is-active {
+    background-color: #f3f4f6;
+}
+
+.sp-option.is-selected {
+    background-color: #eef2ff;
+    font-weight: 500;
+}
+
+.sp-empty {
+    padding: 10px 12px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+@media (max-width: 768px) {
+    .sp-dropdown {
+        max-height: 250px;
+    }
+
+    .sp-list {
+        max-height: 200px;
+    }
+}

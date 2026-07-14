@@ -1,0 +1,144 @@
+<template>
+    <div class="resource-upload-page">
+        <div class="page-container">
+            <!-- Two Column Layout -->
+            <div class="upload-layout">
+                <!-- Left Side - File Upload Area -->
+                <div class="upload-section">
+                    <template if:true={hasNoFiles}>
+                        <div
+                            class="upload-area"
+                            data-upload-area="true"
+                            ondrop={handleDrop}
+                            ondragover={handleDragOver}
+                            ondragleave={handleDragLeave}
+                            onclick={handleUploadClick}
+                        >
+                            <div class="upload-placeholder">
+                                <lightning-icon
+                                    icon-name="utility:file"
+                                    size="large"
+                                    class="upload-icon"
+                                ></lightning-icon>
+                                <p class="upload-text">Drag and drop your files here</p>
+                                <p class="upload-info">Max file size 16 mb</p>
+                                <p class="upload-info">Supported formats: PDF, DOC, XLS, JPG, MP3, MP4</p>
+                            </div>
+                            <input
+                                type="file"
+                                class="file-input"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.mp3,.mp4"
+                                multiple
+                                data-file-input="true"
+                                onchange={handleFileSelect}
+                            />
+                            <lightning-button
+                                variant="neutral"
+                                label="Choose File"
+                                icon-name="utility:file"
+                                onclick={handleUploadClick}
+                                class="upload-button"
+                            ></lightning-button>
+                        </div>
+                    </template>
+
+                    <template if:true={hasFiles}>
+                        <div class="uploaded-files-container">
+                            <div class="uploaded-files-list">
+                                <template for:each={uploadedFiles} for:item="file">
+                                    <div key={file.id} class="file-card">
+                                        <div class={fileTypeIconClass}>
+                                            <span class="file-type-text">{fileType}</span>
+                                        </div>
+                                        <div class="file-info">
+                                            <p class="file-name">{file.name}</p>
+                                            <p class="file-size">{fileSize}</p>
+                                        </div>
+                                        <button
+                                            class="delete-file-btn"
+                                            type="button"
+                                            data-file-id={file.id}
+                                            onclick={handleRemoveFile}
+                                            title="Delete file"
+                                        >
+                                            <lightning-icon
+                                                icon-name="utility:delete"
+                                                size="x-small"
+                                            ></lightning-icon>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                            <lightning-button
+                                variant="neutral"
+                                label="+ Add More Files"
+                                icon-name="utility:add"
+                                onclick={handleUploadClick}
+                                class="add-more-button"
+                            ></lightning-button>
+                            <input
+                                type="file"
+                                class="file-input"
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.mp3,.mp4"
+                                multiple
+                                data-file-input="true"
+                                onchange={handleFileSelect}
+                            />
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Right Side - File Details Form -->
+                <div class="details-section">
+                    <h2 class="details-title">File details</h2>
+                    <div class="form-container">
+                        <div class="form-field">
+                            <lightning-input
+                                label="Title"
+                                value={fileTitle}
+                                onchange={handleTitleChange}
+                                placeholder="Enter file title"
+                                class="form-input"
+                            ></lightning-input>
+                        </div>
+                        <div class="form-field">
+                            <lightning-combobox
+                                label="Category"
+                                value={category}
+                                options={categoryOptions}
+                                onchange={handleCategoryChange}
+                                placeholder="Select category"
+                                class="form-input"
+                            ></lightning-combobox>
+                        </div>
+                        <div class="form-field">
+                            <lightning-input
+                                label="Description"
+                                value={description}
+                                onchange={handleDescriptionChange}
+                                placeholder="Enter description"
+                                type="textarea"
+                                class="form-input"
+                            ></lightning-input>
+                        </div>
+                    </div>
+                    <div class="page-actions">
+                        <lightning-button
+                            variant="neutral"
+                            label="Cancel"
+                            onclick={handleCancel}
+                            class="cancel-button"
+                        ></lightning-button>
+                        <lightning-button
+                            variant="brand"
+                            label="Post"
+                            onclick={handlePost}
+                            disabled={hasNoFiles}
+                            class="post-button"
+                        ></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,404 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="feedback">
+
+        <!-- ============ VIEW: MAIN BOARD ============ -->
+        <template lwc:if={viewState.isMainBoard}>
+            <section class="board">
+                <header class="board__header">
+                    <div>
+                        <h1 class="board__title">Feedback &amp; Survey</h1>
+                        <p class="board__crumbs">Home &gt; Feedback &amp; Survey</p>
+                    </div>
+                    <div class="board__search">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9DA0A8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" placeholder="Search surveys" oninput={handleSearch} value={searchQuery} />
+                    </div>
+                </header>
+
+                <div class="board__grid">
+                    <!-- LEFT: All Surveys -->
+                    <div class="board__main card">
+                        <div class="card__row">
+                            <h2 class="card__title">All Surveys &amp; Feedback</h2>
+                            <div class="chips">
+                                <template for:each={filterChips} for:item="c">
+                                    <button key={c.key} type="button" class={c.cls} data-key={c.key} onclick={handleFilterChip}>{c.label}</button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <template lwc:if={isLoading}>
+                            <p class="empty">Loading surveys…</p>
+                        </template>
+                        <template lwc:elseif={hasAllSurveys}>
+                            <div class="surveys">
+                                <template for:each={filteredAllSurveys} for:item="s">
+                                    <article key={s.id} class="survey-card">
+                                        <div class="survey-card__main">
+                                            <h3 class="survey-card__title survey-card__title--clamp">{s.title}</h3>
+                                            <p class="survey-card__meta">Survey Period: <strong>{s.period}</strong></p>
+                                            <div class="survey-card__stats">
+                                                <span class="stat"><span class="stat__label">Total Questions</span><span class="stat__val">{s.questionsCount}</span></span>
+                                                <span class="stat"><span class="stat__label">Est. Time</span><span class="stat__val">~{s.estimatedMinutes} min</span></span>
+                                                <span class="stat"><span class="stat__label">Responses</span><span class="stat__val">{s.responsesText}</span></span>
+                                            </div>
+                                        </div>
+                                        <div class="survey-card__side">
+                                            <span class={s.statusClass}>{s.status}</span>
+                                            <template lwc:if={s.isCompleted}>
+                                                <button type="button" class="btn btn--completed" disabled>✓ Completed</button>
+                                            </template>
+                                            <template lwc:else>
+                                                <button type="button" class="btn btn--primary" data-id={s.id} onclick={handleStartSurvey}>Start Survey</button>
+                                            </template>
+                                            <!-- These are surveys created by OTHERS (creator excluded server-side),
+                                                 so a non-creator may Start or View Details — but never Edit. -->
+                                            <button type="button" class="btn btn--ghost-link" data-id={s.id} onclick={handleOpenDetail}>View Details</button>
+                                        </div>
+                                    </article>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty empty--card">
+                                <div class="empty__icon" aria-hidden="true">📭</div>
+                                <h3 class="empty__title">No surveys assigned</h3>
+                                <p class="empty__copy">There are no surveys for you right now. Check back soon.</p>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- RIGHT: rail -->
+                    <aside class="board__rail">
+                        <div class="card">
+                            <div class="card__row">
+                                <h2 class="card__title">Your Created Surveys</h2>
+                                <template lwc:if={hasMySurveys}>
+                                    <button type="button" class="btn btn--ghost-link" onclick={handleOpenCreated}>View All</button>
+                                </template>
+                            </div>
+                            <template lwc:if={isLoading}>
+                                <p class="empty">Loading…</p>
+                            </template>
+                            <template lwc:elseif={hasMySurveys}>
+                                <ul class="my-list">
+                                    <template for:each={myCreatedPreview} for:item="m">
+                                        <li key={m.id} class="my-list__item" data-id={m.id} onclick={handleOpenDetail}>
+                                            <div class="my-list__body">
+                                                <p class="my-list__title my-list__title--clamp">{m.title}</p>
+                                                <p class="my-list__sub">{m.period}</p>
+                                                <div class="my-list__actions">
+                                                    <button type="button" class="row-action row-action--view" data-id={m.id} onclick={handleOpenDetail}>View Details</button>
+                                                    <button type="button" class="row-action row-action--edit" data-id={m.id} onclick={handleEditSurvey}>Edit</button>
+                                                </div>
+                                            </div>
+                                            <div class="my-list__right">
+                                                <span class={m.pillClass}>{m.bucket}</span>
+                                                <span class="chev">›</span>
+                                            </div>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </template>
+                            <template lwc:else>
+                                <div class="empty empty--card">
+                                    <div class="empty__icon" aria-hidden="true">📋</div>
+                                    <h3 class="empty__title">No surveys yet</h3>
+                                    <p class="empty__copy">You haven't created any surveys. Start one to gather feedback.</p>
+                                    <button type="button" class="btn btn--primary" onclick={handleOpenCreate}>Create Survey</button>
+                                </div>
+                            </template>
+                        </div>
+
+                        <template lwc:if={hasMySurveys}>
+                            <div class="cta-card" onclick={handleOpenCreate}>
+                                <div class="cta-card__icon">📋</div>
+                                <h3 class="cta-card__title">Create New Survey</h3>
+                                <p class="cta-card__sub">Design your own survey and gather valuable feedback from the alumni community.</p>
+                                <button type="button" class="btn btn--white">Create →</button>
+                            </div>
+                        </template>
+                    </aside>
+                </div>
+            </section>
+        </template>
+
+        <!-- ============ VIEW: CREATED SURVEYS ============ -->
+        <template lwc:if={viewState.isCreatedSurveys}>
+            <section class="created-shell">
+                <header class="board__header">
+                    <div>
+                        <h1 class="board__title">Created Surveys</h1>
+                        <p class="board__crumbs">Home &gt; Feedback &amp; Survey</p>
+                    </div>
+                    <div class="header-actions">
+                        <button type="button" class="btn btn--ghost" onclick={handleCreatedBack}>← Back</button>
+                        <button type="button" class="btn btn--primary" onclick={handleOpenCreate}>Create New Survey</button>
+                    </div>
+                </header>
+
+                <div class="created-toolbar">
+                    <div class="created-tabs">
+                        <template for:each={createdTabs} for:item="t">
+                            <button key={t.key} type="button" class={t.cls} data-key={t.key} onclick={handleCreatedTab}>
+                                {t.label} <span class="ctab__count">{t.count}</span>
+                            </button>
+                        </template>
+                    </div>
+                    <div class="created-controls">
+                        <div class="board__search">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9DA0A8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            <input type="text" placeholder="Search surveys" oninput={handleCreatedSearch} value={createdSearch} />
+                        </div>
+                        <select class="created-sort" onchange={handleCreatedSort}>
+                            <option value="recent">Sort: Most Recent</option>
+                            <option value="title">Sort: Title (A–Z)</option>
+                            <option value="responses">Sort: Most Responses</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <template lwc:if={isLoading}>
+                        <p class="empty">Loading surveys…</p>
+                    </template>
+                    <template lwc:elseif={hasCreatedSurveys}>
+                        <div class="surveys">
+                            <template for:each={createdSurveysList} for:item="s">
+                                <article key={s.id} class="survey-card">
+                                    <div class="survey-card__main">
+                                        <h3 class="survey-card__title survey-card__title--clamp">{s.title}</h3>
+                                        <p class="survey-card__meta">Survey Period: <strong>{s.period}</strong></p>
+                                        <div class="survey-card__stats">
+                                            <span class="stat"><span class="stat__label">Total Questions</span><span class="stat__val">{s.questionsCount}</span></span>
+                                            <span class="stat"><span class="stat__label">Responses</span><span class="stat__val">{s.responsesText}</span></span>
+                                        </div>
+                                    </div>
+                                    <div class="survey-card__side">
+                                        <span class={s.statusClass}>{s.status}</span>
+                                        <button type="button" class="btn btn--primary" data-id={s.id} onclick={handleOpenDetail}>View Details</button>
+                                        <button type="button" class="btn btn--ghost-link" data-id={s.id} onclick={handleEditSurvey}>Edit</button>
+                                    </div>
+                                </article>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty empty--card">
+                            <div class="empty__icon" aria-hidden="true">📋</div>
+                            <h3 class="empty__title">No {createdTab} surveys</h3>
+                            <p class="empty__copy">You have no surveys in this category yet.</p>
+                            <button type="button" class="btn btn--primary" onclick={handleOpenCreate}>Create New Survey</button>
+                        </div>
+                    </template>
+                </div>
+            </section>
+        </template>
+
+        <!-- ============ VIEW: TAKING SURVEY ============ -->
+        <template lwc:if={viewState.isTakingSurvey}>
+            <section class="take-shell">
+                <header class="board__header">
+                    <div>
+                        <h1 class="board__title">{takeSurvey.title}</h1>
+                        <p class="board__crumbs">Home &gt; Feedback &amp; Survey</p>
+                    </div>
+                    <button type="button" class="btn btn--ghost" onclick={handleTakeClose}>← Back</button>
+                </header>
+                <c-ken-survey-take-flow-v2 survey={takeSurvey} questions={takeQuestions} onclose={handleTakeClose} onsubmit={handleTakeSubmit}></c-ken-survey-take-flow-v2>
+            </section>
+        </template>
+
+        <!-- ============ VIEW: CREATE SURVEY ============ -->
+        <template lwc:if={viewState.isCreatingSurvey}>
+            <section class="create-shell">
+                <header class="board__header">
+                    <div>
+                        <h1 class="board__title">Create Survey</h1>
+                        <p class="board__crumbs">Home &gt; Feedback &amp; Survey</p>
+                    </div>
+                    <button type="button" class="btn btn--ghost" onclick={handleCreateClose}>← Back</button>
+                </header>
+                <c-ken-survey-create-wizard-v2 seed={wizardSeed} onclose={handleCreateClose} onsubmit={handleCreateSubmit} onreviewaudience={handleReviewAudience}></c-ken-survey-create-wizard-v2>
+            </section>
+        </template>
+
+        <!-- ============ VIEW: SURVEY DETAIL ============ -->
+        <template lwc:if={viewState.isSurveyDetail}>
+            <section class="detail-shell">
+                <header class="board__header">
+                    <div>
+                        <template lwc:if={detailSurvey}>
+                            <h1 class="board__title survey-title-clamp">{detailSurvey.title}</h1>
+                        </template>
+                        <p class="board__crumbs">Home &gt; Feedback &amp; Survey &gt; Details</p>
+                    </div>
+                    <div class="header-actions">
+                        <button type="button" class="btn btn--ghost" onclick={handleDetailBack}>← Back</button>
+                        <template lwc:if={detailSurvey.canDelete}>
+                            <button type="button" class="btn btn--outline" data-id={selectedSurveyId} onclick={handleEditSurvey}>Edit</button>
+                            <button type="button" class="btn btn--danger-outline" onclick={handleDeleteClick}>Delete Survey</button>
+                        </template>
+                    </div>
+                </header>
+
+                <template lwc:if={isLoadingDetail}>
+                    <p class="empty">Loading details…</p>
+                </template>
+
+                <template lwc:if={detailSurvey}>
+                    <div class="detail-grid">
+                        <div class="detail-left">
+                            <div class="card">
+                                <div class="card__row">
+                                    <h2 class="card__title">About the Survey</h2>
+                                    <span class={detailSurvey.statusClass}>{detailSurvey.status}</span>
+                                </div>
+                                <p class="detail__desc">{detailSurvey.description}</p>
+                                <div class="detail__meta">
+                                    <div class="meta-item"><label>Category</label><p>{detailSurvey.category}</p></div>
+                                    <div class="meta-item"><label>Survey Period</label><p>{detailSurvey.period}</p></div>
+                                    <div class="meta-item"><label>Est. Duration</label><p>~{detailSurvey.estimatedMinutes} min</p></div>
+                                    <div class="meta-item"><label>Total Responses</label><p>{detailSurvey.responsesCount}</p></div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <h2 class="card__title">Target Audience</h2>
+                                <div class="pills">
+                                    <template for:each={detailSurvey.audiencePills} for:item="p">
+                                        <span key={p.key} class="audience-pill">{p.label}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="detail-right">
+                            <div class="card">
+                                <h2 class="card__title">Survey ({detailSurvey.questionsCount} Questions)</h2>
+                                <ol class="q-preview">
+                                    <template for:each={detailSurvey.questions} for:item="q">
+                                        <li key={q.id} class="q-preview__item">
+                                            <p class="q-preview__title q-preview__title--clamp">{q.number}. {q.label}</p>
+                                            <p class="q-preview__type">{q.type}</p>
+                                            <template lwc:if={q.hasOptions}>
+                                                <ul class="q-preview__opts">
+                                                    <template for:each={q.options} for:item="o">
+                                                        <li key={o}>{o}</li>
+                                                    </template>
+                                                </ul>
+                                            </template>
+                                        </li>
+                                    </template>
+                                </ol>
+                                <!-- The creator views their own survey's RESULTS and can never start it. -->
+                                <template lwc:if={detailSurvey.isOwned}>
+                                    <p class="empty" lwc:if={isLoadingResults}>Loading responses…</p>
+                                </template>
+                                <template lwc:elseif={detailSurvey.isCompleted}>
+                                    <button type="button" class="btn btn--completed btn--block" disabled>✓ You've completed this survey</button>
+                                </template>
+                                <template lwc:else>
+                                    <button type="button" class="btn btn--primary btn--block" onclick={handleStartFromDetail}>Start Survey</button>
+                                </template>
+                            </div>
+
+                            <!-- ===== Creator results panel ===== -->
+                            <template lwc:if={detailSurvey.isOwned}>
+                                <div class="card">
+                                    <div class="card__row">
+                                        <h2 class="card__title">Responses</h2>
+                                        <template lwc:if={surveyResults}>
+                                            <span class="pill pill--approved">{surveyResults.totalResponses} total</span>
+                                        </template>
+                                    </div>
+                                    <template lwc:if={isLoadingResults}>
+                                        <p class="empty">Loading responses…</p>
+                                    </template>
+                                    <template lwc:elseif={surveyResults}>
+                                        <ol class="results">
+                                            <template for:each={surveyResults.questions} for:item="rq">
+                                                <li key={rq.id} class="results__item">
+                                                    <p class="results__q">{rq.number}. {rq.label}</p>
+                                                    <p class="results__count">{rq.responseCount} responses</p>
+                                                    <template lwc:if={rq.hasStats}>
+                                                        <ul class="results__stats">
+                                                            <template for:each={rq.stats} for:item="st">
+                                                                <li key={st.key} class="results__stat">
+                                                                    <div class="results__stat-row">
+                                                                        <span class="results__stat-label">{st.label}</span>
+                                                                        <span class="results__stat-num">{st.count} ({st.percent}%)</span>
+                                                                    </div>
+                                                                    <div class="results__bar"><div class="results__bar-fill" style={st.barStyle}></div></div>
+                                                                </li>
+                                                            </template>
+                                                        </ul>
+                                                    </template>
+                                                </li>
+                                            </template>
+                                        </ol>
+                                    </template>
+                                    <template lwc:else>
+                                        <p class="empty">No responses yet.</p>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </section>
+        </template>
+
+        <!-- ============ MICRO MODALS ============ -->
+        <!-- 1) "Your Opinion Matters!" intro before taking -->
+        <template lwc:if={showOpinionModal}>
+            <div class="micro-backdrop" onclick={handleCloseOpinion}>
+                <div class="micro-modal" onclick={handleCloseOpinion}>
+                    <div class="micro-modal__art">📝</div>
+                    <h2 class="micro-modal__title">Your Opinion Matters!</h2>
+                    <p class="micro-modal__desc">This survey is essential to help us enhance engagement &amp; deliver value to your interest. Help us by answering a few questions.</p>
+                    <div class="micro-modal__actions">
+                        <button type="button" class="btn btn--ghost" onclick={handleCloseOpinion}>Go Back</button>
+                        <button type="button" class="btn btn--primary" onclick={handleConfirmOpinion}>Get Started</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- 2) "Review Saved Audience" summary -->
+        <template lwc:if={showAudienceReviewModal}>
+            <div class="micro-backdrop" onclick={handleCloseAudienceReview}>
+                <div class="micro-modal micro-modal--lg" onclick={handleCloseAudienceReview}>
+                    <h2 class="micro-modal__title">Review Saved Audience</h2>
+                    <p class="micro-modal__desc">Your saved audience targets the alumni segments you selected. Estimated reach: ~124 members.</p>
+                    <div class="pills">
+                        <span class="audience-pill">2020 Batch</span>
+                        <span class="audience-pill">CSE</span>
+                        <span class="audience-pill">School of Engineering</span>
+                    </div>
+                    <div class="micro-modal__actions">
+                        <button type="button" class="btn btn--primary" onclick={handleCloseAudienceReview}>Close</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- 3) Delete confirmation -->
+        <template lwc:if={showDeleteModal}>
+            <div class="micro-backdrop" onclick={handleCloseDelete}>
+                <div class="micro-modal" onclick={handleCloseDelete}>
+                    <h2 class="micro-modal__title">Delete this survey?</h2>
+                    <p class="micro-modal__desc">This will permanently delete the survey, its questions, and all collected responses. This action cannot be undone.</p>
+                    <div class="micro-modal__actions">
+                        <button type="button" class="btn btn--ghost" onclick={handleCloseDelete}>Cancel</button>
+                        <button type="button" class="btn btn--danger" onclick={handleConfirmDelete}>Delete Survey</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={showToast}>
+            <div class="toast">{toastMsg}</div>
+        </template>
+    </c-ken42-alumni-shell-v2>
+</template>

@@ -1,0 +1,149 @@
+<template>
+    <div class="mobile-only-header">
+        <div class="mobile-left">
+            <img src={kenLogo} class="mobile-logo" alt="Ken42 Logo" />
+        </div>
+        <div class="mobile-right">
+            <c-ken-notification></c-ken-notification>
+            <button type="button" class="mobile-menu-btn" onclick={handleMenuClick} aria-label="Menu">
+                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_10439_6499)">
+                    <path d="M4 18H20C20.55 18 21 17.55 21 17C21 16.45 20.55 16 20 16H4C3.45 16 3 16.45 3 17C3 17.55 3.45 18 4 18ZM4 13H20C20.55 13 21 12.55 21 12C21 11.45 20.55 11 20 11H4C3.45 11 3 11.45 3 12C3 12.55 3.45 13 4 13ZM3 7C3 7.55 3.45 8 4 8H20C20.55 8 21 7.55 21 7C21 6.45 20.55 6 20 6H4C3.45 6 3 6.45 3 7Z" fill="#585A64"/>
+                    </g>
+                    <defs>
+                    <clipPath id="clip0_10439_6499">
+                    <rect width="24" height="24" fill="white"/>
+                    </clipPath>
+                    </defs>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Navigation Menu Overlay -->
+    <template if:true={isMobileMenuOpen}>
+        <div class="mobile-nav-wrapper">
+            <div class="mobile-nav-header">
+                <button type="button" class="mobile-profile-info" onclick={navigateToMyProfile} onkeydown={handleMobileProfileKeydown}>
+                    <img src={profilePhotoUrl} alt="Profile" class="mobile-profile-pic" />
+                    <span class="mobile-profile-name">{studentName}</span>
+                    <template if:true={graduationYear}>
+                        <p class="mobile-profile-batch">Batch - {graduationYear}</p>
+                    </template>
+                </button>
+                <button class="mobile-nav-close" onclick={handleCloseMenu}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18" stroke="#373A45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 6L18 18" stroke="#373A45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <!-- Utility actions: Settings, Schedule, Chat -->
+            <div class="mobile-utility-actions">
+                <button type="button" class="mobile-utility-item" onclick={handleMobileSettingsClick}>
+                    <span class="mobile-utility-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21.345 10.7477C22.1898 11.3688 22.1898 12.6313 21.345 13.2524C19.9471 14.2799 19.2359 16.0036 19.498 17.7186C19.6568 18.7586 18.7581 19.6573 17.7181 19.4985C16.0031 19.2364 14.2794 19.9476 13.2519 21.3455C12.6308 22.1903 11.3684 22.1903 10.7473 21.3455C9.71975 19.9476 7.99609 19.2364 6.28107 19.4985C5.24109 19.6573 4.3423 18.7586 4.50119 17.7186C4.76321 16.0036 4.05214 14.2799 2.65423 13.2524C1.80927 12.6313 1.80927 11.3688 2.65423 10.7477C4.05214 9.72024 4.76321 7.99658 4.50119 6.28156C4.3423 5.24158 5.24109 4.34278 6.28107 4.50168C7.99609 4.7637 9.71975 4.05263 10.7473 2.65472C11.3684 1.80975 12.6308 1.80975 13.2519 2.65472C14.2794 4.05263 16.0031 4.7637 17.7181 4.50168C18.7581 4.34278 19.6568 5.24158 19.498 6.28156C19.2359 7.99658 19.9471 9.72024 21.345 10.7477Z" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M11.9994 16.0833C14.6128 16.0833 16.0828 14.6132 16.0828 11.9999C16.0828 9.38653 14.6128 7.9165 11.9994 7.9165C9.38604 7.9165 7.91602 9.38653 7.91602 11.9999C7.91602 14.6132 9.38604 16.0833 11.9994 16.0833Z" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span class="mobile-utility-label">Settings</span>
+                </button>
+
+                <button type="button" class="mobile-utility-item" onclick={handleMobileCalendarClick}>
+                    <span class="mobile-utility-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7.17871 10.4722H7.98228" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7.17871 15.2939H7.98228" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M11.5986 10.4722H12.4022" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M16.0186 10.4722H16.8221" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M11.5986 15.2939H12.4022" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2.6753 17.6657C2.9346 19.979 4.81484 21.8157 7.13994 21.9277C8.747 22.0052 10.3887 22.0453 12.1704 22.0453C13.9522 22.0453 15.5938 22.0052 17.2008 21.9277C19.526 21.8157 21.4062 19.979 21.6655 17.6657C21.8402 16.1079 21.9834 14.5107 21.9834 12.8837C21.9834 11.2568 21.8402 9.65961 21.6655 8.10179C21.4062 5.78849 19.526 3.95178 17.2008 3.83979C15.5938 3.76239 13.9522 3.72217 12.1704 3.72217C10.3887 3.72217 8.747 3.76239 7.13994 3.83979C4.81486 3.95178 2.9346 5.78849 2.6753 8.10179C2.50068 9.65961 2.35742 11.2568 2.35742 12.8837C2.35742 14.5107 2.50068 16.1079 2.6753 17.6657Z" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M7.58594 1.95557V5.97342" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M16.4199 1.95557V5.97342" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span class="mobile-utility-label">Schedule</span>
+                </button>
+
+                <button type="button" class="mobile-utility-item" onclick={handleMobileChatClick}>
+                    <span class="mobile-utility-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18.4789 4.28516H5.46278C4.69565 4.28516 3.95994 4.5899 3.4175 5.13234C2.87505 5.67478 2.57031 6.41049 2.57031 7.17762V14.4088C2.57031 15.1759 2.87505 15.9116 3.4175 16.4541C3.95994 16.9965 4.69565 17.3013 5.46278 17.3013H13.4171L17.7558 20.1937V17.3013H18.4789C19.246 17.3013 19.9817 16.9965 20.5242 16.4541C21.0666 15.9116 21.3713 15.1759 21.3713 14.4088V7.17762C21.3713 6.41049 21.0666 5.67478 20.5242 5.13234C19.9817 4.5899 19.246 4.28516 18.4789 4.28516Z" stroke="#565656" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span class="mobile-utility-label">Chat</span>
+                </button>
+            </div>
+            <!-- Divider -->
+            <div class="mobile-utility-divider"></div>
+
+            <c-ken-nav-bar 
+                class="mobile-embedded-menu"
+                link-set-master-label={linkSetMasterLabel}
+                add-home-menu-item=false
+                is-always-open=true>
+            </c-ken-nav-bar>
+        </div>
+        <button type="button" class="mobile-nav-backdrop" onclick={handleCloseMenu} aria-label="Close menu"></button>
+    </template>
+
+    <div class="header-container">
+        <div class="header-left">
+            <div class={myFeedCardClass}>
+                <span class="my-feed-text">{computedHeaderLabel}</span>
+                <c-ken-page-path onbreadcrumbvisibilitychange={handleBreadcrumbVisibilityChange}></c-ken-page-path>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="header-actions-card">
+                <div class="actions-icons">
+                <button type="button" class="icon-button" onclick={handleCalendarClick} aria-label="Calendar">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7.17871 10.4722H7.98228" stroke="#585A64" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M7.17871 15.2939H7.98228" stroke="#585A64" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M11.5986 10.4722H12.4022" stroke="#585A64" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M16.0186 10.4722H16.8221" stroke="#585A64" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M11.5986 15.2939H12.4022" stroke="#585A64" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path
+                            d="M2.6753 17.6657C2.9346 19.979 4.81484 21.8157 7.13994 21.9277C8.747 22.0052 10.3887 22.0453 12.1704 22.0453C13.9522 22.0453 15.5938 22.0052 17.2008 21.9277C19.526 21.8157 21.4062 19.979 21.6655 17.6657C21.8402 16.1079 21.9834 14.5107 21.9834 12.8837C21.9834 11.2568 21.8402 9.65961 21.6655 8.10179C21.4062 5.78849 19.526 3.95178 17.2008 3.83979C15.5938 3.76239 13.9522 3.72217 12.1704 3.72217C10.3887 3.72217 8.747 3.76239 7.13994 3.83979C4.81486 3.95178 2.9346 5.78849 2.6753 8.10179C2.50068 9.65961 2.35742 11.2568 2.35742 12.8837C2.35742 14.5107 2.50068 16.1079 2.6753 17.6657Z"
+                            stroke="#585A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path d="M7.58594 1.95557V5.97342" stroke="#585A64" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                        <path d="M16.4199 1.95557V5.97342" stroke="#585A64" stroke-width="1.5" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button type="button" class="icon-button" onclick={handleChatClick} aria-label="Chat">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.4789 4.28516H5.46278C4.69565 4.28516 3.95994 4.5899 3.4175 5.13234C2.87505 5.67478 2.57031 6.41049 2.57031 7.17762V14.4088C2.57031 15.1759 2.87505 15.9116 3.4175 16.4541C3.95994 16.9965 4.69565 17.3013 5.46278 17.3013H13.4171L17.7558 20.1937V17.3013H18.4789C19.246 17.3013 19.9817 16.9965 20.5242 16.4541C21.0666 15.9116 21.3713 15.1759 21.3713 14.4088V7.17762C21.3713 6.41049 21.0666 5.67478 20.5242 5.13234C19.9817 4.5899 19.246 4.28516 18.4789 4.28516Z"
+                            stroke="#585A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button type="button" class="icon-button" onclick={handleSettingsClick} aria-label="Settings">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M21.345 10.7477C22.1898 11.3688 22.1898 12.6313 21.345 13.2524C19.9471 14.2799 19.2359 16.0036 19.498 17.7186C19.6568 18.7586 18.7581 19.6573 17.7181 19.4985C16.0031 19.2364 14.2794 19.9476 13.2519 21.3455C12.6308 22.1903 11.3684 22.1903 10.7473 21.3455C9.71975 19.9476 7.99609 19.2364 6.28107 19.4985C5.24109 19.6573 4.3423 18.7586 4.50119 17.7186C4.76321 16.0036 4.05214 14.2799 2.65423 13.2524C1.80927 12.6313 1.80927 11.3688 2.65423 10.7477C4.05214 9.72024 4.76321 7.99658 4.50119 6.28156C4.3423 5.24158 5.24109 4.34278 6.28107 4.50168C7.99609 4.7637 9.71975 4.05263 10.7473 2.65472C11.3684 1.80975 12.6308 1.80975 13.2519 2.65472C14.2794 4.05263 16.0031 4.7637 17.7181 4.50168C18.7581 4.34278 19.6568 5.24158 19.498 6.28156C19.2359 7.99658 19.9471 9.72024 21.345 10.7477Z"
+                            stroke="#585A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <path
+                            d="M11.9994 16.0833C14.6128 16.0833 16.0828 14.6132 16.0828 11.9999C16.0828 9.38653 14.6128 7.9165 11.9994 7.9165C9.38604 7.9165 7.91602 9.38653 7.91602 11.9999C7.91602 14.6132 9.38604 16.0833 11.9994 16.0833Z"
+                            stroke="#585A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <c-ken-notification></c-ken-notification>
+                </div>
+                <div class="actions-logo-col">
+                    <div class="separator"></div>
+                    <div class="logo-section">
+                        <img src={kenLogo} class="ken-logo" alt="Ken42 Logo" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

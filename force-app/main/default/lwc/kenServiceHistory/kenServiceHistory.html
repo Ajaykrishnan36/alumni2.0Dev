@@ -1,0 +1,296 @@
+<template>
+    <template if:true={shouldShowBreadcrumb}>
+        <header class="page-header">
+            <h1 class="page-title">Service &amp; Support</h1>
+            <c-ken-sns-breadcrumb items={crumbs}></c-ken-sns-breadcrumb>
+        </header>
+    </template>
+
+    <div class="history-container">
+        <div class="history-header">
+            <div class="history-tabs">
+                <button
+                    class={serviceTabClass}
+                    data-tab="service"
+                    onclick={handleTabClick}>
+                    Service Requests
+                </button>
+
+                <button
+                    class={supportTabClass}
+                    data-tab="support"
+                    onclick={handleTabClick}>
+                    Support Tickets
+                </button>
+
+            </div>
+            <div class="header-actions">
+                <template if:true={shouldShowSearchBar}>
+                    <div class="search-container">
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9.16667 15.8333C12.8486 15.8333 15.8333 12.8486 15.8333 9.16667C15.8333 5.48477 12.8486 2.5 9.16667 2.5C5.48477 2.5 2.5 5.48477 2.5 9.16667C2.5 12.8486 5.48477 15.8333 9.16667 15.8333Z" stroke="#585A64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M17.5013 17.4984L14.168 14.165" stroke="#585A64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <input 
+                                type="text" 
+                                class="search-input" 
+                                placeholder="Search" 
+                                value={searchTerm}
+                                oninput={handleSearchInput}
+                            />
+                            <button type="button" class="mic-button" aria-label="Voice search">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10 2.5C9.1712 2.5 8.37634 2.82924 7.79029 3.41529C7.20424 4.00134 6.875 4.7962 6.875 5.625V10C6.875 10.8288 7.20424 11.6237 7.79029 12.2097C8.37634 12.7958 9.1712 13.125 10 13.125C10.8288 13.125 11.6237 12.7958 12.2097 12.2097C12.7958 11.6237 13.125 10.8288 13.125 10V5.625C13.125 4.7962 12.7958 4.00134 12.2097 3.41529C11.6237 2.82924 10.8288 2.5 10 2.5ZM5 9.375C5.16576 9.375 5.32473 9.44085 5.44194 9.55806C5.55915 9.67527 5.625 9.83424 5.625 10C5.625 11.1603 6.08594 12.2731 6.90641 13.0936C7.72688 13.9141 8.83968 14.375 10 14.375C11.1603 14.375 12.2731 13.9141 13.0936 13.0936C13.9141 12.2731 14.375 11.1603 14.375 10C14.375 9.83424 14.4408 9.67527 14.5581 9.55806C14.6753 9.44085 14.8342 9.375 15 9.375C15.1658 9.375 15.3247 9.44085 15.4419 9.55806C15.5592 9.67527 15.625 9.83424 15.625 10C15.6253 11.3838 15.1154 12.7192 14.193 13.7507C13.2705 14.7822 12.0002 15.4375 10.625 15.5912V16.875C10.625 17.0408 10.5592 17.1997 10.4419 17.3169C10.3247 17.4342 10.1658 17.5 10 17.5C9.83424 17.5 9.67527 17.4342 9.55806 17.3169C9.44085 17.1997 9.375 17.0408 9.375 16.875V15.5912C7.99976 15.4375 6.72945 14.7822 5.80701 13.7507C4.88457 12.7192 4.37473 11.3838 4.375 10C4.375 9.83424 4.44085 9.67527 4.55806 9.55806C4.67527 9.44085 4.83424 9.375 5 9.375Z" fill="#585A64"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+                <template if:true={shouldShowViewAll}>
+                    <button type="button" class="view-all-button" onclick={handleViewAllClick}>
+                        View All
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <div class={historyContentClass}>
+            <template if:true={isServiceTabActive}>
+                <template for:each={filteredServiceHistory} for:item="item">
+                    <div 
+                        key={item.id} 
+                        class="history-item"
+                        data-case-id={item.caseId}
+                        data-case-number={item.id}
+                        data-title={item.title}
+                        data-status={item.status}
+                        data-created-date={item.createdDate}
+                        data-record-type={item.recordType}
+                        data-tab="service"
+                        onclick={handleItemClick}>
+                        <div class="history-item-header">
+                            <span class="history-id">#{item.id}</span>
+                            <div class="spacer">
+                                <template if:true={item.statusDate}>
+                                    <div class="history-date">{item.statusLabel}: {item.statusDate}</div>
+                                </template>
+                                <div class="status-feedback-group">
+                                    <span class={item.statusClass}>{item.status}</span>
+                                    <template if:true={item.isClosed}>
+                                        <template if:true={item.hasFeedbackSubmitted}>
+                                            <button
+                                                type="button"
+                                                class="feedback-submitted-btn"
+                                                disabled>
+                                                <span>Feedback Submitted</span>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <template if:false={item.hasFeedbackSubmitted}>
+                                            <button
+                                                type="button"
+                                                class="leave-feedback-btn"
+                                                data-case-id={item.caseId}
+                                                data-case-number={item.id}
+                                                data-title={item.title}
+                                                onclick={handleLeaveFeedback}
+                                                data-tab="service">
+                                                Leave Feedback
+                                            </button>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="history-title">{item.title}</p>
+                        <template if:true={item.description}>
+                            <p class="history-description">{item.description}</p>
+                        </template>
+                        <template if:true={item.attachment}>
+                            <button 
+                                type="button"
+                                class="history-attachment" 
+                                onclick={handleAttachmentClick} 
+                                data-url={item.attachment}
+                                data-name={item.attachmentName}
+                                aria-label="Download attachment {item.attachmentName}">
+                                <lightning-icon icon-name="utility:attach" size="x-small" alternative-text="Attachment"></lightning-icon>
+                                <span>{item.attachmentName}</span>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={filteredServiceHistory.length}>
+                    <div class="empty-state">
+                        <div class="empty-state-icon" aria-hidden="true">
+                            <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10.5 7H31.5C33.433 7 35 8.567 35 10.5V16.625C32.5838 16.625 30.625 18.5838 30.625 21C30.625 23.4162 32.5838 25.375 35 25.375V31.5C35 33.433 33.433 35 31.5 35H10.5C8.567 35 7 33.433 7 31.5V25.375C9.41625 25.375 11.375 23.4162 11.375 21C11.375 18.5838 9.41625 16.625 7 16.625V10.5C7 8.567 8.567 7 10.5 7Z" fill="currentColor"/>
+                                <path d="M22.75 12.25H26.25V15.75H22.75V12.25ZM22.75 19.25H26.25V22.75H22.75V19.25ZM22.75 26.25H26.25V29.75H22.75V26.25Z" fill="#FFFFFF"/>
+                            </svg>
+                        </div>
+                        <p class="empty-state-title">No service requests yet</p>
+                        <p class="empty-state-text">Submitted service requests will appear here</p>
+                    </div>
+                </template>
+            </template>
+
+            <template if:true={isSupportTabActive}>
+                <template for:each={filteredSupportHistory} for:item="item">
+                    <div 
+                        key={item.id} 
+                        class="history-item"
+                        data-case-id={item.caseId}
+                        data-case-number={item.id}
+                        data-title={item.title}
+                        data-status={item.status}
+                        data-created-date={item.createdDate}
+                        data-record-type={item.recordType}
+                        data-tab="support"
+                        onclick={handleItemClick}>
+                        <div class="history-item-header">
+                            <span class="history-id">#{item.id}</span>
+                            <div class="spacer">
+                                <template if:true={item.statusDate}>
+                                    <div class="history-date">{item.statusLabel}: {item.statusDate}</div>
+                                </template>
+                                <div class="status-feedback-group">
+                                    <span class={item.statusClass}>{item.status}</span>
+                                    <template if:true={item.isClosed}>
+                                        <template if:true={item.hasFeedbackSubmitted}>
+                                            <button
+                                                type="button"
+                                                class="feedback-submitted-btn"
+                                                disabled>
+                                                <span>Feedback Submitted</span>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                            </button>
+                                        </template>
+                                        <template if:false={item.hasFeedbackSubmitted}>
+                                            <button
+                                                type="button"
+                                                class="leave-feedback-btn"
+                                                data-case-id={item.caseId}
+                                                data-case-number={item.id}
+                                                data-title={item.title}
+                                                onclick={handleLeaveFeedback}
+                                                data-tab="support">
+                                                Leave Feedback
+                                            </button>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="history-title">{item.title}</p>
+                        <template if:true={item.description}>
+                            <p class="history-description">{item.description}</p>
+                        </template>
+                        <template if:true={item.attachment}>
+                            <button 
+                                type="button"
+                                class="history-attachment" 
+                                onclick={handleAttachmentClick}
+                                data-url={item.attachment}
+                                data-name={item.attachmentName}
+                                aria-label="Download attachment {item.attachmentName}">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.89 22 5.99 22H18C19.1 22 20 21.1 20 20V8L14 2Z" fill="currentColor"/>
+                                    <path d="M14 2V8H20" stroke="white" stroke-width="2"/>
+                                </svg>
+                                <span>{item.attachmentName}</span>
+                            </button>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={filteredSupportHistory.length}>
+                    <div class="empty-state">
+                        <div class="empty-state-icon" aria-hidden="true">
+                            <svg width="42" height="42" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10.5 7H31.5C33.433 7 35 8.567 35 10.5V16.625C32.5838 16.625 30.625 18.5838 30.625 21C30.625 23.4162 32.5838 25.375 35 25.375V31.5C35 33.433 33.433 35 31.5 35H10.5C8.567 35 7 33.433 7 31.5V25.375C9.41625 25.375 11.375 23.4162 11.375 21C11.375 18.5838 9.41625 16.625 7 16.625V10.5C7 8.567 8.567 7 10.5 7Z" fill="currentColor"/>
+                                <path d="M22.75 12.25H26.25V15.75H22.75V12.25ZM22.75 19.25H26.25V22.75H22.75V19.25ZM22.75 26.25H26.25V29.75H22.75V26.25Z" fill="#FFFFFF"/>
+                            </svg>
+                        </div>
+                        <p class="empty-state-title">No support tickets yet</p>
+                        <p class="empty-state-text">Create a ticket for technical issues or escalations</p>
+                    </div>
+                </template>
+            </template>
+
+        </div>
+    </div>
+
+    <!-- Feedback Modal -->
+    <template if:true={showFeedbackModal}>
+        <div class="modal-overlay" onclick={handleBackdropClick}>
+            <div class="feedback-modal-container" onclick={handleModalContainerClick}>
+                <div class="feedback-modal-header">
+                    <h2 class="feedback-modal-title">Rate Our Service</h2>
+                </div>
+                <div class="feedback-modal-content">
+                    <div class="star-rating-container">
+                        <div class="stars-wrapper">
+                            <template for:each={starRatings} for:item="star">
+                                <button
+                                    key={star.value}
+                                    type="button"
+                                    class="star-btn"
+                                    data-rating={star.value}
+                                    onclick={handleStarClick}>
+                                    <template if:true={star.isFilled}>
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FFD700" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </template>
+                                    <template if:false={star.isFilled}>
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </template>
+                                </button>
+                            </template>
+                        </div>
+                        <template if:true={ratingBadge}>
+                            <span class={ratingBadge.class}>{ratingBadge.text}</span>
+                        </template>
+                    </div>
+                    <div class="feedback-textarea-container">
+                        <textarea 
+                            class="feedback-textarea"
+                            placeholder="Provide your feedback (Optional)"
+                            onchange={handleFeedbackTextChange}></textarea>
+                    </div>
+                </div>
+                <div class="feedback-modal-footer">
+                    <button type="button" class="cancel-feedback-btn" onclick={handleCancelFeedback}>Cancel</button>
+                    <button type="button" class="submit-feedback-btn" onclick={handleSubmitFeedback}>Submit</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Success Dialog -->
+    <template if:true={showSuccessDialog}>
+        <div class="modal-overlay" onclick={closeSuccessDialog}>
+            <div class="success-dialog-container" onclick={handleModalContainerClick}>
+                <div class="success-icon-container">
+                    <svg width="56" height="56" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="36" height="36" rx="18" fill="#C1DCC3"/>
+                        <mask id="mask0_feedback_success" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="28" height="28">
+                            <rect x="4.5" y="4.5" width="27" height="27" fill="#D9D9D9"/>
+                        </mask>
+                        <g mask="url(#mask0_feedback_success)">
+                            <path d="M16.425 23.175L24.3562 15.2438L22.7812 13.6687L16.425 20.025L13.2188 16.8187L11.6437 18.3938L16.425 23.175ZM18 29.25C16.4438 29.25 14.9813 28.9545 13.6125 28.3635C12.2438 27.7733 11.0531 26.9719 10.0406 25.9594C9.02813 24.9469 8.22675 23.7563 7.6365 22.3875C7.0455 21.0187 6.75 19.5562 6.75 18C6.75 16.4438 7.0455 14.9813 7.6365 13.6125C8.22675 12.2438 9.02813 11.0531 10.0406 10.0406C11.0531 9.02813 12.2438 8.22637 13.6125 7.63537C14.9813 7.04512 16.4438 6.75 18 6.75C19.5562 6.75 21.0187 7.04512 22.3875 7.63537C23.7563 8.22637 24.9469 9.02813 25.9594 10.0406C26.9719 11.0531 27.7733 12.2438 28.3635 13.6125C28.9545 14.9813 29.25 16.4438 29.25 18C29.25 19.5562 28.9545 21.0187 28.3635 22.3875C27.7733 23.7563 26.9719 24.9469 25.9594 25.9594C24.9469 26.9719 23.7563 27.7733 22.3875 28.3635C21.0187 28.9545 19.5562 29.25 18 29.25Z" fill="#388E3C"/>
+                        </g>
+                    </svg>
+                </div>
+                <h2 class="success-title">Feedback submitted</h2>
+                <p class="success-message">Thank you for your valuable feedback!</p>
+            </div>
+        </div>
+    </template>
+</template>

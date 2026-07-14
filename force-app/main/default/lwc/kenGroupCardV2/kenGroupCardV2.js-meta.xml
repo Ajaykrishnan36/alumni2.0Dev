@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 - Group Card</masterLabel>
+    <description>Single group card for Discover and grid views.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordId" type="String" label="Record Id"/>
+            <property name="name" type="String" label="Group Name"/>
+            <property name="category" type="String" label="Category"/>
+            <property name="visibility" type="String" label="Visibility"/>
+            <property name="members" type="Integer" label="Members" default="0"/>
+            <property name="posts" type="Integer" label="Posts" default="0"/>
+            <property name="description" type="String" label="Description"/>
+            <property name="image" type="String" label="Image URL"/>
+            <property name="cover" type="String" label="Cover Gradient CSS"/>
+            <property name="joined" type="Boolean" label="Joined" default="false"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

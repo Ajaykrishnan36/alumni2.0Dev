@@ -1,0 +1,140 @@
+<template>
+    <div class="academic-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h2 class="section-title">Academic Records</h2>
+            <button class="add-btn" onclick={handleAddRecord}>
+                <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                Add Academic Record
+            </button>
+        </div>
+
+        <!-- Records List -->
+        <div class="records-list">
+            <template for:each={academicRecords} for:item="record">
+                <div key={record.id} class="record-card">
+                    <div class="record-icon-wrapper">
+                        <!-- Placeholder icon or from URL -->
+                        <img src={record.iconUrl} alt="Institute Logo" class="record-icon" />
+                    </div>
+                    <div class="record-info">
+                        <h3 class="record-title">{record.typeAndField}</h3>
+                        <p class="record-subtitle">{record.instituteName}</p>
+                        <div class="record-meta">
+                            <span class="record-grade">{record.grade}</span>
+                            <span class="separator">|</span>
+                            <span class="record-period">{record.period}</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- Add Academic Record Modal -->
+    <template lwc:if={showAddModal}>
+        <div class="modal-overlay">
+            <div class="modal-content large-modal">
+                <div class="modal-header">
+                    <h2>Add Academic Records</h2>
+                    <!-- No close icon in screenshot? Usually good to have. Screenshot 3 doesn't explicitly show top right. 
+                         Screenshot 4 shows close "x" implies standard modal. -->
+                </div>
+                <!-- Divider -->
+                <div class="modal-divider"></div>
+
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <!-- Row 1 -->
+                        <div class="form-group">
+                            <label class="field-label">Name of the institute</label>
+                            <input type="text" class="text-input" placeholder="Enter school" data-field="institute"
+                                value={tempRecord.institute} onchange={handleInputChange} />
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label">Type of study</label>
+                            <!-- Using standard select for simplicity/styling control or combobox if strictly LWC. 
+                                 HTML select is easier to style exactly like screenshot (white bg, border). -->
+                            <div class="select-wrapper">
+                                <select class="text-input" onchange={handleTypeSelect}>
+                                    <template for:each={typeOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>
+                                            {opt.label}
+                                        </option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Row 2 -->
+                        <div class="form-group">
+                            <label class="field-label">Field of study</label>
+                            <input type="text" class="text-input" placeholder="Enter field of study"
+                                data-field="fieldOfStudy" value={tempRecord.fieldOfStudy}
+                                onchange={handleInputChange} />
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label">Upload marksheets (optional)</label>
+                            <div class="file-upload-input">
+                                <span class="placeholder-text">Upload image</span>
+                                <lightning-icon icon-name="utility:upload" size="x-small"
+                                    class="upload-icon"></lightning-icon>
+                            </div>
+                        </div>
+
+                        <!-- Row 3 -->
+                        <div class="form-group">
+                            <label class="field-label">Start date</label>
+                            <div class="date-input-wrapper">
+                                <input type="date" class="text-input" data-field="startDate"
+                                    value={tempRecord.startDate} onchange={handleInputChange} />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="field-label">End date</label>
+                            <div class="date-input-wrapper">
+                                <input type="date" class="text-input" data-field="endDate" value={tempRecord.endDate}
+                                    onchange={handleInputChange} />
+                            </div>
+                        </div>
+
+                        <!-- Row 4 -->
+                        <div class="form-group" style="grid-column: span 1;">
+                            <label class="field-label">Grading format</label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="grading" value="CGPA" checked={isCgpa}
+                                        onchange={handleGradingFormatChange} />
+                                    <span class="radio-text">CGPA</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="grading" value="Percentage"
+                                        onchange={handleGradingFormatChange} />
+                                    <span class="radio-text">Percentage</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group" style="grid-column: span 1;">
+                            <label class="field-label">Percentage</label> <!-- Dynamic Label ideally -->
+                            <input type="text" class="text-input" placeholder="Enter percentage" data-field="score"
+                                value={tempRecord.score} onchange={handleInputChange} />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer footer-right">
+                    <button class="cancel-btn" onclick={closeAddModal}>Cancel</button>
+                    <button class="save-modal-btn" onclick={saveRecord}>Save</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Toast notification -->
+    <c-ken-toast-notification
+        is-visible={isSuccessToastVisible}
+        toast-title="Success"
+        toast-message="Academic Records Added Successful"
+        toast-variant="success">
+    </c-ken-toast-notification>
+</template>

@@ -1,0 +1,183 @@
+.feature-chip {
+    display: inline-block;
+    align-self: flex-start;
+    width: fit-content;
+    max-width: 100%;
+    margin-top: 6px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.feature-chip.fb-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.feature-chip.fb-live {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.feature-chip.fb-approved {
+    background: #dbeafe;
+    color: var(--secondary-color, #1e40af);
+}
+
+.feature-chip.fb-rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.feature-reject-text {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #991b1b;
+}
+
+.my-business-card {
+    background-color: var(--portal-page-bg, #F6F8FB);
+    border-radius: var(--portal-radius, 12px);
+    padding: 16px;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    transition: transform 0.2s;
+    position: relative;
+}
+
+.my-business-card:hover {
+    transform: translateY(-2px);
+}
+
+.card-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.business-icon-container {
+    flex-shrink: 0;
+}
+
+.business-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background-color: #111827;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+}
+
+.icon-inside {
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+.business-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.business-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--portal-text-primary, #1f2333);
+    margin: 0;
+}
+
+.location-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.location-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+}
+
+.location-text {
+    font-size: 14px;
+    color: var(--portal-text-muted, #6b7280);
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background-color: var(--portal-surface, #ffffff);
+    color: var(--portal-text-secondary, #374151);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    width: fit-content;
+}
+
+.status-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    
+    white-space: nowrap;
+    z-index: 1;
+    background-color: transparent;
+    color: #111827;
+}
+
+:host .status-badge.active {
+    background-color: #C1DCC3 !important;
+    color: #1F4E21 !important;
+}
+
+:host .status-badge.in-review {
+    background-color: #FEEBBE !important;
+    color: #8A6A19 !important;
+}
+
+:host .status-badge.rejected {
+    background-color: #F1BFBF !important;
+    color: #741A1A !important;
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+}
+
+:host .status-badge.rejected .info-icon {
+    --slds-c-icon-color-foreground-default: #741A1A !important;
+    width: 14px;
+    height: 14px;
+}
+
+:host .status-badge.deactivated {
+    background-color: #C6C9D2 !important;
+    color: #535458 !important;
+}
+
+.rejection-section {
+    margin-top: 12px;
+    padding: 12px;
+    background-color: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+}
+
+.rejection-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #991b1b;
+    margin-bottom: 4px;
+    
+}
+
+.rejection-text {
+    font-size: 14px;
+    color: var(--portal-text-primary, #1f2333);
+}

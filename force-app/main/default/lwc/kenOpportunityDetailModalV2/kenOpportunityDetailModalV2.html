@@ -1,0 +1,55 @@
+<template>
+    <template lwc:if={hasDetail}>
+        <div class="modal-backdrop" onclick={handleBackdrop}>
+            <div class="modal modal--lg">
+                <div class="modal-cover" style={detail.imgStyle}>
+                    <div class="modal-cover-tags">
+                        <span class={detail.catClass}>{detail.category}</span>
+                        <span class="opp-approved">Institution-approved</span>
+                    </div>
+                    <button class="modal-close" onclick={handleClose}>x</button>
+                </div>
+                <div class="modal-body">
+                    <h2 class="modal-title">{detail.title}</h2>
+                    <p class="modal-desc">{detail.shortDesc}</p>
+                    <div class="modal-stats">
+                        <div class="ms-block"><div class="ms-label">RAISED</div><div class="ms-val">{detail.raisedFormatted}</div><div class="ms-sub">{detail.targetText}</div></div>
+                        <div class="ms-block"><div class="ms-label">CONTRIBUTORS</div><div class="ms-val">{detail.contributors}</div><div class="ms-sub">{detail.daysText}</div></div>
+                        <div class="ms-block"><div class="ms-label">BENEFICIARIES</div><div class="ms-val">Students</div><div class="ms-sub">{detail.beneficiary}</div></div>
+                    </div>
+                    <div class="opp-bar opp-bar--lg"><div class="opp-bar-fill opp-bar-fill--green" style={detail.progressVarStyle}></div></div>
+                    <h4 class="sec-h">The story</h4>
+                    <p class="modal-p">{detail.story}</p>
+                    <h4 class="sec-h">Why this matters</h4>
+                    <p class="modal-p">{detail.whyItMatters}</p>
+                    <h4 class="sec-h">Transparency and impact</h4>
+                    <div class="alloc-list">
+                        <template for:each={allocation} for:item="a">
+                            <div key={a.label} class="alloc-row">
+                                <div class="alloc-head-row"><span>{a.label}</span><span>{a.percent}%</span></div>
+                                <div class="alloc-bar"><div class="alloc-bar-fill" style={a.allocVarStyle}></div></div>
+                            </div>
+                        </template>
+                    </div>
+                    <template lwc:if={hasUpdates}>
+                        <h4 class="sec-h">Updates from the institution</h4>
+                        <div class="update-list">
+                            <template for:each={updates} for:item="u">
+                                <div key={u.headline} class="update-row">
+                                    <div class="update-date">{u.date}</div>
+                                    <div class="update-headline">{u.headline}</div>
+                                    <div class="update-body">{u.body}</div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn--dark" onclick={handleDonate}>Donate</button>
+                    <button class="btn btn--ghost" onclick={handlePledge}>Pledge</button>
+                    <button class="btn btn--ghost" onclick={handleInKind}>In-kind support</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,51 @@
+<template>
+    <div class="filters-row">
+        <input type="text" class="search-input" placeholder="Search jobs by title or company" value={searchTerm} oninput={handleSearch} />
+
+        <button class="filters-btn" onclick={handleOpen} title="Filters">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="10" y1="18" x2="14" y2="18"/>
+            </svg>
+            <span>Filters</span>
+            <template lwc:if={hasActive}>
+                <span class="filters-badge">{activeCount}</span>
+            </template>
+        </button>
+
+        <div class="vm-group">
+            <button class={cardCls} data-mode="card" onclick={handleViewMode} title="Card view">▦</button>
+            <button class={listCls} data-mode="list" onclick={handleViewMode} title="List view">≣</button>
+        </div>
+    </div>
+
+    <!-- Slide-out Filters panel -->
+    <template lwc:if={isOpen}>
+        <div class="panel-backdrop" onclick={handleClose}>
+            <aside class="panel" onclick={stopBubble} role="dialog" aria-label="Filters">
+                <div class="panel-head">
+                    <h3 class="panel-title">Filters</h3>
+                    <button class="panel-close" onclick={handleClose} title="Close">×</button>
+                </div>
+
+                <div class="panel-body">
+                    <template for:each={fieldRows} for:item="f">
+                        <div key={f.key} class="panel-field">
+                            <label class="panel-label">{f.label}</label>
+                            <select class="panel-select" data-key={f.key} onchange={handleFieldChange}>
+                                <option value="" selected={f.isAny}>{f.placeholder}</option>
+                                <template for:each={f.options} for:item="o">
+                                    <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                </template>
+                            </select>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="panel-foot">
+                    <button class="panel-btn panel-btn--ghost" onclick={handleClear}>Clear</button>
+                    <button class="panel-btn panel-btn--primary" onclick={handleApply}>Apply</button>
+                </div>
+            </aside>
+        </div>
+    </template>
+</template>

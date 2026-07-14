@@ -1,0 +1,35 @@
+<template>
+    <div class="groups-joined-container">
+        <div class="header">
+            <h3>Groups Joined</h3>
+            <button if:true={hasGroups} class="discover-btn" onclick={handleDiscover}>Discover Groups</button>
+        </div>
+        <div class="line"></div>
+
+        <template if:true={hasGroups}>
+            <div class="group-list">
+                <template for:each={groups} for:item="group">
+                    <div key={group.id} class="group-item">
+                        <div class="group-info">
+                            <span class="group-name">{group.name}</span>
+                            <span class="group-status" if:true={group.status}>{group.status}</span>
+                            <div class="group-meta">
+                                <span>{group.members}</span>
+                            </div>
+                        </div>
+                        <img src={group.image} class="group-thumb" />
+                    </div>
+                </template>
+            </div>
+            <button class="view-all-btn">View All</button>
+        </template>
+
+        <template if:false={hasGroups}>
+            <div class="empty-state">
+                <img src="https://cdni.iconscout.com/illustration/premium/thumb/empty-state-2130362-1800926.png"
+                    alt="No groups joined" class="empty-img" />
+                <p>- You haven't joined any groups yet -</p>
+            </div>
+        </template>
+    </div>
+</template>

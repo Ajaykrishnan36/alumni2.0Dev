@@ -1,0 +1,67 @@
+<template>
+    <section class="cal-card">
+        <header class="cal-head">
+            <div class="cal-head__nav">
+                <button type="button" class="cal-nav-btn" onclick={handlePrevMonth} aria-label="Previous month">&lsaquo;</button>
+                <h2 class="cal-title">{headerLabel}</h2>
+                <button type="button" class="cal-nav-btn" onclick={handleNextMonth} aria-label="Next month">&rsaquo;</button>
+            </div>
+            <button type="button" class="cal-schedule-btn" onclick={handleSchedule}>Schedule a Call</button>
+        </header>
+
+        <div class="cal-body">
+            <div class="cal-left">
+                <div class="cal__dow">
+                    <template for:each={dayHeaders} for:item="h">
+                        <span key={h.key} class="cal__dow-label">{h.label}</span>
+                    </template>
+                </div>
+                <div class="cal__grid">
+                    <template for:each={calendarCells} for:item="c">
+                        <button key={c.key} type="button" class={c.cssClass} data-iso={c.iso} disabled={c.isEmpty} onclick={handleSelectDay}>
+                            <span class="cal__num">{c.label}</span>
+                            <template lwc:if={c.hasSession}>
+                                <span class="cal__dot" aria-hidden="true"></span>
+                            </template>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <div class="cal-right">
+                <p class="agenda__head">{selectedDateLabel}</p>
+                <template lwc:if={hasAgenda}>
+                    <div class="agenda__list">
+                        <template for:each={agendaItems} for:item="a">
+                            <article key={a.key} class="agenda__item">
+                                <div class="agenda__row1">
+                                    <h4 class="agenda__title">{a.title}</h4>
+                                    <span class={a.badgeClass}>
+                                        <template lwc:if={a.showNow}><span class="agenda__pulse" aria-hidden="true"></span></template>
+                                        <span>{a.badgeText}</span>
+                                    </span>
+                                </div>
+                                <div class="agenda__row2">
+                                    <div class="agenda__avatar" style={a.avatarStyle}>
+                                        <template lwc:if={a.showInitial}>{a.initial}</template>
+                                    </div>
+                                    <span class="agenda__mentor">{a.mentor}</span>
+                                </div>
+                                <p class="agenda__time">
+                                    <span aria-hidden="true">&#128340;</span>
+                                    <span>{a.timeLabel}</span>
+                                </p>
+                                <template lwc:if={a.showFeedback}>
+                                    <button type="button" class="agenda__feedback-btn" data-id={a.id} onclick={handleLeaveFeedback}>Leave Feedback</button>
+                                </template>
+                            </article>
+                        </template>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="agenda__empty">No sessions on this date</div>
+                </template>
+            </div>
+        </div>
+    </section>
+</template>

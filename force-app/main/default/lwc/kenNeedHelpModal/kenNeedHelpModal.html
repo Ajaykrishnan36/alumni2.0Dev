@@ -1,0 +1,137 @@
+<template>
+    <!-- Notification modal -->
+    <c-ken-notification-modal
+        is-visible={isErrorToastVisible}
+        toast-title={errorTitle}
+        toast-message={errorDescription}
+        toast-variant="error">
+    </c-ken-notification-modal>
+
+    <div class="modal-backdrop" onclick={handleBackdropClick}>
+        <div class="modal-container" onclick={handleBackdropClick}>
+            <div class="modal-content" onclick={handleBackdropClick}>
+                <div class="modal-header">
+                    <p class="modal-title">Get Help</p>
+                    <button class="close-btn" onclick={closeModal} type="button">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">
+                            Choose issue type<span class="required-asterisk">*</span>
+                        </label>
+                        <select
+                            class="form-control"
+                            value={issueType}
+                            onchange={handleIssueTypeChange}>
+                            <template for:each={issueTypeOptions} for:item="option">
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            </template>
+                        </select>
+                        <div class="error-message" if:true={validationErrors.issueType}>
+                            {validationErrors.issueType}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Description of the issue <span class="required-text">*</span>
+                        </label>
+                        <div class="description-container">
+                            <textarea 
+                                class="form-control description-textarea"
+                                placeholder="Enter description"
+                                value={issueDescription}
+                                onchange={handleDescriptionChange}
+                                rows="5">
+                            </textarea>
+                            <!-- <button class="auto-create-btn" onclick={handleAutoCreateForm} type="button">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <g clip-path="url(#clip0_4001_29212)">
+                                        <path d="M4.33398 8.66732L4.85696 9.71326C5.03395 10.0672 5.12245 10.2442 5.24067 10.3976C5.34558 10.5337 5.46759 10.6557 5.60369 10.7606C5.75706 10.8789 5.93405 10.9674 6.28804 11.1443L7.33398 11.6673L6.28804 12.1903C5.93405 12.3673 5.75706 12.4558 5.60369 12.574C5.46759 12.6789 5.34558 12.8009 5.24067 12.937C5.12245 13.0904 5.03395 13.2674 4.85696 13.6214L4.33398 14.6673L3.81101 13.6214C3.63402 13.2674 3.54552 13.0904 3.4273 12.937C3.32239 12.8009 3.20038 12.6789 3.06428 12.574C2.91091 12.4558 2.73391 12.3673 2.37993 12.1903L1.33398 11.6673L2.37993 11.1443C2.73391 10.9674 2.91091 10.8789 3.06428 10.7606C3.20038 10.6557 3.32239 10.5337 3.4273 10.3976C3.54552 10.2442 3.63402 10.0672 3.81101 9.71326L4.33398 8.66732Z" stroke="#585A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M10.0006 1.33398L10.7864 3.37693C10.9744 3.86575 11.0684 4.11016 11.2146 4.31575C11.3442 4.49795 11.5033 4.65715 11.6856 4.78671C11.8911 4.93289 12.1356 5.0269 12.6244 5.2149L14.6673 6.00065L12.6244 6.7864C12.1356 6.97441 11.8911 7.06841 11.6856 7.21459C11.5033 7.34415 11.3442 7.50335 11.2146 7.68556C11.0684 7.89114 10.9744 8.13555 10.7864 8.62437L10.0007 10.6673L9.2149 8.62437C9.02689 8.13555 8.93289 7.89114 8.78671 7.68556C8.65715 7.50335 8.49795 7.34415 8.31575 7.21459C8.11016 7.06841 7.86575 6.97441 7.37693 6.7864L5.33398 6.00065L7.37693 5.2149C7.86575 5.02689 8.11016 4.93289 8.31574 4.78671C8.49795 4.65715 8.65715 4.49795 8.78671 4.31575C8.93289 4.11016 9.02689 3.86575 9.2149 3.37693L10.0006 1.33398Z" stroke="#585A64" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </g>
+                                    <defs>
+                                        <clipPath id="clip0_4001_29212">
+                                            <rect width="16" height="16" fill="white"/>
+                                        </clipPath>
+                                    </defs>
+                                </svg>
+                                Auto-Create Form Now
+                            </button> -->
+                        </div>
+                        <div class="error-message" if:true={validationErrors.description}>
+                            {validationErrors.description}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Issue subject<span class="required-asterisk">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            class="form-control"
+                            placeholder="Enter issue subject"
+                            value={issueSubject}
+                            onchange={handleIssueSubjectChange}
+                        />
+                        <div class="error-message" if:true={validationErrors.issueSubject}>
+                            {validationErrors.issueSubject}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Upload supporting document</label>
+                        <p class="field-hint">{fileHint}</p>
+                        <template if:false={uploadedFile}>
+                            <div class="file-upload-area">
+                                <input 
+                                    type="file" 
+                                    class="file-input"
+                                    accept={fileAccept}
+                                    onchange={handleFileUpload}
+                                />
+                                <div class="file-upload-placeholder">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z" fill="currentColor"/>
+                                    </svg>
+                                    <span>Upload document</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:true={uploadedFile}>
+                            <div class="file-preview">
+                                <div class="file-info">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" fill="currentColor"/>
+                                    </svg>
+                                    <span class="file-name">{uploadedFileName}</span>
+                                </div>
+                                <button class="remove-file-btn" onclick={handleRemoveFile} type="button">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" fill="currentColor"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </template>
+                        <div class="error-message field-error" if:true={validationErrors.file} role="alert">
+                            {validationErrors.file}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-cancel" onclick={handleCancel} type="button">Cancel</button>
+                    <button class="btn btn-submit" onclick={handleSubmit} type="button">
+                        Submit 
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

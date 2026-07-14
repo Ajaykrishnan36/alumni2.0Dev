@@ -1,0 +1,14 @@
+.labelClass{
+    width: 100%;
+    position: relative;
+}
+
+.requiredAsterisk{
+    font-size: 145%;
+}
+
+.helpText{
+    position: absolute;
+    margin-left: -0.2rem;
+    bottom: 0.6rem;
+}

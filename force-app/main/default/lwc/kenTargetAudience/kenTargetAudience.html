@@ -1,0 +1,34 @@
+<template>
+    <div class="step-content step-content-step2">
+        <template if:true={isLoadingExisting}>
+            <div class="audience-loading">
+                <lightning-spinner alternative-text="Loading audience..." size="small"></lightning-spinner>
+            </div>
+        </template>
+        <template if:false={isLoadingExisting}>
+            <template if:false={showAddNewAudienceView}>
+                <div class="target-audience-initial">
+                    <h2 class="step-title step-title-step2">2. Target Audience Selection</h2>
+                    <p class="step-subtitle">Choose who this should go to. You can combine multiple groups of people.</p>
+                    <c-ken-saved-audience-picker
+                        onaddnew={handleAddNewAudience}
+                        onaudienceadded={handleSavedAudienceAdded}>
+                    </c-ken-saved-audience-picker>
+                </div>
+            </template>
+            <template if:true={showAddNewAudienceView}>
+                <div class="add-new-audience-wrapper">
+                    <c-ken-portal-audience-selection
+                        selected-audience={selectedAudienceData}
+                        parent-object-type={resolvedParentType}
+                        parent-record-id={resolvedParentId}
+                        segmentation-id={existingSegmentationId}
+                        segmentation-name={existingSegmentationName}
+                        picked-existing={pickedFromSaved}
+                        onaudiencechange={handleAudienceChange}>
+                    </c-ken-portal-audience-selection>
+                </div>
+            </template>
+        </template>
+    </div>
+</template>

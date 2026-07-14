@@ -1,0 +1,97 @@
+<template>
+    <div class="business-directory-page">
+        <!-- Business Listing Form -->
+        <template if:true={showBusinessListingForm}>
+            <c-ken-business-listing-form style="width: 100%;" oncancel={handleCancelListingForm} onsubmit={handleSubmitListingForm} oncloseform={handleListingClose}></c-ken-business-listing-form>
+        </template>
+
+        <!-- Business Directory Content -->
+        <template if:false={showBusinessListingForm}>
+            <template if:false={showBusinessListingForm}>
+            <div class="business-directory-container">
+                <!-- Left Column: All businesses -->
+                <div class="all-businesses-section">
+                <!-- Featured businesses carousel -->
+                <c-ken-featured-businesses
+                    onbusinessselect={handleBusinessSelectFromDetail}
+                ></c-ken-featured-businesses>
+                <!-- Header -->
+                <div class="section-header">
+                    <h1 class="section-title">All businesses</h1>
+                    <div class="header-controls">
+                        <c-ken-search-bar placeholder="Search" onsearch={handleSearch}></c-ken-search-bar>
+                        <button class="filters-btn" onclick={handleFiltersClick} data-filter-btn="true">
+                            <span>Filters</span>
+                            <div class="filters-icon-wrapper">
+                                <div class="filter-line line-1"></div>
+                                <div class="filter-line line-2"></div>
+                                <div class="filter-line line-3"></div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                    <!-- Business Cards Grid -->
+                    <div class="business-cards-grid">
+                        <template for:each={filteredBusinesses} for:item="business">
+                            <c-ken-business-card key={business.id} business={business} onbusinessclick={handleBusinessClick}></c-ken-business-card>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Right Column: My businesses -->
+                <div class="my-businesses-section">
+                    <!-- My Businesses List -->
+                    <div class="my-businesses-list">
+                        <h2 class="my-businesses-title">My businesses</h2>
+                        <div class="my-businesses-cards-container">
+                            <template for:each={myBusinesses} for:item="business">
+                                <c-ken-my-business-card key={business.id} business={business} onmybusinessclick={handleMyBusinessClick}></c-ken-my-business-card>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- List Your Business Section -->
+                    <c-ken-list-your-business onlistbusiness={handleListBusiness}></c-ken-list-your-business>
+                </div>
+            </div>
+
+            <!-- Filters Popup - Outside container to prevent layout issues -->
+            <template if:true={showFiltersPopup}>
+                <div class="filters-overlay" onclick={handleFiltersOverlayClick}></div>
+                <div class="filters-popup" onclick={handleFiltersPopupClick} style={popupStyle}>
+                    <div class="filters-header">
+                        <h3 class="filters-title">Filters</h3>
+                    </div>
+                    <div class="filters-content">
+                        <div class="filter-field">
+                            <lightning-combobox
+                                label=""
+                                placeholder="Location"
+                                options={locationOptions}
+                                value={selectedLocation}
+                                onchange={handleLocationChange}
+                                variant="label-hidden">
+                            </lightning-combobox>
+                        </div>
+                        <div class="filter-field">
+                            <lightning-combobox
+                                label=""
+                                placeholder="Business type"
+                                options={businessTypeOptions}
+                                value={selectedBusinessType}
+                                onchange={handleBusinessTypeChange}
+                                variant="label-hidden">
+                            </lightning-combobox>
+                        </div>
+                    </div>
+                    <div class="filters-actions">
+                        <button class="reset-filters-btn" onclick={handleResetFilters}>Reset Filters</button>
+                        <button class="apply-filters-btn" onclick={handleApplyFilters}>Apply</button>
+                    </div>
+                </div>
+            </template>
+            </template>
+        </template>
+    </div>
+</template>

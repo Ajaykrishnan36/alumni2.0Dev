@@ -1,0 +1,124 @@
+<template>
+    <section class="all-jobs-shell">
+        <div class="toolbar">
+            <div class="tabs">
+                <button class={approvedTabClass} data-tab="approved" onclick={handleTabChange}>Approved</button>
+                <button class={inReviewTabClass} data-tab="inreview" onclick={handleTabChange}>In-Review</button>
+                <button class={archiveTabClass} data-tab="archive" onclick={handleTabChange}>Archive</button>
+            </div>
+            <div class="actions">
+                <button class="post-job-btn" type="button" onclick={handlePostJob}>Post a Job</button>
+                <div class="search-wrap">
+                    <lightning-icon icon-name="utility:search" size="x-small"></lightning-icon>
+                    <input type="text" placeholder="Search" value={searchText} oninput={handleSearch} />
+                    <lightning-icon icon-name="utility:mic" size="xx-small"></lightning-icon>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <template lwc:if={isApprovedTab}>
+                <table class="jobs-table">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Designation</th>
+                            <th>Total Applicants</th>
+                            <th>Status</th>
+                            <th>Open Date</th>
+                            <th>Close Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={filteredApprovedRows} for:item="row">
+                            <tr key={row.id}>
+                                <td>{row.jobId}</td>
+                                <td>{row.designation}</td>
+                                <td>{row.applicants}</td>
+                                <td><span class={row.statusClass}>{row.status}</span></td>
+                                <td>{row.openDate}</td>
+                                <td>{row.closeDate}</td>
+                                <td><button class="view-btn" data-job-id={row.jobId} onclick={handleViewDetails}>View Details</button></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+
+            <template lwc:if={isInReviewTab}>
+                <table class="jobs-table compact">
+                    <thead>
+                        <tr>
+                            <th>Job ID</th>
+                            <th>Designation</th>
+                            <th>Open Date</th>
+                            <th>Close Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={filteredInReviewRows} for:item="row">
+                            <tr key={row.id}>
+                                <td>{row.jobId}</td>
+                                <td>{row.designation}</td>
+                                <td>{row.openDate}</td>
+                                <td>{row.closeDate}</td>
+                                <td><button class="view-btn" data-job-id={row.jobId} onclick={handleViewDetails}>View Details</button></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+
+            <template lwc:if={isArchiveTab}>
+                <table class="jobs-table">
+                    <thead>
+                        <tr>
+                            <th class="checkbox-col"><input type="checkbox" checked={allArchiveSelected} onchange={handleArchiveSelectAll} /></th>
+                            <th>Job ID</th>
+                            <th>Designation</th>
+                            <th>Total Applicants</th>
+                            <th>Status</th>
+                            <th>Open Date</th>
+                            <th>Close Date</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={filteredArchiveRows} for:item="row">
+                            <tr key={row.id}>
+                                <td class="checkbox-col"><input type="checkbox" data-id={row.id} checked={row.selected} onchange={handleArchiveSelect} /></td>
+                                <td>{row.jobId}</td>
+                                <td>{row.designation}</td>
+                                <td>{row.applicants}</td>
+                                <td><span class={row.statusClass}>{row.status}</span></td>
+                                <td>{row.openDate}</td>
+                                <td>{row.closeDate}</td>
+                                <td><button class="view-btn" data-job-id={row.jobId} onclick={handleViewDetails}>View Details</button></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+        </div>
+
+        <template lwc:if={isPostJobModalOpen}>
+            <div class="modal-backdrop" onclick={closePostJobModal}></div>
+            <section class="post-job-modal" role="dialog" aria-modal="true" aria-label="Post Job Options">
+                <button class="modal-close" type="button" onclick={closePostJobModal}>x</button>
+                <h3>How would you like to create a new job?</h3>
+                <div class="modal-grid">
+                    <button type="button" class="modal-choice manual" onclick={handleCreateManually}>
+                        <span class="choice-title">Create Manually</span>
+                        <span class="choice-subtitle">Fill in the details step by step</span>
+                    </button>
+                    <button type="button" class="modal-choice upload" onclick={handleUploadJobDescription}>
+                        <span class="choice-title">Upload a Job Description</span>
+                        <span class="choice-subtitle">Save time - we'll create it for you.</span>
+                    </button>
+                </div>
+            </section>
+        </template>
+    </section>
+</template>

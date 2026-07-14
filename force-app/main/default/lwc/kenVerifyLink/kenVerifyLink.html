@@ -1,0 +1,16 @@
+<template>
+    <template if:true={isLoading}>
+        <lightning-spinner alternative-text="Verifying link" size="medium"></lightning-spinner>
+        <p class="slds-p-top_small">Verifying your secure link…</p>
+    </template>
+    <template if:true={error}>
+        <div class="slds-text-color_error slds-p-vertical_small">
+            {error}
+        </div>
+    </template>
+    <template if:true={resendMessage}>
+        <div class="slds-text-color_success slds-p-vertical_small">
+            {resendMessage}
+        </div>
+    </template>
+</template>

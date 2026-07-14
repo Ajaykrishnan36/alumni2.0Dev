@@ -1,0 +1,419 @@
+.engagement-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 367px);
+}
+
+.form-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 1rem 10rem;
+    margin-bottom: 2rem;
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    min-height: 0;
+    max-height: calc(100vh - 473px);
+
+}
+
+@media screen and (max-width: 1280px) and (max-height: 600px) {
+    .form-container {
+        max-height: calc(100vh - 420px);
+    }
+
+    .engagement-container {
+        height: calc(100vh - 320px);
+    }
+}
+
+.form-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    padding-left: 0;
+    min-height: 0;
+    box-sizing: border-box;
+}
+
+.form-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.form-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.form-scroll::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.form-scroll::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 0;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Fix alignment for radio groups and checkboxes */
+.radio-group,
+.checkbox-group {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure inputs don't get cut off */
+.radio-group .slds-form-element,
+.checkbox-group .slds-form-element {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+
+.field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #373A45;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.required {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+.radio-group {
+    --sds-c-radio-mark-color-foreground: var(--primary-color);
+    --sds-c-radio-color-border-focus: var(--primary-color);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure radio buttons are properly aligned */
+.radio-group .slds-radio {
+    margin-bottom: 0.5rem;
+    padding-left: 0;
+}
+
+.radio-group .slds-form-element__control {
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.checkbox-item .slds-form-element {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.checkbox-item .slds-checkbox {
+    margin: 0;
+    padding: 0;
+}
+
+.activity-checkbox {
+    --sds-c-checkbox-color-border: #d8d8d8;
+    --sds-c-checkbox-color-border-checked: var(--primary-color);
+    --sds-c-checkbox-color-background: transparent;
+    --sds-c-checkbox-color-background-checked: transparent;
+    --sds-c-checkbox-label-font-size: 0.875rem;
+}
+
+/* Ensure checkbox background is transparent */
+.activity-checkbox .slds-checkbox__faux,
+.activity-checkbox .slds-checkbox__faux_checked {
+    background: transparent !important;
+}
+
+.activity-checkbox input[type="checkbox"]:checked + .slds-checkbox__faux {
+    background: transparent !important;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    padding-right: 1.5rem;
+    border-top: 1px solid #e9ecef;
+    flex-shrink: 0;
+    margin-top: auto;
+    position: relative;
+    z-index: 10;
+    background-color: white;
+}
+
+.previous-button {
+    padding: 0.75rem 2rem;
+    border: 1px solid var(--primary-color);
+    background-color: white;
+    color: #000;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.previous-button:hover {
+    background-color: #f8f9fa;
+}
+
+.save-next-button {
+    padding: 0.75rem 2rem;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.save-next-button:hover {
+    background-color: var(--primary-color);
+}
+
+/* New engagement cards design */
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #373A45;
+    margin: 0 0 2rem 0;
+    font-family: 'GeneralSansCustom', sans-serif;
+    text-align: center;
+}
+
+.engagement-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    height: calc(100vh - 650px);
+}
+
+.engagement-card-wrapper {
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.engagement-card-wrapper:hover {
+    /* transform: translateY(-4px); */
+}
+
+.card-dark-container {
+    position: relative;
+    background-color: #2a2a2a;
+    border-radius: 12px;
+    overflow: visible;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
+    padding-bottom: 0.75rem;
+}
+
+.engagement-card-wrapper:hover .card-dark-container {
+    /* box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); */
+}
+
+.card-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    opacity: 0.9;
+}
+
+.image-gradient-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5));
+    pointer-events: none;
+}
+
+.engagement-card-wrapper:hover .card-image {
+    /* transform: scale(1.05); */
+    opacity: 1;
+}
+
+.card-content-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: white;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    min-height: 48px;
+    border-radius: 12px;
+    margin: 0 0.75rem 0.75rem 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+}
+
+.card-checkbox {
+    --sds-c-checkbox-color-border: #d8d8d8;
+    --sds-c-checkbox-color-border-checked: #6688FF;
+    --sds-c-checkbox-color-background: white;
+    --sds-c-checkbox-color-background-checked: #6688FF;
+    --sds-c-checkbox-mark-color-foreground: #FFFFFF;
+    --sds-c-checkbox-shadow: none;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.card-checkbox .slds-checkbox__faux {
+    width: 20px;
+    height: 20px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #d8d8d8;
+    border-radius: 4px;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.card-checkbox .slds-checkbox__faux:before {
+    width: 6px;
+    height: 10px;
+    left: 6px;
+    top: 3px;
+    border-color: #FFFFFF;
+}
+
+.card-checkbox input[type="checkbox"]:checked ~ .slds-checkbox__faux,
+.card-checkbox .slds-checkbox__faux_checked {
+    background-color: #6688FF !important;
+    border-color: #6688FF !important;
+    border-width: 1px;
+}
+
+.card-checkbox input[type="checkbox"]:checked ~ .slds-checkbox__faux:before,
+.card-checkbox .slds-checkbox__faux_checked:before {
+    border-color: #FFFFFF !important;
+}
+
+.card-label {
+    font-size: 0.875rem;
+    font-weight: 550;
+    color: #4a4a4a;
+    font-family: 'GeneralSansCustom', sans-serif;
+    line-height: 1.5;
+    flex: 1;
+    margin: 0;
+}
+
+/* Tablet Media Query (Between 601px and 1024px) */
+@media only screen and (min-width: 601px) and (max-width: 1024px) {
+    .form-container {
+        padding: 1rem 2rem;
+        flex: 1;
+    }
+    .engagement-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        height: auto;
+    }
+    .form-scroll {
+        overflow-y: visible;
+    }
+}
+
+/* Mobile Media Query (max-width 600px) */
+@media only screen and (max-width: 600px) {
+    .form-container {
+        padding: 1rem;
+        flex: auto;
+        height: calc(100vh - 365px);
+        margin-bottom: 1rem;
+        overflow-y: auto;
+    }
+    .engagement-container {
+        display: block;
+        height: auto;
+    }
+    .engagement-cards-grid {
+        grid-template-columns: 1fr;
+        height: auto; 
+    }
+    .form-scroll {
+        overflow-y: visible;
+        padding-right: 0;
+    }
+    .form-actions {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        width: 100%;
+        background-color: transparent;
+        padding: 1rem;
+        box-shadow: none;
+        z-index: auto;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+    .previous-button, .save-next-button {
+        flex: 1;
+        padding: 0.75rem 1rem;
+    }
+}

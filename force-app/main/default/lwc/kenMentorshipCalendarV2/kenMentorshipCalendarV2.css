@@ -1,0 +1,9 @@
+.cal{padding:14px;border:1px solid #E5E6E8;border-radius:10px;background:#fff}
+.cal__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-weight:600;font-size:13px;color:#1F2937}
+.cal__nav{color:#9DA0A8}
+.cal__grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-size:11px;text-align:center}
+.cal__dow{color:#9DA0A8;font-weight:600;padding:4px 0}
+.cal__d{padding:6px 0;border-radius:50%;cursor:pointer;color:#373A45}
+.cal__d--empty{visibility:hidden}
+.cal__d--today{background:#3061FF;color:#fff;font-weight:600}
+.cal__d--has{background:#EAEFFF;color:#3061FF;font-weight:600}

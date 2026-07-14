@@ -1,0 +1,557 @@
+<template>
+    <div class={rootClass}>
+        <div class={containerClass}>
+            <!-- Component Fixed Header with Stepper Component -->
+            <div class="component-header">
+                <c-ken-survey-stepper 
+                    current-step={currentStep}
+                    is-step1-completed={isStep1Completed}
+                    is-step2-completed={isStep2Completed}
+                    is-step3-completed={isStep3Completed}
+                    is-step4-completed={isStep4Completed}>
+                </c-ken-survey-stepper>
+            </div>
+
+            <!-- Component Scrollable Content -->
+            <div class="component-content">
+                <!-- Step 1: About the Survey -->
+                <template if:true={isStep1Active}>
+                    <div class="step-content step-content-step1">
+                        <h2 class="step-title step-title-step1">1. About the Survey</h2>
+                        
+                        <!-- Survey Title -->
+                        <div class="form-field">
+                            <label class="field-label">Survey Title<span class="required-star">*</span></label>
+                            <lightning-input
+                                type="text"
+                                value={surveyTitle}
+                                placeholder="Enter title"
+                                oninput={handleSurveyTitleChange}
+                                onchange={handleSurveyTitleChange}
+                                variant="label-hidden"
+                                class="custom-input">
+                            </lightning-input>
+                            <template if:true={titleError}>
+                                <div class="field-error">{titleError}</div>
+                            </template>
+                        </div>
+
+                        <!-- Survey Description -->
+                        <div class="form-field">
+                            <label class="field-label">Survey Description</label>
+                            <lightning-textarea
+                                value={surveyDescription}
+                                placeholder="Enter description"
+                                oninput={handleSurveyDescriptionChange}
+                                onchange={handleSurveyDescriptionChange}
+                                variant="label-hidden"
+                                class="custom-input description-input">
+                            </lightning-textarea>
+                        </div>
+
+                        <!-- Date Fields -->
+                        <div class="form-row">
+                            <div class="form-field date-field">
+                                <label class="field-label">Start Date<span class="required-star">*</span></label>
+                                <lightning-input
+                                    type="date"
+                                    value={startDate}
+                                    min={todayDate}
+                                    placeholder="Select date"
+                                    onchange={handleStartDateChange}
+                                    variant="label-hidden"
+                                    class="custom-input"
+                                    message-when-value-missing="Start date is required.">
+                                </lightning-input>
+                                <template if:true={startDateError}>
+                                    <div class="field-error">{startDateError}</div>
+                                </template>
+                            </div>
+                            <div class="form-field date-field">
+                                <label class="field-label">End Date<span class="required-star">*</span></label>
+                                <lightning-input
+                                    type="date"
+                                    value={endDate}
+                                    min={minEndDate}
+                                    placeholder="Select date"
+                                    onchange={handleEndDateChange}
+                                    variant="label-hidden"
+                                    class="custom-input"
+                                    message-when-value-missing="End date is required.">
+                                </lightning-input>
+                                <template if:true={endDateError}>
+                                    <div class="field-error">{endDateError}</div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Enable Anonymous Responses Toggle -->
+                        <!-- <div class="form-field">
+                            <div class="anonymous-toggle-section">
+                                <span class="toggle-label">Enable anonymous responses</span>
+                                <lightning-input
+                                    type="toggle"
+                                    checked={enableAnonymous}
+                                    onchange={handleAnonymousToggle}
+                                    class="toggle-input"
+                                    message-toggle-active=""
+                                    message-toggle-inactive="">
+                                </lightning-input>
+                            </div>
+                        </div> -->
+                    </div>
+                </template>
+
+                <!-- Step 2: Target Audience Selection -->
+                <template if:true={isStep2Active}>
+                    <c-ken-target-audience
+                        parent-object-type="Survey"
+                        parent-record-id={surveyIdForAudience}
+                        onaudiencechange={handleAudienceChange}>
+                    </c-ken-target-audience>
+                </template>
+
+                <!-- Step 3: Setup Survey -->
+                <template if:true={isStep3Active}>
+                    <div class="step-content">
+                        <h2 class="step-title step-title-step3">3. Setup Survey</h2>
+                        
+                        <!-- Questions List -->
+                        <div class="questions-container">
+                            <template for:each={questions} for:item="question" for:index="index">
+                                <div 
+                                    key={question.id} 
+                                    class="question-card"
+                                    draggable="true"
+                                    data-question-id={question.id}
+                                    ondragstart={handleDragStart}
+                                    ondragover={handleDragOver}
+                                    ondrop={handleDrop}
+                                    ondragend={handleDragEnd}>
+                                    
+                                    <!-- Top Controls Row -->
+                                    <div class="question-top-controls">
+                                        <div class="drag-handle" title="Drag to reorder">
+                                            <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <circle cx="2" cy="3" r="1.5" fill="#6B7280"/>
+                                                <circle cx="2" cy="8" r="1.5" fill="#6B7280"/>
+                                                <circle cx="2" cy="13" r="1.5" fill="#6B7280"/>
+                                                <circle cx="8" cy="3" r="1.5" fill="#6B7280"/>
+                                                <circle cx="8" cy="8" r="1.5" fill="#6B7280"/>
+                                                <circle cx="8" cy="13" r="1.5" fill="#6B7280"/>
+                                            </svg>
+                                        </div>
+                                        <div class="question-top-right-controls">
+                                            <div class="required-toggle">
+                                                <span class="required-label">Required</span>
+                                                <lightning-input
+                                                    type="toggle"
+                                                    checked={question.required}
+                                                    onchange={handleRequiredToggle}
+                                                    data-question-id={question.id}
+                                                    class="toggle-input"
+                                                    message-toggle-active=""
+                                                    message-toggle-inactive="">
+                                                </lightning-input>
+                                            </div>
+                                            <button 
+                                                type="button" 
+                                                class="delete-question-btn"
+                                                onclick={handleDeleteQuestion}
+                                                data-question-id={question.id}>
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="delete-icon">
+                                                    <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM8 9H16V19H8V9ZM15.5 4L14.5 3H9.5L8.5 4H5V6H19V4H15.5Z" fill="#585A64"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Question Content Row -->
+                                    <div class="question-header-row">
+                                        <div class="question-left-section">
+                                            <span class="question-number">Question {question.number}</span>
+                                            <div class="question-input-field">
+                                                <lightning-input
+                                                    type="text"
+                                                    value={question.text}
+                                                    placeholder="Untitled question"
+                                                    onchange={handleQuestionChange}
+                                                    data-question-id={question.id}
+                                                    variant="label-hidden"
+                                                    class="custom-input">
+                                                </lightning-input>
+                                            </div>
+                                        </div>
+                                        <div class="question-right-section">
+                                            <div class="question-type-field">
+                                                <label class="field-label">Choose type</label>
+                                                <div class="question-type-dropdown">
+                                                    <lightning-combobox
+                                                        value={question.type}
+                                                        options={questionTypeOptions}
+                                                        placeholder="Select"
+                                                        onchange={handleQuestionTypeChange}
+                                                        data-question-id={question.id}
+                                                        variant="label-hidden"
+                                                        class="custom-select">
+                                                    </lightning-combobox>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Multiple Choice / Checkbox Options -->
+                                    <template if:true={question.showMultipleOptions}>
+                                        <div class="question-options">
+                                            <template for:each={question.options} for:item="option" for:index="optionIndex">
+                                                <div key={option.id} class="option-item">
+                                                    <div class="option-control">
+                                                        <template if:true={question.isMultiple}>
+                                                            <div class="radio-button"></div>
+                                                        </template>
+                                                        <template if:true={question.isCheckboxType}>
+                                                            <div class="checkbox-button"></div>
+                                                        </template>
+                                                    </div>
+                                                    <div class="option-label">
+                                                        <span class="option-letter">{option.letter}</span>
+                                                        <span>)</span>
+                                                    </div>
+                                                    <lightning-input
+                                                        type="text"
+                                                        value={option.text}
+                                                        placeholder="Add option"
+                                                        onchange={handleOptionChange}
+                                                        data-question-id={question.id}
+                                                        data-option-id={option.id}
+                                                        variant="label-hidden"
+                                                        class="option-input">
+                                                    </lightning-input>
+                                                    <button 
+                                                        type="button" 
+                                                        class="delete-option-btn"
+                                                        onclick={handleDeleteOption}
+                                                        data-question-id={question.id}
+                                                        data-option-id={option.id}
+                                                        disabled={question.cannotDeleteOption}>
+                                                        <lightning-icon icon-name="utility:close" size="x-small" class="delete-option-icon"></lightning-icon>
+                                                    </button>
+                                                </div>
+                                            </template>
+                                            <template if:true={question.hasInsufficientOptions}>
+                                                <div class="option-error-message">
+                                                    Multiple Choice and Checkbox questions must have at least 2 options.
+                                                </div>
+                                            </template>
+                                            <button 
+                                                type="button" 
+                                                class="add-option-btn"
+                                                onclick={handleAddOption}
+                                                data-question-id={question.id}>
+                                                Add option {question.nextOptionNumber}
+                                            </button>
+                                        </div>
+                                    </template>
+
+                                    <!-- Linear Scale Configuration -->
+                                    <template if:true={question.showLinearScale}>
+                                        <div class="question-scale">
+                                            <div class="scale-range">
+                                                <lightning-combobox
+                                                    value={question.scaleMin}
+                                                    options={scaleNumberOptions}
+                                                    onchange={handleScaleMinChange}
+                                                    data-question-id={question.id}
+                                                    variant="label-hidden"
+                                                    class="scale-input custom-select">
+                                                </lightning-combobox>
+                                                <span class="scale-to">to</span>
+                                                <lightning-combobox
+                                                    value={question.scaleMax}
+                                                    options={scaleNumberOptions}
+                                                    onchange={handleScaleMaxChange}
+                                                    data-question-id={question.id}
+                                                    variant="label-hidden"
+                                                    class="scale-input custom-select">
+                                                </lightning-combobox>
+                                            </div>
+                                            <div class="scale-labels">
+                                                <div class="scale-label-item">
+                                                    <span class="scale-label-number">{question.scaleMin}</span>
+                                                    <lightning-input
+                                                        type="text"
+                                                        value={question.scaleMinLabel}
+                                                        placeholder="Label(Optional)"
+                                                        onchange={handleScaleMinLabelChange}
+                                                        data-question-id={question.id}
+                                                        variant="label-hidden"
+                                                        class="scale-label-input">
+                                                    </lightning-input>
+                                                </div>
+                                                <div class="scale-label-item">
+                                                    <span class="scale-label-number">{question.scaleMax}</span>
+                                                    <lightning-input
+                                                        type="text"
+                                                        value={question.scaleMaxLabel}
+                                                        placeholder="Label(Optional)"
+                                                        onchange={handleScaleMaxLabelChange}
+                                                        data-question-id={question.id}
+                                                        variant="label-hidden"
+                                                        class="scale-label-input">
+                                                    </lightning-input>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <!-- Short Answer Preview -->
+                                    <template if:true={question.showShortAnswer}>
+                                        <div class="question-preview">
+                                            <div class="preview-field">
+                                                <span class="preview-text">Short answer</span>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Add Questions Button -->
+                        <button type="button" class="add-questions-btn" onclick={handleAddQuestion}>
+                            <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                            Add Questions
+                        </button>
+                    </div>
+                </template>
+
+                <!-- Step 4: Summary -->
+                <template if:true={isStep4Active}>
+                    <div class="step-content summary-step-content">
+                        <div class="summary-layout">
+                            <!-- Left Column -->
+                            <div class="summary-left-column">
+                                <!-- About the Survey Card -->
+                                <div class="summary-card">
+                                    <div class="summary-card-header">
+                                        <h3 class="summary-card-title">About the Survey</h3>
+                                        <button type="button" class="edit-details-link" onclick={handleEditStep1}>Edit Details</button>
+                                    </div>
+                                    <div class="summary-card-body">
+                                        <div class="summary-field">
+                                            <label class="summary-field-label">Survey Title</label>
+                                            <div class="summary-field-value"><template if:true={hasSurveyTitle}>{surveyTitle}</template><template if:false={hasSurveyTitle}>-</template></div>
+                                        </div>
+                                        <div class="summary-field">
+                                            <label class="summary-field-label">Survey Description</label>
+                                            <div class="summary-field-value"><template if:true={hasSurveyDescription}>{surveyDescription}</template><template if:false={hasSurveyDescription}>-</template></div>
+                                        </div>
+                                        <div class="summary-field-row">
+                                            <div class="summary-field">
+                                                <label class="summary-field-label">Start Date</label>
+                                                <div class="summary-field-value"><template if:true={hasStartDate}>{formattedStartDate}</template><template if:false={hasStartDate}>-</template></div>
+                                            </div>
+                                            <div class="summary-field">
+                                                <label class="summary-field-label">End Date</label>
+                                                <div class="summary-field-value"><template if:true={hasEndDate}>{formattedEndDate}</template><template if:false={hasEndDate}>-</template></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Target Audience Card -->
+                                <div class="summary-card">
+                                    <div class="summary-card-header">
+                                        <h3 class="summary-card-title">Target Audience</h3>
+                                        <button type="button" class="edit-details-link" onclick={handleEditStep2}>Edit Details</button>
+                                    </div>
+                                    <div class="summary-card-body">
+                                        <template if:true={hasSelectedAudience}>
+                                            <template for:each={audienceSummaryItems} for:item="aud">
+                                                <div key={aud.id} class="audience-group">
+                                                    <div class="audience-group-header" data-id={aud.id} onclick={handleToggleAudienceSummary}>
+                                                        <svg class={aud.caretClass} width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <path d="M1.41 7.41L6 2.83L10.59 7.41L12 6L6 0L0 6L1.41 7.41Z" fill="#585A64"/>
+                                                        </svg>
+                                                        <span class="group-name">{aud.title}</span>
+                                                    </div>
+                                                    <div class="audience-tags">
+                                                        <span class="audience-tag audience-tag-primary">{aud.roleTag}</span>
+                                                        <span class="audience-tag audience-tag-secondary">{aud.membersTag}</span>
+                                                    </div>
+
+                                                    <!-- Filtering Criteria Sections -->
+                                                    <template if:true={aud.expanded}>
+                                                        <template if:true={aud.hasCriteria}>
+                                                            <div class="audience-filter-criteria">
+                                                                <template for:each={aud.criteria} for:item="crit">
+                                                                    <div key={crit.label} class="filter-criteria-section">
+                                                                        <label class="filter-criteria-label">{crit.label}</label>
+                                                                        <div class="filter-criteria-tags">
+                                                                            <template for:each={crit.values} for:item="val">
+                                                                                <span key={val} class="audience-tag audience-tag-secondary">{val}</span>
+                                                                            </template>
+                                                                        </div>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                        <template if:false={aud.hasCriteria}>
+                                                            <div class="summary-empty">No filters</div>
+                                                        </template>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </template>
+                                        <template if:false={hasSelectedAudience}>
+                                            <div class="summary-empty">-</div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="summary-right-column">
+                                <!-- Setup Survey Card -->
+                                <div class="summary-card">
+                                    <div class="summary-card-header">
+                                        <h3 class="summary-card-title">Setup Survey</h3>
+                                        <button type="button" class="edit-details-link" onclick={handleEditStep3}>Edit Details</button>
+                                    </div>
+                                    <div class="summary-card-body">
+                                        <div class="questions-summary">
+                                            <template for:each={summaryQuestions} for:item="question" for:index="index">
+                                                <div key={question.id} class="question-summary-card">
+                                                    <div class="question-summary-number">Question {question.number}</div>
+                                                    <div class="question-summary-text">{question.text}</div>
+                                                    
+                                                    <!-- Multiple Choice / Checkbox Options -->
+                                                    <template if:true={question.showOptions}>
+                                                        <div class="question-summary-options">
+                                                            <template for:each={question.options} for:item="option">
+                                                                <div key={option.id} class="question-summary-option">
+                                                                    <div class="option-radio"></div>
+                                                                    <span>{option.text}</span>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+
+                                                    <!-- Linear Scale Preview -->
+                                                    <template if:true={question.showLinearScale}>
+                                                        <div class="question-summary-scale">
+                                                            <span class="scale-preview">Linear Scale: {question.scaleMin} to {question.scaleMax}</span>
+                                                            <template if:true={question.hasLabels}>
+                                                                <div class="scale-labels-preview">
+                                                                    <span>{question.scaleMinLabel}</span>
+                                                                    <span>{question.scaleMaxLabel}</span>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+
+                                                    <!-- Short Answer Preview -->
+                                                    <template if:true={question.showShortAnswer}>
+                                                        <div class="question-summary-short-answer">
+                                                            <span class="short-answer-placeholder">Short Answer text field provided</span>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template if:false={hasQuestions}>
+                                                <div class="summary-empty">No questions added</div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Component Fixed Footer -->
+            <div class="component-footer">
+                <div class="button-group">
+                    <!-- Step 1 Buttons -->
+                    <template if:true={isStep1Active}>
+                        <button class="secondary-button" onclick={handleCancel}>Cancel</button>
+                        <button class="btn btn-primary" onclick={handleNextStep}>Next</button>
+                    </template>
+
+                    <!-- Step 2 Buttons -->
+                    <template if:true={isStep2Active}>
+                        <button class="secondary-button" onclick={handlePreviousStep}>Back</button>
+                        <button class="btn btn-primary" onclick={handleNextStep}>Next</button>
+                    </template>
+
+                    <!-- Step 3 Buttons -->
+                    <template if:true={isStep3Active}>
+                        <button class="secondary-button" onclick={handlePreviousStep}>Back</button>
+                        <button class="btn btn-primary" onclick={handleNextStep}>Next</button>
+                    </template>
+
+                    <!-- Step 4 Buttons -->
+                    <template if:true={isStep4Active}>
+                        <button class="secondary-button" onclick={handlePreviousStep}>Back</button>
+                        <button class="btn btn-primary" onclick={handleSave}>Submit</button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+    <template if:true={showSuccessModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <header class="top-dialog">
+                <div class="dialog-content">
+                    <div class="icon-container">
+                        <svg width="24" height="25" viewBox="0 0 24 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect y="0.5" width="24" height="24" rx="12" fill="#C1DCC3"/>
+                            <mask id="mask0_createSurvey_success" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="3" y="3" width="18" height="19">
+                                <rect x="3" y="3.5" width="18" height="18" fill="#D9D9D9"/>
+                            </mask>
+                            <g mask="url(#mask0_createSurvey_success)">
+                                <path d="M10.95 15.95L16.2375 10.6625L15.1875 9.6125L10.95 13.85L8.8125 11.7125L7.7625 12.7625L10.95 15.95ZM12 20C10.9625 20 9.9875 19.803 9.075 19.409C8.1625 19.0155 7.36875 18.4813 6.69375 17.8063C6.01875 17.1313 5.4845 16.3375 5.091 15.425C4.697 14.5125 4.5 13.5375 4.5 12.5C4.5 11.4625 4.697 10.4875 5.091 9.575C5.4845 8.6625 6.01875 7.86875 6.69375 7.19375C7.36875 6.51875 8.1625 5.98425 9.075 5.59025C9.9875 5.19675 10.9625 5 12 5C13.0375 5 14.0125 5.19675 14.925 5.59025C15.8375 5.98425 16.6313 6.51875 17.3063 7.19375C17.9813 7.86875 18.5155 8.6625 18.909 9.575C19.303 10.4875 19.5 11.4625 19.5 12.5C19.5 13.5375 19.303 14.5125 18.909 15.425C18.5155 16.3375 17.9813 17.1313 17.3063 17.8063C16.6313 18.4813 15.8375 19.0155 14.925 19.409C14.0125 19.803 13.0375 20 12 20Z" fill="#388E3C"/>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="text-container">
+                        <div class="dialog-title">{successTitle}</div>
+                        <p>{successDescription}</p>
+                    </div>
+                </div>
+                <button class="slds-button slds-button_icon slds-modal__close close-btn" onclick={closeSuccessModal} title="Close">
+                    <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                </button>
+            </header>
+        </section>
+    </template>
+
+    <template if:true={showErrorModal}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <header class="top-dialog-error">
+                <div class="dialog-content">
+                    <div class="icon-container">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="32" height="32" rx="16" fill="#FBEAEA"/>
+                            <path d="M16 6C16.918 6 17.8034 6.11719 18.6562 6.35156C19.5091 6.58594 20.3034 6.92448 21.0391 7.36719C21.7747 7.8099 22.4486 8.33073 23.0605 8.92969C23.6725 9.52865 24.1966 10.2025 24.6328 10.9512C25.069 11.6999 25.4043 12.4974 25.6387 13.3438C25.873 14.1901 25.9935 15.0755 26 16C26 16.918 25.8828 17.8034 25.6484 18.6562C25.4141 19.5091 25.0755 20.3034 24.6328 21.0391C24.1901 21.7747 23.6693 22.4486 23.0703 23.0605C22.4714 23.6725 21.7975 24.1966 21.0488 24.6328C20.3001 25.069 19.5026 25.4043 18.6562 25.6387C17.8099 25.873 16.9245 25.9935 16 26C15.082 26 14.1966 25.8828 13.3438 25.6484C12.4909 25.4141 11.6966 25.0755 10.9609 24.6328C10.2253 24.1901 9.55143 23.6693 8.93945 23.0703C8.32747 22.4714 7.80339 21.7975 7.36719 21.0488C6.93099 20.3001 6.5957 19.5026 6.36133 18.6562C6.12695 17.8099 6.00651 16.9245 6 16C6 15.082 6.11719 14.1966 6.35156 13.3438C6.58594 12.4909 6.92448 11.6966 7.36719 10.9609C7.8099 10.2253 8.33073 9.55143 8.92969 8.93945C9.52865 8.32747 10.2025 7.80339 10.9512 7.36719C11.6999 6.93099 12.4974 6.5957 13.3438 6.36133C14.1901 6.12695 15.0755 6.00651 16 6ZM17.1035 16L20.4434 12.6602L19.3398 11.5566L16 14.8965L12.6602 11.5566L11.5566 12.6602L14.8965 16L11.5566 19.3398L12.6602 20.4434L16 17.1035L19.3398 20.4434L20.4434 19.3398L17.1035 16Z" fill="#C02B2B"/>
+                        </svg>
+                    </div>
+                    <div class="text-container">
+                        <div class="dialog-title">{errorTitle}</div>
+                        <p>{errorDescription}</p>
+                    </div>
+                </div>
+                <button class="slds-button slds-button_icon slds-modal__close close-btn" onclick={closeErrorModal} title="Close">
+            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+        </button>
+    </header>
+</section>
+</template>
+
+<template if:true={showSuccessLoader}>
+    <div class="redirect-loader">
+        <lightning-spinner alternative-text="Redirecting..." size="medium" variant="brand"></lightning-spinner>
+    </div>
+</template>
+</template>

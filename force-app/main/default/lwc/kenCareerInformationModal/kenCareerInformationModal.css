@@ -1,0 +1,614 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-container {
+    background-color: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #373A45;
+    margin: 0;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.close-button:hover {
+    background-color: #f5f7fa;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.date-form-row {
+    grid-template-columns: 1fr;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #373A45;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.required {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+.custom-input,
+.custom-select,
+.custom-textarea {
+    --sds-c-input-color-border: #D8D8D8;
+    --sds-c-input-color-border-focus: var(--primary-color);
+    --sds-c-input-color-background: transparent;
+    --sds-c-input-color-background-focus: transparent;
+    --sds-c-input-shadow: none;
+    --sds-c-input-shadow-focus: 0 0 0 3px rgba(48, 97, 255, 0.1);
+    --sds-c-input-radius-border: 8px;
+    --sds-c-input-spacing-block-start: 0.75rem;
+    --sds-c-input-spacing-block-end: 0.75rem;
+    --sds-c-input-text-color: #373A45;
+    --sds-c-input-text-font-size: 0.9375rem;
+    --sds-c-input-text-font-weight: 400;
+}
+
+.custom-input:focus,
+.custom-select:focus,
+.custom-textarea:focus {
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+/* Remove background and shadow from lightning-input and combobox */
+.custom-input input,
+.custom-select input,
+.custom-select button,
+.custom-textarea textarea {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.custom-input input:focus,
+.custom-select input:focus,
+.custom-select button:focus,
+.custom-textarea textarea:focus {
+    background: transparent !important;
+    outline: none !important;
+}
+
+/* Combobox specific styling */
+.custom-select .slds-combobox__input,
+.custom-select .slds-combobox__input:focus,
+.custom-select .slds-combobox__input:hover {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-color: #D8D8D8 !important;
+    outline: none !important;
+}
+
+.custom-select .slds-combobox__input-entity-icon,
+.custom-select .slds-combobox__input-entity-icon-container {
+    background: transparent !important;
+}
+
+/* Remove all shadows and backgrounds from SLDS components */
+.custom-input .slds-input,
+.custom-select .slds-input,
+.custom-select .slds-combobox__input {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.custom-input .slds-input:focus,
+.custom-select .slds-input:focus,
+.custom-select .slds-combobox__input:focus {
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: #D8D8D8 !important;
+}
+
+.text-editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid #e9ecef;
+    background-color: white;
+}
+
+.toolbar-button {
+    background: white;
+    border: 1px solid #d8d8d8;
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    color: #373A45;
+}
+
+.toolbar-button:hover {
+    background-color: #f5f7fa;
+    border-color: var(--primary-color);
+}
+
+.toolbar-button.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.toolbar-button.active .bold-text,
+.toolbar-button.active .italic-text {
+    color: white;
+}
+
+.toolbar-button.active svg {
+    stroke: white;
+}
+
+.toolbar-button svg {
+    width: 16px;
+    height: 16px;
+    stroke: currentColor;
+}
+
+.bold-text {
+    font-weight: 800;
+    font-size: 0.9375rem;
+    color: #373A45;
+}
+
+.toolbar-button.active .bold-text {
+    color: white;
+}
+
+.italic-text {
+    font-style: italic;
+    font-size: 0.9375rem;
+    color: #373A45;
+}
+
+.toolbar-button.active .italic-text {
+    color: white;
+}
+
+.toolbar-spacer {
+    flex: 1;
+}
+
+.ai-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.375rem 0.75rem;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.ai-button:hover {
+    text-decoration: underline;
+}
+
+.rich-text-editor {
+    border: 1px solid #D8D8D8;
+    border-radius: 8px;
+    overflow: hidden;
+    padding: 10px;
+}
+
+.rich-text-area {
+    min-height: 120px;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: #373A45;
+    font-family: 'GeneralSansCustom', sans-serif;
+    line-height: 1.5;
+    outline: none;
+    overflow-y: auto;
+    background-color: transparent;
+}
+
+.rich-text-area:empty:before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.rich-text-area:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.rich-text-area ul,
+.rich-text-area ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+    display: block;
+    list-style-type: disc;
+}
+
+.rich-text-area ol {
+    list-style-type: decimal;
+}
+
+.rich-text-area li {
+    margin: 0.25rem 0;
+    display: list-item;
+    list-style-position: outside;
+}
+
+.rich-text-area ul li {
+    list-style-type: disc;
+}
+
+.rich-text-area ol li {
+    list-style-type: decimal;
+}
+
+.rich-text-area b,
+.rich-text-area strong {
+    font-weight: 700;
+}
+
+.rich-text-area i,
+.rich-text-area em {
+    font-style: italic;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.date-field-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.date-select {
+    flex: 1;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.75rem;
+    margin-top: 0.125rem;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.slds-form-element {
+    margin-bottom: 0 !important;
+}
+
+.custom-input.error,
+.custom-select.error {
+    --sds-c-input-color-border: #dc3545;
+    --sds-c-input-color-border-focus: #dc3545;
+}
+
+.custom-input.error input,
+.custom-select.error input,
+.custom-select.error button {
+    border-color: #dc3545 !important;
+}
+
+.custom-input.error input:focus,
+.custom-select.error input:focus,
+.custom-select.error button:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+}
+
+.current-job-checkbox {
+    --sds-c-checkbox-label-font-size: 0.9375rem;
+    --sds-c-checkbox-label-font-weight: 400;
+    --sds-c-checkbox-label-color: #373A45;
+    --sds-c-checkbox-color-border: #d8d8d8;
+    --sds-c-checkbox-color-border-checked: var(--primary-color);
+    --sds-c-checkbox-color-background: transparent;
+    --sds-c-checkbox-color-background-checked: var(--primary-color);
+    --sds-c-checkbox-mark-color-foreground: #ffffff;
+}
+
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.cancel-button {
+    padding: 0.625rem 1.5rem;
+    border: 1px solid var(--primary-color);
+    background-color: white;
+    color: var(--primary-color);
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+    min-width: 100px;
+}
+
+.cancel-button:hover {
+    background-color: #F6F8FB;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.save-button {
+    padding: 0.625rem 1.5rem;
+    border: none;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+    min-width: 100px;
+}
+
+.save-button:hover {
+    background-color: var(--primary-color);
+}
+
+.save-button:active {
+    background-color: var(--primary-color);
+}
+
+/* Dropdown styling - white background and no border on hover */
+.custom-select,
+lightning-combobox.custom-select {
+    --sds-c-combobox-dropdown-color-background: #ffffff;
+    --sds-c-combobox-dropdown-color-border: #D8D8D8;
+    --slds-c-listbox-option-color-background: #ffffff !important;
+    --slds-c-listbox-option-color-background-hover: #f3f4f6 !important;
+    --slds-c-listbox-option-color-background-active: #ffffff !important;
+}
+
+/* Global style for combobox dropdown */
+lightning-combobox {
+    --slds-c-listbox-option-color-background: #ffffff !important;
+    --slds-c-listbox-option-color-background-hover: #f3f4f6 !important;
+    --slds-c-listbox-option-color-background-active: #ffffff !important;
+}
+
+/* Target dropdown listbox globally - these are rendered outside shadow DOM */
+.slds-listbox,
+.slds-dropdown {
+    background-color: #ffffff !important;
+}
+
+.slds-listbox__option,
+.slds-dropdown__item {
+    background-color: #ffffff !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+.slds-listbox__option:hover,
+.slds-dropdown__item:hover {
+    background-color: #f3f4f6 !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.slds-listbox__option[aria-selected="true"],
+.slds-dropdown__item[aria-selected="true"] {
+    background-color: #ffffff !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+/* Target body-level dropdowns that Lightning creates */
+body .slds-listbox,
+body .slds-dropdown,
+body .slds-listbox__option,
+body .slds-dropdown__item {
+    background-color: #ffffff !important;
+    border: none !important;
+}
+
+body .slds-listbox__option:hover,
+body .slds-dropdown__item:hover {
+    background-color: #f3f4f6 !important;
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove borders from all nested elements in dropdown options */
+.slds-listbox__option *,
+.slds-dropdown__item *,
+.slds-listbox__option:hover *,
+.slds-dropdown__item:hover * {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: none !important;
+}
+
+/* Remove borders from pseudo-elements */
+.slds-listbox__option::before,
+.slds-listbox__option::after,
+.slds-dropdown__item::before,
+.slds-dropdown__item::after {
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Employment Status Buttons */
+.employment-status-buttons {
+    display: flex;
+    gap: 0.75rem;
+    width: 80%;
+    margin-top: 5px;
+}
+
+.employment-status-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background-color: #F6F8FB;
+    border: 1px solid #E9ECEF;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'GeneralSansCustom', sans-serif;
+}
+
+.employment-status-button:hover {
+    background-color: #F6F8FB;
+}
+
+.employment-status-button.active {
+    background-color: #F6F8FB;
+    border-color: var(--primary-color);
+    border-width: 1px;
+}
+
+.employment-status-button .button-text {
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: #373A45;
+    line-height: 1.5;
+}
+
+.employment-status-button svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+@media only screen and (max-width: 600px) {
+
+    /* Your Role: stack buttons full width on mobile */
+    .employment-status-container {
+        width: 100%;
+    }
+
+    .employment-status-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+    }
+
+    .employment-status-button {
+        width: 100%;
+        min-width: 0;
+        justify-content: flex-start;
+        padding: 0.75rem 1rem;
+    }
+
+    .mobile-button-text {
+        font-size: 0.875rem !important;
+        width: auto !important;
+        white-space: normal;
+        text-align: left;
+    }
+
+    .field-label {
+        font-size: 0.65rem !important;
+        font-weight: 600 !important;
+    }
+}

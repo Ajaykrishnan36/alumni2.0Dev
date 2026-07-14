@@ -1,0 +1,13 @@
+<template>
+    <nav class="g-subnav">
+        <div class="g-tabs">
+            <template for:each={tabs} for:item="t">
+                <button key={t.key} type="button" class={t.cssClass} data-key={t.key} onclick={handleTab}>
+                    <span class="g-tab__ico">{t.ico}</span>
+                    <span>{t.label}</span>
+                </button>
+            </template>
+        </div>
+        <button type="button" class="g-subnav__cta" onclick={handleNew}>+ New initiative</button>
+    </nav>
+</template>

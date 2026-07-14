@@ -1,0 +1,129 @@
+<template>
+    <div class="vf-container">
+
+        <!-- Header -->
+        <div class="vf-header">
+            <div class="vf-back-btn" onclick={handleBack}>
+                <lightning-icon icon-name="utility:chevronleft" size="x-small"></lightning-icon>
+                <span>Back</span>
+            </div>
+            <h2 class="vf-title">Visitor Details</h2>
+            <p class="vf-subtitle">Enter the visitor's information to proceed</p>
+        </div>
+
+        <!-- Auto-fill banner -->
+        <template if:true={visitorFound}>
+            <div class="vf-found-banner">
+                <lightning-icon icon-name="utility:check" size="x-small" variant="inverse"></lightning-icon>
+                <span>Existing visitor found and details pre-filled</span>
+            </div>
+        </template>
+
+        <!-- Form -->
+        <div class="vf-form">
+
+            <!-- Email — first so lookup happens early -->
+            <div class="vf-field">
+                <label class="vf-label">Email Address <span class="vf-required">*</span></label>
+                <div class="vf-input-wrap">
+                    <input
+                        type="email"
+                        class={emailInputClass}
+                        placeholder="visitor@example.com"
+                        value={email}
+                        data-field="email"
+                        oninput={handleFieldChange}
+                        onblur={handleEmailBlur}
+                    />
+                    <template if:true={isLookingUp}>
+                        <div class="vf-lookup-spinner">
+                            <lightning-spinner size="x-small" alternative-text="Looking up"></lightning-spinner>
+                        </div>
+                    </template>
+                </div>
+                <template if:true={emailError}>
+                    <p class="vf-error" role="alert">{emailError}</p>
+                </template>
+            </div>
+
+            <!-- Name row -->
+            <div class="vf-row">
+                <div class="vf-field">
+                    <label class="vf-label">First Name <span class="vf-required">*</span></label>
+                    <input
+                        type="text"
+                        class="vf-input"
+                        placeholder="First name"
+                        value={firstName}
+                        data-field="firstName"
+                        oninput={handleFieldChange}
+                    />
+                    <template if:true={firstNameError}>
+                        <p class="vf-error" role="alert">{firstNameError}</p>
+                    </template>
+                </div>
+                <div class="vf-field">
+                    <label class="vf-label">Last Name <span class="vf-required">*</span></label>
+                    <input
+                        type="text"
+                        class="vf-input"
+                        placeholder="Last name"
+                        value={lastName}
+                        data-field="lastName"
+                        oninput={handleFieldChange}
+                    />
+                    <template if:true={lastNameError}>
+                        <p class="vf-error" role="alert">{lastNameError}</p>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="vf-field">
+                <label class="vf-label">Mobile Number <span class="vf-required">*</span></label>
+                <input
+                    type="tel"
+                    class="vf-input"
+                    placeholder="Numbers only"
+                    value={phone}
+                    data-field="phone"
+                    oninput={handleFieldChange}
+                />
+                <template if:true={phoneError}>
+                    <p class="vf-error" role="alert">{phoneError}</p>
+                </template>
+            </div>
+
+            <!-- Relationship Type -->
+            <div class="vf-field">
+                <label class="vf-label">Relationship Type</label>
+                <div class="vf-select-wrap">
+                    <select class="vf-select" onchange={handleRelationshipChange}>
+                        <template for:each={relationshipOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value} selected={opt.isSelected}>{opt.label}</option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- Actions -->
+        <div class="vf-actions">
+            <button type="button" class="vf-btn-secondary" onclick={handleBack} disabled={isSaving}>
+                Cancel
+            </button>
+            <button type="button" class="vf-btn-primary" onclick={handleContinue} disabled={isSaving}>
+                <template if:true={isSaving}>
+                    <lightning-spinner size="x-small" alternative-text="Saving" variant="inverse"></lightning-spinner>
+                </template>
+                <template if:false={isSaving}>
+                    Continue to Questionnaire
+                    <lightning-icon icon-name="utility:chevronright" size="x-small" variant="inverse"></lightning-icon>
+                </template>
+            </button>
+        </div>
+
+    </div>
+</template>

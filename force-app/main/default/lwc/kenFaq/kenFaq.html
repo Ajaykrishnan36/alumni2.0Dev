@@ -1,0 +1,193 @@
+<template>
+    <div class="faq-container">
+        <!-- Header with Title and Search -->
+        <div class="faq-header-section">
+            <div class="page-heading">
+                <h1 class="faq-page-title">Frequently Asked Questions</h1>
+                <c-ken-sns-breadcrumb items={crumbs}></c-ken-sns-breadcrumb>
+            </div>
+            <div class="faq-search-container">
+                <div class="search-input-wrapper">
+                    <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input 
+                        type="text" 
+                        class="faq-search-input" 
+                        placeholder="Search"
+                        value={searchQuery}
+                        oninput={handleSearchChange}
+                    />
+                    <svg class="microphone-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 1C10.34 1 9 2.34 9 4V12C9 13.66 10.34 15 12 15C13.66 15 15 13.66 15 12V4C15 2.34 13.66 1 12 1Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 10V12C19 15.87 15.87 19 12 19C8.13 19 5 15.87 5 12V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 19V23M8 23H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-content">
+
+            <template if:true={filteredData.length}>
+                <template for:each={filteredData} for:item="category">
+                    
+                    <div key={category.category} class="faq-category">
+
+                        <button type="button"
+                                class="category-header"
+                                data-category-id={category.category}
+                                onclick={handleCategoryToggle}>
+                            <span class="category-title">{category.category}</span>
+
+                            <svg class={category.iconClass} width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                            </svg>
+                        </button>
+
+                        <template if:true={category.isExpanded}>
+                            <div class="questions-list">
+                                <template for:each={category.questions} for:item="question">
+
+                                    <div key={question.id} class={question.itemClass}>
+                                        <button type="button"
+                                                class="question-header"
+                                                data-question-id={question.id}
+                                                onclick={handleQuestionToggle}>
+                                            <template if:true={question.isExpanded}>
+                                                <svg class="expand-icon minus-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                                </svg>
+                                            </template>
+                                            <template if:false={question.isExpanded}>
+                                                <svg class="expand-icon plus-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                                </svg>
+                                            </template>
+                                            <span class="question-text">{question.question}</span>
+                                        </button>
+
+                                        <template if:true={question.isExpanded}>
+                                            <div class="question-answer-container">
+                                                <div class="question-answer">
+                                                    {question.answer}
+                                                </div>
+                                                <div class="feedback-section">
+                                                    <div class="feedback-buttons">
+                                                        <button type="button" 
+                                                                class={question.thumbsUpBtnClass}
+                                                                data-question-id={question.id}
+                                                                data-type="up"
+                                                                onclick={handleFeedback}>
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M7 22V11M2 13V20C2 21.1046 2.89543 22 4 22H16.4262C17.907 22 19.1662 20.9197 19.3914 19.4592L20.4683 12.4592C20.7479 10.6383 19.3416 9 17.5032 9H14C13.4477 9 13 8.55228 13 8V4.46584C13 3.10399 11.896 2 10.5342 2C10.2093 2 9.91498 2.1913 9.78306 2.48812L7.26394 8.57311C7.11308 8.90602 6.76079 9.10557 6.39921 9.10557H4C2.89543 9.10557 2 10.001 2 11.1056V13Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                            </svg>
+                                                            <span>{question.thumbsUp}</span>
+                                                        </button>
+                                                        <button type="button" 
+                                                                class={question.thumbsDownBtnClass}
+                                                                data-question-id={question.id}
+                                                                data-type="down"
+                                                                onclick={handleFeedback}>
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                <path d="M17 2V13M22 11V4C22 2.89543 21.1046 2 20 2H7.57377C6.09299 2 4.83383 3.08029 4.60856 4.54076L3.53168 11.5408C3.25211 13.3617 4.6584 15 6.49682 15H10C10.5523 15 11 15.4477 11 16V19.5342C11 20.896 12.104 22 13.4658 22C13.7907 22 14.085 21.8087 14.2169 21.5119L16.7361 15.4269C16.8869 15.094 17.2392 14.8944 17.6008 14.8944H20C21.1046 14.8944 22 13.999 22 12.8944V11Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                            </svg>
+                                                            <span>{question.thumbsDown}</span>
+                                                        </button>
+                                                    </div>
+                                                    <p class="feedback-text">Was this helpful?</p>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                </template>
+                            </div>
+                        </template>
+
+                    </div>
+
+                </template>
+            </template>
+
+            <template if:false={filteredData.length}>
+                <div class="no-results">
+                    <p>No FAQs available.</p>
+                </div>
+            </template>
+
+        </div>
+    </div>
+
+    <!-- Feedback Modal 
+    <template if:true={showFeedbackModal}>
+        <div class="modal-overlay" onclick={handleBackdropClick}>
+            <div class="feedback-modal-container" onclick={handleModalContainerClick}>
+                <div class="feedback-modal-header">
+                    <h2 class="feedback-modal-title">We're Sorry, Let us Know How we can Improve.</h2>
+                    <div class="feedback-modal-divider"></div>
+                </div>
+                <div class="feedback-modal-content">
+                    <div class="feedback-options">
+                        <button type="button" 
+                                class={notClearBtnClass}
+                                data-option="not-clear"
+                                onclick={handleFeedbackOptionSelect}>
+                            Not clear
+                        </button>
+                        <button type="button" 
+                                class={tooGenericBtnClass}
+                                data-option="too-generic"
+                                onclick={handleFeedbackOptionSelect}>
+                            Too generic
+                        </button>
+                        <button type="button" 
+                                class={outdatedBtnClass}
+                                data-option="outdated"
+                                onclick={handleFeedbackOptionSelect}>
+                            Outdated
+                        </button>
+                        <button type="button" 
+                                class={missingDetailsBtnClass}
+                                data-option="missing-details"
+                                onclick={handleFeedbackOptionSelect}>
+                            Missing details
+                        </button>
+                    </div>
+                    <div class="feedback-description-section">
+                        <h3 class="feedback-description-label">Description (optional)</h3>
+                        <textarea 
+                            class="feedback-description-textarea"
+                            placeholder="Tell us what was missing or what you expected..."
+                            onchange={handleDescriptionChange}>{feedbackDescription}</textarea>
+                    </div>
+                </div>
+                <div class="feedback-modal-footer">
+                    <button type="button" class="maybe-later-btn" onclick={handleMaybeLater}>Maybe later</button>
+                    <button type="button" class="submit-feedback-btn" onclick={handleSubmitFeedback}>Submit</button>
+                </div>
+            </div>
+        </div>
+    </template> -->
+
+    <!-- Success Dialog -->
+    <template if:true={showSuccessDialog}>
+        <div class="modal-overlay" onclick={closeSuccessDialog}>
+            <div class="success-dialog-container" onclick={handleModalContainerClick}>
+                <div class="success-icon-container">
+                    <svg width="56" height="56" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="36" height="36" rx="18" fill="#C1DCC3"/>
+                        <mask id="mask0_10341_125926" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="28" height="28">
+                            <rect x="4.5" y="4.5" width="27" height="27" fill="#D9D9D9"/>
+                        </mask>
+                        <g mask="url(#mask0_10341_125926)">
+                            <path d="M16.425 23.175L24.3562 15.2438L22.7812 13.6687L16.425 20.025L13.2188 16.8187L11.6437 18.3938L16.425 23.175ZM18 29.25C16.4438 29.25 14.9813 28.9545 13.6125 28.3635C12.2438 27.7733 11.0531 26.9719 10.0406 25.9594C9.02813 24.9469 8.22675 23.7563 7.6365 22.3875C7.0455 21.0187 6.75 19.5562 6.75 18C6.75 16.4438 7.0455 14.9813 7.6365 13.6125C8.22675 12.2438 9.02813 11.0531 10.0406 10.0406C11.0531 9.02813 12.2438 8.22637 13.6125 7.63537C14.9813 7.04512 16.4438 6.75 18 6.75C19.5562 6.75 21.0187 7.04512 22.3875 7.63537C23.7563 8.22637 24.9469 9.02813 25.9594 10.0406C26.9719 11.0531 27.7733 12.2438 28.3635 13.6125C28.9545 14.9813 29.25 16.4438 29.25 18C29.25 19.5562 28.9545 21.0187 28.3635 22.3875C27.7733 23.7563 26.9719 24.9469 25.9594 25.9594C24.9469 26.9719 23.7563 27.7733 22.3875 28.3635C21.0187 28.9545 19.5562 29.25 18 29.25Z" fill="#388E3C"/>
+                        </g>
+                    </svg>
+                </div>
+                <h2 class="success-title">Feedback submitted</h2>
+                <p class="success-message">Thank you for your valuable feedback!</p>
+            </div>
+        </div>
+    </template>
+</template>

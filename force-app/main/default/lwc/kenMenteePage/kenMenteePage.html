@@ -1,0 +1,97 @@
+<template>
+    <div class="profile-page">
+        <!-- Profile Header -->
+        <c-ken-mentee-header
+            name={profileData.name}
+            title={profileData.title}
+            company={profileData.company}
+            location={profileData.location}
+            profile-image={profileData.profileImage}
+            is-online={profileData.isOnline}
+            batch={profileData.batch}
+            expertise={profileData.expertise}
+            email={profileData.email}
+            phone={profileData.phone}
+            linkedin={profileData.linkedin}
+            willing-to-help={profileData.willingToHelp}
+        ></c-ken-mentee-header>
+
+        <!-- Main Content -->
+        <div class="profile-content">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Personal Details Section -->
+                <div class="section personal-details-section">
+                    <h2 class="section-title personal-details-title">Personal Details</h2>
+                    <div class="personal-details-content">
+                        <!-- Education Subsection -->
+                        <h3 class="subsection-title">Education</h3>
+                        <div class="education-list">
+                            <template for:each={profileData.education} for:item="edu">
+                                <c-ken-education-card
+                                    key={edu.id}
+                                    degree={edu.degree}
+                                    institution={edu.institution}
+                                    duration={edu.duration}
+                                    score={edu.score}
+                                    logo={edu.logo}
+                                ></c-ken-education-card>
+                            </template>
+                        </div>
+
+                        <!-- Experience Subsection -->
+                        <h3 class="subsection-title">Experience</h3>
+                        <div class="experience-list">
+                            <template for:each={profileData.experience} for:item="exp">
+                                <c-ken-experience-card
+                                    key={exp.id}
+                                    position={exp.position}
+                                    company={exp.company}
+                                    employment-type={exp.employmentType}
+                                    location={exp.location}
+                                    work-type={exp.workType}
+                                    duration={exp.duration}
+                                    company-logo={exp.companyLogo}
+                                ></c-ken-experience-card>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- About Section -->
+                <div class="section about-section">
+                    <h2 class="section-title about-title">
+                        <lightning-icon icon-name="utility:user" size="x-small" class="section-icon"></lightning-icon>
+                        About {profileData.name}
+                    </h2>
+                    <div class="about-content">
+                        <p class="about-text">{profileData.about}</p>
+                        
+                        <!-- Career Interests -->
+                        <div class="interests-section">
+                            <h3 class="subsection-title">My career interests include:</h3>
+                            <ul class="interests-list">
+                                <template for:each={profileData.careerInterests} for:item="interest">
+                                    <li key={interest}>{interest}</li>
+                                </template>
+                            </ul>
+                        </div>
+
+                        <!-- Technical Skills -->
+                        <div class="skills-section">
+                            <h3 class="subsection-title">Technical Skills and Knowledge Areas:</h3>
+                            <ul class="skills-list">
+                                <template for:each={profileData.technicalSkills} for:item="skill">
+                                    <li key={skill}>{skill}</li>
+                                </template>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,75 @@
+<template>
+    <template if:true={isOpen}>
+        <div class="modal-backdrop" onclick={handleBackdropClick}>
+            <div class="modal-box" onclick={stopPropagation}>
+                <div class="modal-header">
+                    <div class="modal-title-wrap">
+                        <h2 class="modal-title">{title}</h2>
+                        <span class="modal-count">{filteredCount} alumni</span>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="export-btn" onclick={handleExportCsv} title="Export as CSV">&#x2193; Export CSV</button>
+                        <button class="modal-close" onclick={handleClose} title="Close">&#x2715;</button>
+                    </div>
+                </div>
+
+                <div class="modal-search">
+                    <input
+                        type="text"
+                        class="search-input"
+                        placeholder="Search by name, email or batch..."
+                        value={searchTerm}
+                        oninput={handleSearch}
+                    />
+                </div>
+
+                <div class="modal-body">
+                    <template if:true={isLoading}>
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Loading alumni...</p>
+                        </div>
+                    </template>
+                    <template if:false={isLoading}>
+                        <template if:true={hasRows}>
+                            <table class="alumni-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Phone</th>
+                                        <th>Batch / Program</th>
+                                        <th>Grad Year</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={pageRows} for:item="r">
+                                        <tr key={r.id} class="alumni-row" data-record-id={r.id} onclick={handleRowClick}>
+                                            <td class="name-cell">{r.name}</td>
+                                            <td class="email-cell">{r.email}</td>
+                                            <td>{r.phone}</td>
+                                            <td>{r.batch}</td>
+                                            <td>{r.graduationYear}</td>
+                                            <td>
+                                                <span class={r.statusClass}>{r.status}</span>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                            <div class="pagination">
+                                <button class="page-btn" onclick={prevPage} disabled={isFirstPage}>&#8249; Prev</button>
+                                <span class="page-info">{pageInfo}</span>
+                                <button class="page-btn" onclick={nextPage} disabled={isLastPage}>Next &#8250;</button>
+                            </div>
+                        </template>
+                        <template if:false={hasRows}>
+                            <div class="empty-state">No alumni found</div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

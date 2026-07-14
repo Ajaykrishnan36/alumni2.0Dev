@@ -1,0 +1,261 @@
+/* Summary layout (pixel-perfect to screenshots) */
+.summary-page {
+    width: 100%;
+}
+
+.summary-page-inner {
+    max-width: 660px;
+    margin: 0 auto;
+    padding: 16px 0 40px;
+}
+
+.summary-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 0 rgba(17, 24, 39, 0.02);
+    margin-bottom: 16px;
+}
+
+.summary-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.summary-card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+}
+
+.summary-link {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: var(--primary-color);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.summary-link-under {
+    margin-top: 2px;
+}
+
+.summary-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+}
+
+.summary-field {
+    margin-bottom: 18px;
+}
+
+.summary-label {
+    font-size: 14px;
+    color: #6B7280;
+    margin-bottom: 6px;
+}
+
+.summary-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.summary-file {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.summary-file-icon {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.summary-grey-panel {
+    background: #F7F8FA;
+    border-radius: 12px;
+    padding: 14px 16px;
+}
+
+.summary-panel-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.summary-panel-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.summary-pill-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.summary-pill {
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+}
+
+.summary-pill-blue {
+    background: #E8F0FF;
+    color: var(--primary-color);
+}
+
+.summary-pill-grey {
+    background: #E5E7EB;
+    color: #4B5563;
+}
+
+.summary-pill-date {
+    background: #E8F0FF;
+    color: var(--primary-color);
+}
+
+.summary-survey-grid {
+    display: grid;
+    grid-template-columns: 1fr 1px 1fr;
+    gap: 18px;
+    align-items: start;
+}
+
+.summary-divider-vert {
+    width: 1px;
+    background: #E5E7EB;
+    height: 100%;
+}
+
+.summary-subhead {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 10px;
+}
+
+.summary-survey-line {
+    font-size: 14px;
+    color: #111827;
+    margin-bottom: 8px;
+}
+
+.summary-muted {
+    color: #6B7280;
+    font-weight: 500;
+}
+
+/* Session details */
+.summary-session-head {
+    display: grid;
+    grid-template-columns: 1fr 140px 140px;
+    gap: 28px;
+    margin-bottom: 10px;
+}
+
+.summary-session-body {
+    margin-top: 8px;
+}
+
+.summary-day-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin: 12px 0 10px;
+}
+
+.summary-session-row {
+    display: grid;
+    grid-template-columns: 1fr 140px 140px;
+    gap: 28px;
+    align-items: center;
+    padding: 10px 0;
+}
+
+.summary-session-index {
+    font-size: 13px;
+    color: #9CA3AF;
+    margin-bottom: 4px;
+}
+
+.summary-session-name {
+    font-size: 16px;
+    color: #111827;
+    font-weight: 500;
+}
+
+.summary-session-mid,
+.summary-session-right {
+    font-size: 14px;
+    color: #111827;
+    font-weight: 600;
+}
+
+.summary-row-divider {
+    height: 1px;
+    background: #E5E7EB;
+    width: 100%;
+    margin: 10px 0;
+}
+
+.summary-total-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 12px 0;
+}
+
+.summary-total-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.summary-total-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.total-strong .summary-total-label,
+.total-strong .summary-total-value {
+    font-weight: 800;
+}
+
+@media (max-width: 720px) {
+    .summary-page-inner {
+        padding: 12px 12px 40px;
+    }
+    .summary-two-col,
+    .summary-survey-grid,
+    .summary-session-head,
+    .summary-session-row {
+        grid-template-columns: 1fr;
+    }
+    .summary-divider-vert {
+        display: none;
+    }
+}

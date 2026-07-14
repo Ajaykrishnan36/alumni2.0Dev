@@ -1,0 +1,161 @@
+<!--
+  @description       : 
+  @author            : ChangeMeIn@UserSettingsUnder.SFDoc
+  @group             : 
+  @last modified on  : 11-17-2025
+  @last modified by  : ChangeMeIn@UserSettingsUnder.SFDoc
+-->
+<template>
+    <div class="calendar-wrapper">
+      <!-- Loading Spinner - Show only when calendar is loading -->
+      <template if:true={isCalendarLoading}>
+        <div class="loading-container">
+          <div class="loading-content">
+            <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+          </div>
+        </div>
+      </template>
+  
+      <!-- Calendar Content - Always rendered to ensure DOM elements exist -->
+      <div class="calendar-controls">
+        <div class="header-left">
+          <div class="view-switcher">
+            <button class={dayButtonClass} onclick={switchToDay}>Day</button>
+            <button class={weekButtonClass} onclick={switchToWeek}>Week</button>
+            <button class={monthButtonClass} onclick={switchToMonth}>Month</button>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="date-picker-wrapper">
+             <input type="date" onchange={handleDateChange} class="date-picker-hidden-input" />
+             <span class="date-display-text">{headerDateText}</span>
+             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="calendar-icon" xmlns="http://www.w3.org/2000/svg">
+               <path d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3 4.9 3 6V20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V10H19V20ZM19 8H5V6H19V8Z" fill="#999999"/>
+             </svg>
+          </div>
+          <button class="schedule-call-btn" onclick={handleScheduleCall}>Schedule a Call</button>
+        </div>
+      </div>
+  
+      <!-- Week Sub Header -->
+      <template if:true={isWeekView}>
+        <div class="week-sub-header">
+           <button onclick={previousWeek} class="week-nav-btn">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15.41 7.41L14 6L8 12L14 18L15.41 16.59L10.83 12L15.41 7.41Z" fill="#0070d2"/>
+             </svg>
+           </button>
+           <span class="week-range-text">{weekRangeText}</span>
+           <button onclick={nextWeek} class="week-nav-btn">
+             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8.59 16.59L10 18L16 12L10 6L8.59 7.41L13.17 12L8.59 16.59Z" fill="#0070d2"/>
+             </svg>
+           </button>
+        </div>
+      </template>
+
+      <!-- Calendar Container - Always present in DOM -->
+      <div class="slds-p-horizontal_small calendar-container" style={calendarContainerStyle}>
+        <!-- Calendar element - always present in DOM -->
+        <div lwc:dom="manual" class="calendar" style="margin-top: 10px;"></div>
+      </div>
+
+      <!-- Schedule a Call Modal -->
+      <template if:true={showScheduleModal}>
+        <div class="sc-modal-overlay" onclick={handleModalOverlayClick}>
+          <div class="sc-modal" onclick={handleModalContentClick}>
+            <div class="sc-modal-header">
+              <span class="sc-modal-title">Schedule a Call</span>
+            </div>
+            <div class="sc-modal-divider"></div>
+            <div class="sc-modal-body">
+
+              <!-- Row 1: Mentor/Mentee + Title -->
+              <div class="sc-row">
+                <div class="sc-field">
+                  <label class="sc-label">Mentor/Mentee</label>
+                  <div class="sc-select-wrapper">
+                    <select class="sc-select" onchange={handleScMentorChange}>
+                      <option value="">Select</option>
+                      <option value="mentor">Mentor</option>
+                      <option value="mentee">Mentee</option>
+                    </select>
+                    <svg class="sc-select-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M7 10L12 15L17 10H7Z" fill="#666"/>
+                    </svg>
+                  </div>
+                </div>
+                <div class="sc-field">
+                  <label class="sc-label">Title</label>
+                  <input class="sc-input" type="text" placeholder="Enter title" onchange={handleScTitleChange} />
+                </div>
+              </div>
+
+              <!-- Row 2: Select Date -->
+              <div class="sc-field sc-field-full">
+                <label class="sc-label">Select Date</label>
+                <div class="sc-input-icon-wrapper">
+                  <input class="sc-input" type="date" onchange={handleScDateChange} />
+                  <svg class="sc-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 4H18V2H16V4H8V2H6V4H5C3.89 4 3 4.9 3 6V20C3 21.1 3.89 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 19 4ZM19 20H5V10H19V20ZM19 8H5V6H19V8Z" fill="#999"/>
+                  </svg>
+                </div>
+              </div>
+
+              <!-- Row 3: Select Time -->
+              <div class="sc-field sc-field-full">
+                <label class="sc-label">Select Time</label>
+                <div class="sc-row sc-row-no-top">
+                  <div class="sc-input-icon-wrapper sc-flex1">
+                    <input class="sc-input" type="time" onchange={handleScStartTimeChange} />
+                    <svg class="sc-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" fill="#999"/>
+                    </svg>
+                  </div>
+                  <div class="sc-input-icon-wrapper sc-flex1">
+                    <input class="sc-input" type="time" onchange={handleScEndTimeChange} />
+                    <svg class="sc-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" fill="#999"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Row 4: Description -->
+              <div class="sc-field sc-field-full">
+                <label class="sc-label">Add Description (Optional)</label>
+                <c-ken-rich-text-editor value={scDescription} placeholder="Add a brief description" onchange={handleScDescriptionChange}></c-ken-rich-text-editor>
+              </div>
+
+              <!-- Row 5: Meeting Type -->
+              <div class="sc-field sc-field-full">
+                <label class="sc-label sc-label-required">How Would you Like to Meet?</label>
+                <div class="sc-radio-group">
+                  <label class="sc-radio-label">
+                    <input type="radio" name="scMeetType" value="online" checked onchange={handleScMeetTypeChange} />
+                    <span class="sc-radio-custom"></span>
+                    Online
+                  </label>
+                  <label class="sc-radio-label">
+                    <input type="radio" name="scMeetType" value="inperson" onchange={handleScMeetTypeChange} />
+                    <span class="sc-radio-custom"></span>
+                    In-person
+                  </label>
+                </div>
+                <template if:true={scIsOnline}>
+                  <input class="sc-input sc-meet-link" type="text" placeholder="Enter meet link (optional)" onchange={handleScMeetLinkChange} />
+                </template>
+              </div>
+
+            </div>
+            <div class="sc-modal-footer">
+              <button class="sc-btn-cancel" onclick={handleScheduleCancel}>Cancel</button>
+              <button class="sc-btn-send" onclick={handleScheduleSend}>Send Request</button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+    </div>
+  </template>

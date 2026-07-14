@@ -1,0 +1,5 @@
+:host { display: block; }
+.biz-card { background: #fff; border: 1px solid #E5E6E8; border-radius: 12px; padding: 18px; text-align: center; margin-bottom: 14px; }
+.biz-card h4 { margin: 0 0 14px; font-size: 14px; font-weight: 600; color: #373A45; text-align: left; }
+.biz-card svg { margin: 0 auto 8px; display: block; }
+.soon { font-size: 12px; font-weight: 500; color: #9DA0A8; }

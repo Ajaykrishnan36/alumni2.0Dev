@@ -1,0 +1,106 @@
+<template>
+    <template lwc:if={decorated}>
+        <div class="modal-backdrop" onclick={handleBackdrop}>
+            <div class="modal modal--lg" onclick={handleStopProp}>
+                <div class="pf__cover">
+                    <button type="button" class="pf__close" onclick={handleClose} title="Close">×</button>
+                </div>
+                <div class="pf__head">
+                    <div class="pf__avatar" style={decorated.heroAvatarStyle}>{decorated.initial}</div>
+                    <div class="pf__id">
+                        <h2 class="pf__name">
+                            <span>{decorated.name}</span>
+                            <template lwc:if={decorated.showWilling}>
+                                <c-ken-alumni-badge-v2 label="Willing to help" tone="help"></c-ken-alumni-badge-v2>
+                            </template>
+                        </h2>
+                        <p class="pf__role">{decorated.roleLine}</p>
+                        <p class="pf__meta">
+                            <span>{decorated.cityLine}</span>
+                            <span>{decorated.statsIcon}</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="pf__scroll">
+                    <div class="pf__body">
+                        <div class="sec">
+                            <h3>About</h3>
+                            <p>{decorated.bio1}</p>
+                            <p class="sec__p2">{decorated.bio2}</p>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Expertise</h3>
+                            <div class="skills">
+                                <template for:each={decorated.expertise} for:item="s">
+                                    <span key={s.label} class="skill" style={s.style}>{s.label}</span>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Education</h3>
+                            <template for:each={decorated.education} for:item="e">
+                                <div key={e.title} class="tl">
+                                    <div class="tl__logo">{e.logo}</div>
+                                    <div class="tl__b">
+                                        <p class="tl__t">{e.title}</p>
+                                        <p class="tl__c">{e.sub}</p>
+                                        <p class="tl__d">{e.date}</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Experience</h3>
+                            <template for:each={decorated.work} for:item="w">
+                                <div key={w.title} class="tl">
+                                    <div class="tl__logo">{w.logo}</div>
+                                    <div class="tl__b">
+                                        <p class="tl__t">{w.title}</p>
+                                        <p class="tl__c">{w.sub}</p>
+                                        <p class="tl__d">{w.date}</p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Recent activity</h3>
+                            <template for:each={decorated.recentActivity} for:item="r">
+                                <div key={r.text} class="ra">
+                                    <span class="ra__ic">{r.icon}</span>
+                                    <span class="ra__t">{r.text}</span>
+                                    <span class="ra__w">{r.when}</span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="sec">
+                            <h3>Mutual connections</h3>
+                            <div class="mc-grid">
+                                <template for:each={decorated.mutualConnections} for:item="m">
+                                    <div key={m.name} class="mc-cell">
+                                        <span class="mc__av" style={m.style}>{m.initial}</span>
+                                        <p class="mc__n">{m.name}</p>
+                                        <p class="mc__r">{m.role}</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pf__footer">
+                    <button type="button" class="pf__btn outline" onclick={handleMessage}>✉ Message</button>
+                    <button type="button" class={decorated.connectBtnClass} onclick={handleConnect}>
+                        <span>{decorated.connectIcon}</span>
+                        <span>{decorated.connectLabel}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

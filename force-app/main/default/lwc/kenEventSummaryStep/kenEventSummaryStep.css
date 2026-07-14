@@ -1,0 +1,214 @@
+.summary-step {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 4px;
+}
+
+.summary-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 22px 26px;
+}
+
+.summary-card-header,
+.session-details-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+}
+
+.summary-card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin: 0;
+}
+
+.summary-edit-link {
+    background: none;
+    border: none;
+    color: var(--primary-color, #ffffff);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 16px;
+}
+
+.summary-label {
+    font-size: 0.875rem;
+    color: #6B7280;
+    margin-bottom: 6px;
+}
+
+.summary-value {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.summary-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary-color, #ffffff);
+}
+
+.summary-dl-icon {
+    --sds-c-icon-color-foreground-default: var(--primary-color, #ffffff);
+}
+
+/* Audience */
+.audience-group {
+    background: #F6F8FB;
+    border-radius: 10px;
+    padding: 16px 18px;
+}
+
+.audience-group-name {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin-bottom: 12px;
+}
+
+.audience-chips,
+.summary-chips-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.chip-primary {
+    background: #EEF3FF;
+    color: #3061FF;
+}
+
+.chip-muted {
+    background: #EFF1F4;
+    color: #6B7280;
+}
+
+.chip-soft {
+    background: #EEF3FF;
+    color: #3061FF;
+}
+
+/* Session details */
+.session-cols-header,
+.session-row,
+.session-meal-row,
+.session-total-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+/* When fees are disabled the Price column is removed (2 columns instead of 3). */
+.session-cols-header.no-fees,
+.session-row.no-fees {
+    grid-template-columns: 2fr 1fr;
+}
+
+.session-cols-header {
+    padding-bottom: 8px;
+}
+
+.session-col-title {
+    font-size: 0.9375rem;
+    color: #374151;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+.session-col-main {
+    min-width: 0;
+}
+
+.session-day-block {
+    border-top: 1px solid #eef0f3;
+    padding-top: 18px;
+    margin-top: 6px;
+}
+
+.session-day-date {
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 14px;
+}
+
+.session-row {
+    margin-bottom: 18px;
+}
+
+.session-sub-label {
+    font-size: 0.875rem;
+    color: #9CA3AF;
+    margin-bottom: 4px;
+}
+
+.session-title {
+    font-size: 0.9375rem;
+    color: #1F2937;
+    font-weight: 500;
+}
+
+.session-price,
+.session-feedback {
+    font-size: 0.9375rem;
+    color: #1F2937;
+    font-weight: 600;
+}
+
+.session-feedback {
+    font-weight: 500;
+    color: #374151;
+}
+
+.session-meal-row {
+    border-top: 1px solid #eef0f3;
+    padding-top: 16px;
+}
+
+.session-total-row {
+    border-top: 1px solid #eef0f3;
+    padding-top: 16px;
+    margin-top: 4px;
+}
+
+.session-total-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+.session-total-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1F2937;
+}
+
+@media (max-width: 768px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+}

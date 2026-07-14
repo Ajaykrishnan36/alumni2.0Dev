@@ -1,0 +1,25 @@
+<template>
+    <div class="fld">
+        <label>Date</label>
+        <div class="date-input">
+            <span class="date-input__icon">&#128197;</span>
+            <input type="date" min={minDate} value={selectedDate} onchange={handleDate}/>
+        </div>
+    </div>
+    <div class="fld">
+        <label>Available time slots</label>
+        <div class="slots">
+            <template for:each={slotOptions} for:item="s">
+                <button key={s.value} type="button" class={s.cssClass} data-value={s.value} onclick={handleSlot}>{s.value}</button>
+            </template>
+        </div>
+    </div>
+    <div class="fld">
+        <label>Duration</label>
+        <div class="dur">
+            <template for:each={durationOptions} for:item="d">
+                <button key={d.value} type="button" class={d.cssClass} data-value={d.value} onclick={handleDuration}>{d.value}</button>
+            </template>
+        </div>
+    </div>
+</template>

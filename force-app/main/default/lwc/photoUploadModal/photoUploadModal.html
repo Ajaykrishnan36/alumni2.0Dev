@@ -1,0 +1,160 @@
+<template>
+    <template if:true={showModal}>
+        <div class="modal-overlay" onclick={handleOverlayClick}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <div class="modal-content">
+                    <!-- Two Column Layout -->
+                    <div class="upload-layout">
+                        <!-- Left Side - Uploaded Images -->
+                        <div class="upload-section">
+                            <h2 class="section-title">Uploaded images</h2>
+                            
+                            <template if:true={hasNoImages}>
+                                <div
+                                    class="upload-area"
+                                    data-upload-area="true"
+                                    ondrop={handleDrop}
+                                    ondragover={handleDragOver}
+                                    ondragleave={handleDragLeave}
+                                >
+                                    <div class="upload-placeholder">
+                                        <lightning-icon
+                                            icon-name="utility:add"
+                                            size="large"
+                                            class="upload-icon"
+                                        ></lightning-icon>
+                                        <p class="upload-text">Drag and drop your images here</p>
+                                        <p class="upload-info">Max file size 16 mb</p>
+                                        <p class="upload-info">Supported formats: JPEG, PNG, JPG</p>
+                                    </div>
+                                    <input
+                                        type="file"
+                                        class="file-input"
+                                        accept="image/jpeg,image/png,image/jpg"
+                                        multiple
+                                        data-file-input="true"
+                                        onchange={handleFileSelect}
+                                    />
+                                    <lightning-button
+                                        variant="neutral"
+                                        label="Upload Image"
+                                        icon-name="utility:upload"
+                                        onclick={handleUploadClick}
+                                        class="upload-button"
+                                    ></lightning-button>
+                                </div>
+                            </template>
+
+                            <template if:true={hasImages}>
+                                <div class="uploaded-images-container">
+                                    <div class="uploaded-images-list">
+                                        <template for:each={uploadedImages} for:item="image">
+                                            <div key={image.id} class="image-card">
+                                                <img src={image.preview} alt={image.name} class="card-image" />
+                                                <button
+                                                    class="delete-image-btn"
+                                                    type="button"
+                                                    data-image-id={image.id}
+                                                    onclick={handleRemoveImage}
+                                                    title="Delete image"
+                                                >
+                                                    <lightning-icon
+                                                        icon-name="utility:delete"
+                                                        size="x-small"
+                                                    ></lightning-icon>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <lightning-button
+                                        variant="neutral"
+                                        label="+ Add More Photos"
+                                        icon-name="utility:add"
+                                        onclick={handleUploadClick}
+                                        class="add-more-button"
+                                    ></lightning-button>
+                                    <input
+                                        type="file"
+                                        class="file-input"
+                                        accept="image/jpeg,image/png,image/jpg"
+                                        multiple
+                                        data-file-input="true"
+                                        onchange={handleFileSelect}
+                                    />
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Right Side - Image Details Form -->
+                        <div class="details-section">
+                            <h2 class="details-title">Image details</h2>
+                            <div class="form-container">
+                                <!-- Album Dropdown -->
+                                <div class="form-field">
+                                    <label class="field-label">Add to album (optional)</label>
+                                    <lightning-combobox
+                                        label=""
+                                        placeholder="Select"
+                                        value={selectedAlbum}
+                                        options={albumOptionsWithCreate}
+                                        onchange={handleAlbumChange}
+                                    ></lightning-combobox>
+                                </div>
+
+                                <!-- Caption Input -->
+                                <div class="form-field">
+                                    <label class="field-label">Caption (optional)</label>
+                                    <lightning-input
+                                        type="text"
+                                        placeholder="Enter caption"
+                                        value={caption}
+                                        onchange={handleCaptionChange}
+                                    ></lightning-input>
+                                </div>
+
+                                <!-- Location Input -->
+                                <div class="form-field">
+                                    <label class="field-label">Add location (optional)</label>
+                                    <lightning-input
+                                        type="text"
+                                        placeholder="Enter location"
+                                        value={location}
+                                        onchange={handleLocationChange}
+                                    ></lightning-input>
+                                </div>
+
+                                <!-- Tag Alumni Input -->
+                                <div class="form-field">
+                                    <label class="field-label">Tag other alumni (optional)</label>
+                                    <lightning-input
+                                        type="text"
+                                        placeholder="Tag alumni"
+                                        value={taggedAlumni}
+                                        onchange={handleTagChange}
+                                    ></lightning-input>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="modal-actions">
+                        <lightning-button
+                            variant="neutral"
+                            label="Cancel"
+                            onclick={handleCancel}
+                            class="cancel-button"
+                        ></lightning-button>
+                        <lightning-button
+                            variant="brand"
+                            label="Post"
+                            onclick={handlePost}
+                            class="post-button"
+                            disabled={hasNoImages}
+                        ></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

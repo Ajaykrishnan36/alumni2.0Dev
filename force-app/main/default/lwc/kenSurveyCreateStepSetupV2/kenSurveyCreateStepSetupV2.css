@@ -1,0 +1,8 @@
+:host { display: block; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field label { font-weight: 500; font-size: 13px; color: #373A45; }
+.field input, .field select, .field textarea { width: 100%; padding: 10px 12px; border: 1px solid #E5E6E8; border-radius: 8px; font-family: inherit; font-size: 13px; box-sizing: border-box; }
+.field textarea { min-height: 80px; resize: vertical; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.type-row { display: flex; gap: 8px; }
+.type-btn { flex: 1; padding: 10px 12px; border: 1px solid #E5E6E8; border-radius: 8px; background: #fff; font-family: inherit; font-size: 13px; cursor: pointer; }

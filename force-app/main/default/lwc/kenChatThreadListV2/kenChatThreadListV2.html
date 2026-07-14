@@ -1,0 +1,28 @@
+<template lwc:render-mode="light">
+    <aside class="threads">
+        <header class="threads__head">
+            <h2 class="threads__title">Individuals</h2>
+            <button type="button" class="threads__new" aria-label="New chat" onclick={handleNewChat}>＋</button>
+        </header>
+        <div class="threads__search">
+            <input type="text" placeholder="Search messages..." value={searchQ} oninput={handleSearch} />
+        </div>
+        <ul class="threads__list">
+            <template for:each={threads} for:item="t">
+                <li key={t.id} class={t.threadClass} data-id={t.id} onclick={handleSelect}>
+                    <span class="thread__avatar" style={t.avatarStyle}>{t.initial}</span>
+                    <div class="thread__body">
+                        <p class="thread__name">{t.name}</p>
+                        <p class="thread__last">{t.lastMsg}</p>
+                    </div>
+                    <div class="thread__right">
+                        <span class="thread__time">{t.time}</span>
+                        <template lwc:if={t.showUnread}>
+                            <span class="thread__unread">{t.unread}</span>
+                        </template>
+                    </div>
+                </li>
+            </template>
+        </ul>
+    </aside>
+</template>

@@ -1,0 +1,6 @@
+<template>
+    <svg class={iconClass} aria-hidden="true" if:true={iconPath}>
+        <use xlink:href={iconPath}></use>
+    </svg>
+    <span class="slds-assistive-text">{assistiveText}</span>
+</template>

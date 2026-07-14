@@ -1,0 +1,33 @@
+<template>
+    <div>
+        <div class="panelTitle">Selected Audience</div>
+
+        <div class="panelBody slds-m-top_small">
+            <template if:true={hasItems}>
+                <template for:each={items} for:item="item">
+                    <div key={item.id} class="audItem">
+                        <div class="audRow">
+                            <div class="audText">
+                                <div class="audTitle">{item.title}</div>
+                                <div class="audSub">{item.subtitle}</div>
+                            </div>
+
+                            <button
+                                class="slds-button slds-button_icon"
+                                type="button"
+                                title="Remove"
+                                data-id={item.id}
+                                onclick={remove}>
+                                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </template>
+
+            <template if:false={hasItems}>
+                <div class="emptyBox">No Audience Selected</div>
+            </template>
+        </div>
+    </div>
+</template>

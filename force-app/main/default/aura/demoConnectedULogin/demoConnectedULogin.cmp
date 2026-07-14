@@ -1,0 +1,12 @@
+<aura:component implements="forceCommunity:themeLayout">
+	<div class="connectedU login" style="overflow-x: hidden;">
+
+		<section class="loginForm">
+			<!-- <div class="slds-col logo"><c:QBranchBrandLogo></c:QBranchBrandLogo></div> -->
+			<div class="slds-col form">
+				{!v.body}
+			</div>
+		</section>
+
+	</div>
+</aura:component>

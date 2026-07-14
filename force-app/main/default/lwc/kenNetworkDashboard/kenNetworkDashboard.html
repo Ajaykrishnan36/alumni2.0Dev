@@ -1,0 +1,174 @@
+<template>
+    <div class="dashboard">
+
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="dash-header-top">
+                <div>
+                    <h1 class="dash-title">Network Dashboard</h1>
+                    <p class="dash-subtitle">Connection insights across {totalConnections} records</p>
+                </div>
+                <button class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
+                    <template if:true={isRefreshing}>
+                        <span class="btn-spinner"></span>Refreshing...
+                    </template>
+                    <template if:false={isRefreshing}>
+                        &#x21BB; Refresh
+                    </template>
+                </button>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" onchange={handleStatusChange}>
+                        <option value="">All Statuses</option>
+                        <template for:each={filterOptions.statuses} for:item="s">
+                            <option key={s} value={s}>{s}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Year</label>
+                    <select class="filter-select" onchange={handleYearChange}>
+                        <option value="">All Years</option>
+                        <template for:each={filterOptions.years} for:item="y">
+                            <option key={y} value={y}>{y}</option>
+                        </template>
+                    </select>
+                </div>
+                <button class="clear-btn" onclick={clearFilters}>&#x2715; Clear</button>
+            </div>
+        </div>
+
+        <!-- Summary Stat Cards -->
+        <div class="stat-row">
+            <div class="stat-card stat-card-clickable" data-type="total" onclick={handleStatCardClick} title="Click to view all connections">
+                <div class="stat-icon-wrap stat-blue">&#128101;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.total}</div>
+                    <div class="stat-label">Total Connections</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="accepted" onclick={handleStatCardClick} title="Click to view active connections">
+                <div class="stat-icon-wrap stat-green">&#9989;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.accepted}</div>
+                    <div class="stat-label">Active Connections</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="pending" onclick={handleStatCardClick} title="Click to view pending requests">
+                <div class="stat-icon-wrap stat-orange">&#8987;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.pending}</div>
+                    <div class="stat-label">Pending Requests</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="avgtat" onclick={handleStatCardClick} title="Click to view accepted connections">
+                <div class="stat-icon-wrap stat-purple">&#9201;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.avgTatDays}</div>
+                    <div class="stat-label">Avg TAT (Days)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Status, Monthly Trend, Avg TAT -->
+        <div class="grid grid-3">
+            <c-ken-donut-chart
+                title="Connection Status"
+                description="Breakdown of all connections by current status"
+                data={statusData}
+                is-loading={loadingStatus}
+                dimension="status"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Monthly Connection Trend"
+                description="New connections created per month"
+                data={monthlyTrendData}
+                is-loading={loadingMonthlyTrend}
+                dimension="monthly"
+                chart-type="line"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Avg TAT to Accept (Days)"
+                description="Average days to accept a connection request by month"
+                data={avgTatData}
+                is-loading={loadingAvgTat}
+                dimension="tat"
+                chart-type="vertical"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+        <!-- Row 2: Top Connectors, Top Senders, Top Receivers -->
+        <div class="grid grid-3">
+            <c-ken-bar-chart
+                title="Top Connectors"
+                description="People with the most total connections (sent + received)"
+                data={topConnectorsData}
+                is-loading={loadingTopConnectors}
+                dimension="connector"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Top Request Senders"
+                description="Alumni who initiated the most connection requests"
+                data={topSendersData}
+                is-loading={loadingTopSenders}
+                dimension="initiator"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Top Request Receivers"
+                description="Alumni who received the most connection requests"
+                data={topReceiversData}
+                is-loading={loadingTopReceivers}
+                dimension="recipient"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+        <!-- Row 3: Negative Signals, Yearly Growth -->
+        <div class="grid grid-2">
+            <c-ken-donut-chart
+                title="Negative Signal Breakdown"
+                description="Rejected, cancelled and blocked requests"
+                data={negativeData}
+                is-loading={loadingNegative}
+                dimension="status"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Yearly Connection Growth"
+                description="Total connection requests created per year"
+                data={yearlyGrowthData}
+                is-loading={loadingYearlyGrowth}
+                dimension="yearly"
+                chart-type="vertical"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+    </div>
+
+    <!-- Drill-down Modal -->
+    <c-ken-network-list-modal
+        is-open={modalOpen}
+        title={modalTitle}
+        connection-list={modalConnections}
+        is-loading={modalLoading}
+        onclose={handleModalClose}
+    ></c-ken-network-list-modal>
+</template>

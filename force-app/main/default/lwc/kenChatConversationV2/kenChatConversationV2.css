@@ -1,0 +1,21 @@
+/* Light-DOM child styles for kenChatConversationV2 */
+.convo{display:flex;flex-direction:column;background:#fff;height:100%;font-family:"General Sans","Inter",system-ui,sans-serif;color:#373A45}
+.convo__head{display:flex;align-items:center;gap:12px;padding:12px 20px;border-bottom:1px solid #E5E6E8}
+.convo__avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff}
+.convo__info{flex:1}
+.convo__name{margin:0 0 2px;font-weight:600;font-size:15px}
+.convo__status{margin:0;font-weight:500;font-size:11px;color:#B2B3B7}
+.convo__actions{display:flex;gap:8px}
+.convo__actions button{width:36px;height:36px;border:0;border-radius:50%;background:#F6F8FB;cursor:pointer;font-size:14px}
+.convo__messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px;background:#F6F8FB}
+.msg{max-width:60%;padding:10px 14px;border-radius:12px;font-weight:500;font-size:14px;line-height:150%;position:relative}
+.msg__text{margin:0}
+.msg__time{display:block;margin-top:4px;font-weight:500;font-size:10px;opacity:0.6}
+.msg--in{align-self:flex-start;background:#fff;color:#373A45;border-bottom-left-radius:4px}
+.msg--out{align-self:flex-end;background:#3061FF;color:#fff;border-bottom-right-radius:4px}
+.convo__compose{display:flex;align-items:flex-end;gap:8px;padding:14px 20px;border-top:1px solid #E5E6E8}
+.compose__attach{width:40px;height:40px;border:0;border-radius:50%;background:#F6F8FB;cursor:pointer;font-size:16px}
+.compose__input{flex:1;min-height:40px;max-height:120px;padding:10px 14px;background:#F6F8FB;border:1px solid transparent;border-radius:20px;font-family:inherit;font-weight:500;font-size:14px;outline:none;resize:none}
+.compose__input:focus{background:#fff;border-color:#3061FF}
+.compose__send{height:40px;padding:0 22px;background:#3061FF;color:#fff;border:0;border-radius:20px;font-family:inherit;font-weight:500;font-size:14px;cursor:pointer}
+.compose__send:hover{background:#2752D6}

@@ -1,0 +1,19 @@
+<template>
+    <h2>5. Fee Setup</h2>
+    <div class="field">
+        <label>Fee Type</label>
+        <select data-field="feeType" value={feeType} onchange={handleInput}>
+            <option>Free</option><option>Paid</option>
+        </select>
+    </div>
+    <template lwc:if={isPaidEvent}>
+        <div class="grid-2" style="margin-top:14px">
+            <div class="field"><label>Currency</label>
+                <select data-field="currency" value={currency} onchange={handleInput}>
+                    <option>INR (₹)</option><option>USD ($)</option>
+                </select>
+            </div>
+            <div class="field"><label>Base Fee</label><input type="number" data-field="baseFee" value={baseFee} oninput={handleInput}/></div>
+        </div>
+    </template>
+</template>

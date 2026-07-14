@@ -1,0 +1,40 @@
+<template>
+    <div class="groups-created-container">
+
+        <div class="card-header">
+            <h3 class="card-title">Created Groups <span if:true={hasGroups}>({groupCount})</span></h3>
+            <template if:true={hasGroups}>
+                <button class="btn-create" onclick={handleCreate}>Create Group</button>
+            </template>
+        </div>
+
+        <template if:true={hasGroups}>
+            <div class="group-list">
+                <template for:each={groups} for:item="group">
+                    <div key={group.id} class="group-item" data-group-id={group.id} onclick={handleGroupClick}>
+                        <div class="group-thumb" style={group.cardStyle}></div>
+                        <div class="group-info">
+                            <div class="group-name-row">
+                                <span class="group-name">{group.name}</span>
+                                <span class="status-badge status-review" if:true={group.isInReview}>In Review</span>
+                            </div>
+                            <span class="group-members">{group.members} members</span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <button class="btn-view-all" onclick={handleViewAll}>View All</button>
+        </template>
+
+        <template if:false={hasGroups}>
+            <div class="empty-state">
+                <div class="empty-content">
+                    <img src={SurveyEmptyImageUrl} alt="No groups created" class="empty-img" />
+                    <p class="empty-text">You haven&#39;t created a group yet</p>
+                </div>
+                <button class="btn-create-main" onclick={handleCreate}>Create Group</button>
+            </div>
+        </template>
+
+    </div>
+</template>

@@ -1,0 +1,55 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="network" has-rail={showRail}>
+        <template lwc:if={viewState.isGrid}>
+            <section class="page">
+                <div class="net-wrap">
+                    <div class="card">
+                        <div class="toolbar">
+                            <c-ken-network-top-tabs-v2 active-tab={activeTopTab} ontabchange={handleTabChange}></c-ken-network-top-tabs-v2>
+                            <c-ken-network-filter-bar-v2 search-value={searchQuery} onsearch={handleSearch} onsort={handleSort} onfilter={handleFilter}></c-ken-network-filter-bar-v2>
+                        </div>
+                        <template lwc:if={isLoading}>
+                            <div class="skeleton-list" aria-live="polite">
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                                <div class="skeleton-card"></div>
+                            </div>
+                        </template>
+                        <template lwc:elseif={hasAlumni}>
+                            <div class="grid">
+                                <template for:each={filteredAlumni} for:item="a">
+                                    <c-ken-alumni-card-v2 key={a.id} record-id={a.id} name={a.name} title={a.role} company={a.company} location={a.city} batch={a.batch} initial={a.initial} avatar-color={a.color} willing-to-help={a.willing} is-online={a.online} connected={a.connected}
+                                        onalumniclick={handleAlumniClick}>
+                                    </c-ken-alumni-card-v2>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state-card">
+                                <div class="empty-state-card__icon" aria-hidden="true">&#128101;</div>
+                                <h3 class="empty-state-card__title">No connections yet</h3>
+                                <p class="empty-state-card__sub">Start by discovering alumni and sending connection requests.</p>
+                                <button type="button" class="btn btn--primary" onclick={handleCopyInvite}>Copy invite link</button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </section>
+        </template>
+
+        <template lwc:if={viewState.isProfile}>
+            <c-ken-alumni-profile-page-v2 alumni={selectedAlumni} connected={isSelectedConnected}
+                onback={handleBackToGrid} onconnect={handleConnect} onmessage={handleMessage}>
+            </c-ken-alumni-profile-page-v2>
+        </template>
+
+        <template lwc:if={showRail}>
+            <c-ken-network-rail-v2 slot="rail" onspotlightclick={handleSpotlightClick} oncopyinvite={handleCopyInvite}>
+            </c-ken-network-rail-v2>
+        </template>
+
+        <template lwc:if={toastVisible}>
+            <div class="toast">{toastMessage}</div>
+        </template>
+    </c-ken42-alumni-shell-v2>
+</template>

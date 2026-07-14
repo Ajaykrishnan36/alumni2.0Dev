@@ -1,0 +1,897 @@
+:host {
+    display: block;
+    height: calc(100vh - 146.5px);
+    max-height: calc(100vh - 146.5px);
+    overflow: hidden;
+}
+
+.business-listing-form-page {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: var(--portal-bg);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
+}
+
+.form-header-section {
+    width: 100%;
+    padding: 0 0 24px 0;
+    box-sizing: border-box;
+}
+
+.form-container {
+    width: 100%;
+    margin: 0 auto;
+    display: block;
+    background-color: var(--portal-surface, #ffffff);
+    border-radius: var(--portal-radius, 12px);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    padding: var(--portal-card-padding, 24px);
+    box-sizing: border-box;
+    position: relative;
+}
+
+.form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    padding-bottom: 24px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.form-title {
+    
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Cover Picture Section */
+.cover-picture-section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    margin-top: 24px;
+}
+
+.cover-preview-area {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+    border-radius: var(--portal-radius);
+    overflow: hidden;
+}
+
+.cover-preview-img {
+    width: 100%;
+    min-height: 200px;
+    max-height: 260px;
+    object-fit: cover;
+    display: block;
+    border-radius: var(--portal-radius);
+}
+
+.cover-preview-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-radius: var(--portal-radius);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.cover-preview-area:hover .cover-preview-overlay {
+    opacity: 1;
+}
+
+.remove-cover-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    background-color: #dc2626;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.cover-picture-upload-area {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+    background-color: #E8EBF3;
+    border-radius: var(--portal-radius);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    padding: 24px;
+    box-sizing: border-box;
+}
+
+.cover-picture-upload-area:hover {
+    background-color: #e5e7eb;
+}
+
+.upload-cover-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    background-color: var(--portal-bg);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upload-cover-btn:hover {
+    background-color: var(--portal-page-bg, #F6F8FB);
+    border-color: #9ca3af;
+}
+
+.upload-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+}
+
+.file-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+}
+
+.image-specs {
+    position: absolute;
+    bottom: 0;
+    left: 24px;
+    right: 24px;
+    width: calc(100% - 48px);
+    text-align: center;
+    padding: 12px 16px;
+    border-top: 1px solid #B8C0DA;
+    box-sizing: border-box;
+}
+
+.spec-text {
+    
+    font-size: 12px;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+.spec-text strong {
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Business Details Form */
+.business-details-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.form-row.address-map-row,
+.form-row.phone-email-row {
+    margin-top: 0;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-field.full-width {
+    grid-column: 1 / -1;
+}
+
+.field-label {
+    
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0;
+}
+
+.required-asterisk {
+    color: #ef4444;
+    margin-left: 2px;
+}
+
+/* File Input Wrapper */
+.file-input-wrapper {
+    position: relative;
+}
+
+.file-input-field {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.file-input-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background-color: var(--portal-bg);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.file-input-display:hover {
+    border-color: #9ca3af;
+}
+
+.file-placeholder {
+    
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+.file-upload-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+}
+
+.field-specs {
+    margin-top: 4px;
+}
+
+/* Form Inputs */
+.form-input {
+    width: 100%;
+    min-width: 100%;
+    padding: 12px 16px;
+    background-color: var(--portal-bg);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    
+    font-size: 14px;
+    color: #111827;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    flex: 1;
+}
+
+.form-input::placeholder {
+    color: #9ca3af;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Select Wrapper */
+.select-wrapper {
+    position: relative;
+}
+
+.form-select {
+    width: 100%;
+    padding: 12px 40px 12px 16px;
+    background-color: var(--portal-bg);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    
+    font-size: 14px;
+    color: #111827;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.select-arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    --slds-c-icon-color-foreground-default: #6b7280;
+}
+
+/* Phone Input Wrapper */
+.phone-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* intl-tel-input styling - Match form field style exactly */
+.phone-input-wrapper {
+    position: relative;
+    width: 580px !important;
+    max-width: 580px !important;
+    min-width: 580px !important;
+    display: block;
+}
+
+.phone-input-wrapper .iti {
+    width: 580px !important;
+    max-width: 580px !important;
+    display: block !important;
+    position: relative;
+}
+
+.phone-input-wrapper .iti__flag-container {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: flex !important;
+    align-items: center;
+    pointer-events: none;
+    background: transparent;
+}
+
+.phone-input-wrapper .iti__selected-flag {
+    border: none !important;
+    background: transparent !important;
+    padding: 0 8px 0 16px !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center;
+    cursor: pointer;
+    pointer-events: all;
+    margin: 0 !important;
+}
+
+.phone-input-wrapper .iti__selected-flag:hover {
+    background: transparent !important;
+}
+
+.phone-input-wrapper .iti__flag {
+    width: 20px !important;
+    height: 15px !important;
+    margin-right: 8px !important;
+    display: inline-block !important;
+    vertical-align: middle;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.phone-input-wrapper .iti__flag-box {
+    display: inline-block !important;
+    width: 20px !important;
+    height: 15px !important;
+    margin-right: 8px !important;
+    visibility: visible !important;
+}
+
+.phone-input-wrapper .phone-input {
+    width: 580px !important;
+    min-width: 580px !important;
+    max-width: 580px !important;
+    height: 48px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    padding-left: 78px !important;
+    font-size: 14px !important;
+    color: #111827 !important;
+    background-color: var(--portal-bg) !important;
+    box-sizing: border-box !important;
+    transition: border-color 0.2s !important;
+}
+
+.phone-input-wrapper .phone-input:focus {
+    outline: none !important;
+    border-color: var(--primary-color) !important;
+}
+
+.phone-input-wrapper .phone-input::placeholder {
+    color: #9ca3af !important;
+}
+
+.phone-input-wrapper .iti--allow-dropdown .phone-input {
+    padding-left: 78px !important;
+    width: 580px !important;
+    min-width: 580px !important;
+    max-width: 580px !important;
+}
+
+.phone-input-wrapper .iti__arrow {
+    margin-left: 6px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 4px solid #6b7280;
+    margin-top: 0;
+    display: inline-block;
+}
+
+.phone-input-wrapper .iti__dial-code {
+    color: #111827 !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    margin-left: 4px !important;
+}
+
+.phone-input-wrapper .iti__country-list {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 4px;
+    z-index: 1000;
+    background-color: var(--portal-bg);
+}
+
+.phone-input-wrapper .iti__country {
+    padding: 8px 12px;
+    
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.phone-input-wrapper .iti__country:hover,
+.phone-input-wrapper .iti__country.iti__highlight {
+    background-color: var(--portal-page-bg, #F6F8FB);
+}
+
+/* Override any intl-tel-input width restrictions */
+.phone-input-wrapper .iti,
+.phone-input-wrapper .iti input,
+.phone-input-wrapper .iti input[type=tel] {
+    width: 580px !important;
+    min-width: 580px !important;
+    max-width: 580px !important;
+}
+
+/* Flag image paths for static resource */
+.phone-input-wrapper .iti__flag {
+    background-image: url('/sfsites/c/resource/intlTelInput/img/flags.png') !important;
+}
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .phone-input-wrapper .iti__flag {
+        background-image: url('/sfsites/c/resource/intlTelInput/img/flags@2x.png') !important;
+        background-size: 5632px 15px !important;
+    }
+}
+
+/* Ensure proper country name styling */
+.phone-input-wrapper .iti__country-name {
+    
+    font-size: 14px;
+    color: #111827;
+}
+
+/* Dial code styling */
+.phone-input-wrapper .iti__dial-code {
+    
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.error-text {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #dc2626;
+}
+
+/* Checkbox */
+.checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.form-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.checkbox-label {
+    
+    font-size: 14px;
+    color: #374151;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Rich Text Editor */
+.rich-text-editor {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--portal-bg);
+}
+
+.editor-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    background-color: var(--portal-page-bg, #F6F8FB);
+    border-bottom: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+}
+
+.toolbar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    padding: 0;
+}
+
+.toolbar-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.toolbar-btn lightning-icon {
+    --slds-c-icon-color-foreground-default: #374151;
+}
+
+.toolbar-separator {
+    width: 1px;
+    height: 20px;
+    background-color: #d1d5db;
+    margin: 0 4px;
+}
+
+.editor-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 16px;
+    border: none;
+    
+    font-size: 14px;
+    color: #111827;
+    resize: vertical;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.editor-textarea:focus {
+    outline: none;
+}
+
+.editor-textarea[contenteditable="true"]:empty:before {
+    content: attr(data-placeholder);
+    color: #9ca3af;
+    pointer-events: none;
+}
+
+.editor-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 16px;
+    background-color: var(--portal-page-bg, #F6F8FB);
+    border-top: 1px solid #e5e7eb;
+}
+
+.editor-icons {
+    display: flex;
+    gap: 8px;
+}
+
+.editor-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.green-icon {
+    background-color: #d1fae5;
+}
+
+.teal-icon {
+    background-color: #ccfbf1;
+}
+
+.char-count {
+    
+    font-size: 12px;
+    color: #f97316;
+}
+
+/* Form Actions Section */
+.form-actions-section {
+    width: calc(100% + (2 * var(--portal-card-padding, 24px)));
+    margin: 0 calc(-1 * var(--portal-card-padding, 24px)) calc(-1 * var(--portal-card-padding, 24px));
+    border-top: 1px solid #e5e7eb;
+    background-color: var(--portal-surface, #ffffff);
+    border-radius: 0 0 var(--portal-radius, 12px) var(--portal-radius, 12px);
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+.form-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px var(--portal-card-padding, 24px);
+    box-sizing: border-box;
+}
+
+.cancel-btn {
+    padding: 10px 20px;
+    background-color: var(--portal-bg);
+    border: 1px solid var(--portal-page-bg, #F6F8FB);
+    border-radius: 8px;
+    
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+    background-color: var(--primary-color-tint, #eff6ff);
+}
+
+.submit-btn {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    
+    font-size: 14px;
+    font-weight: 500;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: var(--primary-color);
+}
+
+.submit-btn.is-saved {
+    background-color: #2e844a;
+    color: #ffffff;
+}
+
+.submit-btn[disabled] {
+    opacity: 0.85;
+    cursor: default;
+}
+
+/* Scrollbar Styling */
+.business-listing-form-page::-webkit-scrollbar,
+.form-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.business-listing-form-page::-webkit-scrollbar-track,
+.form-container::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 3px;
+}
+
+.business-listing-form-page::-webkit-scrollbar-thumb,
+.form-container::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 3px;
+}
+
+.business-listing-form-page::-webkit-scrollbar-thumb:hover,
+.form-container::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+}
+
+/* Responsive Design */
+@media (max-width: 968px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .business-listing-form-page {
+        padding: 0;
+        height: calc(100vh - 146.5px);
+        max-height: calc(100vh - 146.5px);
+    }
+}
+
+/* Featured business section */
+.feature-section {
+    border: 1px solid #e5e7eb;
+    border-radius: var(--portal-radius);
+    padding: 16px 20px;
+    margin: 8px 0 4px 0;
+    background: #f9fafb;
+}
+
+.feature-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.feature-toggle input {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.feature-toggle-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.feature-help {
+    margin: 8px 0 0 26px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.feature-dates {
+    display: flex;
+    gap: 16px;
+    margin: 14px 0 0 26px;
+    flex-wrap: wrap;
+}
+
+.feature-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.feature-date-input {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    color: #111827;
+}
+
+.feature-status {
+    margin: 12px 0 0 26px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--secondary-color, #1d4ed8);
+}
+
+.feature-selected-dates {
+    margin: 12px 0 0 26px;
+    font-size: 14px;
+    color: #111827;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.feature-edit-dates {
+    background: none;
+    border: none;
+    color: var(--secondary-color, #1d4ed8);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+}
+
+/* Feature date modal */
+.feature-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.feature-modal {
+    background: var(--portal-bg);
+    border-radius: 16px;
+    padding: 28px;
+    width: 460px;
+    max-width: calc(100vw - 32px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.feature-modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px 0;
+}
+
+.feature-modal-sub {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 20px 0;
+}
+
+.feature-modal .feature-dates {
+    margin: 0;
+}
+
+.feature-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.feature-modal-actions .proceed-btn {
+    background: var(--primary-color, #2563eb);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.feature-modal-actions .proceed-btn:hover {
+    background: var(--secondary-color, #1d4ed8);
+}

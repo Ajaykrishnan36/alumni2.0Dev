@@ -1,0 +1,81 @@
+<template>
+    <div class="mentorship-page">
+        <template if:true={isSavingTask}>
+            <div class="fullscreen-loader">
+                <lightning-spinner alternative-text="Saving task" size="medium"></lightning-spinner>
+            </div>
+        </template>
+        <c-ken-toast-notification
+            is-visible={showToast}
+            toast-title={toastTitle}
+            toast-message={toastMessage}
+            toast-variant={toastVariant}>
+        </c-ken-toast-notification>
+
+        <!-- Empty landing: no connections + Be-a-Mentor is OFF -->
+        <template if:true={showEmptyLanding}>
+            <div class="mentorship-empty-landing">
+                <div class="mentorship-empty-content">
+                    <img src={emptyStateImageUrl} alt="No connections" class="mentorship-empty-img" />
+                    <h2 class="mentorship-empty-title">No Mentorship Connections Yet</h2>
+                    <p class="mentorship-empty-desc">It looks a little quiet here. Find a mentor or mentee to kickstart learning, collaboration, and growth.</p>
+                    <div class="mentorship-empty-actions">
+                        <button type="button" class="mentorship-find-btn" onclick={handleFindMentors}>Find Mentors</button>
+                        <button type="button" class="mentorship-become-btn" onclick={handleBecomeAMentor}>Become a Mentor</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Main page: has connections OR Be-a-Mentor is ON -->
+        <template if:true={showMainPage}>
+            <div class="mentorship-container">
+                <!-- Left Side: Mentorship Connections and Calendar -->
+                <div class="left-section">
+                    <!-- Mentorship Connections Section -->
+                    <div class="mentorship-connections-section">
+                        <c-ken-mentorship-connections
+                            mentors={mentors}
+                            is-loading={isLoadingMentors}
+                            error-message={mentorsError}
+                            current-user-city={currentUserCity}
+                            onmentorclick={handleMentorClick}>
+                        </c-ken-mentorship-connections>
+                    </div>
+
+                    <!-- Calendar and Schedule Section -->
+                    <div class="calendar-schedule-section">
+                        <c-ken-calendar-schedule
+                            selected-date={selectedDate}
+                            schedule-events={scheduleEvents}
+                            mentor-options={mentorOptions}
+                            mentee-options={menteeOptions}
+                            is-submitting-call-request={isSchedulingCall}
+                            is-responding-call-request={isRespondingCallRequest}
+                            onsendrequest={handleScheduleCallRequest}
+                            onrespondcallrequest={handleRespondCallRequest}
+                            onreschedulecallrequest={handleRescheduleCallRequest}
+                            onshowtoast={handleCalendarToast}
+                            ontakefeedback={handleTakeFeedback}
+                            ondatechange={handleDateChange}>
+                        </c-ken-calendar-schedule>
+                    </div>
+                </div>
+
+                <!-- Right Side: Tasks Section -->
+                <div class="tasks-section">
+                    <c-ken-tasks-section
+                        tasks={tasks}
+                        mentor-options={taskMentorOptions}
+                        mentee-options={taskMenteeOptions}
+                        is-loading={isSavingTask}
+                        is-be-a-mentor-on={isBeAMentorOn}
+                        onaddtask={handleAddTask}
+                        onedittask={handleEditTask}
+                        ontaskaction={handleTaskAction}>
+                    </c-ken-tasks-section>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

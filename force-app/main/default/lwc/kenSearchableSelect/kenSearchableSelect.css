@@ -1,0 +1,85 @@
+.searchable-select {
+    position: relative;
+    width: 100%;
+}
+
+.control-row {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #ffffff;
+    min-height: 44px;
+    padding: 0 8px 0 10px;
+}
+
+.control-row:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search-input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 14px;
+    color: #111827;
+    background: transparent;
+    min-height: 40px;
+}
+
+.search-input::placeholder {
+    color: #9ca3af;
+}
+
+.icon-btn {
+    border: none;
+    background: transparent;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 6px;
+}
+
+.icon-btn lightning-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+}
+
+.options-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 20;
+}
+
+.option-btn {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #111827;
+    cursor: pointer;
+}
+
+.option-btn:hover {
+    background: #f3f4f6;
+}
+
+.empty-state {
+    padding: 10px 12px;
+    color: #6b7280;
+    font-size: 13px;
+}

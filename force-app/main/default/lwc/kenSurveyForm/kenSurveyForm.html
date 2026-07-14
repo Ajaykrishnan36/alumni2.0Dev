@@ -1,0 +1,155 @@
+<template>
+    <div class="survey-page">
+        <!-- Progress Bar Row -->
+        <div class="progress-row">
+            <div class="progress-bar-container">
+                <div class="progress-bar" style={progressBarStyle}></div>
+            </div>
+            <div class="progress-info">
+                <span class="progress-text">{progressText}</span>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <!-- <div class="survey-header">
+            <div class="anonymous-toggle">
+                <span class="toggle-label">Submit response anonymously?</span>
+                <label class="toggle-wrapper">
+                    <input type="checkbox" class="toggle-switch" onchange={handleAnonymousToggle} checked={isAnonymous} />
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+        </div> -->
+
+        <!-- Survey Content -->
+        <div class="survey-content" if:true={survey}>
+            <template for:each={survey.questions} for:item="question">
+                <div key={question.id} class="question-container">
+                    <div class="question-header">
+                        <h3 class="question-title">
+                            {question.displayId}. {question.question}
+                            <template if:true={question.isRequired}>
+                                <span class="required-asterisk">*</span>
+                            </template>
+                        </h3>
+                    </div>
+
+                    <!-- Rating Questions -->
+                    <template if:true={question.isRating}>
+                        <div class="rating-container">
+                            <template for:each={question.scale} for:item="scaleItem">
+                                <div key={scaleItem.value} class="rating-item">
+                                    <button 
+                                        type="button"
+                                        class="rating-btn"
+                                        data-rating-value={scaleItem.value}
+                                        data-question-id={question.id}
+                                        onclick={handleRatingClick}>
+                                        {scaleItem.value}
+                                    </button>
+                                    <template if:true={scaleItem.label}>
+                                        <span class="rating-label">{scaleItem.label}</span>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Radio Questions -->
+                    <template if:true={question.isRadio}>
+                        <div class="options-container">
+                            <template for:each={question.options} for:item="option">
+                                <label key={option} class="option-item radio-option-item">
+                                    <input 
+                                        type="radio" 
+                                        name={question.id}
+                                        value={option}
+                                        data-question-id={question.id}
+                                        onchange={handleAnswerChange} />
+                                    <span class="option-label">{option}</span>
+                                </label>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Checkbox Questions -->
+                    <template if:true={question.isCheckbox}>
+                        <div class="options-container">
+                            <template for:each={question.options} for:item="option">
+                                <label key={option} class="option-item checkbox-option-item">
+                                    <input 
+                                        type="checkbox" 
+                                        value={option}
+                                        data-question-id={question.id}
+                                        onchange={handleAnswerChange} />
+                                    <span class="option-label">{option}</span>
+                                </label>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Text Questions -->
+                    <template if:true={question.isText}>
+                        <div class="text-input-container">
+                            <input 
+                                type="text" 
+                                class="text-input"
+                                placeholder="Enter your response"
+                                data-question-id={question.id}
+                                onchange={handleAnswerChange} />
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="survey-footer">
+            <template if:true={submitError}>
+                <div class="error-message">{submitError}</div>
+            </template>
+            <div class="footer-actions">
+                <button class="cancel-btn" onclick={handleCancel}>Cancel</button>
+                <button class="submit-btn" onclick={handleSubmit}>Submit</button>
+            </div>
+        </div>
+
+        <!-- Submit Confirmation Dialog -->
+        <template if:true={showSubmitConfirmation}>
+            <div class="confirmation-overlay" onclick={handleReviewForm}></div>
+            <div class="confirmation-dialog" onclick={handleDialogClick}>
+                <h3 class="confirmation-title">Are you sure you want to submit your feedback?</h3>
+                <div class="confirmation-actions">
+                    <button class="review-btn" onclick={handleReviewForm}>Review Form</button>
+                    <button class="confirm-btn" onclick={handleConfirmSubmit}>Yes</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading State -->
+        <template if:true={isSubmitting}>
+            <div class="loading-overlay">
+                <div class="loading-spinner">
+                    <lightning-spinner alternative-text="Submitting..." size="medium"></lightning-spinner>
+                    <p>Submitting your responses...</p>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Toast notifications -->
+    <c-ken-toast-notification
+        is-visible={isSuccessToastVisible}
+        toast-title={successTitle}
+        toast-message={successDescription}
+        toast-variant="success">
+    </c-ken-toast-notification>
+    
+    <c-ken-toast-notification
+        is-visible={isErrorToastVisible}
+        toast-title={errorTitle}
+        toast-message={errorDescription}
+        toast-variant="error">
+    </c-ken-toast-notification>
+
+</template>

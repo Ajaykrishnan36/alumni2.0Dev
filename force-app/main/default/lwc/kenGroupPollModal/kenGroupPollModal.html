@@ -1,0 +1,79 @@
+<template>
+    <section class="poll-modal-backdrop" role="dialog" aria-modal="true" aria-label="Create poll">
+        <div class="poll-modal-card">
+            <header class="poll-modal-head">
+                <h2 class="poll-modal-title">Create Poll</h2>
+                <button type="button" class="close-btn" aria-label="Close" onclick={handleClose}>
+                    <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                </button>
+            </header>
+
+            <div class="poll-modal-body">
+                <label class="field-label" for="poll-question">Your Question*</label>
+                <textarea
+                    id="poll-question"
+                    class="field-input"
+                    placeholder="Add Question"
+                    rows="2"
+                    oninput={handleQuestionInput}>{question}</textarea>
+
+                <template for:each={options} for:item="opt" for:index="i">
+                    <div key={opt.id} class="option-row">
+                        <label class="field-label">Option {opt.id} *</label>
+                        <div class="option-input-row">
+                            <input
+                                type="text"
+                                class="field-input"
+                                placeholder="Add Option"
+                                data-id={opt.id}
+                                value={opt.value}
+                                oninput={handleOptionInput} />
+                            <template if:true={canRemove}>
+                                <button
+                                    type="button"
+                                    class="remove-btn"
+                                    data-id={opt.id}
+                                    onclick={handleRemoveOption}
+                                    aria-label="Remove option">
+                                    <lightning-icon icon-name="utility:delete" size="x-small"></lightning-icon>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <template if:true={canAddMore}>
+                    <button type="button" class="add-option-btn" onclick={handleAddOption}>
+                        <lightning-icon icon-name="utility:add" size="xx-small"></lightning-icon>
+                        Add Options
+                    </button>
+                </template>
+
+                <label class="field-label section-spacing" for="poll-duration">Poll Duration</label>
+                <lightning-combobox
+                    name="duration"
+                    label=""
+                    value={durationDays}
+                    placeholder="Select duration"
+                    options={durationOptions}
+                    onchange={handleDurationChange}
+                    variant="label-hidden">
+                </lightning-combobox>
+
+                <template if:true={errorMessage}>
+                    <p class="error-text">{errorMessage}</p>
+                </template>
+            </div>
+
+            <footer class="poll-modal-foot">
+                <button type="button" class="btn btn-secondary" onclick={handleClose} disabled={isSubmitting}>
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-primary" onclick={handleSubmit} disabled={submitDisabled}>
+                    <template if:true={isSubmitting}>Posting…</template>
+                    <template if:false={isSubmitting}>Post</template>
+                </button>
+            </footer>
+        </div>
+    </section>
+</template>

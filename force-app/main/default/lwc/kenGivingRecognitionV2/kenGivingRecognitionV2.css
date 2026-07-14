@@ -1,0 +1,18 @@
+.bottom-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:16px}
+@media (max-width:1100px){.bottom-row{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid #E5E6E8;border-radius:4px;padding:18px 20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.card-title{font-size:14px;font-weight:700;margin:0;color:#111827}
+.card-sub{font-size:11px;color:#9DA0A8}
+.rc-list,.tb-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.tb-row{display:flex;align-items:center;gap:10px}
+.tb-info{flex:1;min-width:0}
+.tb-name{font-size:13px;font-weight:500;color:#111827}
+.tb-meta{font-size:11px;color:#5F6271}
+.tb-raised{font-size:13px;font-weight:600;color:#19A974}
+.tb-rank{width:24px;height:24px;border-radius:50%;background:#F1F5F9;color:#373A45;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.corp-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.corp-pill{background:#F1F5F9;color:#373A45;font-size:11px;font-weight:500;padding:5px 10px;border-radius:999px}
+.privacy-card{background:#F4E9FE;border-radius:4px;padding:12px 14px}
+.privacy-title{font-size:12px;font-weight:700;color:#8A38F5;margin-bottom:4px}
+.privacy-body{font-size:11.5px;color:#5F6271;line-height:1.5}

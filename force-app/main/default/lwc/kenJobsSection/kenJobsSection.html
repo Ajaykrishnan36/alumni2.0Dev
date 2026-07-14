@@ -1,0 +1,393 @@
+<template>
+    <section class="jobs-shell">
+        <div class="jobs-left">
+            <template lwc:if={hasAppliedJobs}>
+                <div class="applications-card">
+                    <div class="applications-card__header">
+                        <div class="tabs">
+                            <button class={applicationsModuleTabClass} type="button" data-tab="applications" onclick={handleModuleTabClick}>Applications ({applicationsCount})</button>
+                            <button class={savedJobsModuleTabClass} type="button" data-tab="saved" onclick={handleModuleTabClick}>Saved Jobs ({savedJobsCount})</button>
+                        </div>
+                        <button class="view-all" onclick={handleApplicationsViewAll}>
+                            <span>View All</span>
+                            <lightning-icon icon-name="utility:forward" size="x-small" class="white-icon"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <template lwc:if={isApplicationsModuleTab}>
+                        <div class="applications-grid">
+                            <template for:each={applicationCards} for:item="application">
+                                <article key={application.id} class="application-item" data-id={application.id} onclick={handleJobCardClick} style="cursor: pointer;">
+                                    <div class="application-item__top">
+                                        <span class={application.badgeClass}>{application.initials}</span>
+                                        <span class="application-company">{application.company}</span>
+                                    </div>
+                                    <div class="application-title">{application.title}</div>
+                                    <div class={application.statusClass}>{application.status}</div>
+                                    <button class={application.ctaClass} type="button">{application.ctaLabel}</button>
+                                </article>
+                            </template>
+
+                            <template lwc:if={showPlacementSummary}>
+                                <article class={placementSummaryCardClass}>
+                                    <template lwc:if={hasAcceptedOffer}>
+                                        <div class="placement-summary__celebration">🎉 Congratulations!</div>
+                                        <div class="placement-summary__accepted-copy">{acceptedOfferMessage}</div>
+                                        <button class="placement-summary__cta" type="button" onclick={handleDownloadOfferLetter}>
+                                            Download Offer Letter
+                                        </button>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="placement-summary__title">Placement summary</div>
+                                        <div class="placement-summary__row">
+                                            <span>Active Applications:</span>
+                                            <span>{placementSummary.activeApplications}</span>
+                                        </div>
+                                        <div class="placement-summary__row">
+                                            <span>Offers Received:</span>
+                                            <span>{placementSummary.offersReceived}</span>
+                                        </div>
+                                        <template lwc:if={hasReceivedOffers}>
+                                            <button class="placement-summary__cta" type="button" onclick={handleOpenOfferComparisonModal} disabled={disableCompareOffersLaunch}>
+                                                Compare Offers
+                                            </button>
+                                        </template>
+                                        <template lwc:else>
+                                            <div class="placement-summary__row">
+                                                <span>Interviews Scheduled:</span>
+                                                <span>{placementSummary.interviewsScheduled}</span>
+                                            </div>
+                                            <div class="placement-summary__row">
+                                                <span>Exams Scheduled:</span>
+                                                <span>{placementSummary.examsScheduled}</span>
+                                            </div>
+                                        </template>
+                                    </template>
+                                </article>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isSavedJobsModuleTab}>
+                        <template lwc:if={hasModuleSavedJobs}>
+                            <div class="module-saved-grid">
+                                <template for:each={moduleSavedJobCards} for:item="job">
+                                    <article key={job.id} class="module-saved-card">
+                                        <div class="module-saved-card__top">
+                                            <div class="company">
+                                                <span class={job.badgeClass}>{job.initials}</span>
+                                                <span class="company__name">{job.company}</span>
+                                            </div>
+                                            <button class="bookmark-btn bookmarked" type="button" aria-pressed="true">
+                                                <lightning-icon icon-name="utility:bookmark" size="x-small"></lightning-icon>
+                                            </button>
+                                        </div>
+                                        <h3 class="module-saved-title">{job.title}</h3>
+                                        <div class="job-tags">
+                                            <span class="tag">{job.domain}</span>
+                                            <span class="tag">
+                                                <lightning-icon icon-name="utility:location" size="xx-small" class="tag-icon"></lightning-icon>
+                                                {job.location}
+                                            </span>
+                                            <span class="tag">
+                                                <lightning-icon icon-name="utility:company" size="xx-small" class="tag-icon"></lightning-icon>
+                                                {job.type}
+                                            </span>
+                                        </div>
+                                        <div class="module-saved-salary">{job.salary}</div>
+                                    </article>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:if={noModuleSavedJobs}>
+                            <div class="module-saved-empty">You have not saved any jobs yet.</div>
+                        </template>
+                    </template>
+                </div>
+            </template>
+
+            <div class="jobs-card" style={jobsCardStyle}>
+                <template lwc:if={showJobsListingSection}>
+                    <div class="jobs-card__header">
+                        <div class="tabs">
+                            <button class={recommendedTabClass} data-tab="recommended" onclick={handleJobsTabClick}>
+                                Recommended Jobs (12)
+                            </button>
+                            <button class={allTabClass} data-tab="all" onclick={handleJobsTabClick}>
+                                All Jobs (43)
+                            </button>
+                        </div>
+                        <button class="view-all" onclick={handleViewAll}>
+                            <span>View All</span>
+                            <lightning-icon icon-name="utility:forward" size="x-small" class="white-icon"></lightning-icon>
+                        </button>
+                    </div>
+
+                    <div class="preferences">
+                        <span class="preferences__label">Your Preferences:</span>
+                        <span class="preferences__text">Information Technology, Manufacturing &amp; Engineering, Consumer Goods, EdTech</span>
+                    </div>
+                    <div class="jobs-card__body" style={jobsCardBodyStyle}>
+                    <div class="jobs-grid">
+                        <template for:each={visibleJobs} for:item="job">
+                            <article key={job.id} class="job-card" data-id={job.id} onclick={handleJobCardClick}>
+                                <div class="job-card__top">
+                                    <div class="company">
+                                        <span class={job.badgeClass}>{job.initials}</span>
+                                        <span class="company__name">{job.company}</span>
+                                    </div>
+                                    <button class={job.bookmarkClass} data-id={job.id} onclick={handleBookmarkToggle} aria-pressed={job.isBookmarked}>
+                                        <lightning-icon icon-name={job.bookmarkIcon} size="x-small"></lightning-icon>
+                                    </button>
+                                </div>
+
+                                <h3 class="job-title">{job.title}</h3>
+
+                                <div class="job-tags">
+                                    <span class="tag">{job.domain}</span>
+                                    <span class="tag">
+                                        <lightning-icon icon-name="utility:location" size="xx-small" class="tag-icon"></lightning-icon>
+                                        {job.location}
+                                    </span>
+                                    <span class="tag">{job.type}</span>
+                                </div>
+
+                                <div class="job-salary">{job.salary}</div>
+                                <div class="job-match">
+                                    <span class="match-icon">
+                                        <lightning-icon icon-name="utility:check" size="xx-small" class="match-icon__inner"></lightning-icon>
+                                    </span>
+                                    <span>Skills match: {job.match}%</span>
+                                </div>
+                            </article>
+                        </template>
+                    </div>
+                    </div>
+                </template>
+
+                <template lwc:else>
+                    <section class="instructions-card">
+                        <div class="instructions-card__header">
+                            <lightning-icon icon-name="utility:info" size="small" class="instructions-card__icon"></lightning-icon>
+                            <h3 class="instructions-card__title">Important instructions</h3>
+                        </div>
+
+                        <div class="instructions-card__content">
+                            <h4 class="instructions-card__section-title">Congratulations on Your Placement!</h4>
+                            <ul class="instructions-card__list">
+                                <li>You've successfully accepted an offer. As per policy, new applications are now closed for this cycle.</li>
+                            </ul>
+
+                            <h4 class="instructions-card__section-title">Next Steps</h4>
+                            <ul class="instructions-card__list">
+                                <template for:each={instructionsNextSteps} for:item="instruction">
+                                    <li key={instruction}>{instruction}</li>
+                                </template>
+                            </ul>
+
+                            <h4 class="instructions-card__section-title">Support &amp; Policies</h4>
+                            <ul class="instructions-card__list">
+                                <template for:each={instructionsSupportPolicies} for:item="instruction">
+                                    <li key={instruction}>{instruction}</li>
+                                </template>
+                            </ul>
+                        </div>
+                    </section>
+                </template>
+            </div>
+        </div>
+
+        <aside class="jobs-right">
+            <template lwc:if={hasAppliedJobs}>
+                <div class="side-card schedule-card">
+                    <div class="schedule-header">Schedule</div>
+                    <div style="height: calc(60vh - 195px);
+                        overflow-y: auto;">
+                    <template for:each={scheduleItems} for:item="item">
+                        <div key={item.id} >
+                        <div  key={item.id}  class="schedule-item">
+                            <div class="schedule-item__main">
+                                <div class="schedule-item__title">{item.title}</div>
+                                <div class="schedule-item__subtitle">{item.subtitle}</div>
+                            </div>
+                            <div class="schedule-item__meta">
+                                <template lwc:if={item.callActionLabel}>
+                                    <button class="join-call" type="button">{item.callActionLabel}</button>
+                                </template>
+                                <span>{item.timeLabel}</span>
+                            </div>
+                        </div>
+                        </div>
+                    </template>
+                    </div>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="side-card">
+                    <div class="tabs">
+                        <button class={appliedTabClass} data-tab="applied" onclick={handleSideTabClick}>Applied Jobs</button>
+                        <button class={savedTabClass} data-tab="saved" onclick={handleSideTabClick}>Saved Jobs</button>
+                    </div>
+                    <template lwc:if={isAppliedTab}>
+                        <div class="empty-state" style="height: calc(60vh - 190px);overflow-y: auto;display: flex;justify-content: center;">
+                           <img src={JobsNotFound1}/>
+                            <p>You have not applied for any jobs yet</p>
+                        </div>
+                    </template>
+                    <template lwc:if={isSavedTab}>
+                        <template lwc:if={hasSavedJobs}>
+                            <div class="saved-list">
+                                <template for:each={savedJobs} for:item="job">
+                                    <div key={job.id} class="saved-item">
+                                        <span class={job.badgeClass}>{job.initials}</span>
+                                        <div class="saved-info">
+                                            <div class="saved-title">{job.title}</div>
+                                            <div class="saved-meta">{job.company} · {job.location}</div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:if={noSavedJobs}>
+                            <div class="empty-state" style="height: calc(60vh - 190px);overflow-y: auto;display: flex;justify-content: center;">
+                                <img src={JobsNotFound1}/>
+                                <p>You have not saved any jobs yet</p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </template>
+
+            <div class="side-card posted">
+                <div class="posted-header">Posted Jobs</div>
+                <div class="empty-state" style="height: calc(40vh - 185px);overflow-y: scroll;">
+                    <img src={JobsNotFound2}/>
+                    <p>You haven’t posted any jobs yet</p>
+                </div>
+                <button class="post-job" onclick={handlePostJob}>Post a Job</button>
+            </div>
+        </aside>
+    </section>
+    <template lwc:if={isPostJobModalOpen}>
+        <div class="post-job-modal__backdrop" onclick={closePostJobModal}></div>
+        <section class="post-job-modal" role="dialog" aria-modal="true" aria-label="Post Job Options">
+            <button class="post-job-modal__close" type="button" onclick={closePostJobModal}>x</button>
+            <h3 class="post-job-modal__title">How would you like to create a new job?</h3>
+            <div class="post-job-modal__actions">
+                <button type="button" class="modal-choice manual" onclick={handleCreateManually}>
+                    <span class="choice-title">Create Manually</span>
+                    <span class="choice-subtitle">Fill in the details step by step</span>
+                </button>
+                <button type="button" class="modal-choice upload" onclick={handleUploadJobDescription}>
+                    <span class="choice-title">Upload a Job Description</span>
+                    <span class="choice-subtitle">Save time - we'll create it for you.</span>
+                </button>
+            </div>
+        </section>
+    </template>
+
+    <template lwc:if={isOfferComparisonModalOpen}>
+        <div class="offer-comparison-modal__backdrop" onclick={closeOfferComparisonModal}></div>
+        <section class="offer-comparison-modal" role="dialog" aria-modal="true" aria-label="Offer comparison">
+            <div class="offer-comparison-modal__header">
+                <h3 class="offer-comparison-modal__title">Offer comparison</h3>
+                <button class="offer-comparison-modal__close" type="button" onclick={closeOfferComparisonModal}>×</button>
+            </div>
+
+            <template lwc:if={isOfferComparisonStepOne}>
+                <div class="offer-comparison-modal__step">1/2</div>
+                <div class="offer-comparison-modal__subtitle">Choose the offers that you want to compare</div>
+                <div class="offer-comparison-modal__helper">You can select a maximum of 3 offers to compare</div>
+
+                <div class="offer-selection-grid">
+                    <template for:each={comparisonOfferSelectionCards} for:item="offer">
+                        <button
+                            key={offer.id}
+                            class={offer.selectionClass}
+                            type="button"
+                            data-id={offer.id}
+                            onclick={handleOfferSelectionToggle}
+                            aria-pressed={offer.isSelected}
+                        >
+                            <div class="offer-selection-card__top">
+                                <div class="company">
+                                    <span class={offer.badgeClass}>{offer.initials}</span>
+                                    <span class="company__name">{offer.company}</span>
+                                </div>
+                                <span class="offer-selection-card__checkmark">{offer.selectionLabel}</span>
+                            </div>
+
+                            <h3 class="offer-selection-card__title">{offer.title}</h3>
+
+                            <div class="job-tags offer-selection-card__tags">
+                                <span class="tag">{offer.domain}</span>
+                                <span class="tag">
+                                    <lightning-icon icon-name="utility:location" size="xx-small" class="tag-icon"></lightning-icon>
+                                    {offer.location}
+                                </span>
+                                <span class="tag">
+                                    <lightning-icon icon-name="utility:company" size="xx-small" class="tag-icon"></lightning-icon>
+                                    {offer.type}
+                                </span>
+                            </div>
+
+                            <div class="offer-selection-card__salary">{offer.salary}</div>
+                            <div class="job-match">
+                                <span class="match-icon">
+                                    <lightning-icon icon-name="utility:check" size="xx-small" class="match-icon__inner"></lightning-icon>
+                                </span>
+                                <span>Skills match: {offer.match}%</span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+
+                <div class="offer-comparison-modal__footer">
+                    <button class="offer-comparison-modal__button offer-comparison-modal__button--secondary" type="button" onclick={closeOfferComparisonModal}>
+                        Cancel
+                    </button>
+                    <button class="offer-comparison-modal__button" type="button" onclick={handleOfferComparisonContinue} disabled={disableOfferComparisonContinue}>
+                        Continue
+                    </button>
+                </div>
+            </template>
+
+            <template lwc:if={isOfferComparisonStepTwo}>
+                <div class="offer-comparison-modal__step">2/2</div>
+                <div class="offer-comparison-modal__subtitle">Is there anything specific that you would like to know from the comparison?</div>
+                <div class="offer-comparison-modal__helper">Ask personalised questions</div>
+
+                <div class="offer-question-panel">
+                    <template for:each={comparisonQuestionsWithIndex} for:item="question">
+                        <div key={question.id} class="offer-question-panel__saved">
+                            <span class="offer-question-panel__number">{question.index}.</span>
+                            <span class="offer-question-panel__text">{question.text}</span>
+                        </div>
+                    </template>
+
+                    <div class="offer-question-panel__editor">
+                        <span class="offer-question-panel__number">{nextComparisonQuestionNumber}.</span>
+                        <textarea
+                            class="offer-question-panel__input"
+                            value={comparisonQuestionInput}
+                            oninput={handleComparisonQuestionInput}
+                            onkeydown={handleComparisonQuestionKeydown}
+                            placeholder="Enter your question"
+                        ></textarea>
+                    </div>
+
+                    <div class="offer-question-panel__hint">Press Enter to add a new question</div>
+                </div>
+
+                <div class="offer-comparison-modal__footer">
+                    <button class="offer-comparison-modal__button offer-comparison-modal__button--secondary" type="button" onclick={handleOfferComparisonBack}>
+                        Back
+                    </button>
+                    <button class="offer-comparison-modal__button" type="button" onclick={handleFinalizeOfferComparison}>
+                        Compare Offers
+                    </button>
+                </div>
+            </template>
+        </section>
+    </template>
+</template>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 — Login</masterLabel>
+    <description>Login screen for the Alumni 2.0 end-user portal.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="institutionName" type="String" label="Institution Name" default="Name of the Institute"/>
+            <property name="heroImageUrl" type="String" label="Hero Image URL" default=""/>
+            <property name="institutionLogoUrl" type="String" label="Institution Logo URL" default=""/>
+            <property name="poweredByLogoUrl" type="String" label="Powered By Logo URL" default=""/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

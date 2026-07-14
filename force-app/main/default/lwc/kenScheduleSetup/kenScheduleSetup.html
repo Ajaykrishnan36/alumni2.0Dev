@@ -1,0 +1,400 @@
+﻿<template>
+    <div class="step-content">
+        <div class="date-tabs">
+            <template for:each={dateTabsWithClasses} for:item="date">
+                <button key={date.key} class={date.classes} onclick={handleDateTabClick} data-date={date.key}>
+                    {date.display}
+                </button>
+            </template>
+        </div>
+
+        <!-- Sessions Section Header (only show when sessions exist) -->
+        <div class="sessions-header" if:true={showSessionsList}>
+            <h3 class="sessions-title">Sessions<span class="required-asterisk">*</span></h3>
+            <button class="btn-add-session-icon" onclick={handleAddSession} title="Add Session">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Empty State: Get Started Message (only when no sessions) -->
+        <div class="empty-session-state" if:true={showInitialSessionForm}>
+            <p class="empty-state-message">Get started by adding the first session*</p>
+            <button class="btn-add-session-primary" onclick={handleAddSession}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+                </svg>
+                Add Session
+            </button>
+        </div>
+
+        <!-- Sessions List View -->
+        <div class="sessions-section" if:true={showSessionsList}>
+            <div class="date-sessions">
+                <template for:each={currentDateSessions.sessions} for:item="session" for:index="index">
+                    <div key={session.uniqueId} class="session-card-figma">
+                        <div class="session-card-header-figma">
+                            <div class="session-number-figma">Session {session.displayNumber}</div>
+                            <div class="session-actions-figma">
+                                <button class="btn-icon-figma delete" onclick={handleDeleteSession}
+                                    data-session-id={session.uniqueId} title="Delete Session">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                            fill="currentColor" />
+                                    </svg>
+                                </button>
+                                <button class="btn-icon-figma collapse" onclick={handleToggleSession}
+                                    data-session-id={session.uniqueId} title="Toggle Session">
+                                    <template if:true={session.isExpanded}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"
+                                                fill="currentColor" />
+                                        </svg>
+                                    </template>
+                                    <template if:false={session.isExpanded}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"
+                                                fill="currentColor" />
+                                        </svg>
+                                    </template>
+                                </button>
+                            </div>
+                        </div>
+                    <!-- Session Details Form (inline expand) -->
+                    <div class="session-form-figma" if:true={session.isExpanded}>
+                        <div class="session-form-header-figma">Session details</div>
+
+                        <!-- Row 1: Session Title + Upload Brochure (same row) -->
+                        <div class="form-row-figma-row1">
+                            <div class="form-group-figma form-group-title">
+                                <label for="editSessionTitleFigma">Session title<span
+                                        class="required-asterisk">*</span></label>
+                                <input type="text" id="editSessionTitleFigma" class={sessionTitleClass}
+                                    placeholder="Give a title for your session" value={currentSession.title}
+                                    onkeyup={handleSessionTitleChange} maxlength="100" />
+                                <div class="error-message" if:true={validationErrors.sessionTitle}>
+                                    <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                            fill="currentColor" />
+                                    </svg>
+                                    {validationErrors.sessionTitle}
+                                </div>
+                            </div>
+                            <div class="form-group-figma form-group-brochure">
+                                <label for="editSessionBrochureFigma">Upload brochure for the session
+                                    <span style="color: #6B7280; font-weight: normal;">(optional)</span></label>
+                                <div class="file-upload-container-figma">
+                                    <template if:false={currentSession.brochure}>
+                                        <div class="file-upload-figma">
+                                            <input type="file" id="editSessionBrochureFigma"
+                                                accept=".png,.jpeg,.jpg,.pdf,.doc,.docx"
+                                                onchange={handleSessionBrochureUpload} />
+                                            <label for="editSessionBrochureFigma" class="file-upload-label-figma">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                    <path
+                                                        d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"
+                                                        stroke="currentColor" stroke-width="2" />
+                                                    <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" />
+                                                </svg>
+                                                Upload brochure
+                                            </label>
+                                        </div>
+                                    </template>
+                                    <template if:true={currentSession.brochure}>
+                                        <div class="file-preview-figma">
+                                            <input type="file" class="file-input-hidden brochure-change-input"
+                                                accept=".png,.jpeg,.jpg,.pdf,.doc,.docx"
+                                                onchange={handleSessionBrochureUpload} />
+                                            <div class="file-info-figma">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                                    class="file-icon-figma">
+                                                    <path
+                                                        d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"
+                                                        stroke="currentColor" stroke-width="2" />
+                                                    <path d="M14 2v6h6" stroke="currentColor" stroke-width="2" />
+                                                </svg>
+                                                <span class="file-name-figma">{currentSession.brochureFileName}</span>
+                                            </div>
+                                            <div class="file-actions-figma">
+                                                <button class="file-action-btn-figma change"
+                                                    onclick={handleChangeSessionBrochure}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    </svg>
+                                                </button>
+                                                <button class="file-action-btn-figma remove"
+                                                    onclick={handleRemoveSessionBrochure}>
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                        <path
+                                                            d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                                            fill="currentColor" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Start Time + End Time (same row) -->
+                        <div class="form-row-figma-row2">
+                            <div class="form-group-figma form-group-start-time">
+                                <label for="editStartTimeFigma">Start Time<span
+                                        class="required-asterisk">*</span></label>
+                                <div class="time-input-wrapper-figma">
+                                    <input type="time" id="editStartTimeFigma" class="time-input-figma"
+                                        placeholder="hh:mm" value={currentSession.startTime}
+                                        onchange={handleStartTimeChange} />                                </div>
+                                <div class="error-message" if:true={validationErrors.sessionStartTime}>
+                                    <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                            fill="currentColor" />
+                                    </svg>
+                                    {validationErrors.sessionStartTime}
+                                </div>
+                            </div>
+                            <div class="form-group-figma form-group-end-time">
+                                <label for="editEndTimeFigma">End Time<span class="required-asterisk">*</span></label>
+                                <div class="time-input-wrapper-figma">
+                                    <input type="time" id="editEndTimeFigma" class="time-input-figma"
+                                        placeholder="hh:mm" value={currentSession.endTime}
+                                        onchange={handleEndTimeChange} />                                </div>
+                                <div class="error-message" if:true={validationErrors.sessionEndTime}>
+                                    <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                            fill="currentColor" />
+                                    </svg>
+                                    {validationErrors.sessionEndTime}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="error-message" if:true={timeRangeError}>
+                            <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                <path
+                                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                    fill="currentColor" />
+                            </svg>
+                            {timeRangeError}
+                        </div>
+
+                        <!-- Row 3: Agenda (full width) -->
+                        <div class="form-row-figma-row3">
+                            <div class="form-group-figma form-group-agenda">
+                                <label for="editSessionAgendaFigma">Agenda<span
+                                        class="required-asterisk">*</span></label>
+                                <textarea id="editSessionAgendaFigma" class={sessionAgendaClass} rows="3"
+                                    placeholder="Outline session expectations"
+                                    onkeyup={handleSessionAgendaChange}>{currentSession.agenda}</textarea>
+                                <div class="error-message" if:true={validationErrors.sessionAgenda}>
+                                    <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                            fill="currentColor" />
+                                    </svg>
+                                    {validationErrors.sessionAgenda}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Details -->
+                        <div class="location-details-section">
+                            <div class="location-details-header">Location details</div>
+                            <div class="form-group-new">
+                                <label>Select location type<span class="required-asterisk">*</span></label>
+                                <div class="radio-group-new">
+                                    <label class="radio-label-new">
+                                        <input type="radio" name="locationType" value="online"
+                                            checked={isOnlineSelected} onchange={handleLocationTypeChange} />
+                                        <span class="radio-custom-new"></span>
+                                        Online event
+                                    </label>
+                                    <label class="radio-label-new">
+                                        <input type="radio" name="locationType" value="onsite"
+                                            checked={isOnsiteSelected} onchange={handleLocationTypeChange} />
+                                        <span class="radio-custom-new"></span>
+                                        On-site
+                                    </label>
+                                    <label class="radio-label-new">
+                                        <input type="radio" name="locationType" value="hybrid"
+                                            checked={isHybridSelected} onchange={handleLocationTypeChange} />
+                                        <span class="radio-custom-new"></span>
+                                        Hybrid
+                                    </label>
+                                </div>
+                                <div class="error-message" if:true={validationErrors.locationType}>
+                                    <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                            fill="currentColor" />
+                                    </svg>
+                                    {validationErrors.locationType}
+                                </div>
+                            </div>
+                            <!-- Hybrid Mode: Both fields side by side -->
+                            <div class="location-fields-row-new" if:true={isHybridSelected}>
+                                <div class="form-group-new location-field-half">
+                                    <label for="editVenueAddress">Enter address to the session venue</label>
+                                    <input type="text" id="editVenueAddress" class="form-control-new"
+                                        placeholder="Enter venue address" value={currentSession.venueAddress}
+                                        onkeyup={handleVenueAddressChange} />
+                                    <div class="error-message" if:true={validationErrors.venueAddress}>
+                                        <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                                fill="currentColor" />
+                                        </svg>
+                                        {validationErrors.venueAddress}
+                                    </div>
+                                </div>
+                                <div class="form-group-new location-field-half">
+                                    <label for="editEventLink">Paste event link</label>
+                                    <div class="event-link-input-wrapper">
+                                        <input type="url" id="editEventLink" class="form-control-new"
+                                            placeholder="Enter event link" value={currentSession.eventLink}
+                                            onkeyup={handleEventLinkChange} />
+                                        <svg class="event-link-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                            <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke="#585A64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
+                                    <div class="error-message" if:true={validationErrors.eventLink}>
+                                        <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                            <path
+                                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                                fill="currentColor" />
+                                        </svg>
+                                        {validationErrors.eventLink}
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Online/On-site Mode: Fields stacked vertically -->
+                            <div class="form-group-new" if:true={showVenueAddressOnly} style="margin-top: 1rem;">
+                                <label for="editVenueAddressOnline">Enter address to the session venue</label>
+                                <input type="text" id="editVenueAddressOnline" class="form-control-new"
+                                    placeholder="Enter venue address" value={currentSession.venueAddress}
+                                    onkeyup={handleVenueAddressChange} />
+                                <div class="error-message" if:true={validationErrors.venueAddress}>
+                                    <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                            fill="currentColor" />
+                                    </svg>
+                                    {validationErrors.venueAddress}
+                                </div>
+                            </div>
+                            <div class="form-group-new" if:true={showEventLinkOnly} style="margin-top: 1rem;">
+                                <label for="editEventLinkOnline">Paste event link</label>
+                                <div class="event-link-input-wrapper">
+                                    <input type="url" id="editEventLinkOnline" class="form-control-new"
+                                        placeholder="Enter event link" value={currentSession.eventLink}
+                                        onkeyup={handleEventLinkChange} />
+                                    <svg class="event-link-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                        <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" stroke="#585A64" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="error-message" if:true={validationErrors.eventLink}>
+                                    <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+                                        <path
+                                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                                            fill="currentColor" />
+                                    </svg>
+                                    {validationErrors.eventLink}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Speakers Section in Edit Mode -->
+                        <div class="speakers-section-new">
+                            <div class="speakers-container-new">
+                                <div class="speakers-header-wrapper-new">
+                                    <label class="speakers-label-new">Speakers (Optional)</label>
+                                    <button type="button" class="btn-add-speaker-icon" if:true={showSpeakersList}
+                                        onclick={handleAddSpeaker} title="Add Speaker">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="speakers-content-box-new" if:false={showSpeakersList}>
+                                    <p class="speakers-placeholder-text-new">Add Speakers for this Session</p>
+                                    <button class="btn-add-speaker-primary-new" onclick={handleAddSpeaker}>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor" />
+                                        </svg>
+                                        Add Speaker
+                                    </button>
+                                </div>
+                                <!-- Speakers Table View -->
+                                <div class="speakers-table-container" if:true={showSpeakersList}>
+                                    <table class="speakers-table">
+                                        <thead>
+                                            <tr>
+                                                <th>S No</th>
+                                                <th>Speaker</th>
+                                                <th>Image</th>
+                                                <th>Description</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={currentSessionSpeakers} for:item="speaker">
+                                                <tr key={speaker.uniqueId}>
+                                                    <td>{speaker.displayNumber}</td>
+                                                    <td>
+                                                        <button type="button" class="speaker-link"
+                                                            onclick={handleEditSpeaker} data-speaker-id={speaker.uniqueId}>
+                                                            {speaker.name}
+                                                        </button>
+                                                        <template if:true={speaker.email}>
+                                                            <div class="speaker-email-cell">{speaker.email}</div>
+                                                        </template>
+                                                    </td>
+                                                    <td>
+                                                        <span class="speaker-link" if:true={speaker.imageFileName}>
+                                                            {speaker.imageFileName}
+                                                        </span>
+                                                    </td>
+                                                    <td class="speaker-description-cell">{speaker.description}</td>
+                                                    <td>
+                                                        <div class="speaker-action-buttons">
+                                                            <button class="btn-icon-table edit" onclick={handleEditSpeaker}
+                                                                data-speaker-id={speaker.uniqueId} title="Edit">
+                                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                                    <path
+                                                                        d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"
+                                                                        fill="currentColor" />
+                                                                </svg>
+                                                            </button>
+                                                            <button class="btn-icon-table delete"
+                                                                onclick={handleDeleteSpeaker}
+                                                                data-speaker-id={speaker.uniqueId} title="Delete">
+                                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                                                    <path
+                                                                        d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+                                                                        fill="currentColor" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </template>
+
+            </div>
+        </div>
+
+    </div>
+</template>

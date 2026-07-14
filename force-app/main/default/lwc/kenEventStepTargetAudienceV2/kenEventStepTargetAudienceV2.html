@@ -1,0 +1,109 @@
+<template>
+    <h2>1. Event Setup</h2>
+    <p class="muted">Set up the basic details that participants will see.</p>
+    <div class="grid-2">
+        <div class="field">
+            <label>Event Title</label>
+            <input type="text" placeholder="Event title" data-field="eventTitle" value={eventTitle} oninput={handleInput}/>
+        </div>
+        <div class="field">
+            <label>Category</label>
+            <select data-field="category" value={category} onchange={handleInput}>
+                <option value="">Select category</option>
+                <option value="Workshop">Workshop</option>
+                <option value="Networking">Networking</option>
+                <option value="Webinar">Webinar</option>
+                <option value="Reunion">Reunion</option>
+                <option value="Fundraiser">Fundraiser</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Event Type</label>
+            <select data-field="eventType" value={eventType} onchange={handleInput}>
+                <option>In-Person</option><option>Online</option><option>Hybrid</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Language <span class="hint">(select one or more)</span></label>
+            <div class="lang-group">
+                <template for:each={languageOptions} for:item="l">
+                    <label key={l.value} class="lang-chip">
+                        <input type="checkbox" data-val={l.value} checked={l.checked} onchange={handleLanguageToggle}/>
+                        <span>{l.label}</span>
+                    </label>
+                </template>
+            </div>
+        </div>
+    </div>
+    <div class="field" style="margin-top:18px">
+        <label>Description</label>
+        <textarea rows="4" data-field="description" oninput={handleInput}>{description}</textarea>
+    </div>
+
+    <!-- QA Bug — Cover photo (was missing from the Event Setup step) -->
+    <div class="field" style="margin-top:18px">
+        <label>Cover Photo</label>
+        <template lwc:if={hasCover}>
+            <div style="display:flex;align-items:center;gap:14px;">
+                <div style={coverPreviewStyle}></div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                    <span style="font-size:13px;color:#1a1a2e;">{coverLabel}</span>
+                    <button type="button" onclick={handleRemoveCover}
+                        style="align-self:flex-start;background:none;border:none;color:#e74c3c;font-size:13px;font-weight:600;cursor:pointer;padding:0;">Remove</button>
+                </div>
+            </div>
+        </template>
+        <template lwc:else>
+            <label class="cover-upload"
+                style="display:inline-flex;align-items:center;gap:10px;border:1px dashed #d1d5db;border-radius:8px;padding:10px 16px;background:#fff;color:#4f46e5;cursor:pointer;font-size:13px;font-weight:600;">
+                <span>＋ {coverLabel}</span>
+                <input type="file" accept="image/*" onchange={handleCoverPhoto}
+                    style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);border:0;padding:0;margin:-1px;"/>
+            </label>
+            <p class="hint" style="font-size:12px;color:#6b7280;margin-top:6px;">PNG or JPG, up to 2 MB. Shown as the event's banner.</p>
+        </template>
+        <template lwc:if={coverError}>
+            <p style="color:#b3261e;font-size:12px;margin-top:6px;">{coverError}</p>
+        </template>
+    </div>
+
+    <!-- Host Type + conditional venue / meeting link -->
+    <div class="field" style="margin-top:18px">
+        <label>Host Type</label>
+        <div class="seg">
+            <button type="button" class={offlineClass} data-val="Offline" onclick={handleHostType}>Offline</button>
+            <button type="button" class={onlineClass} data-val="Online" onclick={handleHostType}>Online</button>
+        </div>
+    </div>
+
+    <template lwc:if={isOnline}>
+        <div class="field">
+            <label>Meeting Link</label>
+            <input type="url" placeholder="https://meet.example.com/your-event" data-field="meetingLink" value={meetingLink} oninput={handleInput}/>
+        </div>
+    </template>
+    <template lwc:if={isOffline}>
+        <div class="field">
+            <label>Location / Venue</label>
+            <input type="text" placeholder="e.g. Main Auditorium, Campus Block A" data-field="location" value={location} oninput={handleInput}/>
+        </div>
+    </template>
+
+    <!-- Speaker details -->
+    <div class="field" style="margin-top:6px">
+        <label>Speaker Details</label>
+        <textarea rows="3" placeholder="Names, titles & short bios of the speaker(s)" data-field="speakerDetails" oninput={handleInput}>{speakerDetails}</textarea>
+    </div>
+
+    <!-- What to Expect -->
+    <div class="field" style="margin-top:6px">
+        <label>What to Expect From Event</label>
+        <textarea rows="3" placeholder="Key takeaways, highlights, who should attend…" data-field="whatToExpect" oninput={handleInput}>{whatToExpect}</textarea>
+    </div>
+
+    <!-- Agenda -->
+    <div class="field" style="margin-top:6px">
+        <label>Agenda</label>
+        <textarea rows="3" placeholder="High-level agenda or running order for the event" data-field="agenda" oninput={handleInput}>{agenda}</textarea>
+    </div>
+</template>

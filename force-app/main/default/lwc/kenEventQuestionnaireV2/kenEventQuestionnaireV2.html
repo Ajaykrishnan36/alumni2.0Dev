@@ -1,0 +1,88 @@
+<template>
+    <section class="q-page">
+        <div class="q-topbar">
+            <button type="button" class="q-back" onclick={handleBack} title="Back to event">
+                <span class="q-back__arrow">&larr;</span>
+                <span>Back to event</span>
+            </button>
+        </div>
+
+        <header class="q-head">
+            <h1 class="q-title">{surveyTitle}</h1>
+            <template lwc:if={event}>
+                <p class="q-sub">{eventTitle}</p>
+            </template>
+        </header>
+
+        <template lwc:if={hasSurvey}>
+            <div class="q-grid">
+                <!-- LEFT -->
+                <div class="q-left">
+                    <div class="card">
+                        <h3 class="card__title">About the Feedback Form</h3>
+                        <p class="card__body">{description}</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="card__title">Target Audience</h3>
+                        <template lwc:if={hasAudience}>
+                            <ul class="aud-list">
+                                <template for:each={audience} for:item="a">
+                                    <li key={a.key} class="aud-row">
+                                        <span class="aud-tag">{a.tag}</span>
+                                        <span class="aud-count">{a.count}</span>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty">All registered attendees.</div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- RIGHT -->
+                <div class="q-right">
+                    <div class="card">
+                        <h3 class="card__title">Questions</h3>
+                        <template lwc:if={hasQuestions}>
+                            <template for:each={questions} for:item="q">
+                                <div key={q.key} class="q-row">
+                                    <div class="q-label">{q.indexLabel}</div>
+                                    <div class="q-text">{q.text}</div>
+
+                                    <template lwc:if={q.isScale}>
+                                        <div class="resp-list">
+                                            <template for:each={q.responses} for:item="r">
+                                                <div key={r.key} class="resp">
+                                                    <div class="resp__head">
+                                                        <span class="resp__lbl">{r.label}</span>
+                                                        <span class="resp__pct">{r.pct}%</span>
+                                                    </div>
+                                                    <div class="resp__bar"><div class="resp__fill" style={r.barStyle}></div></div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    <template lwc:if={q.isText}>
+                                        <ul class="top-list">
+                                            <template for:each={q.topResponses} for:item="t">
+                                                <li key={t.key}>{t.text}</li>
+                                            </template>
+                                        </ul>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty">No questions configured.</div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+        <template lwc:else>
+            <div class="empty card">No survey configured for this event.</div>
+        </template>
+    </section>
+</template>

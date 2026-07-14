@@ -1,0 +1,143 @@
+<template>
+	<div class="modal-overlay" onclick={handleBackdropClick}>
+		<div class="modal-container" onclick={handleModalClick}>
+			<div class="modal-header">
+				<h2 class="modal-title">{modalTitle}</h2>
+				<button type="button" class="close-button" onclick={handleClose} aria-label="Close">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<!-- Title -->
+				<div class="form-field">
+					<label class="field-label">Title<span class="required">*</span></label>
+					<lightning-input
+						type="text"
+						variant="label-hidden"
+						value={title}
+						placeholder="Enter title"
+						max-length={titleMaxLength}
+						onchange={handleTitleChange}
+						class={titleErrorClass}>
+					</lightning-input>
+					<template if:true={errors.title}>
+						<div class="error-message">{errors.title}</div>
+					</template>
+				</div>
+
+				<div class="two-column-row">
+					<div class="form-field assign-to-field">
+						<label class="field-label">Assign to<span class="required">*</span></label>
+						<div class="assign-to-options">
+							<label class="assign-to-option">
+								<input
+									type="radio"
+									name="assignTo"
+									value="mentor"
+									checked={isAssignToMentor}
+									onchange={handleAssignToChange} />
+								<span>Mentor</span>
+							</label>
+							<label class="assign-to-option">
+								<input
+									type="radio"
+									name="assignTo"
+									value="mentee"
+									checked={isAssignToMentee}
+									onchange={handleAssignToChange} />
+								<span>Mentee</span>
+							</label>
+						</div>
+						<template if:true={errors.assignTo}>
+							<div class="error-message">{errors.assignTo}</div>
+						</template>
+					</div>
+					<div class="form-field">
+						<template if:true={showAssigneeSelector}>
+							<label class="field-label">{assigneeLabel}<span class="required">*</span></label>
+							<lightning-combobox
+								variant="label-hidden"
+								value={selectedMentor}
+								options={assigneeOptions}
+								placeholder={assigneePlaceholder}
+								disabled={isAssigneeDisabled}
+								onchange={handleMentorChange}
+								class={assigneeErrorClass}>
+							</lightning-combobox>
+							<template if:true={errors.assignee}>
+								<div class="error-message">{errors.assignee}</div>
+							</template>
+							<template if:true={noAssigneeMessage}>
+								<p class="field-error-note">{noAssigneeMessage}</p>
+							</template>
+						</template>
+					</div>
+				</div>
+
+				<div class="two-column-row">
+					<!-- End Date (Optional) -->
+					<div class="form-field">
+						<label class="field-label">End Date (Optional)</label>
+						<div class="date-input-group">
+							<lightning-input
+								type="date"
+								variant="label-hidden"
+								value={endDate}
+								min={minEndDate}
+								onchange={handleEndDateChange}
+								class={endDateErrorClass}>
+							</lightning-input>
+						</div>
+						<template if:true={errors.endDate}>
+							<div class="error-message">{errors.endDate}</div>
+						</template>
+					</div>
+					<div class="form-field-spacer" aria-hidden="true"></div>
+				</div>
+
+				<div class="two-column-row">
+					<!-- Status -->
+					<div class="form-field">
+						<label class="field-label">Status<span class="required">*</span></label>
+						<lightning-combobox
+							variant="label-hidden"
+							value={status}
+							options={statusOptions}
+							placeholder="Select status"
+							onchange={handleStatusChange}
+							class={statusErrorClass}>
+						</lightning-combobox>
+						<template if:true={errors.status}>
+							<div class="error-message">{errors.status}</div>
+						</template>
+					</div>
+
+					<!-- Priority (Optional) -->
+					<div class="form-field">
+						<label class="field-label">Priority (Optional)</label>
+						<lightning-combobox
+							variant="label-hidden"
+							value={priority}
+							options={priorityOptions}
+							placeholder="Select priority"
+							onchange={handlePriorityChange}
+							class="custom-select">
+						</lightning-combobox>
+					</div>
+				</div>
+
+				<!-- Description (Optional) -->
+				<div class="form-field">
+					<label class="field-label">Description (Optional)</label>
+					<c-ken-rich-text-editor value={descriptionHtml} placeholder="Add a brief description" onchange={handleDescriptionChange}></c-ken-rich-text-editor>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="cancel-button" onclick={handleClose}>Cancel</button>
+				<button type="button" class="save-button" onclick={handleSave}>Save</button>
+			</div>
+		</div>
+	</div>
+</template>

@@ -1,0 +1,91 @@
+:host {
+    --a2-secondary-500: #3061FF;
+    --a2-secondary-700: #1E47CC;
+    --a2-secondary-50:  #F4F7FF;
+    --a2-bg: #F1F1F1;
+    --a2-blacks-400: #373A45;
+    --a2-blacks-200: #9DA0A8;
+    --a2-blacks-100: #C2C5CC;
+    --a2-blacks-50:  #E5E6E8;
+    display: block;
+    background: var(--a2-bg);
+    font-family: "General Sans", "Inter", system-ui, sans-serif;
+    color: var(--a2-blacks-400);
+}
+
+.ev-page { padding: 0; min-height: 100%; }
+
+.ev-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #111827; color: #fff; padding: 12px 22px; border-radius: 8px;
+    font-weight: 500; font-size: 14px; z-index: 10000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
+.page { padding: 24px; }
+.page__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 16px; }
+.page__title { margin: 0; font-weight: 700; font-size: 24px; }
+.page__subtitle { margin: 4px 0 0; font-weight: 500; font-size: 14px; color: var(--a2-blacks-100); }
+
+.section { background: #fff; border-radius: 12px; padding: 18px 20px; border: 1px solid var(--a2-blacks-50); margin-bottom: 14px; }
+.section__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.section__title { margin: 0; font-weight: 600; font-size: 16px; }
+
+.featured { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 900px) { .featured { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .featured { grid-template-columns: 1fr; } }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 14px; }
+.up-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+@media (max-width: 1100px) { .up-list { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px)  { .up-list { grid-template-columns: 1fr; } }
+
+.empty-state { text-align: center; padding: 40px 20px; }
+.empty-state__img { width: 90px; height: 90px; margin: 0 auto 12px; background: #F2F4F8; border-radius: 50%; }
+.empty-state__t { font-weight: 500; font-size: 13px; color: var(--a2-blacks-200); margin: 0 0 14px; }
+
+.empty-feed { text-align: center; padding: 40px 20px; font-size: 14px; color: var(--a2-blacks-200); }
+
+.empty.empty--card {
+    text-align: center;
+    padding: 48px 24px;
+    background: #fff;
+    border: 1px dashed var(--a2-blacks-50);
+    border-radius: 12px;
+}
+.empty.empty--card .empty__icon {
+    font-size: 36px;
+    margin-bottom: 12px;
+    line-height: 1;
+}
+.empty.empty--card .empty__title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 6px;
+    color: var(--a2-blacks-400);
+}
+.empty.empty--card .empty__copy {
+    font-size: 13px;
+    color: var(--a2-blacks-200);
+    margin: 0 0 16px;
+}
+
+.btn { height: 38px; padding: 0 18px; border-radius: 8px; font-family: inherit; font-weight: 500; font-size: 13px; cursor: pointer; border: 1.5px solid transparent; }
+.btn--primary { background: var(--a2-secondary-500); color: #fff; border-color: var(--a2-secondary-500); }
+.btn--primary:hover { background: var(--a2-secondary-700); }
+.page__head .btn { min-width: 160px; }
+.btn--outline { background: #fff; color: #373A45; border-color: #E5E6E8; }
+.btn--outline:hover { border-color: #B5C5FF; color: #3061FF; }
+.btn--danger-outline { background: #fff; color: #dc2626; border-color: #f3c2c2; }
+.btn--danger-outline:hover { background: #fef2f2; }
+
+/* Hosted "View All" categorisation */
+.hosted-cat { font-size: 13px; font-weight: 700; color: #5B5E68; text-transform: uppercase; letter-spacing: .4px; margin: 18px 0 10px; }
+.hosted-cat--upcoming { color: #1A358C; }
+.hosted-cat--cancelled { color: #b91c1c; }
+.hosted-cat--completed { color: #19A974; }
+.hosted-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.hosted-row--muted { opacity: .72; }
+.host-info { font-size: 12px; color: #5B5E68; margin: 2px 0 4px; }
+.host-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.host-actions .btn { height: 32px; padding: 0 14px; font-size: 12px; }

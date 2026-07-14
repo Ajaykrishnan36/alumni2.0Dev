@@ -1,0 +1,36 @@
+.onboarding-container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Tablet Media Query (Between 601px and 1024px) */
+@media only screen and (min-width: 601px) and (max-width: 1024px) {
+    :host {
+        display: block;
+        height: auto;
+        overflow-y: auto;
+    }
+    .onboarding-container {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+    }
+}
+
+/* Mobile Media Query (max-width 600px) */
+@media only screen and (max-width: 600px) {
+    :host {
+        display: block;
+        height: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+    }
+    .onboarding-container {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+        display: block; /* Ensure it behaves as a block for scrolling */
+    }
+}

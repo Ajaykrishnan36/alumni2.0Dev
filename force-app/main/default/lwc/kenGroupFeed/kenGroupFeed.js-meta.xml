@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>60.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Ken Group Feed</masterLabel>
+    <description>Custom Chatter-powered feed for a Ken_Group__c record. Renders posts, comments, likes, polls and image attachments.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__RecordPage">
+            <objects>
+                <object>Ken_Group__c</object>
+            </objects>
+            <property name="forceMember" type="Boolean" label="Force Member Mode" description="Skip the membership gate so admins always see the composer (internal record page use)." default="false" />
+        </targetConfig>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="groupId" type="String" label="Group Id" description="Ken_Group__c record id (community context)." />
+            <property name="isMember" type="Boolean" label="Is Member" description="If true, the composer is shown." default="true" />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

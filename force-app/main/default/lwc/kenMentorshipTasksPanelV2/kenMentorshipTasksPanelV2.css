@@ -1,0 +1,22 @@
+.card{background:#fff;border-radius:12px;border:1px solid #E5E6E8;padding:20px 22px;margin-bottom:16px}
+.card__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.card__title{margin:0;font-weight:600;font-size:16px;color:#1F2937}
+.add-task{font-weight:600;font-size:12px;color:#3061FF;background:none;border:0;cursor:pointer;font-family:inherit}
+.task{padding:10px 12px;border:1px solid #E5E6E8;border-radius:10px;margin-bottom:8px;background:#fff;cursor:pointer}
+.task__head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.task__title{margin:0;font-weight:600;font-size:13px;color:#1F2937;flex:1;min-width:0}
+.task__desc{margin:0 0 4px;font-size:11px;color:#5C5F6B;line-height:1.4}
+.task__meta{margin:0;font-size:11px;color:#5C5F6B}
+.priority--high{color:#DC5959;font-weight:600}
+.pill{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.pill--progress{background:#FFF7E6;color:#F59E0B}
+.pill--done{background:#E6F7EF;color:#19A974}
+
+/* Empty state for tasks panel. */
+.tasks-empty { text-align: center; padding: 22px 14px; }
+.tasks-empty__icon { font-size: 26px; line-height: 1; margin-bottom: 6px; }
+.tasks-empty__title { margin: 0; font-size: 14px; font-weight: 600; color: #373A45; }
+.tasks-empty__sub { margin: 4px 0 0; font-size: 12px; color: #9DA0A8; }
+/* Truncate long task titles/descriptions. */
+.task__title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task__desc { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; word-break: break-word; }

@@ -1,0 +1,49 @@
+<template>
+    <div class="my-business-card" onclick={handleCardClick}>
+        <!-- Status Badge - Top Right Corner -->
+        <div class={statusClass}>
+            <template if:true={isRejected}>
+                <lightning-icon icon-name="utility:info" size="xx-small" class="info-icon"></lightning-icon>
+            </template>
+            {business.status}
+        </div>
+
+        <div class="card-content">
+            <!-- Left: Icon -->
+            <div class="business-icon-container">
+                <div class="business-icon">
+                    <lightning-icon icon-name="utility:user" size="small" class="icon-inside"></lightning-icon>
+                </div>
+            </div>
+
+            <!-- Middle: Business Details -->
+            <div class="business-details">
+                <h3 class="business-name">{business.name}</h3>
+                
+                <!-- Location -->
+                <div class="location-info">
+                    <lightning-icon icon-name="utility:location" size="xx-small" class="location-icon"></lightning-icon>
+                    <span class="location-text">{business.location}</span>
+                </div>
+
+                <!-- Category Tag -->
+                <template if:false={isRejected}>
+                    <div class="category-badge">{business.category}</div>
+                </template>
+
+                <!-- Feature status chip (reason is shown on the detail page when clicked) -->
+                <template if:true={hasFeatureLabel}>
+                    <div class={featureLabelClass}>{featureLabel}</div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Rejection Reason (if rejected) -->
+        <template if:true={isRejected}>
+            <div class="rejection-section">
+                <div class="rejection-label">Reason for rejection:</div>
+                <div class="rejection-text">{business.rejectionReason}</div>
+            </div>
+        </template>
+    </div>
+</template>

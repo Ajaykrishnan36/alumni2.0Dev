@@ -1,0 +1,79 @@
+:host { display: contents; }
+
+.modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15,23,42,0.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; padding: 32px 24px; overflow-y: auto;
+    font-family: "General Sans", "Inter", system-ui, sans-serif;
+}
+.modal {
+    background: #fff; border-radius: 14px;
+    width: 100%; max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    overflow: hidden;
+}
+
+.modal__head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    padding: 20px 22px; border-bottom: 1px solid #F1F5F9; gap: 12px;
+}
+.modal__title { font-size: 16px; font-weight: 700; color: #111827; margin: 0; }
+.modal__sub   { font-size: 12px; color: #6B7280; margin: 4px 0 0; font-weight: 500; }
+.modal__close {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 0; background: transparent; cursor: pointer;
+    font-size: 20px; color: #6B7280; line-height: 1;
+}
+.modal__close:hover { background: #F6F8FB; color: #111827; }
+
+.modal__body { padding: 18px 22px; max-height: 65vh; overflow-y: auto; }
+.block-h { font-size: 11px; font-weight: 700; text-transform: uppercase;
+           letter-spacing: 0.5px; color: #8A8D96; margin: 14px 0 8px; }
+.block-h:first-child { margin-top: 0; }
+
+/* ===== DAYS ===== */
+.days { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.day {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 10px 6px; border-radius: 10px;
+    border: 1px solid #E5E6E8; background: #fff; cursor: pointer;
+    font-family: inherit;
+}
+.day:hover { border-color: #B5C5FF; }
+.day__name { font-size: 10px; color: #8A8D96; font-weight: 600; text-transform: uppercase; }
+.day__num  { font-size: 18px; font-weight: 700; color: #111827; }
+.day__mon  { font-size: 10px; color: #8A8D96; font-weight: 500; }
+.day--selected {
+    background: #3061FF; border-color: #3061FF;
+}
+.day--selected .day__name,
+.day--selected .day__num,
+.day--selected .day__mon { color: #fff; }
+
+/* ===== SLOTS ===== */
+.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.slot {
+    padding: 10px; border-radius: 8px;
+    border: 1px solid #E5E6E8; background: #fff; cursor: pointer;
+    font-family: inherit; font-size: 12.5px; font-weight: 600; color: #1F2937;
+    text-align: center;
+}
+.slot:hover { border-color: #B5C5FF; }
+.slot--selected { background: #3061FF; color: #fff; border-color: #3061FF; }
+
+/* ===== FOOTER ===== */
+.modal__foot {
+    display: flex; gap: 8px; justify-content: flex-end;
+    padding: 14px 22px; border-top: 1px solid #F1F5F9; background: #F6F8FB;
+}
+.btn {
+    height: 36px; padding: 0 18px; border-radius: 8px;
+    font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    border: 1.5px solid transparent;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.btn--primary { background: #3061FF; color: #fff; border-color: #3061FF; }
+.btn--primary:hover { background: #1E47CC; }
+.btn--ghost { background: #fff; color: #1F2937; border-color: #E5E6E8; }
+.btn--ghost:hover { background: #F6F8FB; }

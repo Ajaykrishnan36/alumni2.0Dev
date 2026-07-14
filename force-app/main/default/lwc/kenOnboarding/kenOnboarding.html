@@ -1,0 +1,14 @@
+<template>
+	<div class="onboarding-container">
+		<c-ken-registration-header
+			first-name={headerFirstName}
+			last-name={headerLastName}
+			profile-image-url={headerProfileImageUrl}
+			onlogout={handleLogout}>
+		</c-ken-registration-header>
+		<c-ken-registration-stepper 
+			oncomplete={handleComplete} 
+			onprofilechange={handleProfileChange}>
+		</c-ken-registration-stepper>
+	</div>
+</template>

@@ -1,0 +1,111 @@
+:host {
+    --violet: #4f46e5;
+    --violet-d: #3730a3;
+    --violet-l: #eef2ff;
+    --grey: #9aa0a6;
+    --line: #e5e7eb;
+    display: block;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: #1a1a2e;
+}
+/* Force every descendant element to inherit the host's sans-serif — kills the browser-
+   default serif/sans drift on legends, fieldsets, buttons, inputs, etc. */
+.prefs, .prefs *,
+.prefs fieldset, .prefs legend,
+.prefs h2, .prefs h3, .prefs p, .prefs span, .prefs label,
+.prefs input, .prefs button, .prefs select, .prefs textarea {
+    font-family: inherit;
+}
+.prefs { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.prefs__hd .prefs__title { margin: 0; font-size: 22px; font-weight: 700; color: var(--violet-d); line-height: 1.25; }
+.prefs__hd .sub { margin: 4px 0 0; color: var(--grey); font-size: 14px; }
+.muted { color: var(--grey); padding: 14px 0; }
+.err { color: #b3261e; background: #fdecea; padding: 10px 14px; border-radius: 8px; }
+.ok { color: #1e7a4d; background: #e7f6ee; padding: 10px 14px; border-radius: 8px; font-weight: 600; }
+
+.card { border: 1px solid var(--line); border-radius: 14px; background: #fff; padding: 18px 20px; }
+.card h3, .card .card__section-title {
+    margin: 0 0 12px; font-size: 13px; font-weight: 700; letter-spacing: .5px;
+    color: var(--violet-d); text-transform: uppercase;
+}
+.row { display: flex; gap: 16px; margin-top: 12px; }
+.row > * { flex: 1; }
+.spacer { height: 14px; }
+
+.toggle { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #333; cursor: pointer; }
+.toggle input { width: 18px; height: 18px; accent-color: var(--violet); }
+.toggle--inline { margin-top: 26px; white-space: nowrap; }
+
+.cap { display: flex; gap: 16px; align-items: flex-start; }
+.cap > lightning-input { flex: 1; }
+
+.prefs__ft { display: flex; justify-content: flex-end; gap: 10px; padding-bottom: 24px; }
+.btn { border-radius: 8px; padding: 10px 22px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1px solid var(--violet); }
+.btn--solid { background: var(--violet); color: #fff; }
+.btn--solid:hover:not(:disabled) { background: var(--violet-d); }
+.btn--solid:disabled { background: #c3c7d9; border-color: #c3c7d9; cursor: not-allowed; }
+.btn--ghost { background: #fff; color: var(--violet-d); }
+.btn--ghost:hover { background: var(--violet-l); }
+
+/* ===== Native field styling for the time + number inputs =====
+   The previous lightning-input wrappers leaked oversized clock SVGs from their
+   shadow DOM in LWR community pages. The HTML uses native <input> now; this owns
+   the look. */
+.prefs-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+.prefs-field--grow { flex: 1; }
+.prefs-field__label {
+    font-size: 12px; font-weight: 600; color: #374151; letter-spacing: .2px;
+}
+.prefs-field__input {
+    width: 100%; box-sizing: border-box;
+    height: 36px; padding: 0 10px;
+    font-size: 14px; color: #1a1a2e;
+    background: #fff;
+    border: 1px solid #d1d5db; border-radius: 8px;
+    transition: border-color .15s, box-shadow .15s;
+    font-family: inherit;
+}
+.prefs-field__input:focus {
+    outline: none; border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+.prefs-field__input:disabled { background: #f3f4f6; color: #9aa0a6; cursor: not-allowed; }
+
+/* ===== Native checkbox-group (replaces lightning-checkbox-group) =====
+   Browsers default <legend> to a thin serif-leaning font; we explicitly own it. */
+.prefs-group {
+    border: none;
+    padding: 0;
+    margin: 0 0 6px;
+}
+.prefs-group__legend {
+    display: block;
+    padding: 0;
+    margin: 0 0 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: .2px;
+    font-family: inherit;
+}
+.prefs-group__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    align-items: center;
+}
+.prefs-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #1a1a2e;
+    cursor: pointer;
+    padding: 4px 2px;
+    font-family: inherit;
+}
+.prefs-chip input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--violet);
+    margin: 0;
+}

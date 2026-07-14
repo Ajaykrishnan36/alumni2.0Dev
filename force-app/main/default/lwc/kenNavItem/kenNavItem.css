@@ -1,0 +1,171 @@
+:host {
+    /* Navigation menu item */
+}
+
+.nav-item {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    position: relative;
+}
+
+.nav-item-main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background: transparent;
+    width: 100%;
+    border-radius: 10px;
+}
+
+.nav-item-main:hover {
+    background: var(--nav-item-hover-bg, var(--secondary-color));
+}
+
+.nav-item.selected .nav-item-main {
+    background: var(--nav-item-active-bg, var(--secondary-color));
+}
+
+.nav-item.selected .nav-item-main:hover {
+    background: var(--nav-item-active-bg, var(--secondary-color));
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.nav-icon-mask {
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    background-color: var(--nav-item-icon, #9ca3af);
+}
+
+.nav-item.selected .nav-icon-mask {
+    background-color: var(--nav-item-active-icon, var(--primary-color));
+}
+
+.nav-item:not(.selected) .nav-icon-mask {
+    background-color: var(--nav-item-icon, #9ca3af);
+}
+
+.nav-text {
+
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 140%;
+    letter-spacing: 0%;
+    color: var(--nav-item-text, #373A45);
+    transition: color 0.2s ease-in-out;
+    flex: 1;
+}
+
+.nav-item.selected .nav-text {
+    color: var(--nav-item-active-text, var(--primary-color));
+    font-weight: 500;
+}
+
+.toggle-icon-wrapper {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.toggle-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.toggle-icon lightning-button-icon {
+    --slds-c-icon-color-foreground-default: var(--nav-item-icon, #9ca3af);
+}
+
+.nav-item.selected .toggle-icon lightning-button-icon {
+    --slds-c-icon-color-foreground-default: var(--nav-item-active-icon, var(--primary-color));
+}
+
+.sidenav-submenu {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0 0;
+    padding-left: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 100%;
+}
+
+.submenu-item {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: block;
+}
+
+.nav-text.collapsed {
+    
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 140%;
+    letter-spacing: 0%;
+    color: #373A45;
+    transition: color 0.2s ease-in-out;
+    display: inline-block;
+    width: 200px;
+    padding-left: 10px;
+}
+
+.nav-tooltip {
+    position: fixed;
+    background: rgba(23, 32, 52, 0.92);
+    color: #ffffff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
+    pointer-events: none;
+    z-index: 2147483647;
+}
+
+.nav-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -6px;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent rgba(23, 32, 52, 0.92) transparent transparent;
+}
+
+@media (max-width: 768px) {
+    .nav-item {
+        padding: 1px;
+    }
+
+    .nav-item-main {
+        border-radius: 6px !important;
+    }
+
+    .nav-text {
+        font-size: 16px !important;
+    }
+
+    .nav-item.selected {
+        background: var(--primary-color);
+        border-radius: 6px !important;
+    }
+}

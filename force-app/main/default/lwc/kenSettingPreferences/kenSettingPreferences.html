@@ -1,0 +1,137 @@
+<template>
+    <div class="preferences-container">
+        <h1 class="header-title">Preferences</h1>
+
+        <template if:true={error}>
+            <div class="error-banner">{error}</div>
+        </template>
+
+        <template if:true={isLoading}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={isSaving}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Saving" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <!-- Private Account -->
+            <div class="card private-account-card">
+                <div class="toggle-wrapper">
+                    <label class="custom-toggle">
+                        <input type="checkbox" checked={isPrivateAccount} onchange={handlePrivateAccountChange} />
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="card-content">
+                    <h2 class="card-title">Private Account</h2>
+                    <p class="card-desc">Your profile details will stay hidden until you connect with others.</p>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="card notifications-card">
+                <h2 class="section-title">Notifications</h2>
+                <div class="form-grid">
+
+                    <!-- Method of Communication -->
+                    <div class="form-group row-group">
+                        <label class="field-label">Preferred method of communication</label>
+                        <div class="checkbox-group">
+                            <template for:each={commMethods} for:item="opt">
+                                <label key={opt.value} class="custom-checkbox-wrapper">
+                                    <input type="checkbox" class="custom-checkbox-input" checked={opt.checked}
+                                           data-value={opt.value} onchange={handleCommChange} />
+                                    <span class="custom-checkbox-box"></span>
+                                    <span class="custom-checkbox-label">{opt.label}</span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Frequency -->
+                    <div class="form-group row-group">
+                        <label class="field-label">How often would you like to hear from us?</label>
+                        <div class="radio-group-custom">
+                            <template for:each={freqOptions} for:item="opt">
+                                <label key={opt.value} class="custom-radio-wrapper">
+                                    <input type="radio" name="frequency" class="custom-radio-input"
+                                           value={opt.value} checked={opt.checked} onchange={handleFreqChange} />
+                                    <span class="custom-radio-circle"></span>
+                                    <span class="custom-radio-label">{opt.label}</span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Real-time -->
+                    <div class="form-group row-group-small">
+                        <label class="field-label">Notify in real-time</label>
+                        <div class="radio-group-custom">
+                            <label class="custom-radio-wrapper">
+                                <input type="radio" name="realtime" class="custom-radio-input"
+                                       value="on" checked={isNotifyRealTimeOn} onchange={handleRealTimeChange} />
+                                <span class="custom-radio-circle"></span>
+                                <span class="custom-radio-label">On</span>
+                            </label>
+                            <label class="custom-radio-wrapper">
+                                <input type="radio" name="realtime" class="custom-radio-input"
+                                       value="off" checked={isNotifyRealTimeOff} onchange={handleRealTimeChange} />
+                                <span class="custom-radio-circle"></span>
+                                <span class="custom-radio-label">Off</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Notify me for -->
+                    <div class="form-group full-width-small">
+                        <label class="field-label">Notify me for</label>
+                        <div class="custom-dropdown-wrapper">
+                            <div class="custom-dropdown-box" onclick={toggleNotifyForDropdown}>
+                                <span class={notifyForLabelClass}>{notifyForLabel}</span>
+                                <span class="dropdown-arrow">&#9660;</span>
+                            </div>
+                            <template if:true={showNotifyForDropdown}>
+                                <div class="dropdown-menu">
+                                    <template for:each={notifyForOptions} for:item="opt">
+                                        <div key={opt.value} class="dropdown-item" onclick={handleToggleNotifyFor} data-value={opt.value}>
+                                            <span class={opt.tickClass}>&#10003;</span>
+                                            {opt.label}
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer-actions">
+                <button class="btn btn-outline" onclick={handleDiscard} disabled={isSaving}>Discard Changes</button>
+                <button class="btn btn-primary" onclick={handleSave} disabled={isSaving}>Save Changes</button>
+            </div>
+        </template>
+    </div>
+
+    <!-- Confirm Private Modal -->
+    <template lwc:if={showModal}>
+        <div class="modal-backdrop"></div>
+        <div class="modal">
+            <div class="modal-content">
+                <p>Are you sure you want to make your account private?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick={closeModal}>Cancel</button>
+                <button class="btn btn-primary" onclick={confirmPrivate}>Yes</button>
+            </div>
+        </div>
+    </template>
+
+    <c-ken-status-popup visible={showSuccessPopup} message="Preferences saved successfully" variant="success"></c-ken-status-popup>
+</template>

@@ -1,0 +1,133 @@
+<aura:component implements="forceCommunity:themeLayout">
+	<aura:attribute name="search" type="Aura.Component[]" required="false" />
+	<aura:attribute name="navBar" type="Aura.Component[]" required="false" />
+  	<aura:attribute name="profileMenu" type="Aura.Component[]" required="false" />
+  	
+	<div class="connectedU" style="overflow-x: hidden;">
+
+		<!-- ****** header ***** -->
+		<header class="header navbar">
+			<div class="slds-grid slds-gutters nav">
+				<div class="slds-col slds-size_5-of-12 slds-medium-size_2-of-12 slds-large-size_2-of-12 logo"><c:QBranchBrandLogo></c:QBranchBrandLogo></div>
+				<nav class="slds-col slds-size_4-of-12 slds-medium-size_8-of-12 slds-large-size_8-of-12 navmenu">{!v.navBar}</nav>
+				<div class="slds-col slds-size_3-of-12 slds-medium-size_2-of-12 slds-large-size_2-of-12 profileMenu">
+					<div class="profileItems">
+						<div><forceCommunity:notifications/></div>
+						<div>{!v.profileMenu}</div>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<!-- ****** body ***** -->
+		<section class="content">
+			{!v.body}
+		</section>
+
+		<!-- ****** footer ***** -->
+		<footer class="footer">
+			<div class="slds-col links">
+				<div class="container slds-grid slds-wrap slds-gutters">
+					<div class="slds-col slds-medium-size_4-of-12 slds-large-size_4-of-12 social-media">
+
+						<div class="slds-grid slds-wrap">
+							<div class="slds-col">
+								<!-- social media icons -->
+								<div>
+									<ul class="slds-list_horizontal">
+										<li>
+											<span class="fa-stack fa-xs">
+												<i class="fa-light fa-circle fa-stack-2x"></i>
+												<i class="fab fa-instagram fa-stack-1x fa-inverse"></i>
+											</span>
+										</li>
+										<li>
+											<span class="fa-stack fa-xs">
+												<i class="fa-light fa-circle fa-stack-2x"></i>
+												<i class="fab fa-twitter fa-stack-1x fa-inverse"></i>
+											</span>
+										</li>
+										<li>
+											<span class="fa-stack fa-xs">
+												<i class="fa-light fa-circle fa-stack-2x"></i>
+												<i class="fab fa-linkedin-in fa-stack-1x fa-inverse"></i>
+											</span>
+										</li>
+										<li>
+											<span class="fa-stack fa-xs">
+												<i class="fa-light fa-circle fa-stack-2x"></i>
+												<i class="fab fa-facebook-f fa-stack-1x fa-inverse"></i>
+											</span>
+										</li>
+									</ul>
+								</div>
+							</div>
+							<div class="slds-col">
+								<!-- address -->
+								<p>11721 Telegraph Rd</p>
+								<p>Santa Fe Springs, CA 90670</p>
+								<p>(100) 123-4567</p>
+							</div>
+						</div>
+
+					</div>
+					<div class="slds-col slds-medium-size_8-of-12 slds-large-size_8-of-12 footer-links">
+
+						<!-- Links -->
+						<div class="slds-grid slds-wrap slds-gutters link-cols">
+							<div class="slds-col slds-size_12-of-12 slds-medium-size_4-of-12 slds-large-size_4-of-12">
+								<!-- Stay Connected -->
+								<h3>Stay Connected</h3>
+								<ul>
+									<li>Get  Involved</li>
+									<li>Follow Us</li>
+									<li>Contact Us</li>
+									<li>Visit Us</li>
+									<li>Maps &amp; Directions</li>
+									<li>Jobs</li>
+								</ul>
+							</div>
+							<div class="slds-col slds-size_12-of-12 slds-medium-size_4-of-12 slds-large-size_4-of-12">
+								<!-- Quick Links -->
+								<h3>Quick Links</h3>
+								<ul>
+									<li>Admissions</li>
+									<li>Upcoming Events</li>
+									<li>Foundation</li>
+									<li>Login</li>
+								</ul>
+							</div>
+							<div class="slds-col slds-size_12-of-12 slds-medium-size_4-of-12 slds-large-size_4-of-12">
+								<!-- Learn More -->
+								<h3>Learn More</h3>
+								<ul>
+									<li>Degree Programs</li>
+									<li>Yoon School of Environmental Science</li>
+									<li>Courses &amp; Events</li>
+								</ul>
+							</div>
+						</div>
+						
+					</div>	
+				</div>
+			</div>
+			<div class="slds-col legal">
+				<ul class="slds-list_horizontal">
+					<li><a href="#">Legal</a></li>
+					<li><a href="#">Terms of Service</a></li>
+					<li><a href="#">Privacy Info</a></li>
+					<li><a href="#">Responsible Disclosure</a></li>
+					<li><a href="#">Trust</a></li>
+					<li><a href="#">Contact</a></li>
+					<li><a href="#">Manage Cookies</a></li>
+				</ul>
+				<p>
+					&copy; 2023 Salesforce
+					&nbsp;•&nbsp;
+					This is a demo site for Salesforce demo purposes only.
+				</p>
+			</div>
+		</footer>
+
+	</div>
+</aura:component>

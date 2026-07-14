@@ -1,0 +1,4 @@
+:host { display: inline-block; }
+.badge { background: #8A8D96; color: #fff; font-size: 9.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.badge--help { background: linear-gradient(90deg, #8A38F5, #C026D3); }
+.badge--online { background: #19A974; }

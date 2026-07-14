@@ -1,0 +1,3 @@
+<aura:event type="Application" description="Event to enable/disable the webcam">
+    <aura:attribute name="enableWebcam" type="Boolean"/>
+</aura:event>

@@ -1,0 +1,46 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="events">
+        <section class="re-page">
+            <template lwc:if={isList}>
+                <c-ken-registered-events-list-v2
+                    events={events}
+                    onviewdetails={handleViewDetails}
+                    onsubmitfeedback={handleSubmitFeedback}
+                    onjoin={handleJoin}>
+                </c-ken-registered-events-list-v2>
+            </template>
+
+            <template lwc:elseif={isDetails}>
+                <c-ken-event-record-v2
+                    event={selectedEvent}
+                    onback={handleBack}
+                    onviewsummary={handleViewSummary}
+                    onsubmitfeedback={handleSubmitFeedback}
+                    onjoin={handleJoin}
+                    onnotify={handleNotify}>
+                </c-ken-event-record-v2>
+            </template>
+
+            <template lwc:elseif={isSummary}>
+                <c-ken-event-reg-summary-v2
+                    event={selectedEvent}
+                    onback={handleBack}
+                    oncancelled={handleCancelled}
+                    onnotify={handleNotify}>
+                </c-ken-event-reg-summary-v2>
+            </template>
+
+            <template lwc:elseif={isSurvey}>
+                <c-ken-event-feedback-v2
+                    event={selectedEvent}
+                    onback={handleBack}
+                    onnotify={handleNotify}>
+                </c-ken-event-feedback-v2>
+            </template>
+
+            <template lwc:if={toastVisible}>
+                <div class="re-toast">{toastMessage}</div>
+            </template>
+        </section>
+    </c-ken42-alumni-shell-v2>
+</template>

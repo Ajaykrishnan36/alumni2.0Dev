@@ -1,0 +1,109 @@
+<template>
+    <div class="preferences-container">
+        <h1 class="header-title">Preferences</h1>
+
+        <!-- Private Account Section -->
+        <div class="card private-account-card">
+            <div class="toggle-wrapper">
+                <lightning-input type="toggle" label="Private Account" variant="label-hidden" checked={isPrivateAccount}
+                    message-toggle-active="" message-toggle-inactive="" onchange={handlePrivateAccountChange}>
+                </lightning-input>
+            </div>
+            <div class="card-content">
+                <h2 class="card-title">Private Account</h2>
+                <p class="card-desc">Your profile details will stay hidden until you connect with others.</p>
+            </div>
+        </div>
+
+        <!-- Notifications Section -->
+        <div class="card notifications-card">
+            <h2 class="section-title">Notifications</h2>
+
+            <div class="form-grid">
+                <!-- Method of Communication -->
+                <div class="form-group">
+                    <label class="field-label">Preferred method of communication</label>
+                    <div class="checkbox-group">
+                        <lightning-input type="checkbox" label="Email" name="email"></lightning-input>
+                        <lightning-input type="checkbox" label="SMS" name="sms" checked></lightning-input>
+                        <lightning-input type="checkbox" label="In-app" name="inapp"></lightning-input>
+                    </div>
+                </div>
+
+                <!-- Frequency -->
+                <div class="form-group">
+                    <label class="field-label">How often would you like to hear from us?</label>
+                    <div class="radio-group-custom">
+                        <div class="radio-option">
+                            <input type="radio" id="daily" name="frequency" checked />
+                            <label for="daily">Daily</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="weekly" name="frequency" />
+                            <label for="weekly">Weekly</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="monthly" name="frequency" />
+                            <label for="monthly">Monthly</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time -->
+                <div class="form-group">
+                    <label class="field-label">Notify in real-time</label>
+                    <div class="radio-group-custom">
+                        <div class="radio-option">
+                            <input type="radio" id="rt-on" name="realtime" />
+                            <label for="rt-on">On</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="rt-off" name="realtime" checked />
+                            <label for="rt-off">Off</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notify me for -->
+                <div class="form-group full-width">
+                    <label class="field-label">Notify me for</label>
+                    <div class="select-wrapper">
+                        <select class="custom-select">
+                            <option>Events, Jobs, Survey...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Do not notify between -->
+                <div class="form-group full-width">
+                    <label class="field-label">Do not notify me between</label>
+                    <div class="time-range">
+                        <div class="time-input-wrapper">
+                            <span class="placeholder">Start time</span>
+                            <span class="separator">--</span>
+                        </div>
+                        <div class="time-input-wrapper">
+                            <span class="placeholder">End time</span>
+                            <lightning-icon icon-name="utility:clock" size="x-small"
+                                class="clock-icon"></lightning-icon>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <template lwc:if={showModal}>
+        <div class="modal-backdrop"></div>
+        <div class="modal">
+            <div class="modal-content">
+                <p>Are you sure your want to make your account private?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick={closeModal}>Cancel</button>
+                <button class="btn btn-primary" onclick={confirmPrivate}>Yes</button>
+            </div>
+        </div>
+    </template>
+</template>

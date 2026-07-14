@@ -1,0 +1,47 @@
+<template>
+    <h2>3. Schedule Setup</h2>
+    <div class="grid-2">
+        <div class="field"><label>Start Date</label><input type="date" data-field="startDate" value={startDate} min={todayStr} oninput={handleInput}/></div>
+        <div class="field"><label>End Date</label><input type="date" data-field="endDate" value={endDate} min={endMinDate} oninput={handleInput}/></div>
+        <div class="field"><label>Start Time</label><input type="time" data-field="startTime" value={startTime} oninput={handleInput}/></div>
+        <div class="field"><label>End Time</label><input type="time" data-field="endTime" value={endTime} oninput={handleInput}/></div>
+    </div>
+    <div class="toggle-row">
+        <span>Multi-day event</span>
+        <button type="button" class={switchClass} onclick={handleToggleMultiDay}></button>
+    </div>
+
+    <template lwc:if={multiDayNeedsDates}>
+        <div class="day-breakdown day-breakdown--prompt">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3061FF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <p>Set a <strong>Start date</strong> and <strong>End date</strong> above to add speakers for each day.</p>
+        </div>
+    </template>
+
+    <template lwc:if={showDayBreakdown}>
+        <div class="day-breakdown">
+            <h3 class="day-breakdown__title">Speakers by Day</h3>
+            <p class="day-breakdown__hint">Add the speaker(s) presenting on each day of this event.</p>
+            <template for:each={dayRows} for:item="day">
+                <div key={day.date} class="day-card">
+                    <div class="day-card__head">{day.label}</div>
+                    <template lwc:if={day.hasSpeakers}>
+                        <div class="day-chips">
+                            <template for:each={day.speakers} for:item="sp">
+                                <span key={sp.key} class="day-chip">
+                                    {sp.name}
+                                    <button type="button" class="day-chip__x" data-date={day.date} data-name={sp.name} onclick={handleRemoveSpeaker} title="Remove speaker">×</button>
+                                </span>
+                            </template>
+                        </div>
+                    </template>
+                    <div class="day-add">
+                        <input type="text" class="day-add__input" placeholder="Add speaker name" value={day.draft}
+                               data-date={day.date} oninput={handleDraftInput} onkeydown={handleDraftKey} />
+                        <button type="button" class="day-add__btn" data-date={day.date} onclick={handleAddSpeaker}>+ Add</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
+</template>

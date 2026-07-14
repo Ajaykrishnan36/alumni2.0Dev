@@ -1,0 +1,52 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="giving">
+    <section class="page">
+        <div class="deprecated">
+            <div class="deprecated__icon">🎁</div>
+            <div class="deprecated__body">
+                <p class="deprecated__title">Fundraise has been replaced by Alumni Giving</p>
+                <p class="deprecated__text">Visit Giving for the latest experience, including new causes, recurring contributions, and tax receipts.</p>
+            </div>
+            <button type="button" class="btn btn--primary" data-href="/giving">Go to Giving</button>
+        </div>
+
+        <header class="page__head">
+            <div>
+                <h1 class="page__title">Fundraise <span class="badge">Legacy</span></h1>
+                <p class="page__subtitle">Snapshot of previous fundraising campaigns</p>
+            </div>
+        </header>
+        <nav class="tabs">
+            <template for:each={tabs} for:item="t">
+                <button key={t.id} type="button" class={t.tabClass} data-id={t.id} onclick={handleTab}>{t.label}</button>
+            </template>
+        </nav>
+        <div class="grid">
+            <template for:each={campaigns} for:item="c">
+                <article key={c.id} class="campaign">
+                    <div class="campaign__cover" style={c.coverStyle}>
+                        <span class="campaign__cause">{c.cause}</span>
+                        <span class="campaign__days">{c.days} days left</span>
+                    </div>
+                    <div class="campaign__body">
+                        <h3 class="campaign__title">{c.title}</h3>
+                        <p class="campaign__desc">{c.desc}</p>
+                        <div class="campaign__progress">
+                            <div class="campaign__bar"><span style={c.progressStyle}></span></div>
+                            <p class="campaign__amounts">
+                                <strong>{c.raisedLabel}</strong> <span class="campaign__goal">{c.goalLabel}</span>
+                            </p>
+                            <p class="campaign__meta">{c.pctLabel}  ·  {c.donors} donors</p>
+                        </div>
+                        <button type="button" class="btn btn--outline" onclick={handleContribute}>Contribute (via Giving)</button>
+                    </div>
+                </article>
+            </template>
+        </div>
+
+        <template lwc:if={toastVisible}>
+            <div class="toast">{toastMessage}</div>
+        </template>
+    </section>
+    </c-ken42-alumni-shell-v2>
+</template>

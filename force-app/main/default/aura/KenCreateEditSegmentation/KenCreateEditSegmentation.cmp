@@ -1,0 +1,3 @@
+<aura:component implements="lightning:actionOverride,force:hasRecordId,force:hasSObjectName" access="global">
+    <c:kenTargetAudienceSelection />
+</aura:component>

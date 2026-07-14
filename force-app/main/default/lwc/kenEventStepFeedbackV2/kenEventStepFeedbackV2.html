@@ -1,0 +1,39 @@
+<template>
+    <h2>5. Feedback Form</h2>
+    <p class="muted">Build the post-event feedback form attendees will fill out afterwards.</p>
+
+    <div class="toggle-row">
+        <span>Collect post-event feedback</span>
+        <button type="button" class={switchClass} onclick={handleToggleEnabled}></button>
+    </div>
+
+    <template lwc:if={enabled}>
+        <template for:each={questionsWithIndex} for:item="q">
+            <div key={q.id} class="fb-q">
+                <div class="fb-q__head">
+                    <span class="fb-q__num">Question {q.number}</span>
+                    <button type="button" class="fb-q__del" data-id={q.id} onclick={handleRemove} title="Remove">×</button>
+                </div>
+                <div class="field">
+                    <label>Question Text</label>
+                    <input type="text" placeholder="e.g. How likely are you to recommend this event?"
+                           value={q.text} data-id={q.id} oninput={handleText}/>
+                </div>
+                <div class="field">
+                    <label>Answer Type</label>
+                    <select value={q.type} data-id={q.id} onchange={handleType}>
+                        <template for:each={q.options} for:item="o">
+                            <option key={o.value} value={o.value}>{o.label}</option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+        </template>
+
+        <button type="button" class="fb-add" onclick={handleAdd}>+ Add feedback question</button>
+        <p class="fb-hint">These questions will be sent to attendees once the event concludes.</p>
+    </template>
+    <template lwc:else>
+        <p class="fb-hint">Post-event feedback is turned off for this event.</p>
+    </template>
+</template>

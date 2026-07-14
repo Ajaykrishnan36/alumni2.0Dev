@@ -1,0 +1,186 @@
+.dietary-required {
+    color: #c23934;
+    font-weight: 700;
+}
+
+.dietary-error {
+    color: #c23934;
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.pre-survey-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px 4px;
+}
+
+.info-banner-survey {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #EEF3FF;
+    border-radius: 10px;
+    padding: 14px 18px;
+    color: #3061FF;
+    font-size: 0.9375rem;
+    font-weight: 500;
+}
+
+.survey-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px 24px;
+}
+
+.survey-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.survey-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.survey-card-body {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Meals table */
+.meals-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.meals-table thead th {
+    background: #F6F8FB;
+    padding: 14px 16px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1F2937;
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.meals-table thead th.meal-date-col {
+    text-align: left;
+}
+
+.meals-table tbody td {
+    padding: 16px;
+    border-bottom: 1px solid #eef0f3;
+    text-align: center;
+}
+
+.meals-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.meal-date-cell {
+    text-align: left !important;
+}
+
+.meal-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9375rem;
+    color: #1F2937;
+    cursor: pointer;
+}
+
+.meal-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+}
+
+/* Sub-cards */
+.survey-subcard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 16px 18px;
+}
+
+.survey-subcard-column {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+}
+
+.survey-subcard-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.survey-subcard-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.survey-subcard-subtitle {
+    margin-top: 4px;
+    font-size: 0.8125rem;
+    color: #6B7280;
+}
+
+.dietary-divider {
+    height: 1px;
+    background: #eef0f3;
+}
+
+.dietary-help {
+    font-size: 0.875rem;
+    color: #374151;
+    font-weight: 500;
+}
+
+.dietary-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.dietary-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9375rem;
+    color: #1F2937;
+    cursor: pointer;
+}
+
+.custom-survey-section-title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 12px;
+}
+
+@media (max-width: 768px) {
+    .meals-table thead th,
+    .meals-table tbody td {
+        padding: 10px 8px;
+        font-size: 0.8125rem;
+    }
+    .dietary-options {
+        gap: 12px;
+    }
+}

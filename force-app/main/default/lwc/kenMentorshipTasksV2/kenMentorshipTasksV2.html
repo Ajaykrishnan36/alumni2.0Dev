@@ -1,0 +1,60 @@
+<template>
+    <section class="tk-card">
+        <header class="tk-head">
+            <h2 class="tk-title">Tasks</h2>
+            <template lwc:if={hasTasks}>
+                <button type="button" class="tk-add-btn" onclick={handleAddTask}>
+                    <span>+ Add A Task</span>
+                </button>
+            </template>
+        </header>
+
+        <template lwc:if={hasTasks}>
+            <div class="tk-list">
+                <template for:each={decorated} for:item="task">
+                    <article key={task.key} class="task-card" data-id={task.id} onclick={handleTaskClick}>
+                        <div class="task-card__top">
+                            <h4 class="task-card__title">{task.title}</h4>
+                            <span class={task.statusClass}>{task.status}</span>
+                        </div>
+                        <div class="task-card__mid">
+                            <div class="task-card__assignee">
+                                <div class="task-card__avatar" style={task.avatarStyle}>
+                                    <template lwc:if={task.showInitial}>{task.assigneeInitial}</template>
+                                </div>
+                                <span class="task-card__assignee-name">{task.assigneeName}</span>
+                            </div>
+                            <template lwc:if={task.description}>
+                                <p class="task-card__desc">{task.description}</p>
+                            </template>
+                        </div>
+                        <div class="task-card__bot">
+                            <span class={task.priorityClass}>
+                                <span class="priority__dot">&#9679;</span>
+                                <span>{task.priority}</span>
+                            </span>
+                            <span class="task-card__date">
+                                <span aria-hidden="true">&#128197;</span>
+                                <span>{task.dueDateLabel}</span>
+                            </span>
+                        </div>
+                    </article>
+                </template>
+            </div>
+        </template>
+
+        <template lwc:else>
+            <div class="tasks-empty">
+                <svg width="120" height="120" viewBox="0 0 200 200" aria-hidden="true">
+                    <rect x="60" y="40" width="80" height="120" rx="8" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="2"/>
+                    <rect x="80" y="32" width="40" height="16" rx="4" fill="#9CA3AF"/>
+                    <path d="M76 90 l8 8 l16-16" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <line x1="100" y1="120" x2="125" y2="120" stroke="#E5E7EB" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="75" y1="140" x2="125" y2="140" stroke="#E5E7EB" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+                <p class="tasks-empty__text">&mdash; No tasks &mdash;</p>
+                <button type="button" class="tasks-empty__cta" onclick={handleAddTask}>+ Add A Task</button>
+            </div>
+        </template>
+    </section>
+</template>

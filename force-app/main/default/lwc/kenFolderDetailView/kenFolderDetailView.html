@@ -1,0 +1,42 @@
+<template>
+    <div class="folder-detail-container with-bg">
+        <!-- Header -->
+        <div class="folder-header">
+            <h1 class="folder-title">{folderName}</h1>
+        </div>
+
+        <!-- Empty State -->
+        <template if:true={isEmpty}>
+            <div class="empty-state-container">
+                <div class="empty-state-content">
+                    <div class="empty-icon-wrapper">
+                        <lightning-icon
+                            icon-name="utility:file"
+                            size="large"
+                            class="empty-icon"
+                            alternative-text="No files"
+                        ></lightning-icon>
+                    </div>
+                    <h2 class="empty-title">No files available</h2>
+                    <p class="empty-description">
+                        This folder is empty.
+                    </p>
+                </div>
+            </div>
+        </template>
+
+        <!-- Files Grid -->
+        <template if:false={isEmpty}>
+            <div class="folder-files-grid">
+                <template for:each={files} for:item="file">
+                    <div key={file.id} class="file-grid-item">
+                        <c-ken-file-card
+                            file={file}
+                            onfileclick={handleFileClick}
+                        ></c-ken-file-card>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

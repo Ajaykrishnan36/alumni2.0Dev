@@ -1,0 +1,12 @@
+.header{
+    background-color: var(--lwc-colorTextLink);
+    color: #fff;
+}
+
+.header .slds-form-element__label {
+    color:#eee !important;
+}
+
+.slds-progress-bar__value {
+background: var(--lwc-colorTextLink) !important;
+}

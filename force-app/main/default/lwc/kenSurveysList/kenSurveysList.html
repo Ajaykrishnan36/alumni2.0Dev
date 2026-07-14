@@ -1,0 +1,270 @@
+<template>
+    <div class="surveys-list-page">
+        <!-- Header with Tabs and Actions -->
+        <div class="surveys-header">
+            <div class="tabs-container">
+                <button 
+                    class={approvedTabClass}
+                    data-tab="approved"
+                    onclick={handleTabChange}>
+                    Approved
+                </button>
+                <button 
+                    class={inReviewTabClass}
+                    data-tab="inReview"
+                    onclick={handleTabChange}>
+                    In Review
+                </button>
+                <button 
+                    class={rejectedTabClass}
+                    data-tab="rejected"
+                    onclick={handleTabChange}>
+                    Rejected
+                </button>
+            </div>
+            
+            <div class="header-actions">
+                <c-ken-search-bar placeholder="Search" onsearch={handleSearch}></c-ken-search-bar>
+                <button class="sort-btn" onclick={handleSortClick}>
+                    <span>Sort by</span>
+                    <svg class={sortIconClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                    </svg>
+                </button>
+                <button class="filters-btn" onclick={handleFiltersClick} data-filter-btn="true">
+                    <span>Filters</span>
+                    <svg class="filters-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9 15.75C9 15.5511 9.07902 15.3603 9.21967 15.2197C9.36032 15.079 9.55109 15 9.75 15H14.25C14.4489 15 14.6397 15.079 14.7803 15.2197C14.921 15.3603 15 15.5511 15 15.75C15 15.9489 14.921 16.1397 14.7803 16.2803C14.6397 16.421 14.4489 16.5 14.25 16.5H9.75C9.55109 16.5 9.36032 16.421 9.21967 16.2803C9.07902 16.1397 9 15.9489 9 15.75ZM6 11.25C6 11.0511 6.07902 10.8603 6.21967 10.7197C6.36032 10.579 6.55109 10.5 6.75 10.5H17.25C17.4489 10.5 17.6397 10.579 17.7803 10.7197C17.921 10.8603 18 11.0511 18 11.25C18 11.4489 17.921 11.6397 17.7803 11.7803C17.6397 11.921 17.4489 12 17.25 12H6.75C6.55109 12 6.36032 11.921 6.21967 11.7803C6.07902 11.6397 6 11.4489 6 11.25ZM3 6.75C3 6.55109 3.07902 6.36032 3.21967 6.21967C3.36032 6.07902 3.55109 6 3.75 6H20.25C20.4489 6 20.6397 6.07902 20.7803 6.21967C20.921 6.36032 21 6.55109 21 6.75C21 6.94891 20.921 7.13968 20.7803 7.28033C20.6397 7.42098 20.4489 7.5 20.25 7.5H3.75C3.55109 7.5 3.36032 7.42098 3.21967 7.28033C3.07902 7.13968 3 6.94891 3 6.75Z" fill="currentColor"/>
+                    </svg>
+                </button>
+                <button class="create-survey-btn" onclick={handleCreateSurvey}>
+                    Create New Survey
+                </button>
+            </div>
+        </div>
+
+        <!-- Survey Cards List -->
+        <div class="surveys-list-container">
+            <!-- Empty State -->
+            <template if:true={isEmptySurveys}>
+                <div class="surveys-empty-state">
+                    <img src={SurveyEmptyImageUrl} alt="No surveys" class="empty-state-image" />
+                    <h3 class="empty-state-title">No Surveys Found</h3>
+                    <p class="empty-state-message">{emptyStateMessage}</p>
+                    <template if:true={searchTerm}>
+                        <p class="empty-state-hint">Try adjusting your search terms.</p>
+                    </template>
+                </div>
+            </template>
+            
+            <!-- Surveys List -->
+            <template if:false={isEmptySurveys}>
+                <template for:each={filteredSurveys} for:item="survey">
+                <div 
+                    key={survey.id} 
+                    class={surveyCardClass}
+                    data-survey-status={survey.status}
+                    onclick={handleCardClick}
+                    data-survey-id={survey.id}>
+                    <template if:true={survey.status}>
+                        <template if:false={isInReviewTab}>
+                            <template if:false={isRejectedTab}>
+                                <div class={survey.statusClass}>
+                                    <template if:true={survey.showStatusIcon}>
+                                        <div class="status-icon"></div>
+                                    </template>
+                                    {survey.status}
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+                    <div class="survey-card-content">
+                        <div class="survey-left-section">
+                            <div class="survey-title-row">
+                                <div class="detail-item">
+                                    <span class="detail-label">{survey.title}</span>
+                                    <template if:true={survey.showReason}>
+                                        <span class="detail-value">
+                                            <span class="reason-label">Reason: </span>
+                                            <span class="reason-value">{survey.rejectionReason}</span>
+                                        </span>
+                                    </template>
+                                    <template if:false={survey.showReason}>
+                                        <span class="detail-value">
+                                            <span class="target-audience-label">Segmentation: </span>
+                                            <span class="target-audience-value">{survey.segmentationName}</span>
+                                        </span>
+                                    </template>
+                                </div>
+                                <template if:true={survey.showPeriod}>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Survey Period</span>
+                                        <span class="detail-value">{survey.surveyPeriod}</span>
+                                    </div>
+                                </template>
+                                <template if:true={survey.totalQuestions}>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Total Questions</span>
+                                        <span class="detail-value">{survey.totalQuestions}</span>
+                                    </div>
+                                </template>
+                                <template if:true={survey.showResponses}>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Responses</span>
+                                        <span class="detail-value">{survey.responses}</span>
+                                    </div>
+                                </template>
+                                <template if:true={survey.showSubmittedInTitleRow}>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Submitted on</span>
+                                        <span class="detail-value">{survey.submittedDate}</span>
+                                    </div>
+                                </template>
+                                <template if:true={survey.showRejected}>
+                                    <div class="detail-item">
+                                        <span class="detail-label">Rejected on</span>
+                                        <span class="detail-value">{survey.rejectedDate}</span>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="survey-details-row">
+                            </div>
+                        </div>
+                        <div class="survey-right-section">
+                            <template if:true={survey.showViewDetails}>
+                                <button class="view-details-btn" onclick={handleViewDetails} data-survey-id={survey.id}>
+                                    View Details
+                                </button>
+                            </template>
+                            <template if:true={survey.showEditResubmit}>
+                                <button class="edit-resubmit-btn" onclick={handleEditResubmit} data-survey-id={survey.id}>
+                                    Edit & Resubmit
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+                </template>
+            </template>
+        </div>
+
+        <!-- Filters Popup -->
+        <template if:true={showFiltersPopup}>
+            <div class="filters-overlay" onclick={handleFiltersOverlayClick}></div>
+            <div class="filters-popup" onclick={handleFiltersPopupClick} style={computedPopupStyle}>
+                <div class="filters-header">
+                    <h3 class="filters-title">Filters</h3>
+                </div>
+                <div class="filters-content">
+                    <div class="filter-field">
+                        <lightning-combobox
+                            label=""
+                            placeholder="Status"
+                            options={statusOptions}
+                            value={selectedStatus}
+                            onchange={handleStatusChange}
+                            variant="label-hidden"
+                            class="filter-combobox">
+                        </lightning-combobox>
+                    </div>
+                </div>
+                <div class="filters-actions">
+                    <button class="reset-filters-btn" onclick={handleResetFilters}>Reset Filters</button>
+                    <button class="apply-filters-btn" onclick={handleApplyFilters}>Apply</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Survey Details Modal -->
+        <template if:true={showDetailsModal}>
+            <div class="modal-overlay" onclick={handleCloseModal}></div>
+            <div class="modal-dialog" onclick={handleModalClick}>
+                <div class="modal-header">
+                    <div class="modal-title-section">
+                        <h2 class="modal-title">{selectedSurvey.title}</h2>
+                        <template if:true={selectedSurvey.status}>
+                            <div class={selectedSurvey.statusClass}>
+                                <template if:true={selectedSurvey.showStatusIcon}>
+                                    <div class="status-icon"></div>
+                                </template>
+                                {selectedSurvey.status}
+                            </div>
+                        </template>
+                    </div>
+                    <button class="modal-close-btn" onclick={handleCloseModal}>
+                        <lightning-icon icon-name="utility:close" size="small" class="close-icon"></lightning-icon>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <template if:true={selectedSurvey.showReason}>
+                        <div class="rejection-reason-box">
+                            <div class="rejection-reason-label">Reason for Rejection</div>
+                            <div class="rejection-reason-text">{selectedSurvey.rejectionReason}</div>
+                        </div>
+                    </template>
+                    <div class="modal-field">
+                        <label class="modal-field-label">Segmentation</label>
+                        <p class="modal-field-value">{selectedSurvey.segmentationName}</p>
+                    </div>
+                    <template if:true={selectedSurvey.showPeriod}>
+                        <div class="modal-field">
+                            <label class="modal-field-label">Survey Period</label>
+                            <p class="modal-field-value">{selectedSurvey.surveyPeriod}</p>
+                        </div>
+                    </template>
+                    <div class="modal-field">
+                        <label class="modal-field-label">Total Questions</label>
+                        <p class="modal-field-value">{selectedSurvey.totalQuestions}</p>
+                    </div>
+                </div>
+                <template if:true={showDeleteEditButtons}>
+                    <div class="modal-footer">
+                        <button class="delete-btn" onclick={handleDeleteClick}>
+                            Delete
+                        </button>
+                        <button class="edit-btn" onclick={handleEditClick}>
+                            Edit
+                        </button>
+                    </div>
+                </template>
+                <template if:true={showDownloadButton}>
+                    <div class="modal-footer">
+                        <button class="download-results-btn" onclick={handleDownloadResults} disabled={isDownloading}>
+                            {downloadButtonText}
+                        </button>
+                    </div>
+                </template>
+                <template if:true={showEditResubmitButton}>
+                    <div class="modal-footer">
+                        <button class="edit-resubmit-btn" onclick={handleEditResubmit} data-survey-id={selectedSurvey.id}>
+                            Edit & Resubmit
+                        </button>
+                    </div>
+                </template>
+                <template if:true={isDownloading}>
+                    <div class="modal-download-overlay">
+                        <lightning-spinner alternative-text="Preparing download" size="medium" variant="brand"></lightning-spinner>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Delete Confirmation Dialog -->
+        <template if:true={showDeleteConfirmation}>
+            <div class="modal-overlay" onclick={handleCloseDeleteConfirmation}></div>
+            <div class="delete-confirmation-dialog" onclick={handleDeleteDialogClick}>
+                <div class="delete-confirmation-content">
+                    <p class="delete-confirmation-message">
+                        Are you sure you want to delete this survey? 
+                    </p>
+                </div>
+                <div class="delete-confirmation-footer">
+                    <button class="go-back-btn" onclick={handleCloseDeleteConfirmation} disabled={isDeleting}>Go Back</button>
+                    <button class="request-deletion-btn" onclick={handleRequestDeletion} disabled={isDeleting}>
+                        {deleteButtonLabel}
+                    </button>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

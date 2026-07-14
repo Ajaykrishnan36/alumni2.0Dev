@@ -1,0 +1,368 @@
+/* Schedule Container */
+.schedule-container {
+    background: white;
+    padding: 0;
+    width: 100%;
+}
+
+.schedule-item-card {
+    width: 100%;
+    text-align: left;
+    background: white;
+    border: 1px solid #E9ECEF;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+/* Schedule Date Group */
+.schedule-date-group {
+    margin-bottom: 2rem;
+}
+
+.schedule-date-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9375rem;
+    color: #373A45;
+    font-weight: 500;
+}
+
+.schedule-date-text {
+    font-size: 0.9375rem;
+    color: #373A45;
+    font-weight: 500;
+}
+
+/* Schedule Item Card - duplicate removed, styles at top */
+
+.schedule-item-card:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border-color: #D8DBE3;
+}
+
+.schedule-item-card.expanded {
+    border-color: var(--primary-color, #ffffff);
+    border-width: 1.5px;
+}
+
+.schedule-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.schedule-item-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.schedule-item-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.schedule-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    font-size: 0.875rem;
+    color: #585A64;
+}
+
+.schedule-time {
+    font-weight: 500;
+    color: #373A45;
+}
+
+.schedule-separator {
+    color: #D8DBE3;
+}
+
+.schedule-speaker,
+.schedule-location {
+    color: #585A64;
+}
+
+.schedule-item-right {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.schedule-price-pill {
+    background: white;
+    color: var(--primary-color, #ffffff);
+    border: 1.5px solid var(--primary-color, #ffffff);
+    padding: 0.3rem 0.875rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.meta-inline-icon {
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.session-location-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: #585A64;
+}
+
+.session-location-text {
+    line-height: 1.4;
+}
+
+.session-link-text {
+    color: var(--primary-color, #ffffff);
+    word-break: break-all;
+}
+
+.schedule-chevron {
+    --sds-c-icon-color-foreground-default: #585A64;
+    cursor: pointer;
+}
+
+/* Expanded Content */
+.schedule-item-expanded {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #E9ECEF;
+}
+
+.schedule-expanded-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.schedule-speakers-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.speaker-detail-item {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.speaker-image-wrapper {
+    flex-shrink: 0;
+}
+
+.speaker-avatar-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.speaker-details {
+    flex: 1;
+}
+
+.speaker-details-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 0.5rem;
+}
+
+.speaker-name {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #373A45;
+    margin-bottom: 0.25rem;
+}
+
+.speaker-description {
+    font-size: 0.875rem;
+    color: #585A64;
+    line-height: 1.5;
+}
+
+.schedule-agenda-section,
+.schedule-agenda-only {
+    padding-left: 1rem;
+    border-left: 1px solid #E9ECEF;
+}
+
+.schedule-agenda-only {
+    padding-left: 0;
+    border-left: none;
+}
+
+.agenda-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 0.5rem;
+}
+
+.agenda-content {
+    font-size: 0.875rem;
+    color: #585A64;
+    line-height: 1.6;
+}
+
+/* Registration Status */
+.schedule-registration-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #E9ECEF;
+}
+
+.registered-icon {
+    flex-shrink: 0;
+}
+
+.registered-text {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #373A45;
+}
+
+.cancel-registration-btn {
+    background: #FBEAEA;
+    color: #962121;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 0.5rem;
+    font-family: 'GeneralSansCustom', sans-serif;
+    white-space: nowrap;
+}
+
+.cancel-registration-btn:hover {
+    background: #f5d5d5;
+    color: #7a1a1a;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal__container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    width: 650px;
+    max-width: 90vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.modal__header {
+    padding: 20px 60px 0px 24px;
+    position: relative;
+}
+
+.modal__title {
+    font-size: 16px;
+    font-weight: 500;
+    color: #373A45;
+    margin: 0 0 8px 0;
+}
+
+.modal__footer {
+    padding: 16px 24px;
+    display: flex;
+    justify-content: end;
+    gap: 12px;
+    background: #fff;
+}
+
+.modal__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 9998;
+}
+
+.btn-cancel {
+    background: #ffffff;
+    color: #585A64;
+    font-weight: 500;
+    padding: 0 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    height: 42px;
+}
+
+.btn-register-modal {
+    background: #FBEAEA;
+    color: #962121;
+    font-weight: 600;
+    padding: 0 32px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    height: 42px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .schedule-expanded-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .schedule-agenda-section {
+        padding-left: 0;
+        border-left: none;
+        border-top: 1px solid #E9ECEF;
+        padding-top: 1.5rem;
+    }
+
+    .schedule-item-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+    }
+
+    .schedule-separator {
+        display: none;
+    }
+}

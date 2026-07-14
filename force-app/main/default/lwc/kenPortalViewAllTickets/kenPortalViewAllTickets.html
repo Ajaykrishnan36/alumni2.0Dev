@@ -1,0 +1,23 @@
+<template>
+    <div class="view-all-container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="/service-support" class="breadcrumb-link">Home</a>
+            <span class="breadcrumb-separator">&gt;</span>
+            <a href="/service-support" class="breadcrumb-link">Service and Support</a>
+            <span class="breadcrumb-separator">&gt;</span>
+            <span class="breadcrumb-current">View All Tickets</span>
+        </div>
+
+        <!-- Service History Component - WITHOUT record-limit so search bar shows -->
+        <c-ken-service-history 
+            service-history={serviceHistoryData}
+            support-history={supportHistoryData}
+            active-tab={activeTab}
+            ontabchange={handleTabChange}
+            onticketselect={handleTicketSelect}
+            onfiledownload={handleFileDownload}
+            self-fetch="false">
+        </c-ken-service-history>
+    </div>
+</template>

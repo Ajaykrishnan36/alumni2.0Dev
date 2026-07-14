@@ -1,0 +1,243 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="jobs" has-rail={showRail}>
+        <div class="jobs-root">
+
+            <!-- ========== MAIN BOARD ========== -->
+            <template lwc:if={viewState.isMainBoard}>
+                <div class="card">
+                    <div class="tabs-row">
+                        <c-ken-jobs-tabs-v2
+                            active-tab={activeTab}
+                            recommended-count={recommendedCount}
+                            all-count={allCount}
+                            ontabchange={handleTabChange}>
+                        </c-ken-jobs-tabs-v2>
+                        <button class="view-all" onclick={handleViewAll}>View All →</button>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="qa-btn" onclick={handleViewApplicants}>View Applicants</button>
+                        <button class="qa-btn" onclick={handleCompareOffersClick}>Compare Offers</button>
+                        <button class="qa-btn" onclick={handleViewPlacement}>Placement Cycle</button>
+                        <button class="qa-btn" onclick={handleViewResume}>Resume Library</button>
+                    </div>
+
+                    <template lwc:if={showFilterBar}>
+                        <c-ken-jobs-filter-bar-v2
+                            view-mode={viewMode}
+                            search-term={searchTerm}
+                            applied-filters={appliedFilters}
+                            company-options={companyOptions}
+                            job-title-options={jobTitleOptions}
+                            workplace-type-options={workplaceTypeOptions}
+                            industry-options={industryOptions}
+                            posted-by-options={postedByOptions}
+                            job-location-options={jobLocationOptions}
+                            posted-on-options={postedOnOptions}
+                            job-type-options={jobTypeOptions}
+                            salary-options={salaryOptions}
+                            skills-options={skillsOptions}
+                            onsearch={handleSearch}
+                            onapplyfilters={handleApplyFilters}
+                            onviewmodechange={handleViewMode}>
+                        </c-ken-jobs-filter-bar-v2>
+                    </template>
+
+                    <div class="prefs"><strong>Your Preferences:</strong> {prefs}</div>
+
+                    <template lwc:if={isLoading}>
+                        <div class="jobs-loading">Loading jobs…</div>
+                    </template>
+                    <template lwc:elseif={showEmptyJobs}>
+                        <div class="empty empty--card">
+                            <svg width="80" height="64" viewBox="0 0 200 160" fill="none" aria-hidden="true">
+                                <rect x="40" y="40" width="120" height="90" rx="6" fill="#EEF1F6" stroke="#9DA0A8" stroke-width="2"/>
+                                <line x1="60" y1="70" x2="140" y2="70" stroke="#9DA0A8" stroke-width="3"/>
+                                <line x1="60" y1="90" x2="120" y2="90" stroke="#9DA0A8" stroke-width="3"/>
+                            </svg>
+                            <h4>{emptyJobsMessage}</h4>
+                            <p>Check back soon or broaden your search.</p>
+                            <button type="button" class="qa-btn" onclick={handleViewAll}>View All Jobs</button>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class={gridClass}>
+                            <template for:each={filteredJobs} for:item="j">
+                                <div key={j.id} class="job-cell">
+                                    <template lwc:if={j.hasBanner}>
+                                        <div class="job-banner" style={j.bannerStyle} onclick={handleJobClick} data-id={j.id}></div>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="job-banner job-banner--empty" onclick={handleJobClick} data-id={j.id} aria-hidden="true">
+                                            <svg width="34" height="28" viewBox="0 0 24 24" fill="none" stroke="#C9CCD2" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                        </div>
+                                    </template>
+                                <c-ken-job-card-v2
+                                    record-id={j.id}
+                                    title={j.title}
+                                    company={j.company}
+                                    location={j.location}
+                                    salary={j.salary}
+                                    skills-match={j.skillsMatch}
+                                    logo-letter={j.l}
+                                    logo-color={j.col}
+                                    tags={j.tags}
+                                    saved={j.isSaved}
+                                    applied={j.isApplied}
+                                    owned={j.isOwnedByMe}
+                                    onjobclick={handleJobClick}
+                                    onbookmark={handleBookmark}
+                                    onapply={handleApplyStart}
+                                    onsave={handleSave}>
+                                </c-ken-job-card-v2>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- ========== APPLICATION TRACKER (inline page) ========== -->
+            <template lwc:if={viewState.isApplicationTracker}>
+                <c-ken-job-application-tracker-page-v2
+                    job={selectedJob}
+                    onback={handleBackToBoard}
+                    onapply={handleApplyFromTracker}
+                    onbookslot={handleBookSlot}
+                    onviewoffers={handleViewOffers}
+                    onaccept={handleOfferAccept}
+                    ondecline={handleOfferDecline}>
+                </c-ken-job-application-tracker-page-v2>
+            </template>
+
+            <!-- ========== OFFER COMPARISON (inline page) ========== -->
+            <template lwc:if={viewState.isOfferComparison}>
+                <c-ken-job-offer-comparison-page-v2
+                    jobs={comparisonJobs}
+                    onback={handleBackToTracker}
+                    onaccept={handleOfferAccept}
+                    ondecline={handleOfferDecline}>
+                </c-ken-job-offer-comparison-page-v2>
+            </template>
+
+            <!-- ========== APPLY WIZARD (full-screen overlay) ========== -->
+            <template lwc:if={viewState.isApply}>
+                <c-ken-job-apply-wizard-v2
+                    job-id={selectedJobId}
+                    job-title={selectedJobTitle}
+                    job-company={selectedJobCompany}
+                    onsubmit={handleApplySubmit}
+                    onclose={handleBackToTracker}>
+                </c-ken-job-apply-wizard-v2>
+            </template>
+
+            <!-- ========== POST WIZARD (full-screen overlay) ========== -->
+            <template lwc:if={viewState.isPost}>
+                <c-ken-job-post-wizard-v2
+                    onsubmit={handlePostSubmit}
+                    onsavedraft={handlePostSaveDraft}
+                    onclose={handleBackToBoard}>
+                </c-ken-job-post-wizard-v2>
+            </template>
+
+            <!-- ========== CREATE-JOB 4-STEP WIZARD ========== -->
+            <template lwc:if={viewState.isCreate}>
+                <c-ken-job-create-wizard-v2
+                    onsubmit={handleCreateSubmit}
+                    onsavedraft={handleCreateSaveDraft}
+                    onclose={handleBackToBoard}>
+                </c-ken-job-create-wizard-v2>
+            </template>
+
+            <!-- ========== APPLICANTS / LEGACY OFFERS / PLACEMENT (existing inline pages) ========== -->
+            <template lwc:if={viewState.isApplicants}>
+                <div class="jobs-wrap jobs-wrap--full">
+                    <c-ken-job-applicants-view-v2
+                        applicants={applicantsForSelected}
+                        job-title={selectedJobTitle}
+                        job-company={selectedJobCompany}
+                        job-id={selectedJobId}
+                        onback={handleBackToBoard}
+                        onclose={handleBackToBoard}
+                        ondeactivate={handleBackToBoard}
+                        onedit={handleBackToBoard}
+                        onviewdetails={handleBackToBoard}>
+                    </c-ken-job-applicants-view-v2>
+                </div>
+            </template>
+
+            <template lwc:if={viewState.isOffers}>
+                <div class="jobs-wrap jobs-wrap--full">
+                    <c-ken-job-offer-comparison-v2
+                        onback={handleBackToBoard}
+                        onaccept={handleOfferAccept}
+                        ondecline={handleOfferDecline}
+                        ontoast={handleOfferToast}>
+                    </c-ken-job-offer-comparison-v2>
+                </div>
+            </template>
+
+            <template lwc:if={viewState.isPlacement}>
+                <div class="jobs-wrap jobs-wrap--full">
+                    <c-ken-job-placement-cycle-v2
+                        onback={handleBackToBoard}
+                        onrowaction={handleBackToBoard}>
+                    </c-ken-job-placement-cycle-v2>
+                </div>
+            </template>
+
+            <template lwc:if={viewState.isResume}>
+                <div class="jobs-wrap jobs-wrap--full">
+                    <button class="view-all" onclick={handleBackToBoard}>← Back to Jobs</button>
+                    <c-ken-jobs-resume-library-v2 embedded></c-ken-jobs-resume-library-v2>
+                </div>
+            </template>
+
+            <!-- ========== BOOK SLOT MODAL (only modal that stays) ========== -->
+            <template lwc:if={showBookSlotModal}>
+                <c-ken-job-book-slot-modal-v2
+                    job={selectedJob}
+                    onclose={handleCloseBookSlot}
+                    onbook={handleBookSlotSubmit}>
+                </c-ken-job-book-slot-modal-v2>
+            </template>
+
+            <!-- ========== NO OFFERS MODAL ========== -->
+            <template lwc:if={showNoOffersModal}>
+                <div class="no-offers__backdrop" onclick={handleCloseNoOffers}>
+                    <div class="no-offers__modal" onclick={handleStop}>
+                        <div class="empty empty--card no-offers__inner">
+                            <svg width="80" height="64" viewBox="0 0 200 160" fill="none" aria-hidden="true">
+                                <rect x="40" y="40" width="120" height="90" rx="6" fill="#EEF1F6" stroke="#9DA0A8" stroke-width="2"/>
+                                <line x1="60" y1="70" x2="140" y2="70" stroke="#9DA0A8" stroke-width="3"/>
+                                <line x1="60" y1="90" x2="120" y2="90" stroke="#9DA0A8" stroke-width="3"/>
+                            </svg>
+                            <h4>No offers to compare yet</h4>
+                            <p>Apply to jobs and your offers will appear here.</p>
+                            <div class="no-offers__actions">
+                                <button type="button" class="qa-btn" onclick={handleCloseNoOffers}>Close</button>
+                                <button type="button" class="qa-btn qa-btn--primary" onclick={handleBrowseJobsFromNoOffers}>Browse Jobs</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ========== TOAST ========== -->
+            <template lwc:if={showToast}>
+                <div class="toast">{toastMsg}</div>
+            </template>
+
+        </div>
+
+        <template lwc:if={showRail}>
+            <c-ken-jobs-rail-v2
+                slot="rail"
+                applications={appliedJobs}
+                saved-jobs={savedJobs}
+                posted-jobs={postedJobs}
+                onjobclick={handleJobClick}
+                onpostjob={handlePostJob}>
+            </c-ken-jobs-rail-v2>
+        </template>
+    </c-ken42-alumni-shell-v2>
+</template>

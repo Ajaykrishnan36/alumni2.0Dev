@@ -1,0 +1,22 @@
+<template>
+    <div class="connection-request-item">
+        <div class="request-avatar-container">
+            <img src={displayImage} alt={name} class="request-avatar" onerror={handleAvatarError} />
+            <template if:true={isOnline}>
+                <div class="request-online-dot"></div>
+            </template>
+        </div>
+        <div class="request-details">
+            <p class="request-name">{name}</p>
+            <p class="request-time">{dateTime}</p>
+        </div>
+        <div class="request-actions">
+            <button class="action-btn decline" type="button" onclick={handleDecline}>
+                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+            </button>
+            <button class="action-btn accept" type="button" onclick={handleAccept}>
+                <lightning-icon icon-name="utility:check" size="x-small"></lightning-icon>
+            </button>
+        </div>
+    </div>
+</template>

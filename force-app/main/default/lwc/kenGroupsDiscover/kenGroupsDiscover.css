@@ -1,0 +1,258 @@
+.discover-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Same pattern as kenRegistrationStepper: banner with primary color + dot pattern */
+.discover-banner {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: var(--primary-color, white);
+    min-height: 400px;
+    box-sizing: border-box;
+}
+
+/* Dot pattern overlay (light dots on primary, like 2nd image) */
+.discover-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1.5px, transparent 1.5px);
+    background-size: 20px 20px;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.banner-overlay {
+    position: relative;
+    z-index: 1;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 400px;
+    color: white;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
+.header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: white;
+}
+
+.badge {
+    background: var(--secondary-color, rgba(255, 255, 255, 0.95));
+    color: var(--primary-color, white);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.controls {
+    margin-left: auto;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0 0.5rem;
+}
+
+/* Mobile: single card – no scroll, one card visible, nothing clipped on right */
+.cards-single-container {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.group-card-single {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+.cards-scroll-container {
+    position: relative;
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scrollbar-width: none;
+    width: 100%;
+    scroll-behavior: smooth;
+}
+
+.cards-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+.group-card {
+    min-width: 300px;
+    flex-shrink: 0;
+    background: var(--portal-surface, white);
+    box-sizing: border-box;
+    border-radius: var(--portal-radius, 12px);
+    overflow: hidden;
+    color: #1A1A1A;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+}
+
+.card-image-wrapper {
+    height: 160px;
+    overflow: hidden;
+}
+
+/* Mobile: single-card carousel + smaller suggested banner */
+@media (max-width: 767px) {
+    .discover-container {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        margin-bottom: 1rem;
+    }
+
+    .discover-banner {
+        min-height: auto;
+        border-radius: 12px;
+    }
+
+    .banner-overlay {
+        min-height: auto;
+        padding: 0.75rem 1rem;
+    }
+
+    .header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .header h2 {
+        font-size: 0.95rem;
+    }
+
+    .badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .controls {
+        margin-left: auto;
+    }
+
+    .nav-btn {
+        font-size: 1rem;
+        padding: 0.35rem 0.5rem;
+        min-width: 36px;
+    }
+
+    .cards-single-container .group-card-single {
+        margin: 0;
+    }
+
+    .cards-single-container .card-image-wrapper {
+        height: 100px;
+    }
+
+    .cards-single-container .card-content {
+        padding: 0.5rem 0.6rem;
+    }
+
+    .cards-single-container .group-name {
+        font-size: 0.85rem;
+        word-break: break-word;
+    }
+
+    .cards-single-container .member-count {
+        font-size: 0.75rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .cards-single-container .friends-preview {
+        font-size: 0.7rem;
+    }
+
+    .cards-single-container .avatar-sm {
+        width: 18px;
+        height: 18px;
+        margin-left: -6px;
+    }
+}
+
+.group-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 1rem;
+}
+
+.group-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.member-count {
+    color: #666;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.friends-preview {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.avatars {
+    display: flex;
+}
+
+.avatar-sm {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid white;
+    margin-left: -8px;
+}
+
+.avatar-sm:first-child {
+    margin-left: 0;
+}

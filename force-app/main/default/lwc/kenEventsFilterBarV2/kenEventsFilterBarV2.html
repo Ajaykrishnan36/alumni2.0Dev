@@ -1,0 +1,10 @@
+<template>
+    <div class="filter-bar">
+        <input type="text" class="search-input" placeholder="Search events by title, host, location" oninput={handleSearch} />
+        <div class="chips">
+            <template for:each={categories} for:item="c">
+                <button key={c.id} type="button" class={c.chipClass} data-id={c.id} onclick={handleCat}>{c.label}</button>
+            </template>
+        </div>
+    </div>
+</template>

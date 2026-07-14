@@ -1,0 +1,202 @@
+<template>
+    <div class="step-content fee-step">
+        <div class="fee-title">How would you like to proceed?</div>
+
+        <!-- Mode selection cards (radio-card behavior) -->
+        <div class="fee-mode-cards">
+            <button type="button"
+                class={sessionWiseCardClass}
+                onclick={handleSelectSessionWise}
+                aria-pressed={isSessionWiseSelected}>
+                <span class="fee-mode-text">Session-wise pricing for the event</span>
+                <span class="fee-mode-check" if:true={isSessionWiseSelected}>
+                    <span class="fee-check-circle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </span>
+                </span>
+            </button>
+
+            <button type="button"
+                class={overallCardClass}
+                onclick={handleSelectOverall}
+                aria-pressed={isOverallSelected}>
+                <span class="fee-mode-text">Overall pricing for the entire event</span>
+                <span class="fee-mode-check" if:true={isOverallSelected}>
+                    <span class="fee-check-circle">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </span>
+                </span>
+            </button>
+        </div>
+
+        <!-- SESSION-WISE -->
+        <template if:true={isSessionWiseSelected}>
+            <div class="fee-grid">
+                <div class="fee-grid-header">
+                    <div class="fee-col-left">Day &amp; session details</div>
+                    <div class="fee-col-mid">Setup price</div>
+                    <div class="fee-col-right">Mark as free</div>
+                </div>
+
+                <template if:true={feeRowsByDate.length}>
+                    <template for:each={feeRowsByDate} for:item="day">
+                        <div key={day.dateKey} class="fee-day-group">
+                            <div class="fee-day-title">{day.displayDate}</div>
+
+                            <template for:each={day.sessions} for:item="session">
+                                <div key={session.uniqueId} class="fee-grid-row">
+                                    <div class="fee-col-left">
+                                        <div class="fee-session-label">Session {session.displayNumber}</div>
+                                        <div class="fee-session-title">{session.title}</div>
+                                    </div>
+
+                                    <div class="fee-col-mid">
+                                        <div class="fee-price-wrap" data-disabled={session.isFree}>
+                                            <input type="number"
+                                                class="fee-input"
+                                                placeholder="--"
+                                                value={session.price}
+                                                data-session-id={session.uniqueId}
+                                                data-date-key={day.dateKey}
+                                                onchange={handleSessionPriceChange}
+                                                disabled={session.isFree} />
+                                            <span class="fee-currency">₹</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="fee-col-right">
+                                        <label class="fee-free-checkbox">
+                                            <input type="checkbox"
+                                                data-session-id={session.uniqueId}
+                                                data-date-key={day.dateKey}
+                                                checked={session.isFree}
+                                                onchange={handleSessionFreeToggle} />
+                                            <span class="checkbox-custom"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Meal Fees (only when enabled) -->
+                    <template if:true={mealsPaidAddonEnabled}>
+                        <div class="fee-grid-row fee-grid-row-meal">
+                            <div class="fee-col-left">
+                                <div class="fee-meal-label">Meal Fees</div>
+                            </div>
+                            <div class="fee-col-mid">
+                                <div class="fee-price-wrap" data-disabled="false">
+                                    <input type="number"
+                                        class="fee-input"
+                                        placeholder="--"
+                                        value={mealFees}
+                                        onchange={handleMealFeesChange} />
+                                    <span class="fee-currency">₹</span>
+                                </div>
+                            </div>
+                            <div class="fee-col-right"></div>
+                        </div>
+                    </template>
+
+                    <div class="fee-total-row">
+                        <div class="fee-total-label">Total Event Cost</div>
+                        <div class="fee-total-value">₹{sessionWiseTotalFormatted}</div>
+                    </div>
+                </template>
+
+                <template if:false={feeRowsByDate.length}>
+                    <div class="fee-empty">Add sessions in Schedule setup to configure fees.</div>
+                </template>
+            </div>
+        </template>
+
+        <!-- OVERALL -->
+        <template if:true={isOverallSelected}>
+            <div class="fee-grid">
+                <div class="fee-grid-header">
+                    <div class="fee-col-left">Event details</div>
+                    <div class="fee-col-mid">Setup price</div>
+                    <div class="fee-col-right">Mark as free</div>
+                </div>
+
+                <div class="fee-grid-row">
+                    <div class="fee-col-left">
+                        <div class="fee-event-title">{eventTitle}</div>
+                    </div>
+                    <div class="fee-col-mid">
+                        <div class="fee-price-wrap" data-disabled={overallIsFree}>
+                            <input type="number"
+                                class="fee-input"
+                                placeholder="--"
+                                value={overallPrice}
+                                onchange={handleOverallPriceChange}
+                                disabled={overallIsFree} />
+                            <span class="fee-currency">₹</span>
+                        </div>
+                    </div>
+                    <div class="fee-col-right">
+                        <label class="fee-free-checkbox">
+                            <input type="checkbox" checked={overallIsFree} onchange={handleOverallFreeToggle} />
+                            <span class="checkbox-custom"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Meal Fees -->
+                <template if:true={mealsPaidAddonEnabled}>
+                <div class="fee-grid-row fee-grid-row-meal">
+                    <div class="fee-col-left">
+                        <div class="fee-meal-label">Meal Fees</div>
+                    </div>
+                    <div class="fee-col-mid">
+                        <div class="fee-price-wrap" data-disabled={isMealFeesDisabled}>
+                            <input type="number"
+                                class="fee-input"
+                                placeholder="--"
+                                value={mealFees}
+                                onchange={handleMealFeesChange}
+                                disabled={isMealFeesDisabled} />
+                            <span class="fee-currency">₹</span>
+                        </div>
+                    </div>
+                    <div class="fee-col-right"></div>
+                </div>
+                </template>
+
+                <!-- Show summary -->
+                <button type="button" class="fee-summary-toggle" onclick={handleToggleSummary}>
+                    <span>Show summary</span>
+                    <svg class={summaryChevronClass} width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M7 10l5 5 5-5" stroke="#6B7280" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+
+                <div class="fee-summary-body" if:true={showSummary}>
+                    <div class="fee-summary-line">
+                        <span>Event price</span>
+                        <span>₹{overallWithoutMealFormatted}</span>
+                    </div>
+                    <template if:true={mealsPaidAddonEnabled}>
+                    <div class="fee-summary-line">
+                        <span>Meal fees</span>
+                        <span>₹{mealFeesFormatted}</span>
+                    </div>
+                    </template>
+                </div>
+
+                <div class="fee-total-row">
+                    <div class="fee-total-label">Total Event Cost</div>
+                    <div class="fee-total-value">₹{overallTotalFormatted}</div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

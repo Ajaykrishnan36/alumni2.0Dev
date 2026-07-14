@@ -1,0 +1,405 @@
+<template>
+    <section class="manual-job-flow">
+        <div class="manual-job-card">
+            <header class="manual-header">
+                <div class="manual-stepper">
+                    <div class={step1Class}>
+                        <span class="step-dot">{step1Marker}</span>
+                        <span>Basic details</span>
+                    </div>
+                    <div class="step-divider"></div>
+                    <div class={step2Class}>
+                        <span class="step-dot">{step2Marker}</span>
+                        <span>Target Audience</span>
+                    </div>
+                    <div class="step-divider"></div>
+                    <div class={step3Class}>
+                        <span class="step-dot">3</span>
+                        <span>Stages</span>
+                    </div>
+                </div>
+
+                <div class="manual-progress-row">
+                    <div class="manual-progress">
+                        <div class="manual-progress__fill" style={progressStyle}></div>
+                    </div>
+                    <span class="manual-step-status">{stepStatusLabel}</span>
+                </div>
+            </header>
+
+            <template lwc:if={isStep1}>
+                <div class="manual-body">
+                    <h2 class="section-title">Identity</h2>
+                    <div class="manual-form-grid">
+                        <div class="manual-field">
+                            <label>Job ID</label>
+                            <input type="text" data-field="jobId" value={formData.jobId} oninput={handleInputChange} />
+                        </div>
+                        <div class="manual-field">
+                            <label>Job Title<span class="required">*</span></label>
+                            <input type="text" data-field="jobTitle" value={formData.jobTitle} placeholder="Eg: Software Engineer" oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.jobTitle}>
+                                <span class="field-error">{fieldErrors.jobTitle}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field">
+                            <label>Employer<span class="required">*</span></label>
+                            <input type="text" data-field="employer" value={formData.employer} placeholder="Choose employer" oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.employer}>
+                                <span class="field-error">{fieldErrors.employer}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field">
+                            <label>Placement Cycle<span class="required">*</span></label>
+                            <select data-field="placementCycle" value={formData.placementCycle} onchange={handleInputChange}>
+                                <option value="">Select</option>
+                                <option value="2025-26">2025-26</option>
+                                <option value="2026-27">2026-27</option>
+                            </select>
+                            <template lwc:if={fieldErrors.placementCycle}>
+                                <span class="field-error">{fieldErrors.placementCycle}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field">
+                            <label>Posted By</label>
+                            <input type="text" data-field="postedBy" value={formData.postedBy} placeholder="Enter name" oninput={handleInputChange} />
+                        </div>
+                        <div class="manual-field">
+                            <label>Status<span class="required">*</span></label>
+                            <select data-field="status" value={formData.status} onchange={handleInputChange}>
+                                <option value="">Select</option>
+                                <option value="Draft">Draft</option>
+                                <option value="Open">Open</option>
+                                <option value="On Hold">On Hold</option>
+                            </select>
+                            <template lwc:if={fieldErrors.status}>
+                                <span class="field-error">{fieldErrors.status}</span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <h2 class="section-title">Job Details</h2>
+                    <div class="manual-field manual-field--full">
+                        <label>Job Description</label>
+                        <textarea rows="4" data-field="jobDescription" value={formData.jobDescription} placeholder="Draft your own job description (minimum 3 words)." oninput={handleInputChange}></textarea>
+                    </div>
+
+                    <div class="manual-form-grid">
+                        <div class="manual-field">
+                            <label>Role Category</label>
+                            <select data-field="roleCategory" value={formData.roleCategory} onchange={handleInputChange}>
+                                <option value="">Select</option>
+                                <option value="Engineering">Engineering</option>
+                                <option value="Product">Product</option>
+                                <option value="Business">Business</option>
+                            </select>
+                        </div>
+                        <div class="manual-field">
+                            <label>Employment Type<span class="required">*</span></label>
+                            <select data-field="employmentType" value={formData.employmentType} onchange={handleInputChange}>
+                                <option value="">Select</option>
+                                <option value="Full-Time">Full-Time</option>
+                                <option value="Internship">Internship</option>
+                                <option value="Contract">Contract</option>
+                            </select>
+                            <template lwc:if={fieldErrors.employmentType}>
+                                <span class="field-error">{fieldErrors.employmentType}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field">
+                            <label>Work Place Type<span class="required">*</span></label>
+                            <select data-field="workplaceType" value={formData.workplaceType} onchange={handleInputChange}>
+                                <option value="">Select</option>
+                                <option value="Onsite">Onsite</option>
+                                <option value="Remote">Remote</option>
+                                <option value="Hybrid">Hybrid</option>
+                            </select>
+                            <template lwc:if={fieldErrors.workplaceType}>
+                                <span class="field-error">{fieldErrors.workplaceType}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field">
+                            <label>Location<span class="required">*</span></label>
+                            <input type="text" data-field="location" value={formData.location} placeholder="City/Country" oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.location}>
+                                <span class="field-error">{fieldErrors.location}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field">
+                            <label>Headcount</label>
+                            <input type="number" data-field="headcount" value={formData.headcount} placeholder="Planned number of hires" oninput={handleInputChange} />
+                        </div>
+                    </div>
+
+                    <div class="manual-field manual-field--full">
+                        <label>Notes</label>
+                        <textarea rows="4" data-field="notes" value={formData.notes} placeholder="Internal notes for placement office." oninput={handleInputChange}></textarea>
+                    </div>
+
+                    <h2 class="section-title">Compensation &amp; Benefits</h2>
+                    <div class="manual-form-grid">
+                        <div class="manual-field">
+                            <label>Currency Type<span class="required">*</span></label>
+                            <select data-field="currencyType" value={formData.currencyType} onchange={handleInputChange}>
+                                <option value="">Select</option>
+                                <option value="INR">INR</option>
+                                <option value="USD">USD</option>
+                            </select>
+                            <template lwc:if={fieldErrors.currencyType}>
+                                <span class="field-error">{fieldErrors.currencyType}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field"></div>
+                        <div class="manual-field">
+                            <label>Salary Start Range - in LPA<span class="required">*</span></label>
+                            <input type="number" data-field="salaryStart" value={formData.salaryStart} placeholder="-" oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.salaryStart}>
+                                <span class="field-error">{fieldErrors.salaryStart}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field">
+                            <label>Salary End Range - in LPA<span class="required">*</span></label>
+                            <input type="number" data-field="salaryEnd" value={formData.salaryEnd} placeholder="-" oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.salaryEnd}>
+                                <span class="field-error">{fieldErrors.salaryEnd}</span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <h2 class="section-title">Point of Contact</h2>
+                    <div class="manual-field">
+                        <label>Are you the POC for this job?<span class="required">*</span></label>
+                        <div class="radio-row">
+                            <label class="radio-option">
+                                <input type="radio" name="isPoc" value="yes" checked={yesChecked} onchange={handlePocChange} />
+                                <span>Yes</span>
+                            </label>
+                            <label class="radio-option">
+                                <input type="radio" name="isPoc" value="no" checked={noChecked} onchange={handlePocChange} />
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="manual-form-grid">
+                        <div class="manual-field manual-field--full">
+                            <label>Name<span class="required">*</span></label>
+                            <input type="text" data-field="pocName" value={formData.pocName} placeholder="Enter name" oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.pocName}>
+                                <span class="field-error">{fieldErrors.pocName}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field manual-field--full">
+                            <label>Contact Number<span class="required">*</span></label>
+                            <input type="tel" data-field="pocContact" value={formData.pocContact} placeholder="+91 00000 00000" oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.pocContact}>
+                                <span class="field-error">{fieldErrors.pocContact}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field manual-field--full">
+                            <label>Email ID<span class="required">*</span></label>
+                            <input type="email" data-field="pocEmail" value={formData.pocEmail} placeholder="Enter email ID" oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.pocEmail}>
+                                <span class="field-error">{fieldErrors.pocEmail}</span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <h2 class="section-title">Application Window</h2>
+                    <div class="manual-form-grid">
+                        <div class="manual-field">
+                            <label>Application Open Date<span class="required">*</span></label>
+                            <input type="date" data-field="applicationOpenDate" value={formData.applicationOpenDate} oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.applicationOpenDate}>
+                                <span class="field-error">{fieldErrors.applicationOpenDate}</span>
+                            </template>
+                        </div>
+                        <div class="manual-field">
+                            <label>Last Date to Apply<span class="required">*</span></label>
+                            <input type="date" data-field="applicationCloseDate" value={formData.applicationCloseDate} oninput={handleInputChange} />
+                            <template lwc:if={fieldErrors.applicationCloseDate}>
+                                <span class="field-error">{fieldErrors.applicationCloseDate}</span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <label class="checkbox-row">
+                        <input type="checkbox" data-field="receiveApplicants" checked={formData.receiveApplicants} onchange={handleInputChange} />
+                        <span>Receive applicants<span class="required">*</span></span>
+                    </label>
+                    <template lwc:if={fieldErrors.receiveApplicants}>
+                        <span class="field-error">{fieldErrors.receiveApplicants}</span>
+                    </template>
+                </div>
+            </template>
+
+            <template lwc:if={isStep2}>
+                <div class="manual-body">
+                    <h2 class="section-title-lg">2. Target Audience Selection</h2>
+                    <p class="helper-text">Choose who this should go to. You can combine multiple groups of people.</p>
+
+                    <div class="audience-header">
+                        <div>
+                            <h3 class="section-title">Saved Audience</h3>
+                            <p class="helper-text">Previously saved audience for jobs only.</p>
+                        </div>
+                        <button type="button" class="outlined-btn" onclick={openAudienceModal}>Add New Audience</button>
+                    </div>
+
+                    <input class="search-input" type="text" value={audienceSearchText} placeholder="Search by name, email, ID or phone number" oninput={handleAudienceSearch} />
+
+                    <div class="audience-grid">
+                        <template for:each={filteredAudience} for:item="audience">
+                            <article key={audience.id} class="audience-card">
+                                <div>
+                                    <div class="audience-name">{audience.name}</div>
+                                    <div class="audience-members">{audience.members} members</div>
+                                </div>
+                                <button
+                                    type="button"
+                                    class={audience.buttonClass}
+                                    data-id={audience.id}
+                                    onclick={handleAudienceToggle}>
+                                    {audience.buttonLabel}
+                                </button>
+                            </article>
+                        </template>
+                    </div>
+                    <template lwc:if={audienceError}>
+                        <span class="field-error">{audienceError}</span>
+                    </template>
+                </div>
+            </template>
+
+            <template lwc:if={isStep3}>
+                <div class="manual-body">
+                    <div class="stages-header">
+                        <h2 class="section-title-lg">Stages (Optional)</h2>
+                        <button type="button" class="outlined-btn" onclick={openAddStageModal}>+ Add Stage</button>
+                    </div>
+
+                    <div class="stages-table-wrap">
+                        <table class="stages-table">
+                            <thead>
+                                <tr>
+                                    <th>Stage</th>
+                                    <th>Stage name</th>
+                                    <th>Type</th>
+                                    <th>Start Date</th>
+                                    <th>Start Time</th>
+                                    <th>End Date</th>
+                                    <th>End Time</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template lwc:if={hasStages}>
+                                    <template for:each={decoratedStages} for:item="stage">
+                                        <tr key={stage.id}>
+                                            <td>{stage.number}</td>
+                                            <td>{stage.name}</td>
+                                            <td>({stage.type})</td>
+                                            <td>{stage.startDateLabel}</td>
+                                            <td>{stage.startTimeLabel}</td>
+                                            <td>{stage.endDateLabel}</td>
+                                            <td>{stage.endTimeLabel}</td>
+                                            <td>
+                                                <button type="button" class="table-action" data-id={stage.id} onclick={openEditStageModal}>Edit</button>
+                                                <button type="button" class="table-action danger" data-id={stage.id} onclick={deleteStage}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                                <template lwc:else>
+                                    <tr>
+                                        <td colspan="8" class="empty-stages">No stages added yet.</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+
+            <footer class="manual-footer">
+                <button type="button" class="outlined-btn left-btn" onclick={handleManualCancel}>Cancel</button>
+                <div class="manual-footer-right">
+                    <button type="button" class="outlined-btn" onclick={handleSaveDraft}>Save as Draft</button>
+                    <template lwc:if={isStep1}>
+                        <button type="button" class="primary-btn" onclick={handleManualNext}>Save and Proceed</button>
+                    </template>
+                    <template lwc:if={isStep2}>
+                        <button type="button" class="outlined-btn" onclick={handleManualPrevious}>Previous Step</button>
+                        <button type="button" class="primary-btn" onclick={handleManualNext}>Next Step</button>
+                    </template>
+                    <template lwc:if={isStep3}>
+                        <button type="button" class="outlined-btn" onclick={handleManualPrevious}>Previous</button>
+                        <button type="button" class="primary-btn" onclick={handleManualSubmit}>Submit</button>
+                    </template>
+                </div>
+            </footer>
+        </div>
+
+        <template lwc:if={showAudienceModal}>
+            <div class="modal-backdrop" onclick={closeAudienceModal}></div>
+            <section class="modal" role="dialog" aria-modal="true" aria-label="Add Audience">
+                <h3>Add New Audience</h3>
+                <div class="modal-grid">
+                    <div class="manual-field">
+                        <label>Audience Name</label>
+                        <input type="text" data-field="name" value={newAudienceName} oninput={handleNewAudienceInput} />
+                    </div>
+                    <div class="manual-field">
+                        <label>Members Count</label>
+                        <input type="number" min="1" data-field="members" value={newAudienceMembers} oninput={handleNewAudienceInput} />
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="outlined-btn" onclick={closeAudienceModal}>Cancel</button>
+                    <button type="button" class="primary-btn" onclick={saveAudience}>Save Audience</button>
+                </div>
+            </section>
+        </template>
+
+        <template lwc:if={showStageModal}>
+            <div class="modal-backdrop" onclick={closeStageModal}></div>
+            <section class="modal" role="dialog" aria-modal="true" aria-label="Stage Modal">
+                <h3>{stageModalTitle}</h3>
+                <div class="modal-grid stage-grid">
+                    <div class="manual-field manual-field--full">
+                        <label>Stage Name</label>
+                        <input type="text" data-field="name" value={stageForm.name} oninput={handleStageInput} />
+                    </div>
+                    <div class="manual-field">
+                        <label>Type</label>
+                        <select data-field="type" value={stageForm.type} onchange={handleStageInput}>
+                            <option value="Objective">Objective</option>
+                            <option value="Subjective">Subjective</option>
+                        </select>
+                    </div>
+                    <div class="manual-field"></div>
+                    <div class="manual-field">
+                        <label>Start Date</label>
+                        <input type="date" data-field="startDate" value={stageForm.startDate} oninput={handleStageInput} />
+                    </div>
+                    <div class="manual-field">
+                        <label>Start Time</label>
+                        <input type="time" data-field="startTime" value={stageForm.startTime} oninput={handleStageInput} />
+                    </div>
+                    <div class="manual-field">
+                        <label>End Date</label>
+                        <input type="date" data-field="endDate" value={stageForm.endDate} oninput={handleStageInput} />
+                    </div>
+                    <div class="manual-field">
+                        <label>End Time</label>
+                        <input type="time" data-field="endTime" value={stageForm.endTime} oninput={handleStageInput} />
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="outlined-btn" onclick={closeStageModal}>Cancel</button>
+                    <button type="button" class="primary-btn" onclick={saveStage}>Save Stage</button>
+                </div>
+            </section>
+        </template>
+    </section>
+</template>

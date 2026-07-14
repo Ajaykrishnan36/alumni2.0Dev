@@ -1,0 +1,30 @@
+.bgColor{
+    background-color: #E5E5E5;
+    padding: 24px;
+}
+.evaHeadBox{
+    padding: 10px 17px;
+    background-color: #fff;
+    border-radius: 5px;
+}
+.evaHeading{
+    font-style: normal;
+    font-weight: 600;
+    font-size: 18px;
+    color: #00218D;
+    line-height: 30px;
+}
+.progress-container {
+    display: flex;
+    align-items: center; /* Vertically center the items */
+  }
+
+  .progress-bar {
+    flex-basis: 85%; /* Takes up 80% of the width */
+  }
+
+  .step-label {
+    flex-basis: 15%; /* Takes up 20% of the width */
+    text-align: right; /* Align the text to the right */
+    margin-left: 10px; /* Optional: Adds a small space between the bar and the label */
+  }

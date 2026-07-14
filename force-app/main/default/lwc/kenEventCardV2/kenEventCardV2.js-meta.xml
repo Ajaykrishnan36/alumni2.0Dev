@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 - Event Card</masterLabel>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordId" type="String" label="Record Id"/>
+            <property name="title" type="String" label="Event Title"/>
+            <property name="date" type="String" label="Date"/>
+            <property name="time" type="String" label="Time"/>
+            <property name="location" type="String" label="Location"/>
+            <property name="category" type="String" label="Category"/>
+            <property name="going" type="Integer" label="Going Count" default="0"/>
+            <property name="organizer" type="String" label="Organizer"/>
+            <property name="status" type="String" label="Status"/>
+            <property name="image" type="String" label="Image URL"/>
+            <property name="heroGrad" type="String" label="Hero Gradient CSS"/>
+            <property name="isPast" type="Boolean" label="Is Past" default="false"/>
+            <property name="isMine" type="Boolean" label="Is Mine" default="false"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

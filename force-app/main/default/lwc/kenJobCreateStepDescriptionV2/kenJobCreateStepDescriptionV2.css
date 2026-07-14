@@ -1,0 +1,13 @@
+:host { display: block; }
+h3 { font-weight: 700; font-size: 16px; margin: 0 0 6px; color: #111827; }
+.fields-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 32px; row-gap: 16px; }
+.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.field label { font-weight: 500; font-size: 13px; color: #373A45; }
+.req { color: #E53935; margin-left: 2px; }
+.field input, .field select, .field textarea { width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1px solid #EEF1F6; border-radius: 8px; font-family: inherit; font-weight: 500; font-size: 14px; outline: none; background: #fff; }
+.field input, .field select { height: 46px; }
+.field textarea { min-height: 100px; resize: vertical; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border: 1px solid #EEF1F6; border-radius: 8px; min-height: 46px; align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: #EAEFFF; color: #2546B8; padding: 4px 10px; border-radius: 6px; font-weight: 500; font-size: 12px; }
+.chip .x { cursor: pointer; font-weight: 700; }
+.chips input { flex: 1; min-width: 120px; border: 0; outline: none; font-family: inherit; font-size: 14px; background: transparent; height: 28px; padding: 0; }

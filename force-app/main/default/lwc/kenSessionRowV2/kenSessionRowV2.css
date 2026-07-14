@@ -1,0 +1,9 @@
+.session-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #E5E6E8;gap:8px;cursor:pointer}
+.session-row:last-child{border-bottom:0}
+.session__title{margin:0 0 2px;font-weight:600;font-size:13px;color:#1F2937}
+.session__time{margin:0;font-size:11px;color:#5C5F6B}
+.pill{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap}
+.pill--progress{background:#FFF7E6;color:#F59E0B}
+.pill--done{background:#E6F7EF;color:#19A974}
+.pill--live{background:#FFE6E6;color:#DC5959}
+.pill--info{background:#EAEFFF;color:#3061FF}

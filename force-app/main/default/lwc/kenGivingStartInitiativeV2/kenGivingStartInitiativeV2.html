@@ -1,0 +1,39 @@
+<template lwc:render-mode="light">
+    <section class="si-wrap">
+        <div class="si-grid">
+            <div class="si-main">
+                <span class="si-eyebrow">✦ Alumni-led</span>
+                <h2 class="si-title">Start a giving initiative</h2>
+                <p class="si-lede">Have a batch fund or cause in mind? Submit your initiative and we'll get it reviewed by the institution. Once approved, it goes live to all alumni.</p>
+                <div class="si-steps">
+                    <template for:each={steps} for:item="s">
+                        <div key={s.number} class="si-step">
+                            <div class="si-step__num">{s.number}</div>
+                            <div class="si-step__title">{s.title}</div>
+                            <p class="si-step__body">{s.body}</p>
+                        </div>
+                    </template>
+                </div>
+                <button type="button" class="si-cta" onclick={handleNew}>+ Start a new initiative</button>
+            </div>
+
+            <aside class="si-side">
+                <h3 class="si-side__title">📥 Your initiatives</h3>
+                <div class="si-side__body">
+                    <template lwc:if={hasInitiatives}>
+                        <template for:each={initiatives} for:item="g">
+                            <div key={g.id} class="si-card">
+                                <div class="si-card__title">{g.campaignTitle}</div>
+                                <div class="si-card__date">Submitted {g.date}</div>
+                                <span class={g.statusCls}>{g.status}</span>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:if={hasNoInitiatives}>
+                        <p class="si-empty">You haven't submitted an initiative yet.</p>
+                    </template>
+                </div>
+            </aside>
+        </div>
+    </section>
+</template>

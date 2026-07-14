@@ -1,0 +1,161 @@
+<template>
+	<div class="modal-overlay" onclick={handleBackdropClick}>
+		<div class="modal-container" onclick={handleModalClick}>
+			<div class="modal-header">
+				<h2 class="modal-title">Schedule a Call</h2>
+				<button type="button" class="close-button" onclick={handleClose} aria-label="Close">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-field">
+					<label class="field-label">Schedule For<span class="required">*</span></label>
+					<lightning-combobox
+						value={selectedParticipantType}
+						options={participantTypeOptions}
+						placeholder="Select Role"
+						onchange={handleParticipantTypeChange}
+						class={participantTypeClass}>
+					</lightning-combobox>
+					<template if:true={hasParticipantTypeError}>
+						<div class="inline-error">{validationErrors.participantType}</div>
+					</template>
+				</div>
+
+				<div class="form-field">
+					<label class="field-label">{participantLabel}<span class="required">*</span></label>
+					<lightning-combobox
+						value={selectedMentor}
+						options={participantOptions}
+						placeholder={participantPlaceholder}
+						disabled={isParticipantDisabled}
+						onchange={handleMentorChange}
+						class={participantSelectClass}>
+					</lightning-combobox>
+					<template if:true={participantInlineError}>
+						<div class="inline-error">{participantInlineError}</div>
+					</template>
+					<template if:true={hasParticipantError}>
+						<div class="inline-error">{validationErrors.participantId}</div>
+					</template>
+				</div>
+
+				<div class="form-field">
+					<label class="field-label">Title<span class="required">*</span></label>
+					<lightning-input
+						type="text"
+						value={title}
+						placeholder="Enter title"
+						onchange={handleTitleChange}
+						class={titleInputClass}>
+					</lightning-input>
+					<template if:true={hasTitleError}>
+						<div class="inline-error">{validationErrors.title}</div>
+					</template>
+				</div>
+
+				<div class="form-field">
+					<label class="field-label">Select Date<span class="required">*</span></label>
+					<div class="slot-input-group">
+						<lightning-input
+							type="date"
+							value={selectedDate}
+							min={minimumDate}
+							placeholder="Choose dates"
+							onchange={handleDateChange}
+							class={dateInputClass}>
+						</lightning-input>
+					</div>
+					<template if:true={hasDateError}>
+						<div class="inline-error">{validationErrors.date}</div>
+					</template>
+					<template if:true={dateAvailabilityError}>
+						<div class="inline-error">{dateAvailabilityError}</div>
+					</template>
+				</div>
+
+				<div class="form-field">
+					<label class="field-label">Select Time<span class="required">*</span></label>
+					<div class="slot-inputs">
+						<div class="slot-input-group">
+							<lightning-combobox label="Start time" variant="label-hidden" value={startTime} options={startTimeOptions} placeholder="Choose start time" onchange={handleStartTimeChange} class={startTimeInputClass}></lightning-combobox>
+						</div>
+						<div class="slot-input-group">
+							<lightning-combobox label="End time" variant="label-hidden" value={endTime} options={endTimeOptions} disabled={isEndTimeDisabled} placeholder="Choose end time" onchange={handleEndTimeChange} class={endTimeInputClass}></lightning-combobox>
+						</div>
+					</div>
+					<template if:true={hasTimeError}>
+						<div class="inline-error">{validationErrors.time}</div>
+					</template>
+					<template if:true={timeAvailabilityError}>
+						<div class="inline-error">{timeAvailabilityError}</div>
+					</template>
+				</div>
+
+				<!-- Add Description (Optional) -->
+				<div class="form-field">
+					<label class="field-label">Add Description (Optional)</label>
+					<c-ken-rich-text-editor value={descriptionHtml} placeholder="Add a brief description" onchange={handleDescriptionChange}></c-ken-rich-text-editor>
+				</div>
+
+				<!-- How Would you Like to Meet? -->
+				<div class="form-field">
+					<div class="field-label">How Would you Like to Meet?<span class="required">*</span></div>
+					<div class="radio-group" role="radiogroup" aria-label="Meeting type">
+						<label class="radio-option">
+							<input 
+								type="radio" 
+								name="meetingType" 
+								value="Online"
+								checked={isOnlineSelected}
+								onchange={handleMeetingTypeChange}
+								class="radio-input">
+							<span class="radio-label">Online</span>
+						</label>
+						<label class="radio-option">
+							<input 
+								type="radio" 
+								name="meetingType" 
+								value="In-person"
+								checked={isInPersonSelected}
+								onchange={handleMeetingTypeChange}
+								class="radio-input">
+							<span class="radio-label">In-person</span>
+						</label>
+					</div>
+					<template if:true={isOnlineSelected}>
+						<div class="meeting-link-field">
+							<lightning-input
+								type="url"
+								value={meetLink}
+								placeholder="Enter meet link"
+								onchange={handleMeetLinkChange}
+								class={meetLinkInputClass}>
+							</lightning-input>
+						</div>
+					</template>
+					<template if:true={isInPersonSelected}>
+						<div class="meeting-link-field">
+							<lightning-input
+								type="text"
+								value={meetLink}
+								placeholder="Type the address or paste a Google Maps link"
+								onchange={handleMeetLinkChange}
+								class={meetLinkInputClass}>
+							</lightning-input>
+						</div>
+					</template>
+					<template if:true={hasMeetLinkError}>
+						<div class="inline-error">{validationErrors.meetLink}</div>
+					</template>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="cancel-button" onclick={handleClose}>Cancel</button>
+				<button type="button" class="send-request-button" onclick={handleSendRequest} disabled={isSendDisabled}>{sendButtonLabel}</button>
+			</div>
+		</div>
+	</div>
+</template>

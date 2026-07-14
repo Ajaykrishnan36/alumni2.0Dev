@@ -1,0 +1,123 @@
+<template>
+    <div class="hosted-wrapper">
+        <!-- Header: tabs + actions -->
+        <div class="hosted-header">
+            <div class="tabs">
+                <template for:each={tabs} for:item="t">
+                    <div key={t.key} class={t.class} data-tab={t.key} onclick={handleTabClick}>{t.label}</div>
+                </template>
+            </div>
+            <div class="hosted-actions">
+                <button class="host-btn" onclick={handleHostEvent}>Host an Event</button>
+                <div class="search-box">
+                    <lightning-icon icon-name="utility:search" size="x-small" class="search-icon"></lightning-icon>
+                    <input type="text" class="search-input" placeholder="Search" value={searchTerm} oninput={handleSearch} />
+                </div>
+            </div>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="card-container">
+                <template if:true={hasFilteredEvents}>
+                    <template for:each={filteredEvents} for:item="event">
+                        <div class="event-card" key={event.id}>
+                            <img src={event.image} alt="Event banner" class="event-image event-clickable" data-id={event.id} onclick={handleViewDetails} />
+
+                            <div class="event-body">
+                                <div class="event-title event-clickable" data-id={event.id} onclick={handleViewDetails}>{event.title}</div>
+
+                                <!-- Drafts: status text only -->
+                                <template if:true={isDrafts}>
+                                    <div class="event-subtitle">In Progress</div>
+                                </template>
+
+                                <!-- Other tabs: date • mode -->
+                                <template if:false={isDrafts}>
+                                    <div class="event-subtitle">{event.formattedDateRange} &nbsp;•&nbsp; {event.mode}</div>
+                                </template>
+
+                                <!-- In Review meta -->
+                                <template if:true={isInReview}>
+                                    <div class="event-meta">
+                                        <span class="meta-item">
+                                            <lightning-icon icon-name="utility:event" size="x-small" class="meta-icon"></lightning-icon>
+                                            Submitted on: <strong>{event.submittedOn}</strong>
+                                        </span>
+                                        <span class="meta-item">
+                                            <lightning-icon icon-name="utility:people" size="x-small" class="meta-icon"></lightning-icon>
+                                            Capacity: <strong>{event.capacity}</strong>
+                                        </span>
+                                        <span class="meta-item">
+                                            <lightning-icon icon-name="utility:moneybag" size="x-small" class="meta-icon"></lightning-icon>
+                                            Event Price: <strong>{event.priceLabel}</strong>
+                                        </span>
+                                    </div>
+                                </template>
+
+                                <!-- Approved meta -->
+                                <template if:true={isApproved}>
+                                    <div class="event-meta">
+                                        <span class="meta-item">
+                                            <lightning-icon icon-name="utility:people" size="x-small" class="meta-icon"></lightning-icon>
+                                            Participants: <strong>{event.participants}</strong>
+                                        </span>
+                                        <template if:true={event.offerMeals}>
+                                            <span class="meta-item">
+                                                <lightning-icon icon-name="utility:food_and_drink" size="x-small" class="meta-icon"></lightning-icon>
+                                                Meals opted: <strong>{event.mealsOpted}</strong>
+                                            </span>
+                                        </template>
+                                        <span class="meta-item">
+                                            <lightning-icon icon-name="utility:moneybag" size="x-small" class="meta-icon"></lightning-icon>
+                                            Event Price: <strong>{event.priceLabel}</strong>
+                                        </span>
+                                    </div>
+                                </template>
+
+                                <!-- Rejected meta -->
+                                <template if:true={isRejected}>
+                                    <div class="event-meta">
+                                        <span class="meta-item">
+                                            <lightning-icon icon-name="utility:event" size="x-small" class="meta-icon"></lightning-icon>
+                                            Rejected on: <strong>{event.rejectedOn}</strong>
+                                        </span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Top-right status pill -->
+                            <template if:true={isApproved}>
+                                <span class={event.timelineClass}>
+                                    <template if:true={event.isOngoing}><span class="pill-dot"></span></template>
+                                    {event.timeline}
+                                </span>
+                            </template>
+                            <template if:true={isRejected}>
+                                <span class="status-pill status-rejected">Rejected</span>
+                            </template>
+
+                            <!-- Action -->
+                            <div class="event-action">
+                                <template if:true={isDrafts}>
+                                    <button class="view-details-btn" data-id={event.id} onclick={handleViewDetails}>Continue Event Setup</button>
+                                </template>
+                                <template if:false={isDrafts}>
+                                    <button class="view-details-btn" data-id={event.id} onclick={handleViewDetails}>View Details</button>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={hasFilteredEvents}>
+                    <div class="empty-state">{emptyStateMessage}</div>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

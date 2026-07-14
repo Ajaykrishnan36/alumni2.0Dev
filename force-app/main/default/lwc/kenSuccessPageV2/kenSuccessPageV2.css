@@ -1,0 +1,85 @@
+/* Alumni 2.0 — Registration Success modal — Figma node 10437:147652 */
+
+:host {
+    --a2-secondary-500: #3061FF;
+    --a2-secondary-800: #1A358C;
+    --a2-success: #10B981;
+    --a2-white: #FFFFFF;
+    --a2-blacks-400: #373A45;
+    --a2-neutrals-50: #F6F8FB;
+    --a2-font-title: "General Sans", "Inter", system-ui, sans-serif;
+    --a2-radius-md: 12px;
+
+    display: block;
+    font-family: var(--a2-font-title);
+    color: var(--a2-blacks-400);
+}
+
+.overlay {
+    position: fixed; inset: 0;
+    background: var(--a2-secondary-800);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    width: min(552px, calc(100vw - 48px));
+    background: var(--a2-white);
+    border-radius: var(--a2-radius-md);
+    padding: 36px 48px;
+    display: flex; flex-direction: column; align-items: center; gap: 24px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+}
+
+.badge {
+    position: relative;
+    width: 120px; height: 120px;
+}
+.badge svg { width: 100%; height: 100%; display: block; }
+
+.sparkle {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--a2-success);
+    opacity: 0.5;
+}
+.sparkle--tl { top: 4px; left: 14px; }
+.sparkle--tr { top: 4px; right: 14px; }
+.sparkle--bl { bottom: 6px; left: 18px; }
+.sparkle--br { bottom: 6px; right: 18px; }
+
+.modal__title {
+    margin: 0;
+    font-weight: 600; font-size: 20px; line-height: 140%;
+    color: var(--a2-blacks-400);
+    text-align: center;
+}
+
+.modal__message {
+    margin: 0;
+    font-weight: 500; font-size: 16px; line-height: 150%;
+    color: var(--a2-blacks-400);
+    text-align: center;
+    max-width: 420px;
+}
+
+.modal__cta {
+    margin-top: 8px;
+    min-width: 200px;
+    padding: 12px 36px;
+    height: 48px;
+    background: var(--a2-secondary-500);
+    color: var(--a2-neutrals-50);
+    border: 0; border-radius: 8px;
+    font-family: inherit; font-weight: 500; font-size: 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.modal__cta:hover { background: #2752D6; }
+
+@media (max-width: 600px) {
+    .modal { padding: 28px 24px; }
+    .badge { width: 96px; height: 96px; }
+}

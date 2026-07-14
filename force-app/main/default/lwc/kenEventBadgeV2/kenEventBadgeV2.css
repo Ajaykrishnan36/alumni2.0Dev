@@ -1,0 +1,6 @@
+.evb { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 6px; font-weight: 600; font-size: 11px; letter-spacing: 0.3px; text-transform: uppercase; }
+.evb--emerald { background: #D1FAE5; color: #065F46; }
+.evb--violet  { background: #F5D0FE; color: #86198F; }
+.evb--sky     { background: #DBEAFE; color: #1E40AF; }
+.evb--amber   { background: #FEF3C7; color: #92400E; }
+.evb--rose    { background: #FCE7F3; color: #9D174D; }

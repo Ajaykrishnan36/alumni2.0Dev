@@ -1,0 +1,27 @@
+<template>
+    <div class="online-user-item-wrapper">
+        <div class="online-user-item">
+            <div class="user-avatar-container">
+                <img src={displayImage} alt={name} class="user-avatar" onerror={handleAvatarError} />
+                <div class="user-online-dot"></div>
+            </div>
+            <div class="user-details">
+                <div class="user-name-row">
+                    <span class="user-name">{name}</span>
+                    <template if:true={willingToHelp}>
+                        <div class="user-help-badge">
+                            <lightning-icon icon-name="utility:check" size="xx-small"></lightning-icon>
+                            <span>Willing to help</span>
+                        </div>
+                    </template>
+                    <lightning-icon icon-name="utility:chat" size="small" class="chat-icon"></lightning-icon>
+                </div>
+                <p class="user-batch">{batch}</p>
+                <div class="user-profession-row">
+                    <span class="user-profession">{profession}</span>
+                    <span class="active-status">Active now</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

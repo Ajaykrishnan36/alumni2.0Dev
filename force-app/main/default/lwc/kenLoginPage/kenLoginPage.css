@@ -1,0 +1,1001 @@
+:host {
+  /* --primary-color: #B7202E; */
+}
+
+.login-fullscreen-spinner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.login-page{
+  
+}
+.login-title {
+  font-weight: 700;
+  font-size: 1.65rem;
+  line-height: 1.3;
+  letter-spacing: 0%;
+  text-align: center;
+  color: #1f2430;
+  margin: 0 0 0.35rem 0;
+}
+
+.login-subtitle {
+  color: #373A45;
+  
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 140%;
+  letter-spacing: 0%;
+  text-align: center;
+  margin: 0 0 1.5rem 0;
+}
+.custom-subheading {
+  font-size: 12px; 
+  font-weight: 400; 
+  color: #000;
+  line-height: 18px;
+}
+.custom-description {
+  font-size: 14px; 
+  font-weight: 400; 
+  color: #7B7B7B;
+}
+.custom-class{
+  color: #F15A2B;
+}
+.custom-class-button{
+  color: white;
+  background-color: #F15A2B;
+  height: 60px;
+  border-radius: 11px;
+  border: none;
+}
+.input {
+  border-style: solid;
+  padding: 11px;
+  border-radius: 8px;
+  background-color: #EEEEEE33;
+  border: 1px solid #D8D8D8;
+  border-radius: 6px;
+}
+.remember{
+  margin-left: 5px;
+}
+.custom-class-Signup{
+  color: #F15A2B;
+  font-weight: 600;
+  margin-left: 5px;
+}
+.custom-width .custom-class-button{
+  margin-top: 0px !important;
+}
+.forgotLink{
+  
+}
+.section-width{
+  width: 400px;
+  max-width: 92vw;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 28px 32px;
+  border-radius: 24px;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.14);
+}
+.slds-input{
+  border: 1px solid #D8D8D8;
+  font-size: 12px;
+  font-weight: 400;
+  color: #747474;
+  line-height: 25px;
+  background-color: rgba(255, 255, 255, 1) !important;
+  border-radius: 8px !important;
+}
+.forgotLink{
+  font-size: 12px;
+  font-weight: 400;
+  color: #F15A2B;
+  line-height: 12px;
+  cursor: pointer;
+}
+.registerLink{
+  font-size: 14px;
+  font-weight: 600;
+  color: #F15A2B;
+  line-height: 14px;
+  cursor: pointer;
+}
+.slds-form-element__control {
+    display: flex;
+    align-items: center;
+}
+.toggle-icon {
+    margin-left: -25px;
+    margin-top: -15px;
+    cursor: pointer;
+}
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+.password-input-container lightning-input {
+    flex: 1;
+    --sds-c-input-spacing-inline-end: 2.5rem;
+}
+.password-input-container .slds-form-element__control {
+    position: relative;
+}
+.password-toggle-button {
+    position: absolute;
+    top: -17px;
+    right: 12px;
+    bottom: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: #061938;
+    cursor: pointer;
+    padding: 0;
+    border-radius: 16px;
+    height: auto;
+    width: 20px;
+    z-index: 10;
+}
+.password-toggle-button:focus-visible {
+    outline: 2px solid #01478c;
+    outline-offset: 2px;
+}
+.password-toggle-button lightning-icon {
+    --sds-c-icon-color-foreground-default: #061938;
+}
+.passwordCmp{
+  width: 100%;
+}
+
+.field-label{
+  color: #050917;
+  
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 140%;
+  letter-spacing: 0%;
+  padding-bottom: 10px;
+}
+
+.remember-forgot-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.remember-me-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  
+}
+
+.remember-checkbox {
+  margin-right: 0.5rem;
+  cursor: pointer;
+}
+
+.remember-text {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #373A45;
+  
+}
+
+.forgot-password-text {
+  
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 140%;
+  letter-spacing: 0%;
+  text-align: right;
+  vertical-align: middle;
+  color: #373A45;
+}
+
+.reset-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 140%;
+  letter-spacing: 0%;
+  vertical-align: middle;
+}
+
+.reset-link:hover {
+  text-decoration: underline;
+}
+
+.divider-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 9px 0;
+}
+
+.divider-text {
+  
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 140%;
+  letter-spacing: 0%;
+  vertical-align: middle;
+  color: #585A64;
+  margin: 0 12px;
+  text-align: center;
+}
+
+.sso-buttons-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.google-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #EDEEF1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: white;
+  width: 100%;
+  font-weight: 500;
+  gap: 8px;
+  
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.google-button:hover {
+  background-color: #f9f9f9;
+  border-color: #EDEEF1;
+}
+
+.google-logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Register Now section */
+.register-now-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 24px;
+  
+}
+
+.register-now-text {
+  
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 140%;
+  letter-spacing: 0%;
+  text-align: center;
+  color: #373A45;
+}
+
+.register-now-link {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  text-decoration: underline;
+  text-decoration-style: solid;
+  cursor: pointer;
+  
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 140%;
+  letter-spacing: 0%;
+  text-align: center;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.register-now-link:hover {
+  text-decoration: underline;
+}
+
+/* In-card "Powered by" */
+.card-powered-by {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.card-powered-text {
+  color: #373A45;
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.card-powered-logo {
+  height: 18px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Powered by section */
+.powered-by-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  
+}
+
+.powered-by-text {
+  color: #373A45;
+  
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 140%;
+  letter-spacing: 0%;
+}
+
+.ken42-logo-image {
+  height: 20px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* dialog */
+.slds-modal__container {
+  max-width: 550px;
+  min-height: 680px;
+  max-height: 850px;
+}
+.slds-modal__container_box {
+  max-width: 550px;
+  min-height: 850px;
+}
+.slds-modal__header {
+  position: relative;
+  padding: 1rem 1.5rem;
+  border: none;
+}
+
+.modal-title {
+  color: #FF6600;
+  font-weight: bold;
+  text-align: start;
+}
+
+.slds-modal__close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}
+
+.slds-modal__content {
+  min-height: 400px;
+  max-height: 550px;
+  padding: 0 1rem 1rem 1rem; 
+  border: none !important;
+  overflow-y: scroll !important;
+}
+
+.file-upload-box {
+  border: 2px dashed #ddd;
+  padding: 20px;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.file-upload-text {
+  margin-top: 0.5rem;
+}
+
+.file-upload-note {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.submit-button {
+  background-color: #FF6600;
+  border-color: #FF6600;
+}
+
+.slds-modal__footer{
+  border: none !important;
+  width:100% !important;
+}
+.slds-modal__header hr {
+  width: 100%; 
+}
+
+.file-upload-container {
+  width: 100% !important;
+}
+
+.file-upload-box {
+  border: 2px dashed #d9dde4;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  width: 100%;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.file-upload-box:hover {
+  background-color: white;
+}
+.file-upload-box-query {
+  border: 2px dashed #d9dde4;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  width: 100%;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  padding-bottom: 0% !important;
+}
+.file-upload-querytext {
+  font-size: 14px;
+  color: #6b7075;
+  margin: 0.5rem;
+  font-weight: 700;
+}
+.file-upload-icon {
+  width: 30px;
+  height: 25px;
+  margin-bottom: 5px;
+  fill: none;
+  stroke: #000;
+  stroke-width: 1.5;
+}
+
+.file-upload-text {
+  font-size: 1rem;
+  color: #4b4f56;
+  margin: 0;
+}
+
+.file-upload-subtext {
+  font-size: 0.875rem;
+  color: #6b7075;
+  margin-top: 0.5rem;
+  font-weight: 700;
+}
+.top-dialog {
+  position: fixed;
+  top: 12px;
+  left: 75%;
+  transform: translateX(-50%);
+  width: min(450px, 90vw);
+  min-height: 87px;
+  background: white;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom: 6px solid rgba(56, 142, 60, 1);
+  z-index: 1000;
+  border-radius: 12px;
+}
+
+.dialog-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+}
+
+.text-container {
+  flex-grow: 1;
+  padding-left: 10px;
+}
+
+.dialog-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 0;
+  
+
+}
+
+.text-container p {
+  width: 100%;
+  font-size: 14px;
+  margin: 5px 0 0;
+  color: #555;
+  
+}
+.top-dialog-error {
+  position: fixed;
+  top: 12px;
+  left: 75%;
+  transform: translateX(-50%);
+  width: min(450px, 90vw);
+  min-height: 87px;
+  background: white;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-bottom: 6px solid rgba(192, 43, 43, 1);
+  z-index: 1000;
+  border-radius: 12px;
+}
+
+@media(max-width:700px){.file-upload-box {
+  border: 2px dashed #ddd;
+  /* padding: 20px; */
+  text-align: center;
+  margin-top: 8px;
+  height: 30%;
+}
+.file-upload-box {
+  border: 2px dashed #d9dde4;
+  border-radius: 8px;
+  padding: 1rem !important;
+  text-align: center;
+  width: 100%;
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.section-width{
+  width: 100%;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 24px;
+  border-radius: 24px;
+}
+.slds-modal__content {
+  min-height: 370px;
+  max-height: 750px;
+  padding: 0 1rem 0rem 1rem; 
+  border: none !important;
+}
+.slds-modal__container {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.slds-modal__content {
+  flex-grow: 1;
+  overflow: auto !important; 
+  max-height: 60vh; 
+}
+
+.query-submit-button {
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  /* box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); Adds a shadow to separate it */ 
+}
+.slds-modal__footer{
+  border: none !important;
+  width:100% !important;
+  padding-right: 2rem !important;
+}
+.query-placeholder{
+  font-size: 12px !important;
+}
+.slds-modal__header {
+  position: relative;
+  padding: 1rem 1rem;
+  border: none;
+}
+.top-dialog {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 90% !important; 
+  max-width: 400px !important; 
+  height: auto !important;
+  background: white !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 10px 20px !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  border-bottom: 6px solid rgba(56, 142, 60, 1) !important;
+  z-index: 1000 !important;
+  border-radius: 12px !important;
+}
+.dialog-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+}
+
+.text-container {
+  flex-grow: 1;
+  padding-left: 10px;
+}
+
+.dialog-title {
+  font-size: 12px !important;
+  font-weight: bold;
+  margin: 0;
+}
+
+.text-container p {
+  width: 100% !important;
+  font-size: 12px;
+  margin: 5px 0 0;
+  color: #555;
+}
+.top-dialog-error {
+  position: fixed !important;
+  top: 12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 90% !important; 
+  max-width: 400px !important; 
+  height: auto !important;
+  background: white !important;
+  display: flex !important;
+  align-items: center !important;
+  padding: 10px 20px !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  border-bottom: 6px solid rgba(192, 43, 43, 1) !important;
+  z-index: 1000 !important;
+  border-radius: 8px !important;
+}
+
+}
+.spinner_container{
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  background: rgba(255, 255, 255, 0.5); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.copyright-text {
+margin-top: auto;
+text-align: center;
+font-size: 12px;
+color: #888888;
+padding: 10px 0;
+
+}
+.custom-modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+}
+.error-message{
+  font-family: 'GeneralSansCustom' !important;
+  font-size: 13px;
+}
+.studentportalInputsLogin {
+    --sds-c-input-error-text-font-size: 13px;
+    --sds-c-input-color-background: rgba(255, 255, 255, 1);
+    --sds-c-input-color-background-focus: rgba(255, 255, 255, 1);
+    --sds-c-input-shadow: none;
+    --sds-c-input-shadow-focus: none;
+    --sds-c-input-color-border: #D8D8D8;
+    --sds-c-input-color-border-focus: #D8D8D8;
+    --sds-c-input-radius-border: 8px;
+    --sds-c-input-sizing-height: 48px;
+    --sds-c-input-spacing-block-start: 12px;
+    --sds-c-input-spacing-block-end: 12px;
+    --sds-c-input-spacing-inline-start: 16px;
+    --sds-c-input-spacing-inline-end: 16px;
+}
+
+/* Add background color and border radius to input fields */
+.studentportalInputsLogin .slds-input,
+.studentportalInputsLogin input,
+.studentportalInputsLogin lightning-input .slds-input,
+.studentportalInputsLogin lightning-input input {
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: none !important;
+    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    min-height: 48px !important;
+    height: 48px !important;
+}
+
+.studentportalInputsLogin .slds-input:focus,
+.studentportalInputsLogin input:focus {
+    background: rgba(255, 255, 255, 1) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: #D8D8D8 !important;
+    border-radius: 8px !important;
+}
+
+/* Button styling */
+.studentportal-BlueButtonLogin {
+    --sds-c-button-brand-color-background: var(--primary-color);
+    --sds-c-button-brand-color-background-hover: var(--primary-color);
+    --sds-c-button-brand-color-border: var(--primary-color);
+    --sds-c-button-text-color: white;
+    --sds-c-button-font-size: 0.875rem;
+    --sds-c-button-font-weight: 550;
+    --sds-c-button-radius-border: 8px;
+    display: block !important;
+    width: 55% !important;
+    margin: 0 auto !important;
+}
+
+/* Target all possible button selectors with maximum specificity */
+.studentportal-BlueButtonLogin .slds-button,
+.studentportal-BlueButtonLogin button.slds-button,
+.studentportal-BlueButtonLogin button,
+lightning-button.studentportal-BlueButtonLogin .slds-button,
+lightning-button.studentportal-BlueButtonLogin button,
+lightning-button.studentportal-BlueButtonLogin .slds-button_brand,
+.studentportal-BlueButtonLogin .slds-button_brand {
+    --sds-c-button-brand-color-background: var(--primary-color) !important;
+    --sds-c-button-brand-color-background-hover: var(--primary-color) !important;
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    font-size: 0.875rem !important;
+    font-weight: 550 !important;
+
+    border: none !important;
+    border-radius: 8px !important;
+    width: 55% !important;
+    display: block !important;
+    margin: 0 auto !important;
+}
+
+.studentportal-BlueButtonLogin .slds-button:hover,
+.studentportal-BlueButtonLogin button.slds-button:hover,
+.studentportal-BlueButtonLogin button:hover,
+lightning-button.studentportal-BlueButtonLogin .slds-button:hover,
+lightning-button.studentportal-BlueButtonLogin button:hover,
+lightning-button.studentportal-BlueButtonLogin .slds-button_brand:hover,
+.studentportal-BlueButtonLogin .slds-button_brand:hover {
+    background-color: var(--primary-color) !important;
+}
+
+/* Force override any inline styles with maximum specificity */
+lightning-button.studentportal-BlueButtonLogin button[style],
+.studentportal-BlueButtonLogin button[style],
+lightning-button.studentportal-BlueButtonLogin .slds-button[style],
+.studentportal-BlueButtonLogin .slds-button[style] {
+    background-color: var(--primary-color) !important;
+}
+
+/* Additional overrides for Lightning button variants */
+lightning-button.studentportal-BlueButtonLogin[class*="slds-button"],
+lightning-button.studentportal-BlueButtonLogin .slds-button_brand,
+lightning-button.studentportal-BlueButtonLogin button.slds-button_brand {
+    --sds-c-button-brand-color-background: var(--primary-color) !important;
+}
+
+/* Target neutral variant and override it */
+lightning-button.studentportal-BlueButtonLogin .slds-button_neutral,
+lightning-button.studentportal-BlueButtonLogin button.slds-button_neutral {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+/* Media Query for 1280px Resolution */
+@media screen and (max-width: 1285px) {
+    .section-width { 
+        width: 340px !important; 
+        padding: 10px 14px !important; 
+    }
+    
+    .login-title { 
+        font-size: 0.65rem !important; 
+        margin-bottom: 0.15rem !important; 
+    }
+    
+    .login-subtitle { 
+        font-size: 0.6rem !important; 
+        margin-bottom: 0.6rem !important; 
+    }
+    
+    .field-label { 
+        font-size: 11px !important; 
+        margin-top: 5px !important;
+        padding-bottom: 3px !important; 
+    }
+    
+    .remember-forgot-container { 
+        margin-top: 0.25rem !important; 
+        margin-bottom: 0.5rem !important; 
+    }
+    
+    .remember-text { 
+        font-size: 0.65rem !important; 
+    }
+    
+    .forgot-password-text, 
+    .reset-link { 
+        font-size: 0.65rem !important; 
+    }
+    
+    /* Login button spacing */
+    div[style="margin-top: 25px;"] {
+        margin-top: 10px !important;
+    }
+
+    /* Adjust divider */
+    .divider-text { 
+        font-size: 0.7rem !important; 
+        margin: 0 10px !important; 
+    }
+    
+    .divider-container { 
+        margin: 7px 0 !important; 
+        height: 30px;
+    }
+    
+    /* SSO Buttons */
+    .sso-buttons-container { 
+        gap: 10px !important; 
+        margin-top: 10px !important; 
+    }
+    
+    .google-button { 
+        padding: 6px 10px !important; 
+        font-size: 0.7rem !important; 
+    }
+    
+    .google-logo { 
+        width: 18px !important; 
+        height: 18px !important; 
+    }
+
+    /* Register Now */
+    .register-now-section {
+        margin-top: 8px !important;
+    }
+
+    .register-now-text,
+    .register-now-link {
+        font-size: 0.7rem !important;
+    }
+    
+    /* Powered By */
+    .powered-by-section { 
+        gap: 4px !important; 
+        margin-top: 12px !important; 
+        padding-top: 12px !important; 
+    }
+    
+    .powered-by-text { 
+        font-size: 10px !important; 
+    }
+    
+    .ken42-logo-image {
+        height: 15px !important;
+    }
+
+    /* Error Message */
+    .error-message,
+    .slds-text-color_error {
+        font-size: 10px !important;
+    }
+
+    /* Input height reduction */
+    .studentportalInputsLogin {
+        --sds-c-input-sizing-height: 32px !important;
+        --sds-c-input-spacing-block-start: 4px !important;
+        --sds-c-input-spacing-block-end: 4px !important;
+    }
+    
+    .studentportalInputsLogin .slds-input,
+    .studentportalInputsLogin input,
+    .studentportalInputsLogin lightning-input .slds-input,
+    .studentportalInputsLogin lightning-input input {
+        min-height: 32px !important;
+        height: 32px !important;
+        padding: 4px 10px !important;
+        font-size: 10.5px !important;
+    }
+    
+    /* Button height reduction */
+    .studentportal-BlueButtonLogin .slds-button,
+    .studentportal-BlueButtonLogin button {
+        height: 32px !important;
+        font-size: 0.7rem !important;
+        line-height: normal !important;
+    }
+}
+
+
+/* Mobile Specific Adjustments */
+@media screen and (max-width: 480px) {
+    .section-width {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 24px 18px !important;
+    }
+
+    .loginPageRightContainer {
+        padding: 10px !important;
+    }
+
+    /* Ensure inputs don't overflow */
+    .studentportalInputsLogin {
+        width: 100% !important;
+    }
+
+    /* Increase font sizes for mobile readability */
+    .login-title {
+        font-size: 1rem !important;
+    }
+    
+    .login-subtitle {
+        font-size: 0.85rem !important;
+    }
+
+    .field-label {
+        font-size: 13px !important;
+    }
+
+    .studentportalInputsLogin input,
+    .studentportalInputsLogin .slds-input {
+        font-size: 13px !important;
+    }
+    
+    .studentportalInputsLogin::part(input)::placeholder,
+    .studentportalInputsLogin input::placeholder,
+    .studentportalInputsLogin .slds-input::placeholder {
+        font-size: 13px !important;
+    }
+
+    .studentportal-BlueButtonLogin .slds-button,
+    .studentportal-BlueButtonLogin button {
+        font-size: 0.85rem !important;
+    }
+    
+    .register-now-text, .register-now-link {
+        font-size: 0.8rem !important;
+    }
+}

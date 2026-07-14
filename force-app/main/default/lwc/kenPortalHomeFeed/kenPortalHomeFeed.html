@@ -1,0 +1,85 @@
+<template>
+    <div class="feed-container">
+        <div class="feed-header">
+            <p class="feed-title">Feed</p>
+            <template if:true={showFeedViewMore}>
+                <button type="button" class="feed-view-more-btn" onclick={handleViewMoreFeed}>View more</button>
+            </template>
+        </div>
+
+        <div class="feed-content">
+            <!-- In the Spotlight Section -->
+            <template if:true={showSpotlightSection}>
+            <div class="spotlight-card">
+                <p class="spotlight-title">In the Spotlight</p>
+                <div class="video-container">
+                    <iframe 
+                        width="100%" 
+                        height="315" 
+                        src="https://www.youtube.com/embed/SqXPk7gn5Qc?si=gwstwCNrR6XUbJ64" 
+                        title="YouTube video player" 
+                        style="border: none;"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        referrerpolicy="strict-origin-when-cross-origin" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                <div class="spotlight-content">
+                    <p class="spotlight-headline">Ruby house- trifecta</p>
+                    <p class="spotlight-description">{spotlightDisplayText}</p>
+                    <template if:true={spotlightShowToggle}>
+                        <div class="expand-toggle-mobile">
+                            <button type="button" class="show-all-btn" onclick={toggleSpotlightExpand}>
+                                <template if:false={spotlightExpanded}>Show all</template>
+                                <template if:true={spotlightExpanded}>Minimize</template>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            </template>
+
+            <!-- Feed Items -->
+            <template for:each={displayFeedItems} for:item="item">
+                <div key={item.id} class="feed-item">
+                    <div class="feed-item-icon">
+                        <img src={item.icon} alt={item.title} class="icon-image" />
+                    </div>
+                    <div class="feed-item-content">
+                        <div class="feed-item-header">
+                            <p class="feed-item-title">{item.title}</p>
+                            <span class="feed-item-tag">{item.tag}</span>
+                        </div>
+                        <p class="feed-item-text">{item.contentDisplayText}</p>
+                        <template if:true={item.contentShowToggle}>
+                            <div class="expand-toggle-mobile">
+                                <button type="button" class="show-all-btn feed-item-show-all" onclick={toggleItemContentExpand} data-item-id={item.id}>
+                                    <template if:false={item.contentExpanded}>Show all</template>
+                                    <template if:true={item.contentExpanded}>Minimize</template>
+                                </button>
+                            </div>
+                        </template>
+                        <template if:true={item.hashtags}>
+                            <div class="feed-item-hashtags">
+                                <template for:each={item.hashtags} for:item="tag">
+                                    <span key={tag} class="hashtag">#{tag}</span>
+                                </template>
+                            </div>
+                        </template>
+                        <div class="feed-item-meta">
+                            <span class="feed-item-date">{item.metaDisplayText}</span>
+                            <template if:true={item.metaShowToggle}>
+                                <div class="expand-toggle-mobile">
+                                    <button type="button" class="show-all-btn" onclick={toggleItemMetaExpand} data-item-id={item.id}>
+                                        <template if:false={item.metaExpanded}>Show all</template>
+                                        <template if:true={item.metaExpanded}>Minimize</template>
+                                    </button>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

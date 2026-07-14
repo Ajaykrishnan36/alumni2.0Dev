@@ -1,0 +1,70 @@
+<template>
+    <div class={wrapperClass} onclick={handleContainerClick}>
+        <div
+            class={controlClass}
+            tabindex="0"
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded={isOpen}
+            onclick={handleTriggerClick}
+            onkeydown={handleTriggerKeydown}
+        >
+            <span class={triggerTextClass}>{triggerText}</span>
+            <button
+                type="button"
+                class="sp-icon-btn sp-clear"
+                if:true={hasValue}
+                onclick={handleClearClick}
+                title="Clear"
+            >
+                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+            </button>
+            <svg class="sp-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                <path
+                    d="M3 4.5L6 7.5L9 4.5"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                />
+            </svg>
+        </div>
+
+        <template if:true={isOpen}>
+            <div class="sp-dropdown" role="listbox">
+                <div class="sp-search-wrap">
+                    <input
+                        type="text"
+                        class="sp-search"
+                        placeholder={searchPlaceholder}
+                        value={searchText}
+                        oninput={handleSearchInput}
+                        onkeydown={handleSearchKeydown}
+                    />
+                </div>
+                <div class="sp-list">
+                    <template if:true={hasFilteredOptions}>
+                        <template for:each={filteredOptions} for:item="option">
+                            <div
+                                key={option.key}
+                                class={option.itemClass}
+                                role="option"
+                                data-value={option.value}
+                                onmousedown={handleOptionMouseDown}
+                            >
+                                {option.label}
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={hasFilteredOptions}>
+                        <div class="sp-empty">{noResultsText}</div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={spError}>
+            <div class="sp-error">{spError}</div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,6 @@
+.pill { font-size: 9.5px; font-weight: 700; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.3px; white-space: nowrap; display: inline-block; }
+.pill--info { background: #EAEFFF; color: #3061FF; }
+.pill--warn { background: #FEF3C7; color: #92400E; }
+.pill--accent { background: #F3E8FF; color: #7C3AED; }
+.pill--success { background: #E6F7EF; color: #19A974; }
+.pill--danger { background: #FEE2E2; color: #B91C1C; }

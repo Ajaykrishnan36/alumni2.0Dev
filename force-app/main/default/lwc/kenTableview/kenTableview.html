@@ -1,0 +1,181 @@
+<template>
+    <div class="log-history-container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="header-left">
+                <h1 class="page-title">Log History</h1>
+                <p class="page-subtitle">Keep track of Students and Visitors entry and exit</p>
+            </div>
+            <div class="header-right">
+                <button type="button" class="export-button" onclick={handleExport}>
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 10.6667L4 6.66667H6.66667V2.66667H9.33333V6.66667H12L8 10.6667ZM2.66667 12V13.3333C2.66667 13.7015 2.96514 14 3.33333 14H12.6667C13.0349 14 13.3333 13.7015 13.3333 13.3333V12H2.66667Z" fill="currentColor"/>
+                    </svg>
+                    Export
+                </button>
+                <button type="button" class="view-all-button" onclick={handleViewAll}>
+                    View All →
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="filters-section">
+            <div class="filters-left">
+                <!-- User Type Tabs -->
+                <div class="user-type-tabs">
+                    <button type="button" class={tabButtonClassAll} onclick={handleTabChange} data-tab="all">
+                        View all
+                    </button>
+                    <button type="button" class={tabButtonClassStudents} onclick={handleTabChange} data-tab="students">
+                        Students
+                    </button>
+                    <button type="button" class={tabButtonClassVisitors} onclick={handleTabChange} data-tab="visitors">
+                        Visitors
+                    </button>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="search-container">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M7.33333 12.6667C10.2789 12.6667 12.6667 10.2789 12.6667 7.33333C12.6667 4.38781 10.2789 2 7.33333 2C4.38781 2 2 4.38781 2 7.33333C2 10.2789 4.38781 12.6667 7.33333 12.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 14L11.1 11.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <input 
+                        type="text" 
+                        class="search-input" 
+                        placeholder="Search @olivia" 
+                        value={searchQuery}
+                        oninput={handleSearch}
+                    />
+                    <span class="search-shortcut">⌘K</span>
+                </div>
+            </div>
+
+            <div class="filters-right">
+                <!-- Time Filters -->
+                <div class="time-filters">
+                    <button type="button" class={timeFilterClass30Days} onclick={handleTimeFilterChange} data-filter="30days">
+                        30 days
+                    </button>
+                    <button type="button" class={timeFilterClass7Days} onclick={handleTimeFilterChange} data-filter="7days">
+                        7 days
+                    </button>
+                    <button type="button" class={timeFilterClass24Hours} onclick={handleTimeFilterChange} data-filter="24hours">
+                        24 hours
+                    </button>
+                </div>
+
+                <!-- Date Picker -->
+                <div class="date-picker-container">
+                    <div class="date-display-button">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12.8 2.54562H12.2V1.3335H11V2.54562H5V1.3335H3.8V2.54562H3.2C2.54 2.54562 2 3.09107 2 3.75774V13.4547C2 14.1214 2.54 14.6668 3.2 14.6668H12.8C13.46 14.6668 14 14.1214 14 13.4547V3.75774C14 3.09107 13.46 2.54562 12.8 2.54562ZM12.8 13.4547H3.2V6.78804H12.8V13.4547ZM12.8 5.57592H3.2V3.75774H12.8V5.57592Z" fill="#373A45"/>
+                        </svg>
+                        <span class="date-text">{formattedSelectedDate}</span>
+                    </div>
+                    <lightning-input
+                        type="date"
+                        value={selectedDate}
+                        onchange={handleDateChange}
+                        variant="label-hidden"
+                        class="date-picker-input">
+                    </lightning-input>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="table-container">
+            <table class="log-table">
+                <thead>
+                    <tr>
+                        <th 
+                            class="sortable" 
+                            onclick={handleSort} 
+                            onkeydown={handleSortKeyDown}
+                            data-column="timestamp"
+                            role="button"
+                            tabindex="0">
+                            <span class="th-content">Time stamp<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 4.5L6 1.5L9 4.5" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M3 7.5L6 10.5L9 7.5" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg></span>
+                        </th>
+                        <th class="filterable">
+                            <span class="th-content">User Type<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 4.5L6 1.5L9 4.5" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg></span>
+                        </th>
+                        <th>Name</th>
+                        <th>ID</th>
+                        <th class="filterable">
+                            <span class="th-content">Pass Type<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 4.5L6 1.5L9 4.5" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg></span>
+                        </th>
+                        <th class="filterable">
+                            <span class="th-content">Method<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 4.5L6 1.5L9 4.5" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg></span>
+                        </th>
+                        <th class="filterable">
+                            <span class="th-content">Activity<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 4.5L6 1.5L9 4.5" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg></span>
+                        </th>
+                        <th class="filterable">
+                            <span class="th-content">Status<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M3 4.5L6 1.5L9 4.5" stroke="#666" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg></span>
+                        </th>
+                        <th>Action Taken</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={filteredLogs} for:item="log">
+                        <tr key={log.id}>
+                            <td>{log.formattedTimestamp}</td>
+                            <td>{log.userType}</td>
+                            <td>{log.name}</td>
+                            <td>{log.formattedId}</td>
+                            <td>{log.passType}</td>
+                            <td>{log.method}</td>
+                            <td>
+                                <span class="activity-badge">{log.activity}</span>
+                            </td>
+                            <td>
+                                <span class={log.statusClass}>{log.statusWithBullet}</span>
+                            </td>
+                            
+                            <td>{log.actionTaken}</td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Section -->
+        <div class="pagination-section">
+            <div class="pagination-left">
+                <span class="page-info">Page {currentPage} of {totalPages}</span>
+            </div>
+            <div class="pagination-right">
+                <button 
+                    type="button" 
+                    class="pagination-button"
+                    disabled={isFirstPage}
+                    onclick={handlePreviousPage}>
+                    Previous
+                </button>
+                <button 
+                    type="button" 
+                    class="pagination-button"
+                    disabled={isLastPage}
+                    onclick={handleNextPage}>
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+</template>

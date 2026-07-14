@@ -1,0 +1,96 @@
+<template>
+    <aside>
+        <div class="side-card">
+            <c-ken-jobs-sidebar-tabs-v2 active-tab={activeTab} ontabchange={handleTabChange}></c-ken-jobs-sidebar-tabs-v2>
+
+            <template lwc:if={showApplied}>
+                <template lwc:if={hasApplied}>
+                    <ul class="mini-list">
+                        <template for:each={appliedItems} for:item="j">
+                            <li key={j.id} class="mini-row" data-id={j.id} onclick={handleItem}>
+                                <span class="job__logo" style={j.logoStyle}>{j.l}</span>
+                                <div class="mini-body">
+                                    <div class="mini-title">{j.title}</div>
+                                    <div class="mini-sub">{j.company}</div>
+                                </div>
+                                <c-ken-job-status-pill-v2 status={j.status}></c-ken-job-status-pill-v2>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:if={noApplied}>
+                    <div class="empty">
+                        <svg width="120" height="100" viewBox="0 0 200 160" fill="none">
+                            <ellipse cx="100" cy="148" rx="70" ry="6" fill="#EEF1F6"></ellipse>
+                            <rect x="40" y="120" width="120" height="6" rx="2" fill="#9DA0A8"></rect>
+                            <rect x="45" y="126" width="4" height="20" fill="#9DA0A8"></rect>
+                            <rect x="151" y="126" width="4" height="20" fill="#9DA0A8"></rect>
+                            <circle cx="100" cy="64" r="14" fill="#373A45"></circle>
+                            <path d="M82 118 C82 96 90 84 100 84 C110 84 118 96 118 118 Z" fill="#373A45"></path>
+                            <rect x="92" y="118" width="6" height="6" fill="#373A45"></rect>
+                            <rect x="104" y="118" width="6" height="6" fill="#373A45"></rect>
+                            <path d="M76 116 L86 110 L92 116" stroke="#373A45" stroke-width="3" fill="none" stroke-linecap="round"></path>
+                        </svg>
+                        <p>You have not applied for any jobs yet</p>
+                    </div>
+                </template>
+            </template>
+
+            <template lwc:if={showSaved}>
+                <template lwc:if={hasSaved}>
+                    <ul class="mini-list">
+                        <template for:each={savedItems} for:item="j">
+                            <li key={j.id} class="mini-row" data-id={j.id} onclick={handleItem}>
+                                <span class="job__logo" style={j.logoStyle}>{j.l}</span>
+                                <div class="mini-body">
+                                    <div class="mini-title">{j.title}</div>
+                                    <div class="mini-sub">{j.company}</div>
+                                </div>
+                            </li>
+                        </template>
+                    </ul>
+                </template>
+                <template lwc:if={noSaved}>
+                    <div class="empty">
+                        <svg width="120" height="100" viewBox="0 0 200 160" fill="none">
+                            <ellipse cx="100" cy="148" rx="60" ry="5" fill="#EEF1F6"></ellipse>
+                            <path d="M70 50 h60 v90 l-30-20 -30 20z" fill="none" stroke="#373A45" stroke-width="3"></path>
+                        </svg>
+                        <p>No saved jobs yet</p>
+                    </div>
+                </template>
+            </template>
+        </div>
+
+        <div class="side-card side-card--posted">
+            <h4 class="side-card__title">Posted Jobs</h4>
+            <template lwc:if={hasPosted}>
+                <ul class="mini-list">
+                    <template for:each={postedItems} for:item="p">
+                        <li key={p.id} class="mini-row" data-id={p.id} onclick={handleItem}>
+                            <span class="job__logo" style={p.logoStyle}>{p.l}</span>
+                            <div class="mini-body">
+                                <div class="mini-title">{p.title}</div>
+                                <div class="mini-sub">{p.status}</div>
+                            </div>
+                        </li>
+                    </template>
+                </ul>
+            </template>
+            <template lwc:else>
+                <div class="empty">
+                    <svg width="120" height="100" viewBox="0 0 200 160" fill="none">
+                        <ellipse cx="100" cy="148" rx="70" ry="5" fill="#EEF1F6"></ellipse>
+                        <rect x="55" y="50" width="90" height="70" rx="4" fill="#EAEFFF" stroke="#3061FF" stroke-width="2"></rect>
+                        <circle cx="100" cy="40" r="10" fill="#373A45"></circle>
+                        <path d="M86 78 C86 66 92 60 100 60 C108 60 114 66 114 78 Z" fill="#373A45"></path>
+                        <line x1="68" y1="98" x2="132" y2="98" stroke="#3061FF" stroke-width="2"></line>
+                        <line x1="68" y1="108" x2="120" y2="108" stroke="#3061FF" stroke-width="2"></line>
+                    </svg>
+                    <p>You haven't posted any jobs yet</p>
+                </div>
+            </template>
+            <button class="cta-full" onclick={handlePostJob}>Post a Job</button>
+        </div>
+    </aside>
+</template>

@@ -1,0 +1,116 @@
+<template>
+    <div class="pre-survey-content">
+        <!-- Info banner -->
+        <div class="info-banner-survey">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#3061FF" />
+            </svg>
+            <span>This survey will appear during event registration to collect attendees' preferences.</span>
+        </div>
+
+        <!-- Offer Meals card -->
+        <div class="survey-card">
+            <div class="survey-card-header">
+                <span class="survey-card-title">Offer Meals to Attendees</span>
+                <lightning-input type="toggle" checked={offerMealsEnabled} onchange={handleOfferMealsToggle}
+                    message-toggle-active="" message-toggle-inactive="" variant="label-hidden" class="survey-toggle">
+                </lightning-input>
+            </div>
+
+            <template if:true={offerMealsEnabled}>
+                <div class="survey-card-body">
+                    <!-- Meals grid -->
+                    <table class="meals-table">
+                        <thead>
+                            <tr>
+                                <th class="meal-date-col">Date / Meal</th>
+                                <template for:each={mealColumns} for:item="col">
+                                    <th key={col} class="meal-col">{col}</th>
+                                </template>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={mealRows} for:item="row">
+                                <tr key={row.key}>
+                                    <td class="meal-date-cell">
+                                        <label class="meal-checkbox-label">
+                                            <input type="checkbox" checked={row.allChecked} data-date-key={row.dateKey}
+                                                onchange={handleMealRowToggle} class="meal-checkbox" />
+                                            <span>{row.display}</span>
+                                        </label>
+                                    </td>
+                                    <template for:each={row.cells} for:item="cell">
+                                        <td key={cell.key} class="meal-cell">
+                                            <input type="checkbox" checked={cell.checked} data-date-key={row.dateKey}
+                                                data-meal={cell.meal} onchange={handleMealCellToggle} class="meal-checkbox" />
+                                        </td>
+                                    </template>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+
+                    <!-- Make Meals Paid -->
+                    <template if:true={showMealsPaidAddon}>
+                        <div class="survey-subcard">
+                            <div class="survey-subcard-text">
+                                <div class="survey-subcard-title">Make Meals Paid (Optional Add-On)</div>
+                                <div class="survey-subcard-subtitle">Attendees can opt in and pay during registration. Pricing is set in the next step.</div>
+                            </div>
+                            <lightning-input type="toggle" checked={mealsPaidAddonEnabled} onchange={handleMealsPaidToggle}
+                                message-toggle-active="" message-toggle-inactive="" variant="label-hidden" class="survey-toggle">
+                            </lightning-input>
+                        </div>
+                    </template>
+
+                    <!-- Collect Dietary Preferences -->
+                    <div class="survey-subcard survey-subcard-column">
+                        <div class="survey-subcard-row">
+                            <div class="survey-subcard-title">Collect Dietary Preferences <span class="dietary-required">*</span></div>
+                            <lightning-input type="toggle" checked={dietaryEnabled} onchange={handleDietaryToggle}
+                                disabled={offerMealsEnabled}
+                                message-toggle-active="" message-toggle-inactive="" variant="label-hidden" class="survey-toggle">
+                            </lightning-input>
+                        </div>
+                        <template if:true={dietaryEnabled}>
+                            <div class="dietary-divider"></div>
+                            <div class="dietary-help">Attendees will receive a dietary preference survey and can choose only from the options selected below.</div>
+                            <div class="dietary-options">
+                                <template for:each={dietaryItems} for:item="item">
+                                    <label key={item.value} class="dietary-option">
+                                        <input type="checkbox" checked={item.checked} data-value={item.value}
+                                            onchange={handleDietaryOptionChange} class="meal-checkbox" />
+                                        <span>{item.label}</span>
+                                    </label>
+                                </template>
+                            </div>
+                            <template if:true={dietaryError}>
+                                <div class="dietary-error">{dietaryError}</div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Custom Survey card -->
+        <div class="survey-card">
+            <div class="survey-card-header">
+                <span class="survey-card-title">Custom Survey</span>
+                <lightning-input type="toggle" checked={customSurveyEnabled} onchange={handleCustomSurveyToggle}
+                    message-toggle-active="" message-toggle-inactive="" variant="label-hidden" class="survey-toggle">
+                </lightning-input>
+            </div>
+            <template if:true={customSurveyEnabled}>
+                <div class="survey-card-body">
+                    <div class="custom-survey-section-title">Setup Preference Questions</div>
+                    <c-ken-questionnaire-builder
+                        questions={surveyQuestions}
+                        add-button-label="Add new question"
+                        onquestionschange={handleQuestionsChange}>
+                    </c-ken-questionnaire-builder>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

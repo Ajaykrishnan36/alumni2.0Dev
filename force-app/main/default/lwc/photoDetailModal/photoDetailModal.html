@@ -1,0 +1,89 @@
+<template>
+    <template if:true={showModal}>
+        <div class="modal-overlay" onclick={handleOverlayClick}>
+            <div class="modal-container" onclick={handleModalClick}>
+                <!-- Close Button -->
+                <button class="close-button" type="button" onclick={handleClose}>
+                    <lightning-icon
+                        icon-name="utility:close"
+                        size="small"
+                        alternative-text="Close"
+                    ></lightning-icon>
+                </button>
+
+                <!-- Navigation Arrows -->
+                <button
+                    class="nav-arrow nav-arrow-left"
+                    type="button"
+                    onclick={handlePrevious}
+                    title="Previous photo"
+                >
+                    <lightning-icon
+                        icon-name="utility:chevronleft"
+                        size="medium"
+                        alternative-text="Previous"
+                    ></lightning-icon>
+                </button>
+                <button
+                    class="nav-arrow nav-arrow-right"
+                    type="button"
+                    onclick={handleNext}
+                    title="Next photo"
+                >
+                    <lightning-icon
+                        icon-name="utility:chevronright"
+                        size="medium"
+                        alternative-text="Next"
+                    ></lightning-icon>
+                </button>
+
+                <!-- Photo Content -->
+                <div class="modal-content">
+                    <!-- Top Section -->
+                    <div class="modal-header">
+                        <h2 class="photo-title">{photoTitle}</h2>
+                        <p class="photo-description">{photoDescription}</p>
+                    </div>
+
+                    <!-- Photo Display -->
+                    <div class="photo-display">
+                        <img src={photoImageUrl} alt={photoTitle} class="full-photo" />
+                    </div>
+
+                    <!-- Bottom Section -->
+                    <div class="modal-footer">
+                        <div class="footer-left">
+                            <img
+                                src={profileImageUrl}
+                                alt={personName}
+                                class="footer-profile-image"
+                                data-profile-image="true"
+                            />
+                            <span class="footer-name">{personName}</span>
+                        </div>
+                        <div class="footer-right">
+                            <template if:true={hasLocation}>
+                                <div class="footer-location">
+                                    <lightning-icon
+                                        icon-name="utility:location"
+                                        size="xx-small"
+                                        class="location-icon"
+                                    ></lightning-icon>
+                                    <span class="location-text">{location}</span>
+                                </div>
+                            </template>
+                            <div class="footer-likes">
+                                <lightning-icon
+                                    icon-name="utility:favorite"
+                                    size="xx-small"
+                                    class="likes-icon"
+                                ></lightning-icon>
+                                <span class="likes-count">{likesCount}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

@@ -1,0 +1,12 @@
+.custom-flex-container {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 10px;
+}
+.custom-flex{
+    display: flex;
+    padding-right: 20px;
+}
+.custom-flex-left{
+    padding-left: 20px; 
+}

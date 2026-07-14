@@ -1,0 +1,76 @@
+<template>
+    <div class="custom-phone-input-container">
+        <div class={phoneInputWrapperClass}>
+            <div class="country-selector" onclick={handleDropdownToggle}>
+                <template if:true={selectedCountry}>
+                    <img 
+                        src={flagUrl} 
+                        alt={selectedCountry.name}
+                        class="flag-icon"
+                        onerror={handleFlagError}
+                        loading="eager"
+                    />
+                </template>
+                <span class="dial-code" if:true={selectedCountry}>
+                    {selectedCountry.dialCode}
+                </span>
+                <svg class="dropdown-arrow" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <input
+                type="tel"
+                inputmode="numeric"
+                class="phone-number-input"
+                value={displayValue}
+                placeholder={placeholder}
+                oninput={handleInputChange}
+                onkeypress={handleKeyPress}
+                onfocus={handleFocus}
+                onblur={handleBlur}
+                onkeydown={handleKeyDown}
+                disabled={disabled}
+                required={required}
+                data-id="phone-input"
+            />
+        </div>
+        
+        <template if:true={showDropdown}>
+            <div class="country-dropdown">
+                <div class="country-search-wrapper">
+                    <input
+                        type="text"
+                        class="country-search"
+                        placeholder="Search country..."
+                        value={searchQuery}
+                        oninput={handleSearchChange}
+                    />
+                </div>
+                <div class="country-list">
+                    <template for:each={filteredCountriesList} for:item="country">
+                        <div
+                            key={country.iso}
+                            class="country-item"
+                            data-country-iso={country.iso}
+                            onclick={handleCountryClick}
+                        >
+                            <img 
+                                src={country.flagUrl}
+                                alt={country.name}
+                                class="country-flag"
+                                onerror={handleFlagError}
+                                loading="lazy"
+                            />
+                            <span class="country-name">{country.name}</span>
+                            <span class="country-dial-code">{country.dialCode}</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+        
+        <template if:true={errorMessage}>
+            <div class="error-message">{errorMessage}</div>
+        </template>
+    </div>
+</template>

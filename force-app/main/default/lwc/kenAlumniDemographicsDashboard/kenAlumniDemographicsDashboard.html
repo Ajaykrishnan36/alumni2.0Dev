@@ -1,0 +1,231 @@
+<template>
+    <div class="dashboard">
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="dash-header-top">
+                <div>
+                    <h1 class="dash-title">Alumni Demographics Dashboard</h1>
+                    <p class="dash-subtitle">Interactive insights across {totalAlumni} alumni records</p>
+                </div>
+                <button class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
+                    <template if:true={isRefreshing}>
+                        <span class="btn-spinner"></span>Refreshing...
+                    </template>
+                    <template if:false={isRefreshing}>
+                        &#x21BB; Refresh
+                    </template>
+                </button>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Program / Batch</label>
+                    <select class="filter-select" onchange={handleBatchChange}>
+                        <option value="">All Batches</option>
+                        <template for:each={filterOptions.batches} for:item="b">
+                            <option key={b.value} value={b.value}>{b.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Graduation Year</label>
+                    <select class="filter-select" onchange={handleYearChange}>
+                        <option value="">All Years</option>
+                        <template for:each={filterOptions.years} for:item="y">
+                            <option key={y.value} value={y.value}>{y.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" onchange={handleStatusChange}>
+                        <option value="">All Alumni</option>
+                        <option value="Active">Active Only</option>
+                    </select>
+                </div>
+                <button class="clear-btn" onclick={clearFilters}>&#x2715; Clear</button>
+            </div>
+        </div>
+
+        <!-- Summary Stat Cards -->
+        <div class="stat-row">
+            <div class="stat-card stat-card-clickable" data-type="total" onclick={handleStatCardClick} title="Click to view all alumni">
+                <div class="stat-icon-wrap stat-blue">&#128101;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.totalAlumni}</div>
+                    <div class="stat-label">Total Alumni</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="active" onclick={handleStatCardClick} title="Click to view active alumni">
+                <div class="stat-icon-wrap stat-green">&#9989;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.activeAlumni}</div>
+                    <div class="stat-label">Active Alumni</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-purple">&#128200;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.activePercent}%</div>
+                    <div class="stat-label">Active Rate</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap stat-orange">&#128203;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.avgCompleteness}%</div>
+                    <div class="stat-label">Avg Profile Completeness</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Batch, Gender, Lifecycle -->
+        <div class="grid grid-3">
+            <c-ken-bar-chart
+                title="Active Alumni by Program"
+                description="Count of active alumni per program/batch"
+                data={activeAlumniData}
+                is-loading={loadingActive}
+                dimension="batch"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-donut-chart
+                title="Gender Distribution"
+                description="Alumni breakdown by gender identity"
+                data={genderData}
+                is-loading={loadingGender}
+                dimension="gender"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-donut-chart
+                title="Lifecycle / Persona Stage"
+                description="Alumni at each engagement stage"
+                data={lifecycleData}
+                is-loading={loadingLifecycle}
+                dimension="lifecycle"
+                chart-type="funnel"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+        </div>
+
+        <!-- Row 2: Registration Status, Age, Employment -->
+        <div class="grid grid-3">
+            <c-ken-donut-chart
+                title="Registration Status"
+                description="Alumni by portal registration status"
+                data={multiDimData}
+                is-loading={loadingMultiDim}
+                dimension="registration"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-donut-chart
+                title="Age Distribution"
+                description="Alumni grouped by age bracket"
+                data={ageData}
+                is-loading={loadingAge}
+                dimension="age"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-donut-chart
+                title="Employment Status"
+                description="Current employment status of alumni"
+                data={employmentData}
+                is-loading={loadingEmployment}
+                dimension="employment"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+        </div>
+
+        <!-- Row 3: Profession, Skills, Profile Completeness -->
+        <div class="grid grid-3">
+            <c-ken-bar-chart
+                title="Professional Distribution"
+                description="Alumni by occupation / job role"
+                data={professionalData}
+                is-loading={loadingProfessional}
+                dimension="profession"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Top Skills &amp; Interests"
+                description="Most common skills and mentorship areas"
+                data={interestsData}
+                is-loading={loadingInterests}
+                dimension="interests"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-donut-chart
+                title="Profile Completeness"
+                description="Alumni by profile completion bucket (10-field score)"
+                data={completenessData}
+                is-loading={loadingCompleteness}
+                dimension="completeness"
+                chart-type="funnel"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+        </div>
+
+        <!-- Row 4: Batch Comparison, Graduation Year Distribution -->
+        <div class="grid grid-2">
+            <c-ken-bar-chart
+                title="Batch Comparison"
+                description="Total alumni count per program batch"
+                data={batchData}
+                is-loading={loadingBatch}
+                dimension="batch"
+                chart-type="vertical"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Graduation Year Distribution"
+                description="Number of alumni graduating each year"
+                data={gradYearData}
+                is-loading={loadingGradYear}
+                dimension="year"
+                chart-type="line"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+        <!-- Row 5: Regional Breakdown -->
+        <div class="grid grid-2">
+            <c-ken-bar-chart
+                title="India — State Distribution"
+                description="Alumni spread across Indian states"
+                data={indiaStateData}
+                is-loading={loadingIndia}
+                dimension="state"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Global Distribution"
+                description="Alumni outside India by country / state"
+                data={worldData}
+                is-loading={loadingWorld}
+                dimension="region"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+    </div>
+
+    <!-- Drill-down Modal -->
+    <c-ken-alumni-list-modal
+        is-open={modalOpen}
+        title={modalTitle}
+        alumni-list={modalAlumni}
+        is-loading={modalLoading}
+        onclose={handleModalClose}
+    ></c-ken-alumni-list-modal>
+</template>

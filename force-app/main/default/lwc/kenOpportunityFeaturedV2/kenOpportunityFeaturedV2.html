@@ -1,0 +1,37 @@
+<template>
+    <article class="opp-feat">
+        <div class="opp-feat__img">
+            <div class="opp-feat__img-inner" style={imgStyle}></div>
+            <div class="opp-feat__chips">
+                <span class="opp-feat__chip opp-feat__chip--featured">✦ Featured</span>
+                <span class={catClass}>{category}</span>
+            </div>
+        </div>
+        <div class="opp-feat__body">
+            <h3 class="opp-feat__title">{title}</h3>
+            <p class="opp-feat__desc">{desc}</p>
+            <div class="opp-feat__raised">
+                <div class="opp-feat__raised-left">
+                    <span class="opp-feat__r-eye">Raised</span>
+                    <span class="opp-feat__r-val">{raised}</span>
+                    <template lwc:if={hasProgress}>
+                        <span class="opp-feat__r-target">{target}</span>
+                    </template>
+                </div>
+                <div class="opp-feat__raised-right">
+                    <div class="opp-feat__r-pct"><b>{pctText} funded</b><span>{daysText}</span></div>
+                    <div class="opp-pbar"><div class="opp-pbar__fill" style={progressStyle}></div></div>
+                </div>
+            </div>
+            <div class="opp-feat__meta">
+                <span>👥 {contributors} contributors</span>
+                <span class="opp-feat__meta--em">🛡 Institution-approved</span>
+                <span>📄 Transparent allocation</span>
+            </div>
+            <div class="opp-feat__actions">
+                <button type="button" class="opp-btn opp-btn--primary" onclick={handleGive}>♡ Give now</button>
+                <button type="button" class="opp-btn opp-btn--ghost" onclick={handleDetails}>See full story →</button>
+            </div>
+        </div>
+    </article>
+</template>

@@ -1,0 +1,57 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal modal--lg" onclick={stopBubble}>
+            <div class="modal-cover" style={coverStyle}>
+                <div class="modal-cover-tags">
+                    <template for:each={tagItems} for:item="tg">
+                        <span key={tg.key} class="tag tag--inverse">{tg.label}</span>
+                    </template>
+                </div>
+                <button class="modal-close" onclick={handleClose}>×</button>
+                <div class="modal-cover-overlay">
+                    <div class="modal-cover-logo" style={logoStyle}>{logoLetter}</div>
+                    <div class="modal-cover-text">
+                        <div class="modal-cover-company">{job.company}</div>
+                        <div class="modal-cover-role">{job.title}</div>
+                    </div>
+                </div>
+            </div>
+            <template lwc:if={hasLocation}>
+                <div class="modal-location">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span>{job.location}</span>
+                </div>
+            </template>
+            <div class="modal-head-row">
+                <div class="modal-sub">{job.salary}</div>
+                <div class={matchClass}>✓ {job.skillsMatch}% match</div>
+            </div>
+            <div class="modal-body">
+                <h4 class="sec-h">About the role</h4>
+                <p class="modal-p">Join {job.company} as a {job.title}. Work with a high-performing team on mission-critical systems.</p>
+                <h4 class="sec-h">Requirements</h4>
+                <ul class="modal-list">
+                    <li>3+ years experience in a similar role</li>
+                    <li>Strong fundamentals in core technologies</li>
+                    <li>Excellent communication and ownership</li>
+                </ul>
+                <h4 class="sec-h">Benefits</h4>
+                <ul class="modal-list">
+                    <li>Competitive salary and equity</li>
+                    <li>Health insurance for you and family</li>
+                    <li>Flexible work arrangements</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <template lwc:if={showApply}>
+                    <button class="btn btn--primary" onclick={handleApply} disabled={applyDisabled}>{applyLabel}</button>
+                </template>
+                <template lwc:else>
+                    <span class="owner-note">You posted this job</span>
+                </template>
+                <button class="btn btn--ghost" onclick={handleSave}>{saveLabel}</button>
+                <a class="footer-link" onclick={handleClose}>Close</a>
+            </div>
+        </div>
+    </div>
+</template>

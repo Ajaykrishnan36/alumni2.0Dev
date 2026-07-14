@@ -1,0 +1,228 @@
+<template>
+    <div class="wizard">
+        <!-- Top header bar -->
+        <header class="topbar">
+            <div class="topbar__logo"><span>Institution Logo</span></div>
+            <div class="topbar__right">
+                <button type="button" class="logout" onclick={handleLogout}>Logout</button>
+                <div class="user">
+                    <span class="user__avatar">{userInitial}</span>
+                    <span class="user__name">{userFullName}</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading -->
+        <template lwc:if={isLoading}>
+            <main class="content"><div class="card"><p class="state">Verifying your onboarding link…</p></div></main>
+        </template>
+
+        <!-- Error -->
+        <template lwc:elseif={loadError}>
+            <main class="content"><div class="card">
+                <div class="state state--error">
+                    <h2>We hit a snag</h2>
+                    <p>{loadError}</p>
+                    <button type="button" class="btn btn--primary" onclick={handleLogout}>Back to Login</button>
+                </div>
+            </div></main>
+        </template>
+
+        <!-- Wizard -->
+        <template lwc:else>
+            <main class="content">
+                <div class="card">
+                    <!-- Violet banner (overrides the PNG's blue, matches /SelfRegister) -->
+                    <div class="banner">
+                        <span class="banner__dots" aria-hidden="true"></span>
+                        <h1 class="banner__title">The Gateway to Your Alumni Network</h1>
+                    </div>
+
+                    <!-- Stepper -->
+                    <nav class="stepper">
+                        <template for:each={steps} for:item="s">
+                            <div key={s.id} class={s.stepClass}>
+                                <span class="step__indicator">
+                                    <template lwc:if={s.isComplete}>{s.number}</template>
+                                    <template lwc:elseif={s.isActive}>&#9679;</template>
+                                </span>
+                                <span class="step__label">{s.label}</span>
+                            </div>
+                        </template>
+                    </nav>
+
+                    <div class="body">
+                        <!-- STEP 1: BASIC -->
+                        <template lwc:if={isBasic}>
+                            <div class="basic">
+                                <div class="avatar"><span class="avatar__circle">{userInitial}</span></div>
+                                <p class="basic__greeting">Hello {basic.firstName}! Let's get Started.</p>
+                                <div class="grid">
+                                    <div class="field"><label>First Name<span class="req">*</span></label>
+                                        <input data-field="firstName" type="text" value={basic.firstName} oninput={handleBasicInput} /></div>
+                                    <div class="field"><label>Last Name<span class="req">*</span></label>
+                                        <input data-field="lastName" type="text" value={basic.lastName} oninput={handleBasicInput} /></div>
+                                    <div class="field"><label>Email<span class="req">*</span></label>
+                                        <input data-field="email" type="email" value={basic.email} disabled /></div>
+                                    <div class="field"><label>Phone (Not visible publicly)<span class="req">*</span></label>
+                                        <div class="phone">
+                                            <select class="phone__code" data-field="countryCode" value={basic.countryCode} onchange={handleBasicInput}>
+                                                <option value="+91">🇮🇳 +91</option><option value="+1">🇺🇸 +1</option>
+                                                <option value="+44">🇬🇧 +44</option><option value="+971">🇦🇪 +971</option>
+                                            </select>
+                                            <input class="phone__num" data-field="phone" type="tel" value={basic.phone} oninput={handleBasicInput} />
+                                        </div>
+                                    </div>
+                                    <div class="field"><label>LinkedIn Profile <span class="opt">(Optional)</span></label>
+                                        <input data-field="linkedin" type="text" placeholder="linkedin.com/in/you" value={basic.linkedin} oninput={handleBasicInput} /></div>
+                                    <div class="field"><label>Twitter (X) Profile <span class="opt">(Optional)</span></label>
+                                        <input data-field="twitter" type="text" placeholder="Enter URL" value={basic.twitter} oninput={handleBasicInput} /></div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- STEP 2: EDUCATION -->
+                        <template lwc:if={isEducation}>
+                            <template lwc:if={hasEducation}>
+                                <div class="list">
+                                    <div class="list__header">
+                                        <h2 class="list__title">Educational Background</h2>
+                                        <button type="button" class="btn btn--primary btn--sm" onclick={handleAddEducation}>+ Add More</button>
+                                    </div>
+                                    <template for:each={educationItems} for:item="it">
+                                        <div key={it.id} class="rec">
+                                            <div class="rec__body">
+                                                <p class="rec__title">{it.degree}</p>
+                                                <p class="rec__sub">{it.school}</p>
+                                                <p class="rec__meta">{it.period} | {it.score}</p>
+                                            </div>
+                                            <div class="rec__actions">
+                                                <button type="button" class="icon-btn" data-id={it.id} onclick={handleEditEducation}>Edit</button>
+                                                <button type="button" class="icon-btn" data-id={it.id} onclick={handleDeleteEducation}>Delete</button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="empty">
+                                    <h2 class="empty__title">Add your Education Details</h2>
+                                    <p class="empty__msg">Tell us about your academic background to complete your profile.</p>
+                                    <button type="button" class="btn btn--primary" onclick={handleAddEducation}>+ Add Details</button>
+                                </div>
+                            </template>
+                        </template>
+
+                        <!-- STEP 3: EMPLOYMENT -->
+                        <template lwc:if={isEmployment}>
+                            <template lwc:if={hasEmployment}>
+                                <div class="list">
+                                    <div class="list__header">
+                                        <h2 class="list__title">Career Information</h2>
+                                        <button type="button" class="btn btn--primary btn--sm" onclick={handleAddEmployment}>+ Add More</button>
+                                    </div>
+                                    <template for:each={employmentItems} for:item="it">
+                                        <div key={it.id} class="rec">
+                                            <div class="rec__body">
+                                                <p class="rec__title">{it.title}</p>
+                                                <p class="rec__sub">{it.company}</p>
+                                                <p class="rec__meta">{it.period} | {it.location}</p>
+                                            </div>
+                                            <div class="rec__actions">
+                                                <button type="button" class="icon-btn" data-id={it.id} onclick={handleEditEmployment}>Edit</button>
+                                                <button type="button" class="icon-btn" data-id={it.id} onclick={handleDeleteEmployment}>Delete</button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            <template lwc:else>
+                                <div class="empty">
+                                    <h2 class="empty__title">Add your Career Information</h2>
+                                    <p class="empty__msg">Help us understand your professional background to complete your profile.</p>
+                                    <button type="button" class="btn btn--primary" onclick={handleAddEmployment}>+ Add Career Information</button>
+                                </div>
+                            </template>
+                        </template>
+
+                        <!-- STEP 4: ENGAGEMENT -->
+                        <template lwc:if={isEngagement}>
+                            <div class="engagement">
+                                <p class="engagement__lead">What do you want to do on the platform? This helps us personalise your experience.</p>
+                                <div class="engagement__grid">
+                                    <template for:each={engagementItems} for:item="opt">
+                                        <button key={opt.id} type="button" class={opt.cardClass} data-id={opt.id} onclick={toggleEngagement}>
+                                            <span class={opt.checkClass}>
+                                                <template lwc:if={opt.selected}>&#10003;</template>
+                                            </span>
+                                            <span class="eng-card__label">{opt.label}</span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Footer -->
+                    <footer class="footer">
+                        <template lwc:if={showCancel}>
+                            <button type="button" class="btn btn--outline" onclick={handleCancel}>Cancel</button>
+                            <button type="button" class="btn btn--primary" onclick={handleNext} disabled={isSaving}>{nextLabel}</button>
+                        </template>
+                        <template lwc:else>
+                            <button type="button" class="btn btn--ghost" onclick={handleSkip}>Skip</button>
+                            <button type="button" class="btn btn--outline" onclick={handlePrevious}>Previous Step</button>
+                            <button type="button" class="btn btn--primary" onclick={handleNext} disabled={isSaving}>{nextLabel}</button>
+                        </template>
+                    </footer>
+                </div>
+            </main>
+        </template>
+
+        <!-- Education modal -->
+        <template lwc:if={showEducationModal}>
+            <div class="modal-backdrop" onclick={handleCloseEducation}>
+                <div class="modal" onclick={handleModalStop}>
+                    <h3 class="modal__title">Education Details</h3>
+                    <div class="field"><label>Degree / Course<span class="req">*</span></label>
+                        <input data-field="degree" type="text" value={eduDraft.degree} oninput={handleEduDraft} /></div>
+                    <div class="field"><label>School / University</label>
+                        <input data-field="school" type="text" value={eduDraft.school} oninput={handleEduDraft} /></div>
+                    <div class="grid">
+                        <div class="field"><label>Period</label>
+                            <input data-field="period" type="text" placeholder="2018 - 2022" value={eduDraft.period} oninput={handleEduDraft} /></div>
+                        <div class="field"><label>Score / GPA</label>
+                            <input data-field="score" type="text" value={eduDraft.score} oninput={handleEduDraft} /></div>
+                    </div>
+                    <div class="modal__actions">
+                        <button type="button" class="btn btn--outline" onclick={handleCloseEducation}>Cancel</button>
+                        <button type="button" class="btn btn--primary" onclick={handleSaveEducation}>Save</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Employment modal -->
+        <template lwc:if={showEmploymentModal}>
+            <div class="modal-backdrop" onclick={handleCloseEmployment}>
+                <div class="modal" onclick={handleModalStop}>
+                    <h3 class="modal__title">Career Information</h3>
+                    <div class="field"><label>Job Title<span class="req">*</span></label>
+                        <input data-field="title" type="text" value={empDraft.title} oninput={handleEmpDraft} /></div>
+                    <div class="field"><label>Company</label>
+                        <input data-field="company" type="text" value={empDraft.company} oninput={handleEmpDraft} /></div>
+                    <div class="grid">
+                        <div class="field"><label>Period</label>
+                            <input data-field="period" type="text" placeholder="2022 - Present" value={empDraft.period} oninput={handleEmpDraft} /></div>
+                        <div class="field"><label>Location</label>
+                            <input data-field="location" type="text" value={empDraft.location} oninput={handleEmpDraft} /></div>
+                    </div>
+                    <div class="modal__actions">
+                        <button type="button" class="btn btn--outline" onclick={handleCloseEmployment}>Cancel</button>
+                        <button type="button" class="btn btn--primary" onclick={handleSaveEmployment}>Save</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

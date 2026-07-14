@@ -1,0 +1,29 @@
+<template>
+    <template for:each={questionRows} for:item="q">
+        <div key={q.id} class="q-row">
+            <div class="q-row__head">
+                <span class="q-row__num">Question {q.n}</span>
+                <button type="button" class="q-row__del" data-id={q.id} onclick={handleRemove}>x</button>
+            </div>
+            <div class="q-grid">
+                <select data-id={q.id} onchange={handleType}>
+                    <option value="radio">Single Choice</option>
+                    <option value="multi">Multiple Choice</option>
+                    <option value="rating">Rating</option>
+                    <option value="short">Short Text</option>
+                    <option value="long">Long Text</option>
+                </select>
+                <input type="text" value={q.text} data-id={q.id} oninput={handleText}/>
+            </div>
+            <template lwc:if={q.hasOpts}>
+                <div class="opts">
+                    <template for:each={q.optionItems} for:item="oi">
+                        <div key={oi.key} class="opt-input"><span class="opt-input__dot"></span><input type="text" value={oi.value}/></div>
+                    </template>
+                    <button type="button" class="add-opt" data-id={q.id} onclick={handleAddOption}>+ Add option</button>
+                </div>
+            </template>
+        </div>
+    </template>
+    <button type="button" class="add-q-btn" onclick={handleAdd}>+ Add Question</button>
+</template>

@@ -1,0 +1,97 @@
+<template>
+    <div class="album-card">
+        <!-- Menu Button (owner only) -->
+        <template if:true={isOwner}>
+            <button
+                class="menu-button"
+                type="button"
+                onclick={handleMenuClick}
+                title="More options"
+            >
+                <lightning-icon
+                    icon-name="utility:threedots"
+                    size="x-small"
+                    alternative-text="Menu"
+                    class="menu-icon"
+                ></lightning-icon>
+            </button>
+
+            <!-- Menu Dropdown -->
+            <template if:true={showMenu}>
+                <div class="menu-dropdown">
+                    <div
+                        class="menu-item"
+                        data-action="edit"
+                        onclick={handleMenuAction}
+                    >
+                        Edit
+                    </div>
+                    <div
+                        class="menu-item"
+                        data-action="delete"
+                        onclick={handleMenuAction}
+                    >
+                        Delete
+                    </div>
+                </div>
+            </template>
+        </template>
+
+        <!-- Album Header -->
+        <div class="album-header">
+            <h3 class="album-name" onclick={handleAlbumClick}>{albumName}</h3>
+            <p class="album-date">Last updated on: {lastUpdatedDate}</p>
+        </div>
+
+        <!-- Album Cover Image -->
+        <div class="album-cover" onclick={handleAlbumClick}>
+            <template if:true={hasCoverImage}>
+                <img src={coverImageUrl} alt={albumName} class="cover-image" />
+            </template>
+            <template if:false={hasCoverImage}>
+                <div class="cover-placeholder">
+                    <lightning-icon
+                        icon-name="utility:image"
+                        size="large"
+                        class="placeholder-icon"
+                    ></lightning-icon>
+                </div>
+            </template>
+        </div>
+
+        <!-- Album Footer -->
+        <div class="album-footer">
+            <div class="owner-info">
+                <div class="owner-avatar-container">
+                    <img
+                        src={ownerProfileImageUrl}
+                        alt={ownerName}
+                        class="owner-avatar"
+                        data-profile-image="true"
+                        onerror={handleAvatarError}
+                    />
+                </div>
+                <span class="owner-name">{ownerName}</span>
+                <template if:true={isLinked}>
+                    <lightning-icon
+                        icon-name="utility:new_window"
+                        size="xx-small"
+                        class="linked-icon"
+                        alternative-text="Linked to external folder"
+                        title="Linked to external folder"
+                    ></lightning-icon>
+                </template>
+            </div>
+            <template if:true={hasPhotos}>
+                <div class="collaborators-info">
+                    <lightning-icon
+                        icon-name="utility:image"
+                        size="xx-small"
+                        class="collaborators-icon"
+                    ></lightning-icon>
+                    <span class="collaborators-count">{photoCountLabel}</span>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

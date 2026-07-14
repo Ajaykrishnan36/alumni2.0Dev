@@ -1,0 +1,104 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal modal--md">
+            <div class="modal-head-row">
+                <div>
+                    <div class="wizard-counter">{stepCounter}</div>
+                    <h2 class="modal-title">Create a Group</h2>
+                </div>
+                <button class="modal-close modal-close--inline" onclick={handleClose}>×</button>
+            </div>
+            <div class="wizard-progress"><div class="wizard-progress__bar" style={progressStyle}></div></div>
+            <div class="wizard-stepper">
+                <template for:each={steps} for:item="s">
+                    <div key={s.id} class={s.cssClass}>
+                        <span class="wstep__num">{s.num}</span>
+                        <span class="wstep__label">{s.label}</span>
+                    </div>
+                </template>
+            </div>
+
+            <div class="modal-body">
+                <template lwc:if={isBasics}>
+                    <h3 class="step-h">Setup Group</h3>
+                    <div class="uploader" style={coverStyle}>
+                        <p class="uploader__hint">
+                            <template lwc:if={uploading}>Uploading cover…</template>
+                            <template lwc:else>Cover preview</template>
+                        </p>
+                    </div>
+                    <div class="field">
+                        <label>Cover Photo (Optional)</label>
+                        <input type="file" accept="image/*" onchange={handleCover}/>
+                    </div>
+                    <div class="field"><label>Group Name *</label>
+                        <input data-field="name" value={name} oninput={handleField} placeholder="Group name will be visible in the platform"/>
+                    </div>
+                    <div class="field"><label>Add Tags (Optional)</label>
+                        <input data-field="tags" value={tags} oninput={handleField} placeholder="alumni, networking, batch-2018"/>
+                    </div>
+                    <div class="field"><label>Group Description (Optional)</label>
+                        <textarea data-field="desc" oninput={handleField} placeholder="Describe your group's purpose">{desc}</textarea>
+                    </div>
+                    <div class="who-can-join">
+                        <label>Who can join this group? *</label>
+                        <div class="radios">
+                            <button type="button" class={visibilityPublicClass} data-value="public" onclick={handleVisibility}>Public — Anyone can join</button>
+                            <button type="button" class={visibilityPrivateClass} data-value="private" onclick={handleVisibility}>Private — Users must request to join</button>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:if={isRules}>
+                    <h3 class="step-h">Group Rules</h3>
+                    <p class="step-sub">Set guidelines for member behavior. One rule per line.</p>
+                    <div class="field"><label>Rules of the Group</label>
+                        <textarea data-field="rules" oninput={handleField} placeholder="1. Be kind and courteous">{rules}</textarea>
+                    </div>
+                </template>
+
+                <template lwc:if={isAudience}>
+                    <h3 class="step-h">Target Audience</h3>
+                    <p class="step-sub">Who is this group for?</p>
+                    <!-- Reuses the canonical audience builder so audience selection
+                         is consistent across modules. -->
+                    <c-ken-event-step-details-v2 hide-heading audience-data={audienceData} onvaluechange={handleAudienceChange}></c-ken-event-step-details-v2>
+                </template>
+
+                <template lwc:if={isSummary}>
+                    <h3 class="step-h">Review &amp; Submit</h3>
+                    <div class="summary-card">
+                        <div class="summary-sec">
+                            <span class="summary-sec__h">Basics</span>
+                            <button type="button" class="summary-edit" data-step="0" onclick={goToStep}>Edit</button>
+                        </div>
+                        <div class="summary-row"><span class="summary-row__l">Name</span><span class="summary-row__r">{name}</span></div>
+                        <div class="summary-row"><span class="summary-row__l">Description</span><span class="summary-row__r">{desc}</span></div>
+                        <div class="summary-row"><span class="summary-row__l">Tags</span><span class="summary-row__r">{tags}</span></div>
+                        <div class="summary-row"><span class="summary-row__l">Visibility</span><span class="summary-row__r">{visibilityLabel}</span></div>
+                        <div class="summary-row"><span class="summary-row__l">Cover</span><span class="summary-row__r">
+                            <template lwc:if={bannerUrl}>Uploaded ✓</template><template lwc:else>—</template></span></div>
+
+                        <div class="summary-sec">
+                            <span class="summary-sec__h">Rules</span>
+                            <button type="button" class="summary-edit" data-step="1" onclick={goToStep}>Edit</button>
+                        </div>
+                        <div class="summary-row"><span class="summary-row__l">Rules</span><span class="summary-row__r">{rules}</span></div>
+
+                        <div class="summary-sec">
+                            <span class="summary-sec__h">Target Audience</span>
+                            <button type="button" class="summary-edit" data-step="2" onclick={goToStep}>Edit</button>
+                        </div>
+                        <div class="summary-row"><span class="summary-row__l">Audience</span><span class="summary-row__r">{audienceSummary}</span></div>
+                    </div>
+                    <p class="step-sub">Your group will be submitted for review by the alumni office.</p>
+                </template>
+            </div>
+
+            <div class="modal-footer wizard-footer">
+                <button type="button" class="btn btn--outline" onclick={handleBack} disabled={backDisabled}>Back</button>
+                <button type="button" class="btn btn--primary" onclick={handleNext}>{nextLabel}</button>
+            </div>
+        </div>
+    </div>
+</template>

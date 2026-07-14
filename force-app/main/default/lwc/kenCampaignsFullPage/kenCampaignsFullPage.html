@@ -1,0 +1,103 @@
+<template>
+    <div class="dashboard-container">
+        <!-- Left Column -->
+        <div class="main-column">
+            <!-- Donor Impact Section -->
+            <div class="section-card donor-impact-section">
+                <div class="section-header">
+                    <h2 class="section-title">Donor Impact</h2>
+                </div>
+                <div class="divider"></div>
+                <p class="section-subtitle">Any contribution you make-small or big-results in the growth and welfare of your alma mater as the numbers here prove</p>
+                
+                <div class="impact-grid">
+                    <div class="impact-card">
+                        <h3>2,000+</h3>
+                        <p>Students receiving<br/>alumni-backed support</p>
+                    </div>
+                    <div class="impact-card">
+                        <h3>15+</h3>
+                        <p>Major facilities improved<br/>with alumni contributions</p>
+                    </div>
+                    <div class="impact-card">
+                        <h3>120+</h3>
+                        <p>Clubs and events enabled<br/>by alumni</p>
+                    </div>
+                    <div class="impact-card">
+                        <h3>50+</h3>
+                        <p>Research initiatives<br/>boosted by alumni funding</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Donate for a Cause Section -->
+            <div class="section-card donate-cause-section">
+                <div class="section-header space-between">
+                    <h2 class="section-title">Donate for a Cause</h2>
+                    <button class="view-all-campaigns-btn" onclick={handleViewAllCampaigns}>View All Campaigns</button>
+                </div>
+                <div class="divider"></div>
+
+                <div class="cause-grid">
+                    <template for:each={causes} for:item="cause">
+                        <div key={cause.id} class="cause-card">
+                            <img src={cause.image} alt={cause.title} class="cause-image" />
+                            <div class="cause-content">
+                                <h3 class="cause-title">{cause.title}</h3>
+                                <p class="cause-desc">{cause.description}</p>
+                                <div class="cause-footer">
+                                    <span class="explore-text">Explore</span>
+                                    <lightning-icon icon-name="utility:arrow_right" size="xx-small" class="explore-icon"></lightning-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="side-column">
+            <!-- My Campaigns Section -->
+            <div class="section-card my-campaigns-section">
+                <h2 class="section-title">My Campaigns</h2>
+                
+                <div class="campaign-list">
+                    <template for:each={myCampaigns} for:item="campaign">
+                        <div key={campaign.id} class="campaign-list-item">
+                            <div class="campaign-item-content">
+                                <h4>{campaign.title}</h4>
+                                <div class={campaign.statusClass}>
+                                    <template if:true={campaign.showDot}>
+                                        <div class="status-dot"></div>
+                                    </template>
+                                    <span>{campaign.status}</span>
+                                </div>
+                                <template if:true={campaign.date}>
+                                    <p class="campaign-date">{campaign.date}</p>
+                                </template>
+                            </div>
+                            <img src={campaign.image} alt={campaign.title} class="campaign-item-image" />
+                        </div>
+                    </template>
+                </div>
+                
+                <button class="view-all-btn" onclick={handleOpenFundraiseTabs}>View All</button>
+            </div>
+
+            <!-- Create New Campaign Section -->
+            <div class="create-campaign-card" onclick={handleOpenCreateCampaign}>
+                <div class="card-header">
+                    <div class="header-content">
+                        <h3 class="card-title">Create New Campaign</h3>
+                        <lightning-icon icon-name="utility:chevronright" size="small" class="arrow-icon"></lightning-icon>
+                    </div>
+                </div>
+                <div class="header-line"></div>
+                <div class="create-illustration">
+                    <img src={illustrationImage} alt="Create New Campaign" class="list-business-image" />
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

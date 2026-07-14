@@ -1,0 +1,44 @@
+.backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+}
+
+.popup {
+    background: #ffffff;
+    border-radius: 0.9rem;
+    padding: 1.25rem 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 18px 50px rgba(12, 22, 40, 0.2);
+}
+
+.iconWrap {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.iconWrap.success {
+    background: #e7f6ee;
+    --slds-c-icon-color-foreground-default: #1f8a4a;
+}
+
+.iconWrap.error {
+    background: #fdecec;
+    --slds-c-icon-color-foreground-default: #c23934;
+}
+
+.message {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2430;
+}

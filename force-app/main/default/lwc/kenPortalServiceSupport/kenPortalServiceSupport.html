@@ -1,0 +1,129 @@
+<template>
+    <!-- Notification modal -->
+    <c-ken-notification-modal
+        is-visible={isSuccessToastVisible}
+        toast-title={successTitle}
+        toast-message={successDescription}
+        toast-variant="success">
+    </c-ken-notification-modal>
+
+    <!-- Skeleton while theme + user resolve (prevents default-color flash) -->
+    <template lwc:if={isLoading}>
+        <div class="service-support-container">
+            <c-ken-skeleton-loader variant="page" rows="1" with-title="true" with-breadcrumb="false"></c-ken-skeleton-loader>
+            <div class="sk-main-layout">
+                <c-ken-skeleton-loader variant="list" rows="4"></c-ken-skeleton-loader>
+                <div class="sk-right-col">
+                    <c-ken-skeleton-loader variant="card"></c-ken-skeleton-loader>
+                    <c-ken-skeleton-loader variant="card"></c-ken-skeleton-loader>
+                </div>
+            </div>
+            <c-ken-skeleton-loader variant="table" rows="3"></c-ken-skeleton-loader>
+        </div>
+    </template>
+
+    <template lwc:else>
+    <div class="service-support-container">
+        <h1 class="page-title">Service &amp; Support</h1>
+        <!-- Header Section with Greeting and Search -->
+        <c-ken-service-support-header
+            user-name={userName}
+            onsearchchange={handleSearchChange}>
+        </c-ken-service-support-header>
+
+        <!-- Search Results View -->
+        <template if:true={hasSearchQuery}>
+            <div class="search-results-container">
+                <template if:true={searchResults.length}>
+                    <div class="results-header">
+                        <p class="results-count">Showing {searchResultsCount} results</p>
+                    </div>
+                    <div class="results-list">
+                        <template for:each={searchResults} for:item="result">
+                            <div
+                                key={result.id}
+                                class="result-item"
+                                data-result-id={result.id}>
+                                <div class="result-content">
+                                    <h3 class="result-title">{result.title}</h3>
+                                    <p class="result-description">{result.description}</p>
+                                </div>
+                                <span class={result.buttonClass}>
+                                    {result.buttonText}
+                                </span>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+                <template if:false={searchResults.length}>
+                    <div class="no-results-container">
+                        <div class="no-results-icon">
+                            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Paper Boat -->
+                                <path d="M60 30L30 50L60 70L90 50L60 30Z" fill="#4B5563" fill-opacity="0.8"/>
+                                <path d="M60 30L45 40L60 50L75 40L60 30Z" fill="#374151" fill-opacity="0.6"/>
+                                <!-- Water Waves -->
+                                <path d="M20 80Q30 75 40 80T60 80T80 80T100 80" stroke="#9CA3AF" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                <path d="M15 90Q25 85 35 90T55 90T75 90T95 90" stroke="#9CA3AF" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                <path d="M10 100Q20 95 30 100T50 100T70 100T90 100" stroke="#9CA3AF" stroke-width="2" fill="none" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <p class="no-results-text">No results found</p>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Normal Content View -->
+        <template if:false={hasSearchQuery}>
+            <!-- Main Content Area -->
+            <div class="main-content">
+                <!-- Left Column: FAQ Section -->
+                <div class="left-column">
+                    <c-ken-faq-section 
+                        faq-data={faqData}
+                        search-query={searchQuery}>
+                    </c-ken-faq-section>
+                </div>
+
+                <!-- Right Column: Service Cards -->
+                <div class={rightColumnClass}>
+                    <c-ken-service-request-card
+                        onservicerequestclick={handleServiceRequestClick}>
+                    </c-ken-service-request-card>
+                    <template if:true={showNeedHelp}>
+                        <c-ken-need-help-card
+                            onneedhelpclick={handleNeedHelpClick}>
+                        </c-ken-need-help-card>
+                    </template>
+                </div>
+            </div>
+
+            <!-- History Section -->
+            <div class="history-section">
+                <c-ken-service-history
+                    service-history={serviceHistoryData}
+                    support-history={supportHistoryData}
+                    active-tab={activeHistoryTab}
+                    ontabchange={handleHistoryTabChange}
+                    onticketselect={handleTicketSelect}
+                    onfiledownload={handleFileDownload}
+                    onleavefeedback={handleLeaveFeedback}
+                    onviewall={handleHistoryViewAll}
+                    record-limit="3"
+                    show-view-all-button
+                    self-fetch="false">
+                </c-ken-service-history>
+            </div>
+        </template>
+
+        <!-- Need Help Modal -->
+        <template if:true={showNeedHelpModal}>
+            <c-ken-need-help-modal
+                onclose={handleCloseModal}
+                onsubmit={handleModalSubmit}>
+            </c-ken-need-help-modal>
+        </template>
+    </div>
+    </template>
+</template>

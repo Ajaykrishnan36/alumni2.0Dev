@@ -1,0 +1,74 @@
+<template>
+    <div class="overlay" onclick={cancel}>
+        <div class="modal" onclick={stopProp} role="dialog" aria-modal="true" aria-labelledby="ef-title">
+            <header class="modal__header">
+                <h2 id="ef-title" class="modal__title">Add Education</h2>
+            </header>
+
+            <div class="modal__body">
+                <div class="grid">
+                    <div class="field full-row-spacer">
+                        <label>Degree</label>
+                        <input data-field="degree" type="text" placeholder="e.g., Bachelor of Science" value={form.degree} oninput={handleInput} />
+                    </div>
+                    <div class="field">
+                        <label>Institution / University</label>
+                        <input data-field="institution" type="text" placeholder="e.g., Jain University" value={form.institution} oninput={handleInput} />
+                    </div>
+
+                    <div class="field">
+                        <label>Start Date</label>
+                        <div class="row">
+                            <select class="select" data-field="startMonth" value={form.startMonth} onchange={handleInput}>
+                                <template for:each={monthOptions} for:item="m"><option key={m.value} value={m.value}>{m.label}</option></template>
+                            </select>
+                            <select class="select" data-field="startYear" value={form.startYear} onchange={handleInput}>
+                                <template for:each={yearOptions} for:item="y"><option key={y.value} value={y.value}>{y.label}</option></template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>&nbsp;</label>
+                        <div></div>
+                    </div>
+
+                    <div class="field">
+                        <label>End Date</label>
+                        <div class="row">
+                            <select class="select" data-field="endMonth" value={form.endMonth} onchange={handleInput}>
+                                <template for:each={monthOptions} for:item="m"><option key={m.value} value={m.value}>{m.label}</option></template>
+                            </select>
+                            <select class="select" data-field="endYear" value={form.endYear} onchange={handleInput}>
+                                <template for:each={yearOptions} for:item="y"><option key={y.value} value={y.value}>{y.label}</option></template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field"><label>&nbsp;</label></div>
+
+                    <div class="field">
+                        <label>Grading format (Optional)</label>
+                        <div class="radio-row">
+                            <label class="radio">
+                                <span class={cgpaDotClass} onclick={setCgpa}></span>
+                                <span onclick={setCgpa}>CGPA</span>
+                            </label>
+                            <label class="radio">
+                                <span class={pctDotClass} onclick={setPct}></span>
+                                <span onclick={setPct}>Percentage</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{scoreLabel}</label>
+                        <input data-field="score" type="text" placeholder={scorePlaceholder} value={form.score} oninput={handleInput} />
+                    </div>
+                </div>
+            </div>
+
+            <footer class="modal__footer">
+                <button type="button" class="btn btn--outline" onclick={cancel}>Cancel</button>
+                <button type="button" class="btn btn--primary" onclick={save}>Save</button>
+            </footer>
+        </div>
+    </div>
+</template>

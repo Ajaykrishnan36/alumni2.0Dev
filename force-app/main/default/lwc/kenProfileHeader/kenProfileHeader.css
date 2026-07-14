@@ -1,0 +1,510 @@
+/* Card container – white surface with the standard product-rule border + shadow
+   (driven by the --portal-* tokens from the site styles.css). */
+.profile-card {
+    position: relative;
+    background-color: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: var(--portal-radius, 12px);
+    padding: 24px;
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 16px;
+    /* font-family: 'GeneralSansCustom', -apple-system, BlinkMacSystemFont, sans-serif; */
+}
+
+.profile-card-inner {
+    display: flex;
+    align-items: stretch;
+    gap: 24px;
+    min-height: 120px;
+}
+
+/* ========== Left: Profile image ========== */
+.card-left {
+    flex-shrink: 0;
+}
+
+.profile-image-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.profile-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+    /* box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); */
+}
+
+.online-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 14px;
+    height: 14px;
+    background-color: #10b981;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    z-index: 2;
+    transform: none;
+}
+
+/* ========== Center: Name, subtitle, education, location ========== */
+.card-center {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+.name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.profile-name {
+    font-size: 1.25rem;
+    font-weight: 550;
+    color: #111827;
+    margin: 0;
+    line-height: 1.25;
+}
+
+.linkedin-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.linkedin-icon-box {
+    width: 28px;
+    height: 28px;
+    background-color: #0077b5;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.linkedin-icon {
+    --slds-c-icon-color-foreground-default: #ffffff;
+}
+
+.profile-subtitle {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: #374151;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.profile-education {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.profile-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.profile-location .location-icon {
+    --slds-c-icon-color-foreground-default: #6b7280;
+    flex-shrink: 0;
+}
+
+.location-text {
+    font-size: 0.8125rem;
+    color: #6b7280;
+}
+
+/* ========== Right: Badge + action buttons ========== */
+.card-right {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: nowrap;
+}
+
+/* Connect – filled primary button */
+.btn-connect {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.btn-connect:hover:not(:disabled) {
+    opacity: 0.88;
+}
+
+.btn-connect--requested {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    cursor: default;
+}
+
+.btn-connect--loading {
+    background-color: #e5e7eb;
+    color: #6b7280;
+    cursor: default;
+}
+
+.btn-connect:disabled {
+    cursor: default;
+}
+
+/* Request Mentorship – text only, primary color */
+.btn-request-mentorship {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.35rem 1rem;
+    white-space: nowrap;
+}
+
+.btn-request-mentorship:hover:not(:disabled) {
+    text-decoration: underline;
+}
+
+.btn-request-mentorship--requested {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #6ee7b7;
+    border-radius: 8px;
+    cursor: default;
+    padding: 0.35rem 1rem;
+}
+
+.btn-request-mentorship--loading {
+    color: #6b7280;
+    cursor: default;
+}
+
+/* Message – filled primary button */
+.btn-message {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 0.5rem;
+}
+
+.btn-message:hover {
+    opacity: 0.92;
+}
+
+/* 3-dot menu – outline, primary border */
+.btn-menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background: #ffffff;
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--primary-color);
+}
+
+.btn-menu:hover {
+    background-color: #f8fafc;
+}
+
+.menu-dots-icon {
+    color: var(--primary-color);
+}
+
+/* View ID Card */
+.btn-view-id-card {
+    background-color: var(--primary-color);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-right: 0.5rem;
+}
+.btn-view-id-card:hover {
+    opacity: 0.92;
+}
+
+/* Edit Pen Icon Styling */
+.ken-edit-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--secoundry-color, #f3f4f6);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.ken-edit-icon-btn:hover {
+    filter: brightness(0.95);
+}
+
+/* Mentor badge – green pill, top-right */
+.mentor-badge {
+    position: absolute;
+    top: 0px;
+    right: -1px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background-color: #22C55E;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 0px 12px;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.mentor-icon {
+    flex-shrink: 0;
+}
+
+/* Willing to help – purple gradient pill, top-right */
+.willing-to-help-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-top-right-radius: 16px;
+    border-bottom-left-radius: 20px;
+    border-top-left-radius: 0;
+    border-bottom-right-radius: 0;
+    letter-spacing: 0.02em;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+/* ========== Mobile (phones): stack vertically, tappable buttons ========== */
+@media (max-width: 767px) {
+    .profile-card {
+        padding: 16px;
+        margin-left: 12px;
+        margin-right: 12px;
+        width: calc(100% - 24px);
+        box-sizing: border-box;
+    }
+
+    .profile-card-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+        min-height: 0;
+    }
+
+    .card-left {
+        display: flex;
+        justify-content: center;
+    }
+
+    .profile-image-container {
+        margin: 0 auto;
+    }
+
+    .profile-image {
+        width: 100px;
+        height: 100px;
+        max-width: 100%;
+    }
+
+    .card-center {
+        align-items: center;
+        text-align: center;
+    }
+
+    .name-row {
+        justify-content: center;
+    }
+
+    .profile-location {
+        justify-content: center;
+    }
+
+    .card-right {
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-buttons {
+        flex-wrap: nowrap;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    /* Tap targets min ~44px height */
+    .btn-request-mentorship {
+        min-height: 44px;
+        padding: 10px 12px;
+        font-size: 0.8125rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .btn-message {
+        min-height: 44px;
+        padding: 10px 14px;
+        font-size: 0.8125rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .btn-menu {
+        min-width: 44px;
+        min-height: 44px;
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+    }
+
+    .willing-to-help-badge {
+        top: 0;
+        right: 0;
+        font-size: 0.6875rem;
+        padding: 5px 10px;
+    }
+}
+
+/* ========== Three-dot dropdown menu ========== */
+.menu-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.menu-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+}
+
+.menu-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    min-width: 180px;
+    z-index: 200;
+    list-style: none;
+    margin: 0;
+    padding: 6px 0;
+    overflow: hidden;
+}
+
+.menu-dropdown--open {
+    display: block;
+}
+
+.menu-item {
+    padding: 10px 16px;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s;
+    user-select: none;
+}
+
+.menu-item:hover {
+    background-color: #f3f4f6;
+}
+
+.menu-item--danger {
+    color: #ef4444;
+}
+
+.menu-item--danger:hover {
+    background-color: #fef2f2;
+}
+
+/* Very small phones (e.g. iPhone SE 320px): badge and single-line actions */
+@media (max-width: 360px) {
+    .profile-card {
+        padding: 12px;
+        margin-left: 10px;
+        margin-right: 10px;
+        width: calc(100% - 20px);
+    }
+
+    .willing-to-help-badge {
+        font-size: 0.625rem;
+        padding: 4px 8px;
+    }
+
+    .action-buttons {
+        gap: 6px;
+    }
+
+    .btn-request-mentorship {
+        padding: 10px 8px;
+        font-size: 0.75rem;
+    }
+
+    .btn-message {
+        padding: 10px 10px;
+        font-size: 0.75rem;
+    }
+}

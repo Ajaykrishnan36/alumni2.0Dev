@@ -1,0 +1,11 @@
+:host { display: block; }
+h2 { font-weight: 700; font-size: 20px; margin: 0 0 14px; }
+h3 { font-weight: 600; font-size: 15px; margin: 0 0 12px; }
+.muted { font-weight: 500; font-size: 12px; color: #9DA0A8; margin: 0 0 14px; }
+.summary-card { background: #F6F8FB; border: 1px solid #E5E6E8; border-radius: 8px; padding: 18px 22px; }
+.summary-card__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.summary-card__head h3 { margin: 0 0 12px; }
+.summary-edit { background: none; border: 0; color: #3061FF; font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; padding: 0 0 12px; }
+.summary-edit:hover { text-decoration: underline; }
+.kv-pair p:first-child { font-weight: 500; font-size: 11px; color: #9DA0A8; margin: 0 0 4px; }
+.kv-pair p:last-child { font-weight: 600; font-size: 13px; margin: 0 0 10px; }

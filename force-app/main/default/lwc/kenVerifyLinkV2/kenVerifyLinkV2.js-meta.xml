@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 — OTP Verification</masterLabel>
+    <description>OTP verification screen with 4-digit code, expiry timer, and resend.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="email" type="String" label="User Email" default=""/>
+            <property name="otpLength" type="Integer" label="OTP Length" default="4"/>
+            <property name="expirySeconds" type="Integer" label="Expiry (seconds)" default="120"/>
+            <property name="institutionLogoUrl" type="String" label="Institution Logo URL" default=""/>
+            <property name="poweredByLogoUrl" type="String" label="Powered By Logo URL" default=""/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

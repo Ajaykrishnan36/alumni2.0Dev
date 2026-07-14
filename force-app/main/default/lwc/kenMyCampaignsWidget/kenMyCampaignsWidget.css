@@ -1,0 +1,191 @@
+:host {
+    display: block;
+
+}
+
+/* ── Outer panel — fills sidebar height, scrolls cards internally ── */
+.my-campaigns-panel {
+    background: var(--portal-surface, #ffffff);
+    border-radius: var(--portal-radius, 12px);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    padding: var(--portal-card-padding, 24px);
+    font-family: var(--portal-font-family, 'Inter', Arial, sans-serif);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    height: calc(100vh - 146.5px - 324px);
+    min-height: 360px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.widget-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--portal-text-primary, #1f2333);
+    margin: 0;
+    padding-bottom: 14px;
+    border-bottom: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    flex-shrink: 0;
+}
+
+/* ── Cards list — scrolls within panel ── */
+.cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    padding-right: 2px;
+}
+
+/* ── Compact horizontal card ── */
+.card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    border-bottom: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+}
+
+.card:last-child {
+    border-bottom: none;
+}
+
+.card:hover {
+    opacity: 0.80;
+}
+
+/* Left: text column */
+.card-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.card-title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--portal-text-primary, #1f2333);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Status badge — inline pill with leading dot */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    align-self: flex-start;
+    padding: 3px 9px;
+    border: var(--portal-border-width, 1px) solid #d7defa;
+    border-radius: 999px;
+    background: var(--portal-surface, #ffffff);
+    color: #4a4f63;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.status-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+}
+
+.status-badge_review              { color: #78350f; border-color: #fde68a; background: #fefce8; }
+.status-badge_review::before      { display: none; }
+.status-badge_approved            { color: #1b8457; border-color: #c7ead8; background: #edf7f0; }
+.status-badge_rejected            { color: #dc2626; border-color: #fecaca; background: #fef2f2; }
+.status-badge_upcoming            { color: var(--primary-color, #3b5bdb); border-color: var(--primary-color, #3b5bdb); background: #ffffff; }
+.status-badge_upcoming::before    { display: none; }
+.status-badge_ongoing             { color: var(--portal-text-secondary, #374151); border-color: var(--portal-border-color, #e6e8ee); background: #ffffff; }
+.status-badge_ongoing::before     { background: #ef4444; }
+.status-badge_completed { color: #4b5563; border-color: #bbf7d0; background: #f0fdf4; }
+.status-badge_completed::before { display: none; }
+.status-badge_deletion  { color: #1b8457; border-color: #c7ead8; background: #edf7f0; }
+
+/* Date text */
+.card-date {
+    font-size: 11px;
+    color: var(--portal-text-muted, #6b7280);
+    line-height: 1.4;
+}
+
+/* Right: small square thumbnail */
+.card-thumb {
+    width: 60px;
+    height: 60px;
+    border-radius: var(--portal-radius, 12px);
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--portal-border-color, #e6e8ee);
+}
+
+.card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ── Skeletons ── */
+.skeleton-card {
+    height: 72px;
+    border-radius: var(--portal-radius, 12px);
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9ebef 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ── Empty / Error ── */
+.empty-state {
+    font-size: 13px;
+    color: var(--portal-text-muted, #6b7280);
+    text-align: center;
+    padding: 12px 0;
+}
+
+.error-msg {
+    font-size: 13px;
+    color: #dc2626;
+    text-align: center;
+    padding: 8px 0;
+    margin: 0;
+}
+
+/* ── View All button — pinned at panel bottom ── */
+.view-all-btn {
+    flex-shrink: 0;
+    width: 100%;
+    height: 38px;
+    background: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--primary-color, #2563eb);
+    border-radius: var(--portal-radius, 12px);
+    color: var(--primary-color, #2563eb);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.view-all-btn:hover {
+    background: var(--primary-color-tint, #eff6ff);
+}

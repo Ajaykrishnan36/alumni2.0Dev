@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>66.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Alumni 2.0 - Job Card</masterLabel>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__RecordPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightningCommunity__Page</target>
+        <target>lightningCommunity__Default</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightningCommunity__Default">
+            <property name="recordId" type="String" label="Record Id"/>
+            <property name="title" type="String" label="Job Title"/>
+            <property name="company" type="String" label="Company"/>
+            <property name="location" type="String" label="Location"/>
+            <property name="salary" type="String" label="Salary"/>
+            <property name="skillsMatch" type="Integer" label="Skills Match %" default="0"/>
+            <property name="logoLetter" type="String" label="Logo Letter"/>
+            <property name="logoColor" type="String" label="Logo Color"/>
+            <property name="saved" type="Boolean" label="Saved" default="false"/>
+            <property name="applied" type="Boolean" label="Applied" default="false"/>
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

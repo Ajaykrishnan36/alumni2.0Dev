@@ -1,0 +1,27 @@
+<template>
+    <div class="card">
+        <div class="card__head">
+            <h2 class="card__title">Tasks</h2>
+            <button type="button" class="add-task" onclick={handleAdd}>+ Add A Task</button>
+        </div>
+        <template lwc:if={hasTasks}>
+            <template for:each={decorated} for:item="t">
+                <div key={t.id} class="task" data-id={t.id} onclick={handleTask}>
+                    <div class="task__head">
+                        <h4 class="task__title">{t.title}</h4>
+                        <span class={t.pillClass}>{t.pillLabel}</span>
+                    </div>
+                    <p class="task__desc">{t.desc}</p>
+                    <p class="task__meta">Priority: <span class={t.priorityClass}>{t.priority}</span></p>
+                </div>
+            </template>
+        </template>
+        <template lwc:else>
+            <div class="tasks-empty">
+                <div class="tasks-empty__icon" aria-hidden="true">&#128221;</div>
+                <p class="tasks-empty__title">No tasks yet</p>
+                <p class="tasks-empty__sub">Add a task to track what you're working on.</p>
+            </div>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,159 @@
+<template>
+    <div class="actions-card">
+        <div class="card-header">
+            <lightning-icon icon-name="utility:approval" size="small" class="header-icon"></lightning-icon>
+            <span class="header-title">Approval Actions</span>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="spinner-wrap">
+                <lightning-spinner alternative-text="Processing..." size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <!-- In Review -->
+        <template if:true={isInReview}>
+            <div class="status-banner review">
+                <lightning-icon icon-name="utility:clock" size="x-small"></lightning-icon>
+                <span>Pending Approval</span>
+            </div>
+            <div class="action-body">
+                <p class="action-desc">This campaign is awaiting your review. Please approve or reject it.</p>
+                <div class="btn-row">
+                    <lightning-button
+                        label="Approve"
+                        variant="brand"
+                        icon-name="utility:check"
+                        onclick={handleApprove}
+                        disabled={isLoading}>
+                    </lightning-button>
+                    <lightning-button
+                        label="Reject"
+                        variant="destructive"
+                        icon-name="utility:close"
+                        onclick={openRejectModal}
+                        disabled={isLoading}>
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Deletion Requested -->
+        <template if:true={isDeletionRequested}>
+            <div class="status-banner deletion">
+                <lightning-icon icon-name="utility:delete" size="x-small"></lightning-icon>
+                <span>Deletion Requested</span>
+            </div>
+            <div class="action-body">
+                <p class="action-desc">This campaign has been flagged for deletion.</p>
+                <div class="btn-row">
+                    <lightning-button
+                        label="Approve Deletion"
+                        variant="destructive"
+                        icon-name="utility:delete"
+                        onclick={openApproveDeleteModal}
+                        disabled={isLoading}>
+                    </lightning-button>
+                    <lightning-button
+                        label="Dismiss"
+                        variant="neutral"
+                        icon-name="utility:undo"
+                        onclick={handleDismissDeletion}
+                        disabled={isLoading}>
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Approved -->
+        <template if:true={isApproved}>
+            <div class="status-banner approved">
+                <lightning-icon icon-name="utility:success" size="x-small"></lightning-icon>
+                <span>Approved</span>
+            </div>
+            <div class="action-body">
+                <p class="action-desc">This campaign has been approved and is live.</p>
+            </div>
+        </template>
+
+        <!-- Rejected -->
+        <template if:true={isRejected}>
+            <div class="status-banner rejected">
+                <lightning-icon icon-name="utility:error" size="x-small"></lightning-icon>
+                <span>Rejected</span>
+            </div>
+            <div class="action-body">
+                <p class="action-desc">This campaign was rejected.</p>
+            </div>
+        </template>
+
+        <!-- No active approval status -->
+        <template if:true={hasNoStatus}>
+            <div class="action-body">
+                <p class="action-desc no-status">No pending approval action for this record.</p>
+            </div>
+        </template>
+    </div>
+
+    <!-- Reject confirmation modal -->
+    <template if:true={showRejectModal}>
+        <div class="modal-backdrop">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="modal-title">Reject Campaign</span>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        variant="bare"
+                        onclick={closeRejectModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="modal-body">
+                    <p>You are about to reject <strong>{campaignName}</strong>.</p>
+                    <lightning-textarea
+                        label="Rejection Reason (optional)"
+                        value={rejectReason}
+                        onchange={handleReasonChange}
+                        placeholder="Enter a reason for rejection...">
+                    </lightning-textarea>
+                </div>
+                <div class="modal-footer">
+                    <lightning-button label="Cancel" onclick={closeRejectModal}></lightning-button>
+                    <lightning-button
+                        label="Confirm Reject"
+                        variant="destructive"
+                        onclick={confirmReject}
+                        disabled={isLoading}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Approve deletion confirmation modal -->
+    <template if:true={showApproveDeleteModal}>
+        <div class="modal-backdrop">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="modal-title">Confirm Permanent Deletion</span>
+                    <lightning-button-icon
+                        icon-name="utility:close"
+                        variant="bare"
+                        onclick={closeApproveDeleteModal}>
+                    </lightning-button-icon>
+                </div>
+                <div class="modal-body">
+                    <p>This will <strong>permanently delete</strong> <strong>{campaignName}</strong>. This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <lightning-button label="Cancel" onclick={closeApproveDeleteModal}></lightning-button>
+                    <lightning-button
+                        label="Delete Permanently"
+                        variant="destructive"
+                        onclick={confirmApproveDeletion}
+                        disabled={isLoading}>
+                    </lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

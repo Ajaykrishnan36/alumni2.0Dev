@@ -1,0 +1,69 @@
+<template>
+    <div class="content">
+        <div class="job-head">
+            <div class="job-head__left">
+                <div class="job-head__logo">{logoLetter}</div>
+                <div>
+                    <p class="job-head__title">{jobTitle}</p>
+                    <p class="job-head__meta">{jobCompany} | {jobLocation}</p>
+                    <p class="job-head__salary">{jobSalary}</p>
+                    <div class="pill-row">
+                        <template for:each={pills} for:item="p">
+                            <span key={p} class="job-head__pill">{p}</span>
+                        </template>
+                    </div>
+                </div>
+            </div>
+            <div class="job-head__actions">
+                <button class="btn btn--outline" onclick={handleBack}>← Back</button>
+                <button class="btn btn--outline" onclick={handleDeactivate}>Request Deactivation</button>
+                <button class="btn btn--outline" onclick={handleClose}>Mark as Closed</button>
+                <button class="btn btn--primary" onclick={handleEdit}>Edit Details</button>
+            </div>
+        </div>
+        <div class="tabs">
+            <button class={detailsTabClass} onclick={handleDetailsTab}>Job Details</button>
+            <button class={applicantsTabClass} onclick={handleApplicantsTab}>{applicantCountLabel}</button>
+        </div>
+        <div class="body">
+            <template lwc:if={hasApplicants}>
+                <table class="apps-table">
+                    <thead>
+                        <tr>
+                            <th>Applicant</th>
+                            <th>Reg No</th>
+                            <th>Applicant Type</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={applicantsList} for:item="a">
+                            <tr key={a.id}>
+                                <td>{a.name}</td>
+                                <td>{a.reg}</td>
+                                <td>{a.userType}</td>
+                                <td><span class={a.cls}>{a.status}</span></td>
+                                <td><button class="view-btn" data-id={a.id} onclick={handleViewResume}>View Resume</button></td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </template>
+            <template lwc:else>
+                <div class="empty empty--card">
+                    <div class="empty__icon" aria-hidden="true">&#128235;</div>
+                    <h3 class="empty__title">No applicants yet</h3>
+                    <p class="empty__copy">Share this job to get more visibility — alumni often apply within the first 48 hours.</p>
+                    <div class="empty__cta-row">
+                        <button type="button" class="btn btn--secondary" onclick={handleShareJob}>Share Job</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <template lwc:if={showShareToast}>
+            <div class="share-toast">{shareToastMsg}</div>
+        </template>
+    </div>
+</template>

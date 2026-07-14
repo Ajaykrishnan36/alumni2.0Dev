@@ -1,0 +1,91 @@
+<template>
+    <div class={containerClass}>
+        <!-- Fixed Header -->
+        <div class="fixed-header">
+            <div class="main-title">Registered events</div>
+            
+            <!-- Tab Navigation -->
+            <div class="tab-container">
+                <button class={upcomingTabClass} onclick={switchToUpcoming}>
+                    Upcoming
+                </button>
+                <button class={pastTabClass} onclick={switchToPast}>
+                    Past events
+                </button>
+            </div>
+        </div>
+
+        <!-- Scrollable Content Area -->
+        <div class="scrollable-content">
+            <!-- Upcoming Events Section -->
+            <div class="events-section" if:true={isUpcomingActive}>
+                <template if:true={hasUpcomingEvents}>
+                    <template for:each={limitedUpcomingEvents} for:item="dateGroup">
+                        <div key={dateGroup.date} class="date-group">
+                            <div class="date-header">{dateGroup.formattedDate}</div>
+                            <div class="events-list">
+                                <template for:each={dateGroup.events} for:item="event">
+                                    <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.eventId}>
+                                        <div class="event-content">
+                                            <div class="event-time">{event.startTime} - {event.endTime}</div>
+                                            <div class="event-name">{event.eventName}</div>
+                                            <div class="event-location">{event.location}</div>
+                                        </div>
+                                        <div class="event-image">
+                                            <img src={event.imageUrl} alt={event.eventName} />
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={hasUpcomingEvents}>
+                    <div class="empty-state">
+                        <img src={SurveyEmptyImageUrl} alt="No upcoming events found" />
+                        No upcoming events found
+                    </div>
+                </template>
+            </div>
+
+            <!-- Past Events Section -->
+            <div class="events-section" if:true={isPastActive}>
+                <template if:true={hasPastEvents}>
+                    <template for:each={limitedPastEvents} for:item="dateGroup">
+                        <div key={dateGroup.date} class="date-group">
+                            <div class="date-header">{dateGroup.formattedDate}</div>
+                            <div class="events-list">
+                                <template for:each={dateGroup.events} for:item="event">
+                                    <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.eventId}>
+                                        <div class="event-content">
+                                            <div class="event-time">{event.startTime} - {event.endTime}</div>
+                                            <div class="event-name">{event.eventName}</div>
+                                            <div class="event-location">{event.location}</div>
+                                        </div>
+                                        <div class="event-image">
+                                            <img src={event.imageUrl} alt={event.eventName} />
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={hasPastEvents}>
+                    <div class="empty-state">
+                        <img src={SurveyEmptyImageUrl} alt="No past events found" />
+                        No past events found
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Fixed Footer -->
+        <div class="fixed-footer">
+            <!-- View More Button -->
+            <div class="view-more-container">
+                <button class="view-more-button"  onclick={handleViewMore}>View more</button>
+            </div>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,38 @@
+.THIS.relativePosition {
+    position: relative;
+}
+
+.THIS.youBubble{
+    position: absolute;
+    top: 90%;
+    left: 7%;
+    border: 0.01rem solid black;
+    border-radius: 10rem;
+    color: white;
+    width: 14%;
+    background-color: rgba(0, 0, 0, 0.3);
+    font-weight: 550;
+    font-size: 0.7rem;
+}
+
+.THIS.micLogoContainer{
+    position: absolute;
+    top: 2%;
+    left: 83%;
+    border: 0.01rem solid #0D99FF;
+    border-radius: 10rem;
+    width: 10%;
+    height: 10%;
+    background-color: #0D99FF;
+    z-index: 1;
+}
+
+.THIS .micLogo svg{
+    fill: white;
+}
+
+.THIS.videoStream {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}

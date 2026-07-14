@@ -1,0 +1,59 @@
+<template>
+    <div class="modal-backdrop" onclick={handleClose}>
+        <div class="modal modal--lg" onclick={stopBubble}>
+            <button class="modal__close" onclick={handleClose}>×</button>
+
+            <div class="dhero" style={heroStyle}>
+                <h2 class="dhero__title">{event.title}</h2>
+                <div class="dhero__chips">
+                    <span class="dhero__price">{event.price}</span>
+                    <span class="dhero__tag">{event.category}</span>
+                </div>
+            </div>
+
+            <nav class="dtabs">
+                <button type="button" class={detailAboutClass}        data-id="about"        onclick={handleDetailTab}>About</button>
+                <button type="button" class={detailScheduleClass}     data-id="schedule"     onclick={handleDetailTab}>Schedule</button>
+                <button type="button" class={detailParticipantsClass} data-id="participants" onclick={handleDetailTab}>Participants</button>
+            </nav>
+
+            <div class="dbody">
+                <template lwc:if={detailTabAbout}>
+                    <h3>About the Event</h3>
+                    <p>{event.desc} Hosted by {event.organizer}, this event brings together alumni for a memorable shared experience.</p>
+                </template>
+
+                <template lwc:if={detailTabSchedule}>
+                    <h3>Event Schedule</h3>
+                    <div class="sched-row">
+                        <span class="sched-time">10:00 AM</span>
+                        <div><strong>Welcome & Networking</strong><p>Meet & greet with alumni.</p></div>
+                    </div>
+                    <div class="sched-row">
+                        <span class="sched-time">11:00 AM</span>
+                        <div><strong>Keynote Talk</strong><p>By {event.organizer}.</p></div>
+                    </div>
+                </template>
+
+                <template lwc:if={detailTabParticipants}>
+                    <h3>Participants ({event.going})</h3>
+                    <p class="muted">Showing recent registrations.</p>
+                </template>
+            </div>
+
+            <footer class="dfooter">
+                <div class="dmeta">
+                    <span class="meta-item">📅 {event.date}</span>
+                    <span class="meta-item">📍 {event.loc}</span>
+                    <span class="meta-item">👥 {event.going}</span>
+                    <span class="meta-item">🕓 {event.time}</span>
+                </div>
+                <div class="dfooter__right">
+                    <button type="button" class="btn btn--outline" onclick={handleClose}>Close</button>
+                    <!-- QA Bug — a completed/past/cancelled event must NOT offer an active Register. -->
+                    <button type="button" class="btn btn--primary" onclick={handleRsvp} disabled={registerDisabled}>{registerLabel}</button>
+                </div>
+            </footer>
+        </div>
+    </div>
+</template>

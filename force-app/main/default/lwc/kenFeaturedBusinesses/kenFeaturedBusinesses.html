@@ -1,0 +1,75 @@
+<template>
+  <template if:true={hasFeatured}>
+    <div class="featured-banner">
+      <button
+        if:true={hasMultiple}
+        class="nav-arrow nav-prev"
+        onclick={handlePrev}
+        title="Previous"
+      >
+        <lightning-icon
+          icon-name="utility:chevronleft"
+          size="small"
+          variant="inverse"
+        ></lightning-icon>
+      </button>
+
+      <div class="featured-content">
+        <div class="featured-logo">
+          <img
+            src={current.logo}
+            alt={current.name}
+            class="featured-logo-img"
+            onerror={handleImageError}
+          />
+        </div>
+        <div class="featured-info">
+          <h2 class="featured-name">{current.name}</h2>
+          <div class="featured-meta">
+            <template if:true={currentHasLocation}>
+              <svg class="featured-loc-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="14" height="14">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              <span class="featured-location">{current.location}</span>
+            </template>
+            <span class="featured-tag">✦ Featured Business</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="featured-actions">
+        <div class="featured-owner">
+          <img
+            src={current.ownerImage}
+            alt={current.ownerName}
+            class="featured-owner-img"
+            onerror={handleImageError}
+          />
+          <span class="featured-owner-name">{current.ownerName}</span>
+        </div>
+        <button class="view-business-btn" onclick={handleView}>
+          View Business
+        </button>
+      </div>
+
+      <button
+        if:true={hasMultiple}
+        class="nav-arrow nav-next"
+        onclick={handleNext}
+        title="Next"
+      >
+        <lightning-icon
+          icon-name="utility:chevronright"
+          size="small"
+          variant="inverse"
+        ></lightning-icon>
+      </button>
+
+      <div if:true={hasMultiple} class="featured-dots">
+        <template for:each={dots} for:item="d">
+          <span key={d.key} class={d.className}></span>
+        </template>
+      </div>
+    </div>
+  </template>
+</template>

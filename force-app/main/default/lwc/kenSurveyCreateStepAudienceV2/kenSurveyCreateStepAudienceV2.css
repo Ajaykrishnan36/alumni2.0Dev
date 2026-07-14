@@ -1,0 +1,12 @@
+:host { display: block; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field label { font-weight: 500; font-size: 13px; color: #373A45; }
+.field input { width: 100%; padding: 10px 12px; border: 1px solid #E5E6E8; border-radius: 8px; font-family: inherit; font-size: 13px; box-sizing: border-box; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 6px 14px; border-radius: 999px; border: 1px solid #E5E6E8; background: #fff; font-family: inherit; font-size: 12px; color: #5B5E68; cursor: pointer; }
+.chip--on { background: #3061FF; color: #fff; border-color: #3061FF; }
+.toggle-field { flex-direction: row; align-items: center; justify-content: space-between; }
+.toggle { padding: 6px 14px; border-radius: 6px; border: 1px solid #E5E6E8; background: #fff; font-family: inherit; font-weight: 600; font-size: 12px; cursor: pointer; }
+.toggle__on { color: #19A974; }
+.toggle__off { color: #8E9099; }

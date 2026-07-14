@@ -1,0 +1,4 @@
+:host { display: block; }
+.tabs { display: flex; gap: 28px; }
+.tab { padding: 8px 2px 12px; font-weight: 500; font-size: 14px; color: #9DA0A8; background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; font-family: inherit; margin-bottom: -1px; }
+.tab--active { color: #3061FF; font-weight: 600; border-bottom-color: #3061FF; }

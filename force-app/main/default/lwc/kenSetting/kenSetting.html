@@ -1,0 +1,61 @@
+<template>
+    <div class="setting-container">
+        <!-- Mobile Dropdown Nav -->
+        <div class="mobile-nav">
+            <span class="mobile-nav-label">Select</span>
+            <div class="mobile-select-wrapper">
+                <select class="custom-select" onchange={handleMobileTabChange}>
+                    <template for:each={menuItems} for:item="item">
+                        <option key={item.name} value={item.name} selected={item.isActive}>{item.label}</option>
+                    </template>
+                </select>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="search-box">
+                <div class="search-input-wrapper">
+                    <lightning-icon icon-name="utility:search" size="x-small" class="search-icon"></lightning-icon>
+                    <input type="text" placeholder="Search" class="search-input" />
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <template for:each={menuItems} for:item="item">
+                    <div key={item.name} class={item.class} data-name={item.name} onclick={handleTabChange}>
+                        <span>{item.label}</span>
+                    </div>
+                </template>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="sub-content">
+                <template lwc:if={isPersonalDetails}>
+                    <c-ken-setting-personal-details></c-ken-setting-personal-details>
+                </template>
+                <template lwc:if={isPreferences}>
+                    <c-ken-setting-preferences></c-ken-setting-preferences>
+                </template>
+                <template lwc:if={isEvents}>
+                    <c-ken-setting-events></c-ken-setting-events>
+                </template>
+                <template lwc:if={isGroups}>
+                    <c-ken-setting-groups></c-ken-setting-groups>
+                </template>
+
+                <template lwc:if={isMentorship}>
+                    <c-ken-setting-mentorship></c-ken-setting-mentorship>
+                </template>
+                <template lwc:if={isJobs}>
+                    <c-ken-setting-jobs></c-ken-setting-jobs>
+                </template>
+                <template lwc:if={isAccount}>
+                    <c-ken-setting-account></c-ken-setting-account>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

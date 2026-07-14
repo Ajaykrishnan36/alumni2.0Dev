@@ -1,0 +1,3 @@
+<apex:page standardController="Account" extensions="EDU_SSH_ResetCarePlans" action="{!resetCarePlans}">
+You can close this modal. Care Plans, Benefit Assignments, and Goal Assignments have been deleted for this Account.
+</apex:page>

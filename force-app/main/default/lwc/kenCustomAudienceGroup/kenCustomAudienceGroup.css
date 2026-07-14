@@ -1,0 +1,10 @@
+.customTitle { font-size: 18px; font-weight: 700; }
+.infoBanner {
+    margin-top: 10px; border-radius: 10px; display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+}
+.bannerText { font-weight: 600; }
+.groupCard { background: #f5f7fa; border: 1px solid #eef1f6; border-radius: 10px; padding: 16px; }
+.groupHeader { display: flex; justify-content: space-between; align-items: center; }
+.groupLabel { font-weight: 800; }
+.fieldStack { display: grid; grid-template-columns: 1fr; gap: 14px; }

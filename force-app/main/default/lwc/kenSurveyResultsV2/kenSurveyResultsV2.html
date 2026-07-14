@@ -1,0 +1,37 @@
+<template>
+    <section class="page">
+        <div class="content results">
+            <div class="title-card">
+                <div>
+                    <h2 class="page__title">{title} - Results</h2>
+                    <p class="page__subtitle">Live dashboard - auto-refreshes every 5 minutes</p>
+                </div>
+                <button type="button" class="btn btn--outline" onclick={handleClose}>Back</button>
+            </div>
+            <div class="kpis">
+                <div class="kpi"><label>Total Responses</label><p>248</p></div>
+                <div class="kpi"><label>Completion Rate</label><p>82%</p></div>
+                <div class="kpi"><label>Avg. Time</label><p>4m 38s</p></div>
+                <div class="kpi"><label>Days Remaining</label><p>14</p></div>
+            </div>
+            <div class="panel">
+                <h3>Q1. NPS - How likely to recommend?</h3>
+                <div class="bar"><span class="bar__label">Promoters (9-10)</span><div class="bar__track"><div class="bar__fill" style="width:54%"></div></div><span class="bar__val">134</span></div>
+                <div class="bar"><span class="bar__label">Passives (7-8)</span><div class="bar__track"><div class="bar__fill" style="width:30%"></div></div><span class="bar__val">74</span></div>
+                <div class="bar"><span class="bar__label">Detractors (0-6)</span><div class="bar__track"><div class="bar__fill" style="width:16%"></div></div><span class="bar__val">40</span></div>
+            </div>
+            <div class="panel">
+                <h3>Q2. Mentorship rating</h3>
+                <div class="bar"><span class="bar__label">5 stars</span><div class="bar__track"><div class="bar__fill" style="width:58%"></div></div><span class="bar__val">144</span></div>
+                <div class="bar"><span class="bar__label">4 stars</span><div class="bar__track"><div class="bar__fill" style="width:26%"></div></div><span class="bar__val">64</span></div>
+                <div class="bar"><span class="bar__label">3 stars</span><div class="bar__track"><div class="bar__fill" style="width:11%"></div></div><span class="bar__val">28</span></div>
+            </div>
+            <div class="panel">
+                <h3>Q3. Most valuable feature</h3>
+                <div class="bar"><span class="bar__label">Network</span><div class="bar__track"><div class="bar__fill" style="width:38%"></div></div><span class="bar__val">94</span></div>
+                <div class="bar"><span class="bar__label">Events</span><div class="bar__track"><div class="bar__fill" style="width:28%"></div></div><span class="bar__val">70</span></div>
+                <div class="bar"><span class="bar__label">Mentorship</span><div class="bar__track"><div class="bar__fill" style="width:18%"></div></div><span class="bar__val">44</span></div>
+            </div>
+        </div>
+    </section>
+</template>

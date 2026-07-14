@@ -1,0 +1,23 @@
+<template lwc:render-mode="light">
+    <div class="h-card sect chk-sect">
+        <div class="sect__head">
+            <span class={headIconClass}>{headSymbol}</span>
+            <span class="sect__head-title">{title}</span>
+            <span class="sect__head-count">{subtitle}</span>
+            <button class="sect__head-all" onclick={handleAll}>All &rarr;</button>
+        </div>
+        <div class="row-list">
+            <template for:each={rows} for:item="r">
+                <div key={r.key} class="row-item">
+                    <span class={r.iconClass}>{r.icon}</span>
+                    <div class="row-body">
+                        <div class="row-title">{r.title}</div>
+                        <div class="row-sub">{r.desc}</div>
+                    </div>
+                    <span class={r.statusClass}>{r.toneLabel}</span>
+                    <button class={r.btnClass} data-key={r.key} onclick={handleRow}>{r.action}</button>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

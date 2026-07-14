@@ -1,0 +1,98 @@
+<template>
+    <div class="overlay" onclick={handleBackdrop}>
+        <div class="modal" onclick={handleStop}>
+            <button type="button" class="modal__close" onclick={handleClose}>&times;</button>
+            <div class="modal__head">
+                <h2 class="modal__title">Schedule a Call</h2>
+                <p class="modal__sub">Request a 1:1 mentorship session</p>
+            </div>
+
+            <!-- ===== Mentor picker (shown when wizard is opened without a pre-selected mentor) ===== -->
+            <template lwc:if={pickerMode}>
+                <div class="modal__body">
+                    <p class="pick-prompt">Pick a mentor to schedule a call with:</p>
+                    <template lwc:if={pickerLoading}>
+                        <div class="muted">Loading your mentors…</div>
+                    </template>
+                    <template lwc:elseif={pickerError}>
+                        <div class="err">{pickerError}</div>
+                    </template>
+                    <template lwc:elseif={pickerEmpty}>
+                        <div class="muted">You don't have any accepted mentor connections yet.
+                            Connect with an alum from the Network tab first, then come back to schedule.</div>
+                    </template>
+                    <template lwc:else>
+                        <ul class="pick-list">
+                            <template for:each={pickerRows} for:item="m">
+                                <li key={m.id} class={m.rowCls} data-id={m.id} onclick={handlePickMentor}>
+                                    <span class="ms-av" style={m.avStyle}>{m.initial}</span>
+                                    <div class="pick-meta">
+                                        <p class="ms-n">{m.name}</p>
+                                        <p class="ms-r">{m.roleLine}</p>
+                                    </div>
+                                    <span class="pick-radio" aria-hidden="true"></span>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                </div>
+            </template>
+
+            <template lwc:else>
+            <c-ken-event-stepper-v2 steps={steps} current-index={currentStep} hide-counter></c-ken-event-stepper-v2>
+
+            <div class="modal__body">
+                <div class="mentor-strip">
+                    <span class="ms-av" style={mentorAvStyle}>{mentorInitial}</span>
+                    <div>
+                        <p class="ms-n">With {mentorName}</p>
+                        <p class="ms-r">{mentorRoleLine}</p>
+                    </div>
+                </div>
+
+                <template lwc:if={isStep1}>
+                    <template lwc:if={showNoAvailability}>
+                        <div class="empty-state" style="padding:24px;text-align:center;color:#6b7280;">
+                            <p style="font-weight:600;margin-bottom:6px;">No availability</p>
+                            <p>This mentor has no open slots right now. Try another mentor or check back later.</p>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <c-ken-schedule-call-step-slot-v2
+                            selected-slot={selectedSlot}
+                            selected-duration={selectedDuration}
+                            selected-date={selectedDate}
+                            onvaluechange={handleValueChange}>
+                        </c-ken-schedule-call-step-slot-v2>
+                    </template>
+                </template>
+
+                <template lwc:if={isStep2}>
+                    <c-ken-schedule-call-step-topic-v2
+                        topic={topic}
+                        agenda={agenda}
+                        onvaluechange={handleValueChange}>
+                    </c-ken-schedule-call-step-topic-v2>
+                </template>
+
+                <template lwc:if={isStep3}>
+                    <c-ken-schedule-call-step-confirm-v2
+                        mentor-name={mentorName}
+                        selected-date={selectedDate}
+                        selected-slot={selectedSlot}
+                        selected-duration={selectedDuration}
+                        topic={topic}
+                        agenda={agenda}>
+                    </c-ken-schedule-call-step-confirm-v2>
+                </template>
+            </div>
+
+            </template>
+
+            <div class="modal__foot">
+                <button type="button" class="btn-sm ghost" onclick={handleBack} disabled={backDisabled}>Back</button>
+                <button type="button" class="btn-sm primary" onclick={handleNext} disabled={nextDisabled}>{nextLabel}</button>
+            </div>
+        </div>
+    </div>
+</template>

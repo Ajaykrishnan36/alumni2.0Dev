@@ -1,0 +1,215 @@
+<template>
+	<div class="modal-overlay" onclick={handleBackdropClick}>
+		<div class="modal-container" onclick={handleModalClick}>
+			<div class="modal-header">
+				<h2 class="modal-title">{modalTitle}</h2>
+				<button type="button" class="close-button" onclick={handleClose} aria-label="Close">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+						<path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-fields">
+					<div class="employment-status-container">
+						<label for="jobTitle" class="field-label">Your Role<span class="required">*</span></label>
+						<div class="employment-status-buttons">
+							<button 
+								type="button" 
+								class={businessButtonClass}
+								data-status="Running my own Business"
+								onclick={handleEmploymentStatusChange}>
+								<svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M9.24789 8.64023C10.7689 7.90523 11.8182 6.34781 11.8182 4.54539C11.818 2.03508 9.78305 0 7.27266 0C4.76227 0 2.72727 2.03516 2.72727 4.54539C2.72727 6.34797 3.77656 7.90523 5.29758 8.64023C2.35797 8.72351 0 11.1309 0 14.0908V14.9999H14.5454V14.0908C14.5453 11.1311 12.1874 8.72367 9.24789 8.64023Z" fill="#B2B3B7"/>
+									<path d="M9.24867 8.64023C10.7697 7.90523 11.819 6.34781 11.819 4.54539C11.8188 2.03508 9.78383 0 7.27344 0V15H14.5462V14.0909C14.5461 11.1311 12.1882 8.72367 9.24867 8.64023Z" fill="#373A45"/>
+									</svg>									
+								<span class="button-text mobile-button-text">Running my own Business</span>
+							</button>
+							<button 
+								type="button" 
+								class={organizationButtonClass}
+								data-status="Working at an Organization"
+								onclick={handleEmploymentStatusChange}>
+								<svg width="21" height="19" viewBox="0 0 21 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+									<path d="M3.22754 7.02247C4.45347 7.02247 5.44727 6.02866 5.44727 4.80274C5.44727 3.57682 4.45347 2.58301 3.22754 2.58301C2.00162 2.58301 1.00781 3.57682 1.00781 4.80274C1.00781 6.02866 2.00162 7.02247 3.22754 7.02247Z" fill="#B2B3B7"/>
+									<path d="M6.41704 11.1183C6.41704 12.5778 6.09175 15.4878 6.09175 16.1031C6.09175 16.4372 5.82054 16.7084 5.48637 16.7084H1.18695C0.532332 16.7084 0 16.1781 0 15.5259V11.1183C0 9.61659 1.22933 8.39453 2.74036 8.39453H3.67668C5.18771 8.39453 6.41704 9.61659 6.41704 11.1183Z" fill="#B2B3B7"/>
+									<path d="M17.4385 7.02247C18.6644 7.02247 19.6582 6.02866 19.6582 4.80274C19.6582 3.57682 18.6644 2.58301 17.4385 2.58301C16.2126 2.58301 15.2188 3.57682 15.2188 4.80274C15.2188 6.02866 16.2126 7.02247 17.4385 7.02247Z" fill="#B2B3B7"/>
+									<path d="M17.4375 7.02247V2.58301C18.6616 2.58301 19.6572 3.57866 19.6572 4.80274C19.6572 6.02682 18.6616 7.02247 17.4375 7.02247Z" fill="#373A45"/>
+									<path d="M20.667 11.1183V15.4839C20.667 16.1591 20.1157 16.7084 19.4377 16.7084H15.1807C14.8465 16.7084 14.5753 16.4372 14.5753 16.1031C14.5753 15.5145 14.25 12.5325 14.25 11.1183C14.25 9.61659 15.4793 8.39453 16.9904 8.39453H17.9267C19.4377 8.39453 20.667 9.61659 20.667 11.1183Z" fill="#B2B3B7"/>
+									<path d="M20.6662 11.1183V15.4839C20.6662 16.1591 20.1149 16.7084 19.4369 16.7084H17.4375V8.39453H17.9258C19.4369 8.39453 20.6662 9.61659 20.6662 11.1183Z" fill="#373A45"/>
+									<path d="M3.22656 7.02247V2.58301C4.45064 2.58301 5.44629 3.57866 5.44629 4.80274C5.44629 6.02682 4.45064 7.02247 3.22656 7.02247Z" fill="#373A45"/>
+									<path d="M6.4149 11.1183C6.4149 12.5778 6.08961 15.4878 6.08961 16.1031C6.08961 16.4372 5.8184 16.7084 5.48423 16.7084H3.22656V8.39453H3.67454C5.18558 8.39453 6.4149 9.61659 6.4149 11.1183Z" fill="#373A45"/>
+									<path d="M10.3315 7.02242C12.2707 7.02242 13.8427 5.4504 13.8427 3.51121C13.8427 1.57202 12.2707 0 10.3315 0C8.39234 0 6.82031 1.57202 6.82031 3.51121C6.82031 5.4504 8.39234 7.02242 10.3315 7.02242Z" fill="#B2B3B7"/>
+									<path d="M10.3281 7.02242V0C12.2641 0 13.8393 1.5752 13.8393 3.51121C13.8393 5.44722 12.2641 7.02242 10.3281 7.02242Z" fill="#373A45"/>
+									<path d="M15.975 13.3842V16.692C15.975 17.4713 15.341 18.1054 14.5616 18.1054H6.49149C5.71216 18.1054 5.07812 17.4713 5.07812 16.692V13.3842C5.07812 10.6911 7.2692 8.5 9.96234 8.5H11.0908C13.7839 8.5 15.975 10.6911 15.975 13.3842Z" fill="#B2B3B7"/>
+									<path d="M15.7766 13.2787V16.5865C15.7766 17.3659 15.1425 17.9999 14.3632 17.9999H10.3281V8.39453H10.8923C13.5855 8.39453 15.7766 10.5856 15.7766 13.2787Z" fill="#373A45"/>
+									</svg>									
+								 <span class="button-text mobile-button-text">Working at an Organization</span>
+							</button>
+						</div>
+					</div>
+					<div class="form-row">
+						
+						<div class="form-field">
+							<label for="jobTitle" class="field-label">Job Title<span class="required">*</span></label>
+							<lightning-input
+								id="jobTitle"
+								type="text"
+								value={jobTitle}
+								placeholder="e.g., Software Engineer"
+								onchange={handleInputChange}
+								data-field="jobTitle"
+								variant="label-hidden"
+								class={jobTitleErrorClass}
+								message-when-value-missing={errors.jobTitle}>
+							</lightning-input>
+							<template if:true={errors.jobTitle}>
+								<div class="error-message">{errors.jobTitle}</div>
+							</template>
+						</div>
+						<div class="form-field">
+							<label for="organization" class="field-label">Company / Organization<span class="required">*</span></label>
+							<lightning-input
+								id="organization"
+								type="text"
+								value={organization}
+								placeholder="e.g., Jain University"
+								onchange={handleInputChange}
+								data-field="organization"
+								variant="label-hidden"
+								class={organizationErrorClass}
+								message-when-value-missing={errors.organization}>
+							</lightning-input>
+							<template if:true={errors.organization}>
+								<div class="error-message">{errors.organization}</div>
+							</template>
+						</div>
+					</div>
+					<div class="form-row">
+						<div class="form-field">
+							<label for="employmentType" class="field-label">Employment Type (Optional)</label>
+							<lightning-combobox
+								id="employmentType"
+								value={employmentType}
+								options={employmentTypeOptions}
+								placeholder="Choose"
+								onchange={handleSelectChange}
+								data-field="employmentType"
+								variant="label-hidden"
+								class="custom-select">
+							</lightning-combobox>
+						</div>
+						<div class="form-field">
+							<label for="location" class="field-label">Location (Optional)</label>
+							<lightning-input
+								id="location"
+								type="text"
+								value={location}
+								placeholder="Ex: Chennai, India"
+								onchange={handleInputChange}
+								data-field="location"
+								variant="label-hidden"
+								class="custom-input">
+							</lightning-input>
+						</div>
+					</div>
+					<div class="form-row date-form-row">
+						<div class="form-field">
+							<label for="startDate" class="field-label">Start Date<span class="required">*</span></label>
+							<div class="date-inputs">
+								<div class="date-field-wrapper">
+									<lightning-combobox
+										id="startMonth"
+										value={startMonth}
+										options={monthOptions}
+										placeholder="Month"
+										onchange={handleDateChange}
+										data-field="startMonth"
+										variant="label-hidden"
+										class={startMonthErrorClass}>
+									</lightning-combobox>
+									<template if:true={errors.startMonth}>
+										<div class="error-message">{errors.startMonth}</div>
+									</template>
+								</div>
+								<div class="date-field-wrapper">
+									<lightning-combobox
+										id="startYear"
+										value={startYear}
+										options={yearOptions}
+										placeholder="Year"
+										onchange={handleDateChange}
+										data-field="startYear"
+										variant="label-hidden"
+										class={startYearErrorClass}>
+									</lightning-combobox>
+									<template if:true={errors.startYear}>
+										<div class="error-message">{errors.startYear}</div>
+									</template>
+								</div>
+							</div>
+						</div>
+						<div class="form-field">
+							<label for="endDate" class="field-label">End Date<span class="required">*</span></label>
+							<div class="date-inputs">
+								<div class="date-field-wrapper">
+									<lightning-combobox
+										id="endMonth"
+										value={endMonth}
+										options={monthOptions}
+										placeholder="Month"
+										onchange={handleDateChange}
+										data-field="endMonth"
+										variant="label-hidden"
+										class={endMonthErrorClass}
+										disabled={isCurrentJob}>
+									</lightning-combobox>
+									<template if:true={errors.endMonth}>
+										<div class="error-message">{errors.endMonth}</div>
+									</template>
+								</div>
+								<div class="date-field-wrapper">
+									<lightning-combobox
+										id="endYear"
+										value={endYear}
+										options={yearOptions}
+										placeholder="Year"
+										onchange={handleDateChange}
+										data-field="endYear"
+										variant="label-hidden"
+										class={endYearErrorClass}
+										disabled={isCurrentJob}>
+									</lightning-combobox>
+									<template if:true={errors.endYear}>
+										<div class="error-message">{errors.endYear}</div>
+									</template>
+								</div>
+							</div>
+							<template if:true={errors.dateRange}>
+								<div class="error-message">{errors.dateRange}</div>
+							</template>
+						</div>
+					</div>
+					<div class="form-field">
+						<lightning-input
+							type="checkbox"
+							checked={isCurrentJob}
+							onchange={handleCheckboxChange}
+							data-field="isCurrentJob"
+							label="I Am Currently Working In This Role"
+							class="current-job-checkbox">
+						</lightning-input>
+					</div>
+					<div class="form-field">
+						<label for="roleDescription" class="field-label">Role Description (Optional)</label>
+						<c-ken-rich-text-editor value={roleDescriptionHtml} placeholder="What were your key responsibilities?" onchange={handleRoleDescriptionChange}></c-ken-rich-text-editor>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="cancel-button" onclick={handleClose}>Cancel</button>
+				<button type="button" class="save-button" onclick={handleSave}>Save</button>
+			</div>
+		</div>
+	</div>
+</template>

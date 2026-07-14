@@ -1,0 +1,6 @@
+.rc-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.rc-avatar{width:32px;height:32px;border-radius:50%;background:#F4E9FE;color:#8A38F5;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.rc-info{flex:1;min-width:0}
+.rc-name{font-size:13px;font-weight:500;color:#111827}
+.rc-meta{font-size:11px;color:#5F6271}
+.rc-amount{font-size:13px;font-weight:600;color:#19A974}

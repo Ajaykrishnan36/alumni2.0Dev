@@ -1,0 +1,86 @@
+<template>
+    <div class="chart-card">
+        <div class="card-header">
+            <div class="card-header-row">
+                <div>
+                    <h3 class="card-title">{title}</h3>
+                    <p class="card-desc">{description}</p>
+                </div>
+                <template if:true={showExport}>
+                    <button class="chart-export-btn" onclick={handleExport} title="Download all cases as CSV">&#x2193; Download CSV</button>
+                </template>
+            </div>
+        </div>
+        <template if:true={isLoading}>
+            <div class="loading-state"><div class="spinner"></div></div>
+        </template>
+        <template if:false={isLoading}>
+            <template if:true={hasData}>
+                <div class="chart-body">
+
+                    <!-- Donut chart -->
+                    <template if:true={isDonut}>
+                        <div class="svg-wrap">
+                            <svg viewBox="0 0 120 120" class="donut-svg" aria-hidden="true">
+                                <template for:each={slices} for:item="s">
+                                    <g key={s.id} class="slice-group" data-idx={s.id}
+                                       onclick={handleSliceClick}
+                                       onmouseenter={handleMouseEnter}
+                                       onmouseleave={handleMouseLeave}>
+                                        <path d={s.path} fill={s.color} class="slice" />
+                                    </g>
+                                </template>
+                                <circle cx="60" cy="60" r="26" fill="white" />
+                                <text x="60" y="57" text-anchor="middle" class="center-val">{total}</text>
+                                <text x="60" y="68" text-anchor="middle" class="center-lbl">Total</text>
+                            </svg>
+                        </div>
+                    </template>
+
+                    <!-- Funnel chart -->
+                    <template if:true={isFunnel}>
+                        <div class="funnel-wrap">
+                            <svg viewBox="0 0 120 160" class="funnel-svg" aria-hidden="true">
+                                <template for:each={funnelItems} for:item="f">
+                                    <g key={f.pathId} class="funnel-group" data-idx={f.id}
+                                       onclick={handleSliceClick}
+                                       onmouseenter={handleMouseEnter}
+                                       onmouseleave={handleMouseLeave}>
+                                        <path d={f.path} fill={f.color} class="funnel-seg" />
+                                    </g>
+                                </template>
+                            </svg>
+                        </div>
+                    </template>
+
+                    <!-- Shared legend -->
+                    <ul class="legend">
+                        <template for:each={legendItems} for:item="s">
+                            <li key={s.id} class="legend-row clickable" data-idx={s.id} onclick={handleLegendClick}>
+                                <span class="dot" style={s.dotStyle}></span>
+                                <span class="leg-label" title={s.rawLabel}>{s.label}</span>
+                                <span class="leg-count">{s.value}</span>
+                                <span class="leg-pct">{s.pct}%</span>
+                            </li>
+                        </template>
+                    </ul>
+
+                </div>
+            </template>
+            <template if:false={hasData}>
+                <div class="empty-state">No data available</div>
+            </template>
+        </template>
+
+        <!-- Hover tooltip -->
+        <template if:true={tooltipVisible}>
+            <div class="tip-box" style={tooltipStyle}>
+                <div class="tip-label">{tipLabel}</div>
+                <div class="tip-row">
+                    <span class="tip-val">{tipValue}</span>
+                    <span class="tip-pct">{tipPct}%</span>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

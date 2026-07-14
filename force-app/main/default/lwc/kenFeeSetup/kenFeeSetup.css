@@ -1,0 +1,297 @@
+/* Step Content */
+.fee-step {
+    width: 100%;
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.fee-title {
+    text-align: left;
+    font-size: 16px;
+    font-weight: 500;
+    color: #373A45;
+    margin: 6px 0 18px;
+}
+
+/* Mode cards */
+.fee-mode-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 auto 18px;
+    width: 820px;
+    max-width: 100%;
+}
+
+.fee-mode-card {
+    width: 100%;
+    background: #F6F8FB;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    text-align: left;
+}
+
+.fee-mode-card.selected {
+    background: #FFFFFF;
+    border: 2px solid var(--primary-color);
+}
+
+.fee-mode-text {
+    font-size: 22px;
+    font-weight: 600;
+    color: #2E2F35;
+}
+
+.fee-check-circle {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Grid */
+.fee-grid {
+    width: 820px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.fee-grid-header {
+    display: grid;
+    grid-template-columns: 1fr 200px 140px;
+    gap: 24px;
+    font-size: 14px;
+    color: #373A45;
+    margin: 22px 0 6px;
+}
+
+.fee-col-mid,
+.fee-col-right {
+    text-align: left;
+}
+
+.fee-day-group {
+    border-top: 0;
+    padding-top: 16px;
+    margin-top: 12px;
+}
+
+.fee-day-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #373A45;
+    margin-bottom: 6px;
+}
+
+.fee-grid-row {
+    display: grid;
+    grid-template-columns: 1fr 200px 140px;
+    gap: 24px;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.fee-grid-row-meal {
+    margin-top: 6px;
+}
+
+.fee-session-label {
+    font-size: 12px;
+    color: #8C8E94;
+    margin-bottom: 2px;
+}
+
+.fee-session-title {
+    font-size: 16px;
+    color: #373A45;
+    font-weight: 500;
+}
+
+.fee-event-title {
+    font-size: 34px;
+    line-height: 1.25;
+    font-weight: 600;
+    color: #2E2F35;
+    max-width: 520px;
+}
+
+.fee-meal-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: #373A45;
+}
+
+/* Price input */
+.fee-price-wrap {
+    position: relative;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    background: #FFFFFF;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    padding: 0 34px 0 12px;
+}
+
+.fee-price-wrap[data-disabled="true"] {
+    background: #F3F4F6;
+    border-color: #D1D5DB;
+}
+
+.fee-input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 14px;
+    color: #373A45;
+}
+
+.fee-input:disabled {
+    color: #8C8E94;
+}
+
+.fee-currency {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #8C8E94;
+}
+
+/* Checkbox (square) */
+.fee-free-checkbox {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    cursor: pointer;
+}
+
+.fee-free-checkbox input {
+    display: none;
+}
+
+.checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #8C8E94;
+    border-radius: 4px;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fee-free-checkbox input:checked + .checkbox-custom {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.fee-free-checkbox input:checked + .checkbox-custom::after {
+    content: '✓';
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Summary toggle */
+.fee-summary-toggle {
+    background: transparent;
+    border: none;
+    padding: 14px 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    color: #585A64;
+    cursor: pointer;
+}
+
+.fee-chevron {
+    transition: transform 0.2s ease;
+}
+
+.fee-chevron.up {
+    transform: rotate(180deg);
+}
+
+.fee-summary-body {
+    padding: 8px 0 4px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.fee-summary-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #373A45;
+    padding: 6px 0;
+}
+
+/* Totals */
+.fee-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 18px 0 8px;
+    border-top: 1px solid #E5E7EB;
+}
+
+.fee-total-label {
+    font-size: 18px;
+    font-weight: 600;
+    color: #373A45;
+}
+
+.fee-total-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #373A45;
+}
+
+.fee-total-row-split {
+    align-items: center;
+}
+
+.fee-total-split {
+    display: flex;
+    gap: 48px;
+}
+
+.fee-total-sub {
+    margin-top: 2px;
+    font-size: 16px;
+    color: #585A64;
+    font-weight: 400;
+}
+
+.fee-empty {
+    padding: 24px 0;
+    color: #6B7280;
+    font-size: 14px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .fee-grid-header,
+    .fee-grid-row {
+        grid-template-columns: 1fr;
+    }
+    .fee-event-title {
+        font-size: 26px;
+    }
+    .fee-total-split {
+        gap: 18px;
+    }
+}

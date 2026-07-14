@@ -1,0 +1,45 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal" onclick={stopBubble}>
+            <header class="modal__head">
+                <div>
+                    <p class="modal__title">Select Interview Slot</p>
+                    <p class="modal__sub">{jobTitle} · {jobCompany}</p>
+                </div>
+                <button class="modal__close" onclick={handleClose}>×</button>
+            </header>
+
+            <div class="modal__body">
+                <p class="block-h">Available days</p>
+                <div class="days">
+                    <template for:each={days} for:item="d">
+                        <button key={d.key} data-key={d.key} class={d.cssClass} onclick={handleDayClick}>
+                            <span class="day__name">{d.dayName}</span>
+                            <span class="day__num">{d.dayNum}</span>
+                            <span class="day__mon">{d.monthName}</span>
+                        </button>
+                    </template>
+                </div>
+
+                <p class="block-h">Morning</p>
+                <div class="slots">
+                    <template for:each={morningSlots} for:item="s">
+                        <button key={s.id} data-id={s.id} class={s.cssClass} onclick={handleSlotClick}>{s.label}</button>
+                    </template>
+                </div>
+
+                <p class="block-h">Afternoon</p>
+                <div class="slots">
+                    <template for:each={afternoonSlots} for:item="s">
+                        <button key={s.id} data-id={s.id} class={s.cssClass} onclick={handleSlotClick}>{s.label}</button>
+                    </template>
+                </div>
+            </div>
+
+            <footer class="modal__foot">
+                <button class="btn btn--ghost" onclick={handleClose}>Cancel</button>
+                <button class="btn btn--primary" onclick={handleBook}>Confirm Slot</button>
+            </footer>
+        </div>
+    </div>
+</template>

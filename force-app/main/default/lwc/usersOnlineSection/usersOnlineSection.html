@@ -1,0 +1,30 @@
+<template>
+    <div class="sidebar-section">
+        <div class="section-header">
+            <div class="online-dot"></div>
+            <h2 class="section-title">Users Online</h2>
+        </div>
+        <div class="search-bar-wrapper">
+            <c-search-bar placeholder="Search" onsearch={handleSearch}></c-search-bar>
+        </div>
+        <div class="online-users-list">
+            <template if:true={hasUsers}>
+                <template for:each={filteredUsers} for:item="user">
+                    <c-online-user-item
+                        key={user.id}
+                        name={user.name}
+                        batch={user.batch}
+                        profession={user.profession}
+                        profile-image={user.profileImage}
+                        willing-to-help={user.willingToHelp}
+                    ></c-online-user-item>
+                </template>
+            </template>
+            <template if:false={hasUsers}>
+                <div class="no-users-found">
+                    <p class="no-users-text">No user found</p>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

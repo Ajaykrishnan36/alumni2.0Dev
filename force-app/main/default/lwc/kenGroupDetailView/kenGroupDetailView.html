@@ -1,0 +1,637 @@
+<template>
+    <div class="group-detail-view-container">
+
+        <!-- Toast -->
+        <c-ken-toast-notification
+            is-visible={toastVisible}
+            toast-variant={toastVariant}
+            toast-title={toastTitle}
+            toast-message={toastMessage}>
+        </c-ken-toast-notification>
+
+        <!-- Loading -->
+        <template if:true={isLoading}>
+            <div class="detail-loading">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+
+        <!-- Back Button -->
+        <div class="back-btn-wrap">
+            <button type="button" class="back-btn" onclick={handleBack}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M19 12H5M12 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Back</span>
+            </button>
+        </div>
+
+        <!-- Banner -->
+        <div class="banner-section" style={bannerStyle}>
+            <div class="banner-overlay"></div>
+            <div class="banner-top-badges">
+                <div class="tags">
+                    <template if:true={hasTags}>
+                        <template for:each={tagsList} for:item="tag">
+                            <span key={tag.id} class="tag-pill">{tag.label}</span>
+                        </template>
+                    </template>
+                    <template if:false={hasTags}>
+                        <template if:true={groupCategory}>
+                            <span class="tag-pill">{groupCategory}</span>
+                        </template>
+                    </template>
+                </div>
+                <span class="privacy-badge">{groupType}</span>
+            </div>
+            <div class="banner-bottom-info">
+                <h1 class="group-title">{groupName}</h1>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <template if:true={isAccessible}>
+            <div class="tabs-nav">
+                <button class={tabAboutClass}   onclick={openAboutTab}>About</button>
+                <button class={tabFeedClass}     onclick={openFeedTab}>Feed</button>
+                <button class={tabEventsClass}   onclick={openEventsTab}>Events</button>
+                <template if:true={showMembersTab}>
+                    <button class={tabMembersClass} onclick={openMembersTab}>Members</button>
+                </template>
+            </div>
+        </template>
+
+        <!-- Content -->
+        <div class="content-section">
+
+            <!-- About Tab -->
+            <template if:true={showAbout}>
+                <div class="about-grid">
+                    <div class="about-left">
+                        <h2 class="section-title">About the Group</h2>
+                        <template if:true={hasDescription}>
+                            <lightning-formatted-rich-text value={groupDescription}></lightning-formatted-rich-text>
+                        </template>
+                        <template if:false={hasDescription}>
+                            <p class="empty-text">No description provided.</p>
+                        </template>
+                    </div>
+                    <div class="about-right">
+                        <div class="rules-card">
+                            <h2 class="section-title rules-title">Rules of the Group</h2>
+                            <template if:true={hasRules}>
+                                <lightning-formatted-rich-text value={groupRules}></lightning-formatted-rich-text>
+                            </template>
+                            <template if:false={hasRules}>
+                                <p class="empty-text">No rules specified.</p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Feed Tab -->
+            <template if:true={showFeed}>
+                <div class="feed-container">
+                    <c-ken-group-feed group-id={_groupId} is-member={isJoined}></c-ken-group-feed>
+                </div>
+            </template>
+
+            <!-- Events Tab -->
+            <template if:true={showEvents}>
+                <div class="events-container">
+                    <h2 class="section-title">Active events</h2>
+                    <template if:true={eventsLoading}>
+                        <div class="events-loading">
+                            <lightning-spinner alternative-text="Loading events" size="small"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template if:true={hasGroupEvents}>
+                        <div class="events-grid">
+                            <template for:each={groupEvents} for:item="ev">
+                                <div key={ev.id} class="event-card" data-event-id={ev.id} onclick={handleEventCardClick} role="button" tabindex="0">
+                                    <div class="event-image-wrap">
+                                        <img src={ev.bannerImage} class="event-image" alt={ev.title} />
+                                        <span class="event-tag">{ev.eventTagLabel}</span>
+                                        <template if:true={ev.isPaid}>
+                                            <span class="price-tag">&#8377;</span>
+                                        </template>
+                                    </div>
+                                    <div class="event-body">
+                                        <h3 class="event-title">{ev.title}</h3>
+                                        <template if:true={ev.hasLocation}>
+                                            <div class="event-location">
+                                                <lightning-icon icon-name="utility:checkin" size="xx-small"></lightning-icon>
+                                                <span>{ev.location}</span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                    <div class="event-footer-row">
+                                        <span class="event-pill">
+                                            <lightning-icon icon-name="utility:event" size="xx-small"></lightning-icon>
+                                            {ev.dateLabel}
+                                        </span>
+                                        <template if:true={ev.hasTime}>
+                                            <span class="event-pill">
+                                                <lightning-icon icon-name="utility:clock" size="xx-small"></lightning-icon>
+                                                {ev.timeLabel}
+                                            </span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:true={showEventsEmpty}>
+                        <div class="events-empty">No events are linked to this group yet.</div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- Members Tab (admin only) -->
+            <template if:true={showMembers}>
+                <div class="members-container">
+
+                    <div class="members-header">
+                        <h2 class="section-title">Members ({membersCountText})</h2>
+                    </div>
+
+                    <div class="members-layout">
+
+                        <!-- Left: Members grid -->
+                        <div class="members-list-col">
+                            <template if:true={membersLoading}>
+                                <div class="col-loading">
+                                    <lightning-spinner alternative-text="Loading members" size="small"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template if:false={membersLoading}>
+                                <template if:true={membersList.length}>
+                                    <div class="members-grid">
+                                        <template for:each={membersList} for:item="member">
+                                            <div key={member.memberRecordId} class="member-card">
+                                                <img src={member.photoUrl} alt={member.name} class="member-avatar" />
+                                                <div class="member-info">
+                                                    <div class="member-name">{member.name}</div>
+                                                    <div class="member-batch">{member.batch}</div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    class="member-remove-btn"
+                                                    title="Remove member"
+                                                    data-member-record-id={member.memberRecordId}
+                                                    onclick={handleRemoveMember}
+                                                    disabled={actionLoading}>
+                                                    <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                                                </button>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template if:false={membersList.length}>
+                                    <p class="panel-empty">No members yet.</p>
+                                </template>
+                            </template>
+                        </div>
+
+                        <!-- Right: Admin panel -->
+                        <div class="admin-panel">
+                            <div class="admin-panel-tabs">
+                                <button class={adminTabRequestsClass} onclick={openRequestsPanel}>Pending Requests</button>
+                                <button class={adminTabInvitesClass}  onclick={openInvitesPanel}>Invites Sent</button>
+                            </div>
+
+                            <!-- Pending Requests panel -->
+                            <template if:true={showRequestsPanel}>
+                                <div class="admin-panel-body">
+                                    <template if:true={requestsLoading}>
+                                        <div class="col-loading">
+                                            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                    <template if:false={requestsLoading}>
+                                        <template if:true={pendingRequests.length}>
+                                            <div class="request-scroll">
+                                                <template for:each={pendingRequests} for:item="req">
+                                                    <div key={req.memberRecordId} class="request-row">
+                                                        <img src={req.photoUrl} alt={req.name} class="req-avatar" />
+                                                        <div class="req-info">
+                                                            <div class="req-name">{req.name}</div>
+                                                            <div class="req-batch">{req.batch}</div>
+                                                        </div>
+                                                        <div class="req-actions">
+                                                            <button
+                                                                type="button"
+                                                                class="req-btn reject-btn"
+                                                                title="Reject"
+                                                                data-member-record-id={req.memberRecordId}
+                                                                onclick={handleRejectRequest}
+                                                                disabled={actionLoading}>
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                                </svg>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                class="req-btn approve-btn"
+                                                                title="Approve"
+                                                                data-member-record-id={req.memberRecordId}
+                                                                onclick={handleApproveRequest}
+                                                                disabled={actionLoading}>
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <button type="button" class="view-more-btn" onclick={handleOpenPendingModal}>View More</button>
+                                        </template>
+                                        <template if:false={pendingRequests.length}>
+                                            <p class="panel-empty">No pending requests.</p>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <!-- Invites Sent panel -->
+                            <template if:true={showInvitesPanel}>
+                                <div class="admin-panel-body">
+                                    <template if:true={invitesLoading}>
+                                        <div class="col-loading">
+                                            <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                    <template if:false={invitesLoading}>
+                                        <template if:true={invitesSent.length}>
+                                            <div class="request-scroll">
+                                                <template for:each={invitesSent} for:item="inv">
+                                                    <div key={inv.memberRecordId} class="request-row">
+                                                        <img src={inv.photoUrl} alt={inv.name} class="req-avatar" />
+                                                        <div class="req-info">
+                                                            <div class="req-name">{inv.name}</div>
+                                                            <div class="req-batch">{inv.batch}</div>
+                                                            <template if:true={inv.invitedByName}>
+                                                                <div class="req-meta">Invited by: {inv.invitedByName}</div>
+                                                            </template>
+                                                        </div>
+                                                        <div class="req-actions">
+                                                            <template if:true={inv.isInviteDeclined}>
+                                                                <span class="status-pill declined">Declined</span>
+                                                                <button
+                                                                    type="button"
+                                                                    class="req-btn resend-btn"
+                                                                    data-member-record-id={inv.memberRecordId}
+                                                                    onclick={handleResendInvite}
+                                                                    disabled={actionLoading}>
+                                                                    Resend
+                                                                </button>
+                                                            </template>
+                                                            <template if:false={inv.isInviteDeclined}>
+                                                                <span class="status-pill pending">Pending</span>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                        <template if:false={invitesSent.length}>
+                                            <p class="panel-empty">No invites sent yet.</p>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+
+                        </div>
+
+                    </div>
+                </div>
+            </template>
+
+        </div>
+
+        <!-- Sticky Footer -->
+        <div class="sticky-footer">
+            <div class="footer-left">
+                <span class="footer-detail">Created on: {createdDateLabel}</span>
+                <span class="footer-divider">|</span>
+                <button type="button" class="members-count-btn" onclick={handleOpenMembersModal}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    {membersCountText} members
+                </button>
+            </div>
+            <div class="footer-right">
+                <div class="creator-info">
+                    <span class="creator-label">Created by:</span>
+                    <img src={createdByPhotoUrl} class="creator-avatar" alt="Creator" />
+                    <span class="creator-name">{createdByName}</span>
+                </div>
+
+                <!-- Admin in About tab: Edit Group Details -->
+                <template if:true={showFooterAdminAboutButtons}>
+                    <button type="button" class="action-btn secondary-btn" onclick={handleEditGroup}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Edit Group Details
+                    </button>
+                </template>
+
+                <!-- Admin in Events tab: Create an Event (pre-selects this group as audience) -->
+                <template if:true={showFooterAdminEventsButtons}>
+                    <button type="button" class="action-btn join-btn" onclick={handleCreateEvent}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Create an Event
+                    </button>
+                </template>
+
+                <!-- Admin in Members tab: Copy Link + Invite -->
+                <template if:true={showFooterAdminMembersButtons}>
+                    <button type="button" class="action-btn secondary-btn" onclick={handleCopyInviteLink}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy Invite Link
+                    </button>
+                    <button type="button" class="action-btn join-btn" onclick={handleOpenInviteModal}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="8.5" cy="7" r="4"></circle>
+                            <line x1="20" y1="8" x2="20" y2="14"></line>
+                            <line x1="23" y1="11" x2="17" y2="11"></line>
+                        </svg>
+                        Invite Members
+                    </button>
+                </template>
+
+                <!-- None: Join or Request based on group type -->
+                <template if:true={isNone}>
+                    <template if:true={isPublicGroup}>
+                        <button type="button" class="action-btn join-btn" onclick={handleJoin} disabled={isJoining}>
+                            <template if:true={isJoining}>
+                                <lightning-spinner alternative-text="Joining" size="x-small"></lightning-spinner>
+                            </template>
+                            <template if:false={isJoining}>Join Group</template>
+                        </button>
+                    </template>
+                    <template if:false={isPublicGroup}>
+                        <button type="button" class="action-btn join-btn" onclick={handleJoin} disabled={isJoining}>
+                            <template if:true={isJoining}>
+                                <lightning-spinner alternative-text="Requesting" size="x-small"></lightning-spinner>
+                            </template>
+                            <template if:false={isJoining}>Request to Join</template>
+                        </button>
+                    </template>
+                </template>
+
+                <!-- Pending: waiting for approval -->
+                <template if:true={isPending}>
+                    <button type="button" class="action-btn requested-btn" disabled>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        Requested to join
+                    </button>
+                </template>
+
+                <!-- Member (non-admin): Leave -->
+                <template if:true={isJoined}>
+                    <template if:false={isAdmin}>
+                        <button type="button" class="action-btn leave-btn" onclick={handleLeave} disabled={isLeaving}>
+                            <template if:true={isLeaving}>
+                                <lightning-spinner alternative-text="Leaving" size="x-small"></lightning-spinner>
+                            </template>
+                            <template if:false={isLeaving}>Leave Group</template>
+                        </button>
+                    </template>
+                </template>
+
+            </div>
+        </div>
+
+        <!-- Leave Confirmation Modal -->
+        <template if:true={showLeaveConfirm}>
+            <div class="modal-overlay" onclick={cancelLeave}>
+                <div class="modal-card" onclick={stopPropagation}>
+                    <p class="confirm-text">Are you sure you want to leave the <strong>{groupName}</strong> group?</p>
+                    <div class="confirm-actions">
+                        <button type="button" class="cancel-btn" onclick={cancelLeave}>Cancel</button>
+                        <button type="button" class="confirm-yes-btn" onclick={confirmLeave}>Yes, Leave</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Left Group Success Modal -->
+        <template if:true={showLeaveSuccess}>
+            <div class="modal-overlay">
+                <div class="modal-card success-card">
+                    <div class="success-icon-wrap">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="11" fill="#22C55E"/>
+                            <path d="M7 12l3.5 3.5L17 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <p class="success-text">Left Group Successfully!</p>
+                </div>
+            </div>
+        </template>
+
+        <!-- All Members Modal (clickable count in footer) -->
+        <template if:true={showAllMembersModal}>
+            <div class="modal-overlay" onclick={handleCloseMembersModal}>
+                <div class="members-modal" onclick={stopPropagation}>
+                    <div class="modal-header">
+                        <h3 class="modal-title">Members</h3>
+                        <button type="button" class="modal-close-btn" onclick={handleCloseMembersModal}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="members-modal-body">
+                        <template if:true={membersLoading}>
+                            <div class="col-loading">
+                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                            </div>
+                        </template>
+                        <template if:false={membersLoading}>
+                            <template if:true={membersList.length}>
+                                <template for:each={membersList} for:item="m">
+                                    <div key={m.memberRecordId} class="members-modal-row">
+                                        <img src={m.photoUrl} alt={m.name} class="modal-member-avatar" />
+                                        <div class="modal-member-info">
+                                            <div class="modal-member-name">{m.name}</div>
+                                            <div class="modal-member-batch">{m.batch}</div>
+                                        </div>
+                                        <button type="button" class="modal-chat-btn" title="Message">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </template>
+                            </template>
+                            <template if:false={membersList.length}>
+                                <p class="panel-empty">No members to display.</p>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Pending Requests View More Modal (2-col grid) -->
+        <template if:true={showPendingRequestsModal}>
+            <div class="modal-overlay" onclick={handleClosePendingModal}>
+                <div class="pending-modal" onclick={stopPropagation}>
+                    <div class="modal-header">
+                        <h3 class="modal-title">Requested List</h3>
+                        <button type="button" class="modal-close-btn" onclick={handleClosePendingModal}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="pending-modal-body">
+                        <div class="pending-modal-grid">
+                            <template for:each={allPendingRequests} for:item="req">
+                                <div key={req.memberRecordId} class="pending-modal-card">
+                                    <img src={req.photoUrl} alt={req.name} class="pm-avatar" />
+                                    <div class="pm-info">
+                                        <div class="pm-name">{req.name}</div>
+                                        <div class="pm-batch">{req.batch}</div>
+                                    </div>
+                                    <div class="pm-actions">
+                                        <button
+                                            type="button"
+                                            class="req-btn reject-btn"
+                                            title="Reject"
+                                            data-member-record-id={req.memberRecordId}
+                                            onclick={handleRejectRequest}
+                                            disabled={actionLoading}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="req-btn approve-btn"
+                                            title="Approve"
+                                            data-member-record-id={req.memberRecordId}
+                                            onclick={handleApproveRequest}
+                                            disabled={actionLoading}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Invite Members Modal (email chip style) -->
+        <template if:true={showInviteModal}>
+            <div class="modal-overlay" onclick={handleCloseInviteModal}>
+                <div class="invite-modal" onclick={stopPropagation}>
+                    <div class="modal-header">
+                        <h3 class="modal-title">Share Link to</h3>
+                        <button type="button" class="modal-close-btn" onclick={handleCloseInviteModal}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="invite-modal-body">
+                        <div class="email-input-wrap">
+                            <input
+                                type="text"
+                                class="email-input"
+                                placeholder="Enter name or email"
+                                value={currentEmailInput}
+                                onchange={handleEmailInputChange}
+                                onkeydown={handleEmailKeyDown} />
+                            <span class="email-input-hint">Hit ↵ (enter) to search</span>
+                        </div>
+
+                        <!-- Chips -->
+                        <template if:true={emailChipsList.length}>
+                            <div class="email-chips">
+                                <template for:each={emailChipsList} for:item="chip">
+                                    <span key={chip.id} class="email-chip">
+                                        {chip.label}
+                                        <button
+                                            type="button"
+                                            class="chip-remove"
+                                            data-idx={chip.id}
+                                            onclick={handleRemoveEmailChip}>×</button>
+                                    </span>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Search results -->
+                        <div class="invite-results">
+                            <template if:true={inviteSearchLoading}>
+                                <div class="col-loading">
+                                    <lightning-spinner alternative-text="Searching" size="small"></lightning-spinner>
+                                </div>
+                            </template>
+                            <template if:false={inviteSearchLoading}>
+                                <template if:true={inviteSearchResults.length}>
+                                    <template for:each={inviteSearchResults} for:item="result">
+                                        <div key={result.accountId} class="invite-result-row">
+                                            <img src={result.photoUrl} alt={result.name} class="req-avatar" />
+                                            <div class="req-info">
+                                                <div class="req-name">{result.name}</div>
+                                                <div class="req-batch">{result.batch}</div>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                class="send-invite-btn"
+                                                data-account-id={result.accountId}
+                                                onclick={handleSendInvite}
+                                                disabled={invitingAccountId}>
+                                                Invite
+                                            </button>
+                                        </div>
+                                    </template>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="invite-modal-footer">
+                        <button type="button" class="send-invites-btn" onclick={handleSendInvites} disabled={actionLoading}>
+                            Send Invites
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        </template><!-- end if:false={isLoading} -->
+
+    </div>
+</template>

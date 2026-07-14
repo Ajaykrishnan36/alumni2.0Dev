@@ -1,0 +1,189 @@
+<template>
+   <!-- Notification modal -->
+    <c-ken-notification-modal
+        is-visible={isErrorToastVisible}
+        toast-title={errorTitle}
+        toast-message={errorDescription}
+        toast-variant="error">
+    </c-ken-notification-modal>
+
+    <div class="detail-view-container">
+        <header class="page-header">
+            <h1 class="page-title">Request for a Service</h1>
+            <c-ken-sns-breadcrumb items={crumbs}></c-ken-sns-breadcrumb>
+        </header>
+
+        <div class="detail-layout">
+            <div class="sidebar">
+                <p class="sidebar-title">{serviceGroupTitle}</p>
+                <ul class="service-list">
+                    <template for:each={serviceItems} for:item="item">
+                        <li key={item.id} class="service-list-item">
+                            <button 
+                                type="button"
+                                class={item.cssClass}
+                                onclick={handleServiceItemClick}
+                                data-item-id={item.id}>
+                                <span class="service-item-text">{item.title}</span>
+                                <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+            <div class="content-area">
+                <p class="content-title">{selectedServiceTitle}</p>
+
+                <div class="form-container">
+                    <template if:true={questionList}>
+                        <div class="question-section">
+                            <p class="form-label">Questionnaire</p>
+                            <template for:each={questionList} for:item="question">
+                                <div key={question.id} class="question-row">
+                                    <div class="question-header">
+                                        <span class="question-label">
+                                            {question.label}
+                                            <template if:true={question.isRequired}>
+                                                <span class="required-asterisk">*</span>
+                                            </template>
+                                        </span>
+                                    </div>
+
+                                <!-- Yes/No -->
+                                <template if:true={question.type}>
+                                    <template if:true={question.typeIsYesNo}>
+                                        <div class="inline-options">
+                                            <label class="radio-option">
+                                                <input type="radio" name={question.id} value="Yes" data-question-id={question.id} onchange={handleQuestionChange}/>
+                                                <span>Yes</span>
+                                            </label>
+                                            <label class="radio-option">
+                                                <input type="radio" name={question.id} value="No" data-question-id={question.id} onchange={handleQuestionChange}/>
+                                                <span>No</span>
+                                            </label>
+                                        </div>
+                                    </template>
+                                </template>
+
+                                <!-- Comment / Short Answer -->
+                                <template if:true={question.typeIsComment}>
+                                    <textarea class="form-textarea" placeholder="Enter your response" value={question.value} data-question-id={question.id} onchange={handleQuestionChange}></textarea>
+                                </template>
+                                <template if:true={question.typeIsShortAnswer}>
+                                    <input type="text" class="text-input" placeholder="Enter your response" value={question.value} data-question-id={question.id} onchange={handleQuestionChange}/>
+                                </template>
+
+                                <!-- Date -->
+                                <template if:true={question.typeIsDate}>
+                                    <lightning-input
+                                        type="date"
+                                        variant="label-hidden"
+                                        label={question.label}
+                                        data-question-id={question.id}
+                                        onchange={handleQuestionChange}
+                                        class="date-input">
+                                    </lightning-input>
+                                </template>
+
+                                <!-- Time -->
+                                <template if:true={question.typeIsTime}>
+                                    <lightning-input
+                                        type="time"
+                                        variant="label-hidden"
+                                        label={question.label}
+                                        data-question-id={question.id}
+                                        onchange={handleQuestionChange}
+                                        class="time-input">
+                                    </lightning-input>
+                                </template>
+
+                                <!-- Multiple Choice -->
+                                <template if:true={question.typeIsMultipleChoice}>
+                                    <div class="option-list">
+                                        <template for:each={question.optionList} for:item="opt">
+                                            <label key={opt} class="radio-option">
+                                                <input type="radio" name={question.id} value={opt} data-question-id={question.id} onchange={handleQuestionChange}/>
+                                                <span>{opt}</span>
+                                            </label>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- Dropdown -->
+                                <template if:true={question.typeIsDropdown}>
+                                    <select class="select-input" data-question-id={question.id} onchange={handleQuestionChange}>
+                                        <option value="">Select an option</option>
+                                        <template for:each={question.optionList} for:item="opt">
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        </template>
+                                    </select>
+                                </template>
+
+                                <!-- Rating -->
+                                <template if:true={question.typeIsRating}>
+                                    <select class="select-input" data-question-id={question.id} onchange={handleQuestionChange}>
+                                        <template for:each={question.ratingOptions} for:item="opt">
+                                            <option key={opt} value={opt}>{opt}</option>
+                                        </template>
+                                    </select>
+                                </template>
+
+                                <!-- Linear Scale -->
+                                <template if:true={question.typeIsLinearScale}>
+                                    <input type="range" min="1" max="10" value="5" class="range-input" data-question-id={question.id} onchange={handleQuestionChange}/>
+                                    <div class="range-scale">
+                                        <span>1</span>
+                                        <span>10</span>
+                                    </div>
+                                </template>
+
+                                <!-- File Upload -->
+                                <template if:true={question.showFileUpload}>
+                                    <p class="field-hint">{fileHint}</p>
+                                    <div class="file-upload-wrapper">
+                                        <input 
+                                            type="text" 
+                                            class={question.fileInputClass}
+                                            placeholder="Upload document"
+                                            value={question.value}
+                                            readonly
+                                            data-question-id={question.id}
+                                            onclick={handleFileUploadClick}>
+                                        <button type="button" class="upload-icon-button" data-question-id={question.id} onclick={handleFileUploadClick} aria-label="Upload file">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" clip-rule="evenodd" d="M11.2929 3.29289C11.6834 2.90237 12.3166 2.90237 12.7071 3.29289L17.7071 8.29289C18.0976 8.68342 18.0976 9.31658 17.7071 9.70711C17.3166 10.0976 16.6834 10.0976 16.2929 9.70711L13 6.41421V16C13 16.5523 12.5523 17 12 17C11.4477 17 11 16.5523 11 16V6.41421L7.70711 9.70711C7.31658 10.0976 6.68342 10.0976 6.29289 9.70711C5.90237 9.31658 5.90237 8.68342 6.29289 8.29289L11.2929 3.29289ZM4 16C4.55228 16 5 16.4477 5 17V19C5 19.2652 5.10536 19.5196 5.29289 19.7071C5.48043 19.8946 5.73478 20 6 20H18C18.2652 20 18.5196 19.8946 18.7071 19.7071C18.8946 19.5196 19 19.2652 19 19V17C19 16.4477 19.4477 16 20 16C20.5523 16 21 16.4477 21 17V19C21 19.7957 20.6839 20.5587 20.1213 21.1213C19.5587 21.6839 18.7957 22 18 22H6C5.20435 22 4.44129 21.6839 3.87868 21.1213C3.31607 20.5587 3 19.7957 3 19V17C3 16.4477 3.44772 16 4 16Z" fill="#585A64"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <template if:true={question.fileError}>
+                                        <p class="field-error" role="alert">{question.fileError}</p>
+                                    </template>
+                                    <template if:true={question.requiredError}>
+                                        <p class="field-error" role="alert">{question.requiredError}</p>
+                                    </template>
+                                </template>
+
+                                <template if:true={question.options}>
+                                    <p class="question-options">Options: {question.options}</p>
+                                </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <div class="form-actions">
+                        <button type="button" class="cancel-button" onclick={handleCancel}>Cancel</button>
+                        <button type="button" class="submit-button" onclick={handleSubmit} disabled={isSubmitting}>
+                            <template if:true={isSubmitting}>
+                                <span class="submit-spinner"></span>
+                                Processing...
+                            </template>
+                            <template if:false={isSubmitting}>Submit</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

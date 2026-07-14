@@ -1,0 +1,16 @@
+<template>
+    <div class="cal">
+        <div class="cal__head">
+            <span>{monthLabel}</span>
+            <span class="cal__nav">&lsaquo; &rsaquo;</span>
+        </div>
+        <div class="cal__grid">
+            <template for:each={dayHeaders} for:item="d">
+                <div key={d.key} class="cal__dow">{d.label}</div>
+            </template>
+            <template for:each={calendarRows} for:item="c">
+                <div key={c.key} class={c.cssClass}>{c.label}</div>
+            </template>
+        </div>
+    </div>
+</template>

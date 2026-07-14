@@ -1,0 +1,49 @@
+<template>
+    <aside class="side">
+        <div class="side__card">
+            <h3 class="side__title">Registered Events</h3>
+            <template for:each={decoratedRegistered} for:item="r">
+                <div key={r.id} class="mini-row">
+                    <div class="mini-row__img" style={r.imgStyle}></div>
+                    <div class="mini-row__body">
+                        <h4 class="mini-row__title">{r.t}</h4>
+                        <div class="mini-row__meta">
+                            <span>📅 {r.date}</span>
+                            <span>📍 {r.loc}</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <a class="viewall" role="button" tabindex="0" onclick={handleViewAllRegistered}>View All</a>
+        </div>
+
+        <div class="side__card">
+            <h3 class="side__title">Hosted Events</h3>
+            <template lwc:if={hasHosted}>
+                <template for:each={decoratedHosted} for:item="h">
+                    <div key={h.id} class="he-row" role="button" tabindex="0" data-id={h.id} onclick={handleHostedClick} onkeydown={handleHostedKey}>
+                        <div class="he-row__body">
+                            <h4 class="he-row__title">{h.title}</h4>
+                            <div class="he-row__meta">
+                                <svg class="he-row__cal" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                <span>{h.dateTime}</span>
+                            </div>
+                        </div>
+                        <div class="he-row__right">
+                            <span class={h.statusClass}>{h.statusLabel}</span>
+                            <svg class="he-row__chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </div>
+                    </div>
+                </template>
+                <a class="viewall" role="button" tabindex="0" onclick={handleViewAllHosted}>View All</a>
+            </template>
+            <template lwc:else>
+                <div class="ev-empty">
+                    <div class="ev-empty__icon">📅</div>
+                    <p class="ev-empty__t">You haven't hosted any events yet.</p>
+                    <button type="button" class="btn btn--primary btn--block" onclick={handleHostEvent}>Host an Event</button>
+                </div>
+            </template>
+        </div>
+    </aside>
+</template>

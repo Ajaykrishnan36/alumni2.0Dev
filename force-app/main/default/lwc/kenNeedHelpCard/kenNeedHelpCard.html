@@ -1,0 +1,27 @@
+<template>
+    <button type="button" class="help-card" onclick={handleCardClick} aria-label="Need Help?">
+        <div class="card-header">
+            <p class="card-title">Need Help?</p>
+            <span class="arrow-circle">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5 12H19M19 12L13 6M19 12L13 18" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </span>
+        </div>
+
+        <div class="card-body">
+            <div class="card-icon">
+                <div class="card-icon__circle">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.5 12 11 12 13"
+                              stroke="#9CA3AF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="12" cy="16.5" r="1" fill="#9CA3AF"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="card-desc">
+                Chat with our support team or browse self-service guides
+            </p>
+        </div>
+    </button>
+</template>

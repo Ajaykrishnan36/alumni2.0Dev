@@ -1,0 +1,41 @@
+<template lwc:render-mode="light">
+    <div class="h-card rail-card">
+        <div class="rail-head">
+            <span class="rail-head__left">
+                <span class="rail-head__ico">&#128240;</span>
+                Campus &amp; alumni feed
+            </span>
+            <button class="rail-all" onclick={handleAll}>All &rarr;</button>
+        </div>
+        <template lwc:if={hasItems}>
+            <div class="feed-list">
+                <template for:each={items} for:item="f">
+                    <article key={f.key} class="feed-item" data-key={f.key} onclick={handleItem}>
+                        <!-- Branded category thumbnail. imageUrl is usually empty, so the
+                             coloured icon is the default; a real image (if present) overlays
+                             it and falls back to the icon via onerror. Never a broken img. -->
+                        <span class="feed-thumb" style={f.iconStyle}>
+                            <span class="feed-thumb__ico" aria-hidden="true">{f.iconChar}</span>
+                            <template lwc:if={f.hasImg}>
+                                <img src={f.img} class="feed-thumb__img" alt="" onerror={handleImgError} />
+                            </template>
+                        </span>
+                        <div class="feed-body">
+                            <div class="feed-meta">
+                                <span class={f.tagClass}>{f.tag}</span>
+                                <span class="feed-time">{f.time}</span>
+                            </div>
+                            <div class="feed-title">{f.title}</div>
+                        </div>
+                    </article>
+                </template>
+            </div>
+        </template>
+        <template lwc:else>
+            <div class="feed-empty">
+                <span class="feed-empty__ico" aria-hidden="true">&#128240;</span>
+                <p class="feed-empty__text">No campus updates yet — check back soon.</p>
+            </div>
+        </template>
+    </div>
+</template>

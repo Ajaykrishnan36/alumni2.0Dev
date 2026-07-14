@@ -1,0 +1,420 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+
+        <!-- ========================================================= -->
+        <!-- PHASE 1 — ENTRY: "How would you like to create a new job?" -->
+        <!-- ========================================================= -->
+        <template lwc:if={isEntry}>
+            <div class="modal modal--entry" onclick={stopBubble}>
+                <div class="modal-head modal-head--center">
+                    <h2 class="modal-title modal-title--lg">How would you like to create a new job?</h2>
+                    <button class="modal-close" onclick={handleClose} title="Close">×</button>
+                </div>
+                <div class="entry-grid">
+                    <button class="entry-card" onclick={chooseManual}>
+                        <span class="entry-card__icon">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+                        </span>
+                        <span class="entry-card__title">Create Manually</span>
+                        <span class="entry-card__sub">Fill in the details step by step</span>
+                    </button>
+                    <button class="entry-card entry-card--primary" onclick={chooseUpload}>
+                        <span class="entry-card__icon entry-card__icon--light">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </span>
+                        <span class="entry-card__title">Upload a Job Description</span>
+                        <span class="entry-card__sub">Save time — we'll create it for you.</span>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- ========================================================= -->
+        <!-- PHASE 2 — LOADING (mock extraction)                        -->
+        <!-- ========================================================= -->
+        <template lwc:if={isLoading}>
+            <div class="modal modal--loading" onclick={stopBubble}>
+                <div class="loading-spinner"></div>
+                <p class="loading-title">Please wait while we extract data from the uploaded document</p>
+                <p class="loading-sub">Your job posting will be ready for review shortly</p>
+            </div>
+        </template>
+
+        <!-- ========================================================= -->
+        <!-- PHASE 3 — FORM (3 steps)                                   -->
+        <!-- ========================================================= -->
+        <template lwc:if={isForm}>
+            <div class="modal" onclick={stopBubble}>
+                <div class="modal-head">
+                    <h2 class="modal-title">Create a Job</h2>
+                    <button class="modal-close" onclick={handleClose} title="Close">×</button>
+                </div>
+
+                <!-- Stepper -->
+                <div class="host-stepper">
+                    <template for:each={stepperItems} for:item="s">
+                        <div key={s.id} class={s.stepClass}>
+                            <span class="step__num">
+                                <template lwc:if={s.showCheck}>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                </template>
+                                <template lwc:else>{s.num}</template>
+                            </span>
+                            <span class="step__label">{s.label}</span>
+                        </div>
+                        <template lwc:if={s.showConnector}>
+                            <span key={s.label} class="step__connector"></span>
+                        </template>
+                    </template>
+                </div>
+                <div class="h-progress">
+                    <div class="progress"><div class="progress__bar" style={progressStyle}></div></div>
+                    <span class="step-counter">{stepCounter}</span>
+                </div>
+
+                <div class="body">
+
+                    <!-- ===================== STEP 1 ===================== -->
+                    <template lwc:if={isStep1}>
+                        <!-- partial-extract banner (upload path only) -->
+                        <template lwc:if={showFetchBanner}>
+                            <div class="fetch-banner">
+                                <span class="fetch-banner__icon">!</span>
+                                <div class="fetch-banner__body">
+                                    <p class="fetch-banner__lead">We could not fetch the following data from the document. Please update it manually.</p>
+                                    <p class="fetch-banner__grp"><b>1. Identity</b></p>
+                                    <ul><li>Placement cycle</li><li>Posted by</li></ul>
+                                    <p class="fetch-banner__grp"><b>2. Job Details</b></p>
+                                    <ul><li>Headcount</li><li>Notes</li></ul>
+                                    <p class="fetch-banner__grp"><b>3. Compensation &amp; Benefits</b></p>
+                                    <ul><li>Salary end range</li></ul>
+                                    <p class="fetch-banner__grp"><b>4. Point of Contact</b></p>
+                                    <p class="fetch-banner__grp"><b>5. Application Window</b></p>
+                                </div>
+                                <button class="fetch-banner__close" onclick={dismissBanner} title="Dismiss">×</button>
+                            </div>
+                        </template>
+
+                        <!-- Identity -->
+                        <div class="section">
+                            <h3>Identity</h3>
+                            <div class="fields-grid">
+                                <div class="field">
+                                    <label>Job ID</label>
+                                    <input type="text" value={jobId} disabled />
+                                </div>
+                                <div class="field">
+                                    <label>Job Title<span class="req">*</span></label>
+                                    <input type="text" data-field="jobTitle" value={jobTitle} oninput={handleLocalField} placeholder="Software Engineer" />
+                                </div>
+                                <div class="field">
+                                    <label>Employer<span class="req">*</span></label>
+                                    <input type="text" data-field="employer" value={employer} oninput={handleLocalField} placeholder="Company name" />
+                                </div>
+                                <div class="field">
+                                    <label>Placement Cycle<span class="req">*</span></label>
+                                    <select data-field="placementCycle" onchange={handleLocalField}>
+                                        <option value="">Select</option>
+                                        <template for:each={placementCycleOptions} for:item="o">
+                                            <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Posted By</label>
+                                    <input type="text" data-field="postedBy" value={postedBy} oninput={handleLocalField} placeholder="Your name / department" />
+                                </div>
+                                <div class="field">
+                                    <label>Status<span class="req">*</span></label>
+                                    <select data-field="statusField" onchange={handleLocalField}>
+                                        <option value="">Select</option>
+                                        <template for:each={statusOptions} for:item="o">
+                                            <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Job Details -->
+                        <div class="section">
+                            <h3>Job Details</h3>
+                            <div class="fields-grid">
+                                <div class="field">
+                                    <label>Role Category</label>
+                                    <select data-field="roleCategory" onchange={handleLocalField}>
+                                        <option value="">Select</option>
+                                        <template for:each={roleCategoryOptions} for:item="o">
+                                            <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Employment Type</label>
+                                    <select data-field="employmentType" onchange={handleLocalField}>
+                                        <option value="">Select</option>
+                                        <template for:each={employmentTypeOptions} for:item="o">
+                                            <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Work Place Type</label>
+                                    <select data-field="workplaceType" onchange={handleLocalField}>
+                                        <option value="">Select</option>
+                                        <template for:each={workplaceTypeOptions} for:item="o">
+                                            <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Location</label>
+                                    <input type="text" data-field="location" value={location} oninput={handleLocalField} placeholder="City, Country" />
+                                </div>
+                                <div class="field">
+                                    <label>Currency</label>
+                                    <select data-field="currency" onchange={handleLocalField}>
+                                        <template for:each={currencyOptions} for:item="o">
+                                            <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="field" style="margin-top:16px">
+                                <label>Job Description<span class="req">*</span></label>
+                                <div class="rte">
+                                    <textarea data-field="fullDescription" value={fullDescription} oninput={handleLocalField} placeholder="Describe the role, responsibilities, and what success looks like…"></textarea>
+                                    <div class="rte-toolbar">
+                                        <span></span>
+                                        <button class="rte-toolbar__ai" data-field="fullDescription" onclick={aiAssist} type="button">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 4.6L18 8.2l-4.4 1.6L12 14l-1.6-4.2L6 8.2l4.4-1.6L12 2zm6 9l.9 2.6L21 14.5l-2.1.9L18 18l-.9-2.6L15 14.5l2.1-.9L18 11zM6 13l.7 2L9 15.7l-2.3.7L6 19l-.7-2.6L3 15.7 5.3 15 6 13z"/></svg>
+                                            Continue writing with AI
+                                        </button>
+                                    </div>
+                                </div>
+                                <template lwc:if={descError}><div class="field-error">{descError}</div></template>
+                            </div>
+                        </div>
+
+                        <!-- Cover image (optional, preserved) -->
+                        <div class="cover-field">
+                            <label class="cover-field__label">Cover Image</label>
+                            <p class="cover-field__hint">Optional banner shown on the job card and detail page. Max 2 MB.</p>
+                            <div class="cover-field__row">
+                                <template lwc:if={hasCover}>
+                                    <div class="cover-field__preview" style={coverPreviewStyle}></div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="cover-field__placeholder">
+                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8E9099" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                    </div>
+                                </template>
+                                <div class="cover-field__controls">
+                                    <label class="cover-btn">
+                                        <input type="file" accept="image/*" onchange={handleCoverPhoto} class="cover-input" />
+                                        <span>{coverLabel}</span>
+                                    </label>
+                                    <template lwc:if={hasCover}>
+                                        <button type="button" class="cover-remove" onclick={handleRemoveCover}>Remove</button>
+                                    </template>
+                                </div>
+                            </div>
+                            <template lwc:if={coverError}><div class="cover-field__error">{coverError}</div></template>
+                        </div>
+                    </template>
+
+                    <!-- ===================== STEP 2 ===================== -->
+                    <template lwc:if={isStep2}>
+                        <div class="section">
+                            <h3>2. Target Audience Selection</h3>
+                            <p class="job-step__hint">Choose who this should go to. You can combine multiple groups of people.</p>
+                            <c-ken-event-step-details-v2 hide-heading audience-data={audienceData} onvaluechange={handleAudienceChange}></c-ken-event-step-details-v2>
+                        </div>
+
+                        <!-- Academic Requirements -->
+                        <div class="section section--bordered">
+                            <h3>Academic Requirements</h3>
+                            <div class="fields-grid">
+                                <div class="field">
+                                    <label>Program Name</label>
+                                    <input type="text" data-field="program" value={program} oninput={handleLocalField} placeholder="e.g. B.Tech Computer Science" />
+                                </div>
+                                <div class="field">
+                                    <label>Year of Graduation</label>
+                                    <input type="number" data-field="gradYear" value={gradYear} oninput={handleLocalField} placeholder="2026" />
+                                </div>
+                                <div class="field">
+                                    <label>CGPA</label>
+                                    <div class="inline-pair">
+                                        <select data-field="cgpaOperator" onchange={handleLocalField}>
+                                            <template for:each={cgpaOperatorOptions} for:item="o">
+                                                <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                            </template>
+                                        </select>
+                                        <input type="number" step="0.01" data-field="cgpaValue" value={cgpaValue} oninput={handleLocalField} placeholder="7.5" />
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label>Attendance (%)</label>
+                                    <input type="number" data-field="attendance" value={attendance} oninput={handleLocalField} placeholder="75" />
+                                </div>
+                                <div class="field">
+                                    <label>Class X Percentage (%)</label>
+                                    <input type="number" data-field="classXPercent" value={classXPercent} oninput={handleLocalField} placeholder="80" />
+                                </div>
+                                <div class="field">
+                                    <label>Class XII Percentage (%)</label>
+                                    <input type="number" data-field="classXIIPercent" value={classXIIPercent} oninput={handleLocalField} placeholder="80" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Experience Requirements -->
+                        <div class="section section--bordered">
+                            <h3>Experience Requirements</h3>
+                            <div class="fields-grid">
+                                <div class="field">
+                                    <label>Minimum Years of Experience</label>
+                                    <input type="number" data-field="minExperience" value={minExperience} oninput={handleLocalField} placeholder="0" />
+                                </div>
+                                <div class="field">
+                                    <label>Experience Level</label>
+                                    <select data-field="experienceLevel" onchange={handleLocalField}>
+                                        <option value="">Select</option>
+                                        <template for:each={experienceLevelOptions} for:item="o">
+                                            <option key={o.value} value={o.value} selected={o.selected}>{o.label}</option>
+                                        </template>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Preferred Degree</label>
+                                    <input type="text" data-field="preferredDegree" value={preferredDegree} oninput={handleLocalField} placeholder="e.g. B.Tech / M.Tech" />
+                                </div>
+                                <div class="field">
+                                    <label>Preferred Specialization</label>
+                                    <input type="text" data-field="preferredSpecialization" value={preferredSpecialization} oninput={handleLocalField} placeholder="e.g. Computer Science" />
+                                </div>
+                            </div>
+
+                            <div class="field" style="margin-top:16px">
+                                <label>Relevant Work Experience</label>
+                                <div class="rte">
+                                    <textarea data-field="relevantWorkExperience" value={relevantWorkExperience} oninput={handleLocalField} placeholder="Describe the kind of prior experience you're looking for…"></textarea>
+                                    <div class="rte-toolbar">
+                                        <span></span>
+                                        <button class="rte-toolbar__ai" data-field="relevantWorkExperience" onclick={aiAssist} type="button">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 4.6L18 8.2l-4.4 1.6L12 14l-1.6-4.2L6 8.2l4.4-1.6L12 2z"/></svg>
+                                            Continue writing with AI
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field" style="margin-top:16px">
+                                <label>Required Technical Skills</label>
+                                <div class="rte">
+                                    <textarea data-field="technicalSkills" value={technicalSkills} oninput={handleLocalField} placeholder="List the required technical skills (comma or new-line separated)…"></textarea>
+                                    <div class="rte-toolbar">
+                                        <span></span>
+                                        <button class="rte-toolbar__ai" data-field="technicalSkills" onclick={aiAssist} type="button">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.6 4.6L18 8.2l-4.4 1.6L12 14l-1.6-4.2L6 8.2l4.4-1.6L12 2z"/></svg>
+                                            Continue writing with AI
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- ===================== STEP 3 ===================== -->
+                    <template lwc:if={isStep3}>
+                        <div class="stages-head">
+                            <h3>Stages (Optional)</h3>
+                            <button class="btn-add-stage" onclick={addStage} type="button">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                Add Stage
+                            </button>
+                        </div>
+
+                        <template lwc:if={hasStages}>
+                            <div class="stage-table-wrap">
+                                <table class="stage-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="th-handle"></th>
+                                            <th>Stage</th>
+                                            <th>Stage name</th>
+                                            <th>Type</th>
+                                            <th>Start Date</th>
+                                            <th>Start Time</th>
+                                            <th>End Date</th>
+                                            <th>End Time</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={stageRows} for:item="row">
+                                            <tr key={row.id}>
+                                                <td class="td-handle">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#B6BAC3"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>
+                                                </td>
+                                                <td class="td-index">{row.index}</td>
+                                                <td><input class="cell-input" type="text" data-id={row.id} data-field="name" value={row.name} oninput={handleStageField} placeholder="Stage name" /></td>
+                                                <td>
+                                                    <select class="cell-input" data-id={row.id} data-field="type" onchange={handleStageField}>
+                                                        <option value="">Type</option>
+                                                        <template for:each={row.typeOptions} for:item="t">
+                                                            <option key={t.value} value={t.value} selected={t.selected}>{t.label}</option>
+                                                        </template>
+                                                    </select>
+                                                </td>
+                                                <td><input class="cell-input" type="date" data-id={row.id} data-field="startDate" value={row.startDate} onchange={handleStageField} /></td>
+                                                <td><input class="cell-input" type="time" data-id={row.id} data-field="startTime" value={row.startTime} onchange={handleStageField} /></td>
+                                                <td><input class="cell-input" type="date" data-id={row.id} data-field="endDate" value={row.endDate} onchange={handleStageField} /></td>
+                                                <td><input class="cell-input" type="time" data-id={row.id} data-field="endTime" value={row.endTime} onchange={handleStageField} /></td>
+                                                <td class="td-action">
+                                                    <button class="icon-btn" data-id={row.id} onclick={removeStage} title="Remove stage" type="button">
+                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E5484D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="stages-empty">No stages added yet. Stages are optional — click <b>+ Add Stage</b> to define a recruitment timeline.</div>
+                        </template>
+                    </template>
+                </div>
+
+                <template lwc:if={errorMsg}>
+                    <div class="wiz-error" role="alert">{errorMsg}</div>
+                </template>
+
+                <!-- Footer -->
+                <div class="footer-bar footer-bar--split">
+                    <div class="footer-left">
+                        <template lwc:if={leftFooterIsCancel}>
+                            <button class="btn btn--ghost" onclick={handleClose} type="button">Cancel</button>
+                        </template>
+                        <template lwc:else>
+                            <button class="btn btn--outline" onclick={handleSaveDraft} type="button">Save as Draft</button>
+                        </template>
+                    </div>
+                    <div class="footer-right">
+                        <template lwc:if={leftFooterIsCancel}>
+                            <button class="btn btn--outline" onclick={handleSaveDraft} type="button">Save as Draft</button>
+                        </template>
+                        <template lwc:if={showBackButton}>
+                            <button class="btn btn--outline" onclick={handleBack} type="button">Previous Step</button>
+                        </template>
+                        <button class="btn btn--primary" onclick={handleNext} type="button">{primaryLabel}</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+</template>

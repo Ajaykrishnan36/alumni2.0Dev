@@ -1,0 +1,169 @@
+/* Light-DOM child styles — kenHomeMatchHeroV2 (Alumni of the Month)
+ * Two-column rock-solid grid: 200px photo + remainder for text.
+ */
+.aotm, .aotm * { box-sizing: border-box; }
+.aotm button { font-family: inherit; cursor: pointer; border: 0; }
+
+.h-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+
+/* ===== ROOT CARD GRID ===== */
+.h-card.aotm {
+    display: grid !important;
+    grid-template-columns: 200px 1fr !important;  /* pinned 200px photo, remainder for text */
+    grid-template-rows: 100% !important;
+    height: 100% !important;
+    min-height: 280px !important;
+    overflow: hidden !important;
+}
+
+/* ===== LEFT COLUMN — image wrapper ===== */
+.aotm__image-wrapper {
+    width: 200px !important;
+    height: 100% !important;
+    min-height: 280px !important;            /* explicit floor so the crop has something to clip against */
+    position: relative !important;
+    overflow: hidden !important;             /* slices off whatever cover-scaling pushes past the edge */
+    background-color: #c7d2fe;
+}
+
+.aotm__image {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    background-size: cover !important;        /* zoom + crop to fill the column */
+    background-position: center top !important; /* anchor faces near the top of the frame */
+    background-repeat: no-repeat !important;
+    overflow: hidden !important;
+}
+
+/* Defensive: if the photo is ever rendered as a native <img> tag (instead of
+ * a background-image div), apply the equivalent crop behavior. object-fit
+ * acts like background-size for raster <img> elements. */
+.aotm__image-wrapper img,
+.aotm__image img,
+.aotm img,
+img[class*="aotm"] {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;             /* zoom + crop to fill */
+    object-position: center top !important;   /* anchor faces near the top */
+    display: block !important;
+}
+
+.aotm__img-chip {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: linear-gradient(90deg, #f59e0b, #f97316);
+    color: #fff;
+    font-size: clamp(0.6875rem, 0.5vw + 0.3rem, 0.75rem) !important;
+    line-height: 1.5;
+    font-weight: 400 !important;
+    letter-spacing: 0.8px;
+    padding: 0.375rem 0.625rem;
+    border-radius: 6px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.20);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    z-index: 2;
+    white-space: nowrap;
+}
+
+/* ===== RIGHT COLUMN — content wrapper ===== */
+.aotm__content-wrapper {
+    padding: clamp(1rem, 1.5vw + 0.5rem, 1.5rem) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    min-width: 0 !important;     /* lets text wrap instead of blowing out the track */
+    background: linear-gradient(135deg, #eef2ff 0%, #ede9fe 100%);
+    gap: clamp(0.5rem, 1vw, 0.75rem);
+}
+
+.aotm__eye {
+    font-size: clamp(0.6875rem, 0.5vw + 0.3rem, 0.75rem) !important;
+    line-height: 1.5;
+    font-weight: 400 !important;
+    letter-spacing: 1.2px;
+    color: #6d28d9;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.aotm__name {
+    font-size: clamp(1.125rem, 1.6vw + 0.5rem, 1.5rem) !important;
+    font-weight: 700;
+    line-height: 1.25;
+    color: #1a1a2e;
+    margin: 0;
+    letter-spacing: -0.2px;
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.aotm__meta {
+    font-size: clamp(0.6875rem, 0.5vw + 0.3rem, 0.75rem) !important;
+    font-weight: 400 !important;
+    color: #6b7280;
+    line-height: 1.5;
+    margin: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.aotm__quote {
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    font-style: italic;
+    color: #1a1a2e;
+    border-left: 3px solid #6d28d9;
+    padding: 0.1875rem 0 0.1875rem 0.75rem;
+    margin: 0.375rem 0;
+    line-height: 1.5;
+    min-width: 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+.aotm__ctas {
+    display: flex;
+    gap: clamp(0.5rem, 0.8vw, 0.75rem);
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+}
+
+.aotm__btn {
+    font-family: inherit;
+    font-weight: 600;
+    font-size: clamp(0.75rem, 0.7vw + 0.3rem, 0.875rem) !important;
+    line-height: 1.4;
+    border-radius: 6px;
+    padding: 0.5625rem 1rem;
+    cursor: pointer;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+.aotm__btn--dark { background: #1a1a2e; color: #fff; }
+.aotm__btn--dark:hover { background: #2a2a4e; }
+.aotm__btn--out { background: #fff; color: #1a1a2e; border-color: #d1d5db; }
+.aotm__btn--out:hover { background: #f9fafb; border-color: #9ca3af; }
+
+/* ===== Responsive — stack image on top under 1180px ===== */
+@media (max-width: 1180px) {
+    .h-card.aotm {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 220px auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+    }
+    .aotm__image-wrapper {
+        width: 100% !important;
+        height: 220px !important;
+    }
+    .aotm__content-wrapper { padding: clamp(1rem, 1.5vw + 0.5rem, 1.5rem) !important; }
+    .aotm__name { font-size: clamp(1.125rem, 1.6vw + 0.5rem, 1.5rem) !important; }
+}

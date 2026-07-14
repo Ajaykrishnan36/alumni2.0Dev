@@ -1,0 +1,361 @@
+<template>
+    <template if:true={showLoader}>
+        <div class="loading-spinner">
+            <lightning-spinner alternative-text={loadingText} size="medium"></lightning-spinner>
+        </div>
+    </template>
+
+    <div class="profile-page">
+        <!-- Profile Header (same as kenAlumniDetailView) -->
+        <c-ken-profile-header name={profileData.name} title={profileData.title} company={profileData.company}
+            location={profileData.location} profile-image={profileData.profileImage} is-online={profileData.isOnline}
+            batch={profileData.batch} expertise={profileData.expertise} education={educationLine}
+            email={profileData.email} phone={profileData.phone} linkedin={profileData.linkedin}
+            willing-to-help={profileData.willingToHelp}
+            is-my-profile="true" onviewidcard={handleViewIdCard}
+            onopenchat={handleMessage} oneditprofile={navigateToSettings}></c-ken-profile-header>
+
+        <!-- Stepper Tabs -->
+        <div class="ken-tabs">
+            <button class={aboutTabClass} onclick={selectAbout}>About Me</button>
+            <button class={achievementsTabClass} onclick={selectAchievements}>Achievements</button>
+            <button class={paymentsTabClass} onclick={selectPayments}>Payments</button>
+        </div>
+
+        <!-- Chatbox Overlay -->
+        <template if:true={showChatbox}>
+            <div class={chatContainerClass}>
+                <div class="chatbox-header">
+                    <div class="chat-user-info">
+                        <div class="chat-avatar-container">
+                            <img src={profileData.profileImage} alt={profileData.name} class="chat-avatar" onerror={handleImageError} />
+                            <template if:true={profileData.isOnline}>
+                                <span class="chat-online-indicator"></span>
+                            </template>
+                        </div>
+                        <span class="chat-username">{profileData.name}</span>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="chat-action-btn" onclick={handleToggleExpand} title="Expand/Contract">
+                            <lightning-icon icon-name={chatExpandIcon} size="x-small"></lightning-icon>
+                        </button>
+                        <button class="chat-action-btn" onclick={handleCloseChat} title="Close">
+                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="chatbox-body">
+                    <template for:each={displayMessages} for:item="msg">
+                        <template if:true={msg.isDateSeparator}>
+                            <div class="timeline-separator" key={msg.id}>
+                                <span class="timeline-date">{msg.dateLabel}</span>
+                            </div>
+                        </template>
+                        <template if:true={msg.isReceived}>
+                            <div class="message received" key={msg.id}>
+                                <div class="message-bubble received-bubble">
+                                    <p>{msg.text}</p>
+                                    <span class="message-time">{msg.time}</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:true={msg.isSent}>
+                            <div class="message sent" key={msg.id}>
+                                <div class="sent-user-row">
+                                    <span>You</span>
+                                    <div class="sent-avatar-placeholder"></div>
+                                </div>
+                                <div class="message-bubble sent-bubble">
+                                    <p>{msg.text}</p>
+                                    <span class="message-time">{msg.time}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <div class="chatbox-footer">
+                    <div class="chat-input-wrapper">
+                        <input type="text" placeholder="Type here" class="chat-input" value={messageInput}
+                            oninput={handleInputChange} onkeyup={handleInputKeyup} />
+                        <button class="attach-btn">
+                            <lightning-icon icon-name="utility:attach" size="x-small" class="attach-icon"></lightning-icon>
+                        </button>
+                    </div>
+                    <button class="send-btn" onclick={handleSendMessage}>
+                        <lightning-icon icon-name="utility:send" size="x-small" class="send-icon"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <template if:true={isAbout}>
+            <div class="profile-content">
+                <div class="left-column">
+                    <div class="section personal-details-section">
+                        <div class="personal-details-content">
+                            <div class="section-header-row">
+                                <h3 class="subsection-title">Educational Background</h3>
+                                <button type="button" class="ken-edit-icon-btn ken-add-btn" onclick={openAddEducation}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="education-list">
+                                <template if:true={hasEducationRecords}>
+                                    <template for:each={profileData.education} for:item="edu">
+                                        <c-ken-education-card key={edu.id} record-id={edu.id} degree={edu.degree} institution={edu.institution}
+                                            duration={edu.duration} score={edu.score} logo={edu.logo} is-my-profile="true"
+                                            onedit={handleEditEducation} ondelete={handleDeleteEducation}></c-ken-education-card>
+                                    </template>
+                                </template>
+                                <template if:false={hasEducationRecords}>
+                                    <p class="empty-record-note">No education records added yet.</p>
+                                </template>
+                            </div>
+
+                            <div class="section-header-row" style="margin-top: 2rem;">
+                                <h3 class="subsection-title">Experience</h3>
+                                <button type="button" class="ken-edit-icon-btn ken-add-btn" onclick={openAddExperience}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="experience-list">
+                                <template if:true={hasExperienceRecords}>
+                                    <template for:each={profileData.experience} for:item="exp">
+                                        <c-ken-experience-card key={exp.id} record-id={exp.id} position={exp.position} company={exp.company}
+                                            employment-type={exp.employmentType} location={exp.location}
+                                            work-type={exp.workType} duration={exp.duration}
+                                            company-logo={exp.companyLogo} description={exp.description} is-my-profile="true"
+                                            onedit={handleEditExperience} ondelete={handleDeleteExperience}></c-ken-experience-card>
+                                    </template>
+                                </template>
+                                <template if:false={hasExperienceRecords}>
+                                    <p class="empty-record-note">No experience records added yet.</p>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="section about-section border-highlight">
+                        <div class="section-header-row">
+                            <p class="section-title about-title">About</p>
+                            <button type="button" class="ken-edit-icon-btn" onclick={openAboutEdit}>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M11.7167 7.51667L12.4833 8.28333L4.93333 15.8333H4.16667V15.0667L11.7167 7.51667ZM14.7167 2.5C14.5083 2.5 14.2917 2.58333 14.1333 2.74167L12.6083 4.26667L15.7333 7.39167L17.2583 5.86667C17.5833 5.54167 17.5833 5.01667 17.2583 4.69167L15.3083 2.74167C15.1417 2.575 14.9333 2.5 14.7167 2.5ZM11.7167 5.15833L2.5 14.375V17.5H5.625L14.8417 8.28333L11.7167 5.15833Z" fill="var(--primary-color)"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="about-content">
+                            <lightning-formatted-rich-text class="about-text formatted-about-text" value={profileData.about}></lightning-formatted-rich-text>
+                            <div class="contact-details-block">
+                                <div class="section-header-row">
+                                    <p class="section-title contact-title">Contact Details</p>
+                                    <button class="ken-edit-icon-btn" onclick={navigateToSettings}>
+                                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M11.7167 7.51667L12.4833 8.28333L4.93333 15.8333H4.16667V15.0667L11.7167 7.51667ZM14.7167 2.5C14.5083 2.5 14.2917 2.58333 14.1333 2.74167L12.6083 4.26667L15.7333 7.39167L17.2583 5.86667C17.5833 5.54167 17.5833 5.01667 17.2583 4.69167L15.3083 2.74167C15.1417 2.575 14.9333 2.5 14.7167 2.5ZM11.7167 5.15833L2.5 14.375V17.5H5.625L14.8417 8.28333L11.7167 5.15833Z" fill="var(--primary-color)"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="contact-details-list">
+                                    <div class="contact-row">
+                                        <lightning-icon icon-name="utility:call" size="x-small" class="contact-icon"></lightning-icon>
+                                        <span class="contact-value">{profileData.phone}</span>
+                                    </div>
+                                    <div class="contact-row">
+                                        <lightning-icon icon-name="utility:email" size="x-small" class="contact-icon"></lightning-icon>
+                                        <span class="contact-value">{profileData.email}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={isAchievements}>
+            <div class="profile-content achievements-tab-content">
+                <div class="left-column achievements-column-full">
+                    <div class="section personal-details-section">
+                        <div class="personal-details-content">
+                            <div class="section-header-row">
+                                <h3 class="subsection-title">Achievements</h3>
+                                <button type="button" class="ken-edit-icon-btn ken-add-btn" onclick={openAddAchievement}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="achievements-list">
+                                <template if:true={hasAchievementRecords}>
+                                    <template for:each={profileData.achievements} for:item="ach">
+                                        <c-ken-achievement-card key={ach.id} record-id={ach.id} type={ach.type} title={ach.title}
+                                            meta={ach.meta} description={ach.description} is-my-profile="true"
+                                            onedit={handleEditAchievement} ondelete={handleDeleteAchievement}></c-ken-achievement-card>
+                                    </template>
+                                </template>
+                                <template if:false={hasAchievementRecords}>
+                                    <p class="empty-record-note">No achievements added yet.</p>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={isPayments}>
+            <div class="profile-content payments-tab-content">
+                <div class="payments-header-row">
+                    <h3 class="subsection-title">All Payments</h3>
+                    <div class="payments-search-wrap">
+                        <lightning-icon icon-name="utility:search" size="x-small" class="payments-search-icon"></lightning-icon>
+                        <input type="text" class="payments-search-input" placeholder="Search by ID or keyword"
+                            value={paymentSearchTerm} oninput={handlePaymentSearchInput} />
+                    </div>
+                </div>
+                <div class="payments-table-wrap">
+                    <table class="payments-table">
+                        <thead>
+                            <tr>
+                                <th>Particulars</th>
+                                <th>Transaction ID</th>
+                                <th>Payment Mode</th>
+                                <th>Currency</th>
+                                <th>Paid Amount</th>
+                                <th>Transaction Date</th>
+                                <th>Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredPayments} for:item="pay">
+                                <tr key={pay.id}>
+                                    <td>{pay.particulars}</td>
+                                    <td>{pay.transactionId}</td>
+                                    <td>{pay.paymentMode}</td>
+                                    <td>{pay.currency}</td>
+                                    <td>{pay.paidAmount}</td>
+                                    <td>{pay.transactionDate}</td>
+                                    <td>
+                                        <button type="button" class="receipt-download-btn" title="Download receipt">
+                                            <lightning-icon icon-name="utility:download" size="x-small"></lightning-icon>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Alumni ID Card Modal – matches target: blue card, profile image same as nav menu -->
+    <template if:true={showIdCardModal}>
+        <div class="modal-overlay">
+            <div class="modal-content id-card-modal">
+                <div class="modal-header">
+                    <h2>ID Card</h2>
+                    <button type="button" class="close-modal-btn" onclick={closeIdCardModal} aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="modal-body centered-body">
+                    <div class="id-card-container">
+                        <div class="id-card">
+                            <div class="id-card-left">
+                                <h2 class="id-name">{profileData.name}</h2>
+                                <p class="id-number">{idCardNumber}</p>
+                                <p class="id-label">{idCardDegreeLine}</p>
+                                <div class="qr-code-placeholder">
+                                    <canvas class="qr-canvas"></canvas>
+                                </div>
+                            </div>
+                            <div class="id-card-right">
+                                <div class="id-year-badge">{idCardYear}</div>
+                                <img src={profileData.profileImage} alt="Profile" class="id-profile-img" onerror={handleImageError} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer centered-footer">
+                    <button class="cancel-btn" onclick={closeIdCardModal} style="flex:1">Cancel</button>
+                    <button class="save-btn" onclick={handleDownloadIdCard} style="flex:1" disabled={isIdCardDownloading}>
+                        <template if:true={isIdCardDownloading}>Saving...</template>
+                        <template if:false={isIdCardDownloading}>Download</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- About Me Edit Modal -->
+    <template if:true={showAboutModal}>
+        <div class="modal-overlay">
+            <div class="modal-content about-me-modal">
+                <div class="modal-header">
+                    <h2>About Me</h2>
+                    <button type="button" class="close-modal-btn" onclick={closeAboutModal} aria-label="Close">
+                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label class="about-me-label">Tell us about yourself</label>
+                    <c-ken-rich-text-editor
+                        value={aboutEditText}
+                        placeholder="Tell us about yourself"
+                        max-length="1200"
+                        onchange={handleAboutChange}>
+                    </c-ken-rich-text-editor>
+                </div>
+                <div class="modal-footer about-me-footer">
+                    <button type="button" class="about-me-discard-btn" onclick={handleAboutDiscard}>Discard Changes</button>
+                    <button type="button" class="about-me-save-btn" onclick={handleAboutSave}>Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Add Experience – kenCareerInformationModal -->
+    <template if:true={showExperienceModal}>
+        <c-ken-career-information-modal
+            career-data={experienceModalCareerData}
+            modal-title-override={experienceModalTitle}
+            onclose={handleCloseExperienceModal}
+            onsave={handleSaveExperience}>
+        </c-ken-career-information-modal>
+    </template>
+
+    <!-- Add/Edit Education Modal -->
+    <template if:true={showEducationModal}>
+        <c-ken-education-information-modal
+            education-data={educationModalData}
+            modal-title-override={educationModalTitle}
+            onclose={handleCloseEducationModal}
+            onsave={handleSaveEducation}>
+        </c-ken-education-information-modal>
+    </template>
+
+    <!-- Add/Edit Achievement Modal -->
+    <template if:true={showAchievementModal}>
+        <c-ken-achievement-information-modal
+            achievement-data={achievementModalData}
+            modal-title-override={achievementModalTitle}
+            onclose={handleCloseAchievementModal}
+            onsave={handleSaveAchievement}>
+        </c-ken-achievement-information-modal>
+    </template>
+
+    <c-ken-status-popup visible={showSuccessPopup} message={successMessage} variant="success"></c-ken-status-popup>
+</template>

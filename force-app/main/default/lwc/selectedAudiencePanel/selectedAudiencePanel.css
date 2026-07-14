@@ -1,0 +1,10 @@
+.panelTitle { font-weight: 800; }
+.panelBody { min-height: 220px; }
+.emptyBox {
+    border: 1px solid #e8e8e8; border-radius: 10px; padding: 14px; text-align: center;
+    font-weight: 700; color: #6b6b6b; background: #ffffff;
+}
+.audItem { border: 1px solid #e8e8e8; border-radius: 10px; padding: 12px; background: #ffffff; margin-bottom: 10px; }
+.audRow { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.audTitle { font-weight: 800; }
+.audSub { margin-top: 4px; color: #6b6b6b; font-size: 12px; line-height: 1.35; }

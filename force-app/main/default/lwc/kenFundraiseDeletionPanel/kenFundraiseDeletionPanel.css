@@ -1,0 +1,63 @@
+.panel { padding: 8px 0; }
+
+.empty {
+    padding: 32px;
+    text-align: center;
+    color: #6b7191;
+    font-size: 14px;
+    border: 1px dashed #cfd6e6;
+    border-radius: 10px;
+    margin-top: 8px;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px 28px 20px;
+    width: 420px;
+    max-width: calc(100vw - 32px);
+    box-shadow: 0 20px 48px rgba(0,0,0,0.18);
+}
+
+.modal-title { margin: 0 0 10px; font-size: 18px; font-weight: 600; color: var(--portal-text-primary, #1f2333); }
+.modal-body  { margin: 0 0 16px; font-size: 14px; color: #4f5565; line-height: 1.55; }
+
+.modal-error {
+    margin: 0 0 12px;
+    padding: 10px 12px;
+    background: #fff0f0;
+    border: 1px solid #fcc;
+    border-radius: 8px;
+    color: #c0392b;
+    font-size: 13px;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #eef1f6;
+}
+
+.btn-cancel, .btn-danger {
+    padding: 9px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+}
+.btn-cancel:disabled, .btn-danger:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-cancel { background: #eef1fb; color: #434a60; }
+.btn-danger  { background: #e74c3c; color: #fff; }

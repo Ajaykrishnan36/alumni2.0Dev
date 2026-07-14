@@ -1,0 +1,181 @@
+:host {
+    /* Brand tokens populated from KenThemeConfigController.getPortalConfigs() */
+    --brand-primary: #B91C5C;
+    --brand-secondary: #102659;
+    --brand-tertiary: #FDF2F4;
+    --brand-primary-hover: color-mix(in srgb, var(--brand-primary) 88%, #000);
+    --brand-primary-soft: rgba(185,28,92,.10);
+    --brand-on-primary: #FFFFFF;
+    --ink: #1E293B;
+    --ink-2: #334155;
+    --slate-50: #FAFAFA;
+    --slate-100: #F4F4F5;
+    --slate-200: #E4E4E7;
+    --slate-300: #D4D4D8;
+    --slate-400: #A1A1AA;
+    --slate-500: #71717A;
+    --slate-600: #52525B;
+    --slate-700: #3F3F46;
+    /* Match kenAdminDashboard chrome — 8px / 10px corners, not the 18/24 used originally */
+    --radius: 8px;
+    --radius-lg: 10px;
+    --steel: #52525B;
+    --ease-out: cubic-bezier(.22,1,.36,1);
+    display: block;
+    font-family: 'Inter', 'Salesforce Sans', system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    color: var(--ink-2);
+}
+
+.dashboard {
+    background: #FFFFFF;
+    min-height: 100vh;
+    /* Match admin dashboard `.content` outer gutter */
+    padding: 32px 36px 60px;
+    max-width: 1560px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+/* ── Header ── identical to kenAdminDashboard .banner ───────── */
+.dash-header {
+    background: #FFFFFF;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    padding: 28px 30px;
+    margin-bottom: 22px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.03), 0 10px 28px -10px rgba(15,23,42,.08);
+}
+.dash-header-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+.dash-title { margin: 0 0 5px; font-size: 22px; font-weight: 700; color: var(--brand-primary); letter-spacing: -.022em; }
+.dash-subtitle { margin: 0; color: var(--steel); font-size: 13.5px; }
+
+/* ── Filter bar ─────────────────────────────────────────────── */
+.filter-bar { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-label { font-size: 11px; font-weight: 700; color: var(--slate-700); text-transform: uppercase; letter-spacing: .16em; }
+/* Inputs/selects use the same 8px / slate-200 chrome as admin filter-select */
+.filter-select {
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    padding: 9px 14px;
+    font-size: 13px;
+    color: var(--ink-2);
+    background: #fff;
+    min-width: 180px;
+    outline: none;
+    cursor: pointer;
+}
+.filter-select:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px var(--brand-primary-soft); }
+.clear-btn {
+    background: #fff;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--slate-600);
+    cursor: pointer;
+    align-self: flex-end;
+}
+.clear-btn:hover { background: var(--slate-50); color: var(--ink); border-color: var(--slate-300); }
+.refresh-btn {
+    background: var(--brand-primary);
+    border: none;
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.refresh-btn:hover:not([disabled]) { background: var(--brand-primary-hover); }
+.refresh-btn[disabled] { opacity: .65; cursor: not-allowed; }
+.btn-spinner {
+    width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: dash-spin .7s linear infinite;
+    display: inline-block;
+    flex-shrink: 0;
+}
+@keyframes dash-spin { to { transform: rotate(360deg); } }
+
+/* ── Stat cards ── identical chrome to admin .kpi tiles ─────── */
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+.stat-card {
+    background: #FFFFFF;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.03), 0 12px 28px -12px rgba(15,23,42,.08);
+    transition: transform .25s var(--ease-out), border-color .25s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+.stat-card:hover { transform: translateY(-2px); border-color: var(--slate-300); }
+.stat-icon-wrap { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; color: var(--brand-primary); background: var(--brand-primary-soft); }
+.stat-blue   { background: var(--brand-primary-soft); color: var(--brand-primary); }
+.stat-green  { background: rgba(16,185,129,.10);    color: #047857; }
+.stat-purple { background: rgba(124,92,240,.10);    color: #6D28D9; }
+.stat-orange { background: rgba(245,158,11,.12);    color: #B45309; }
+.stat-val { font-size: 34px; font-weight: 800; color: var(--ink); line-height: 1; letter-spacing: -.030em; font-variant-numeric: tabular-nums; }
+.stat-label { font-size: 12.5px; color: var(--slate-600); margin-top: 8px; }
+.stat-card-clickable { cursor: pointer; }
+.stat-card-clickable:hover { box-shadow: 0 1px 2px rgba(15,23,42,.03), 0 14px 32px -12px rgba(15,23,42,.16); }
+
+/* Embedded chart cards reuse the admin .card chrome */
+::slotted(.card),
+.card {
+    background: #FFFFFF;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius-lg);
+    padding: 26px 28px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.03), 0 8px 22px -10px rgba(15,23,42,.08);
+}
+
+/* ── Chart grids ─────────────────────────────────────────────── */
+.grid { display: grid; gap: 16px; margin-bottom: 22px; }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+/* ── Section heading ────────────────────────────────────────── */
+.section-heading { margin: 8px 0 16px; }
+.section-title { margin: 0 0 4px; font-size: 18px; font-weight: 700; color: var(--ink); letter-spacing: -.018em; }
+.section-subtitle { margin: 0; font-size: 13px; color: var(--slate-600); }
+
+/* ── Map row ─────────────────────────────────────────────────── */
+.map-row { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; margin-bottom: 24px; }
+.map-col-wide, .map-col-narrow { min-width: 0; }
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .map-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 680px) {
+    .dashboard { padding: 12px; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .dash-title { font-size: 18px; }
+    .filter-bar { flex-direction: column; align-items: stretch; }
+    .filter-select { min-width: unset; width: 100%; }
+}
+
+/* Override block intentionally removed — demographics now inherits the same
+   token system as kenAdminDashboard (--brand-*), populated at runtime from
+   KenThemeConfigController.getPortalConfigs. Per-client theming is handled
+   centrally and no longer pinned to an orange Ken42 brand. */

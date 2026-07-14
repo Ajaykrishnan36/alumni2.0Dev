@@ -1,0 +1,42 @@
+<template>
+    <div class={computedWrapperClass} onclick={handleContainerClick}>
+        <div class="control-row">
+            <input
+                type="text"
+                class="search-input"
+                placeholder={placeholder}
+                value={searchText}
+                onfocus={handleInputFocus}
+                onclick={handleInputClick}
+                oninput={handleInputChange}
+            />
+            <button type="button" class="icon-btn" onclick={handleClearClick} if:true={value} title="Clear">
+                <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+            </button>
+            <button type="button" class="icon-btn" onclick={handleToggleClick} title="Toggle options">
+                <lightning-icon icon-name="utility:down" size="x-small"></lightning-icon>
+            </button>
+        </div>
+
+        <template if:true={isOpen}>
+            <div class="options-panel">
+                <template if:true={hasFilteredOptions}>
+                    <template for:each={filteredOptions} for:item="option">
+                        <button
+                            key={option.value}
+                            type="button"
+                            class="option-btn"
+                            data-value={option.value}
+                            onmousedown={handleOptionMouseDown}
+                        >
+                            {option.label}
+                        </button>
+                    </template>
+                </template>
+                <template if:false={hasFilteredOptions}>
+                    <div class="empty-state">{noResultsText}</div>
+                </template>
+            </div>
+        </template>
+    </div>
+</template>

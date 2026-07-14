@@ -1,0 +1,7 @@
+<template>
+    <nav class="tabs">
+        <template for:each={tabs} for:item="t">
+            <button key={t.id} type="button" class={t.tabClass} data-id={t.id} onclick={handleTab}>{t.label}</button>
+        </template>
+    </nav>
+</template>

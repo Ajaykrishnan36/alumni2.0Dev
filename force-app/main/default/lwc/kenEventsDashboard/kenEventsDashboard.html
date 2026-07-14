@@ -1,0 +1,207 @@
+<template>
+    <div class="dashboard">
+
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="dash-header-top">
+                <div>
+                    <h1 class="dash-title">Events Dashboard</h1>
+                    <p class="dash-subtitle">Interactive insights across {totalEvents} events</p>
+                </div>
+                <div class="dash-actions">
+                    <button class="create-btn" onclick={handleCreateEvent}>Create Event</button>
+                    <button class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
+                        <template if:true={isRefreshing}>
+                            <span class="btn-spinner"></span>Refreshing...
+                        </template>
+                        <template if:false={isRefreshing}>
+                            &#x21BB; Refresh
+                        </template>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Event Type</label>
+                    <select class="filter-select" onchange={handleTypeChange}>
+                        <option value="">All Types</option>
+                        <template for:each={filterOptions.eventTypes} for:item="t">
+                            <option key={t.value} value={t.value}>{t.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" onchange={handleStatusChange}>
+                        <option value="">All Statuses</option>
+                        <template for:each={filterOptions.statuses} for:item="s">
+                            <option key={s.value} value={s.value}>{s.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Year</label>
+                    <select class="filter-select" onchange={handleYearChange}>
+                        <option value="">All Years</option>
+                        <template for:each={filterOptions.years} for:item="y">
+                            <option key={y.value} value={y.value}>{y.label}</option>
+                        </template>
+                    </select>
+                </div>
+                <button class="clear-btn" onclick={clearFilters}>&#x2715; Clear</button>
+            </div>
+        </div>
+
+        <!-- Summary Stat Cards -->
+        <div class="stat-row">
+            <div class="stat-card stat-card-clickable" data-type="total" onclick={handleStatCardClick} title="Click to view all events">
+                <div class="stat-icon-wrap stat-blue">&#128197;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.totalEvents}</div>
+                    <div class="stat-label">Total Events</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="registrations" onclick={handleStatCardClick} title="Click to view all registrations">
+                <div class="stat-icon-wrap stat-green">&#127915;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.totalRegistrations}</div>
+                    <div class="stat-label">Total Registrations</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="published" onclick={handleStatCardClick} title="Click to view published events">
+                <div class="stat-icon-wrap stat-purple">&#9989;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.publishedEvents}</div>
+                    <div class="stat-label">Published Events</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="cancellations" onclick={handleStatCardClick} title="Click to view cancelled bookings">
+                <div class="stat-icon-wrap stat-orange">&#10060;</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.cancelledBookings}</div>
+                    <div class="stat-label">Cancelled Bookings</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Status, Type, Pricing -->
+        <div class="grid grid-3">
+            <c-ken-donut-chart
+                title="Events by Status"
+                description="Breakdown of events by current status"
+                data={eventsByStatusData}
+                is-loading={loadingByStatus}
+                dimension="status"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Events by Type"
+                description="Count of events per event type"
+                data={eventsByTypeData}
+                is-loading={loadingByType}
+                dimension="type"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-donut-chart
+                title="Pricing Distribution"
+                description="Free vs paid event breakdown"
+                data={pricingData}
+                is-loading={loadingPricing}
+                dimension="pricing"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+        </div>
+
+        <!-- Row 2: Booking Status, Registration Trends, Top Events -->
+        <div class="grid grid-3">
+            <c-ken-donut-chart
+                title="Booking Status"
+                description="Registered vs cancelled bookings"
+                data={bookingStatusData}
+                is-loading={loadingBookingStatus}
+                dimension="booking_status"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Registration Trends"
+                description="Total registrations per year"
+                data={trendsData}
+                is-loading={loadingTrends}
+                dimension="trends"
+                chart-type="line"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Top Events by Registrations"
+                description="Events with the highest attendee count"
+                data={topEventsData}
+                is-loading={loadingTopEvents}
+                dimension="top_events"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+        <!-- Row 3: Target Audience, Monthly Activity -->
+        <div class="grid grid-2">
+            <c-ken-donut-chart
+                title="Target Audience Breakdown"
+                description="Events by intended audience segment"
+                data={audienceData}
+                is-loading={loadingAudience}
+                dimension="audience"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Monthly Event Activity"
+                description="Number of events scheduled per month"
+                data={monthlyData}
+                is-loading={loadingMonthly}
+                dimension="monthly"
+                chart-type="line"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+        <!-- Row 4: Location, Recurring Attendees -->
+        <div class="grid grid-2">
+            <c-ken-bar-chart
+                title="Event Location Distribution"
+                description="Events by venue / location"
+                data={locationData}
+                is-loading={loadingLocation}
+                dimension="location"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Top Recurring Attendees"
+                description="Alumni with the most event registrations"
+                data={recurringData}
+                is-loading={loadingRecurring}
+                dimension="recurring"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+    </div>
+
+    <!-- Drill-down Modal -->
+    <c-ken-events-list-modal
+        is-open={modalOpen}
+        title={modalTitle}
+        modal-mode={modalMode}
+        event-list={modalEvents}
+        booking-list={modalBookings}
+        is-loading={modalLoading}
+        onclose={handleModalClose}
+    ></c-ken-events-list-modal>
+</template>

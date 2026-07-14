@@ -1,0 +1,15 @@
+:host { display: block; }
+.side-card { background: #fff; border: 1px solid #E5E6E8; border-radius: 12px; padding: 18px; margin-bottom: 14px; }
+.side-card--posted { border: 1.5px solid #3061FF; }
+.side-card__title { font-weight: 600; font-size: 14px; color: #373A45; margin: 0 0 16px; }
+.empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 6px 8px; }
+.empty svg { margin-bottom: 10px; }
+.empty p { margin: 0; font-size: 12px; color: #6B7280; font-weight: 500; }
+.cta-full { display: block; width: 100%; background: #3061FF; color: #fff; border: 0; border-radius: 8px; padding: 11px 0; font-weight: 500; font-size: 13px; cursor: pointer; font-family: inherit; margin-top: 14px; }
+.mini-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.mini-row { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 6px; cursor: pointer; }
+.mini-row:hover { background: #F6F8FB; }
+.mini-body { flex: 1; min-width: 0; }
+.mini-title { font-size: 12.5px; font-weight: 600; color: #373A45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-sub { font-size: 10.5px; color: #6B7280; }
+.job__logo { width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 10px; color: #fff; flex-shrink: 0; }

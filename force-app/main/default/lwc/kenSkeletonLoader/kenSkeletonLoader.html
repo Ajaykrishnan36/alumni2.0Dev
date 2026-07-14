@@ -1,0 +1,45 @@
+<template>
+    <div class="skeleton-wrap" aria-busy="true" aria-live="polite">
+        <template lwc:if={showTitle}>
+            <div class="sk-title sk-shimmer"></div>
+        </template>
+        <template lwc:if={showBreadcrumb}>
+            <div class="sk-breadcrumb sk-shimmer"></div>
+        </template>
+
+        <template lwc:if={isPage}>
+            <template for:each={rowKeys} for:item="k">
+                <div key={k} class="sk-card sk-shimmer"></div>
+            </template>
+        </template>
+
+        <template lwc:if={isList}>
+            <div class="sk-list">
+                <template for:each={rowKeys} for:item="k">
+                    <div key={k} class="sk-row sk-shimmer"></div>
+                </template>
+            </div>
+        </template>
+
+        <template lwc:if={isGrid}>
+            <div class="sk-grid">
+                <template for:each={rowKeys} for:item="k">
+                    <div key={k} class="sk-grid-card sk-shimmer"></div>
+                </template>
+            </div>
+        </template>
+
+        <template lwc:if={isTable}>
+            <div class="sk-table">
+                <div class="sk-table-head sk-shimmer"></div>
+                <template for:each={rowKeys} for:item="k">
+                    <div key={k} class="sk-row sk-shimmer"></div>
+                </template>
+            </div>
+        </template>
+
+        <template lwc:if={isCard}>
+            <div class="sk-card sk-shimmer"></div>
+        </template>
+    </div>
+</template>

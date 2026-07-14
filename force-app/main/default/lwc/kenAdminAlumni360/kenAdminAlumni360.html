@@ -1,0 +1,648 @@
+<template>
+    <!-- Header is provided by the parent (kenAdminAlumni "Back to Master Records").
+         The internal header was removed to avoid a duplicate header + close button. -->
+
+    <!-- ===== Loading / Error states ===== -->
+    <template lwc:if={loading}>
+        <div class="a360-loading">Loading 360 profile…</div>
+    </template>
+    <template lwc:if={error}>
+        <div class="a360-error">Could not load this alumnus. {errorMessage}</div>
+    </template>
+
+    <template lwc:if={data}>
+    <main class="content">
+
+        <!-- ===== Refresh strip ===== -->
+        <div class="refresh-strip">
+            <button type="button" class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 1 1-3.4-7"/>
+                    <path d="M21 3v6h-6"/>
+                </svg>
+                <template lwc:if={isRefreshing}>Refreshing…</template>
+                <template lwc:else>Refresh</template>
+            </button>
+        </div>
+
+        <!-- ===== Hero banner ===== -->
+        <section class="hero">
+            <div class="pic">{data.header.initials}</div>
+            <div class="body">
+                <div class="meta-row">
+                    <template lwc:if={data.header.role}>
+                        <span class="role">{data.header.role}</span><span class="sepdot">·</span>
+                    </template>
+                    <template lwc:if={data.header.registrationNumber}>
+                        <b>{data.header.registrationNumber}</b><span class="sepdot">·</span>
+                    </template>
+                    <template lwc:if={data.header.classOf}>
+                        <span>CLASS OF {data.header.classOf}</span>
+                    </template>
+                </div>
+                <div class="name">{data.header.name}</div>
+                <template lwc:if={data.header.programDates}>
+                    <div class="sub">{data.header.program} · {data.header.programDates}</div>
+                </template>
+                <template lwc:else>
+                    <div class="sub">{data.header.program}</div>
+                </template>
+                <div class="factgrid">
+                    <template lwc:if={data.header.yearsOut}>
+                        <div><div class="k">YEARS OUT</div><div class="v">{data.header.yearsOut}</div></div>
+                    </template>
+                    <template lwc:if={data.header.school}>
+                        <div><div class="k">SCHOOL</div><div class="v">{data.header.school}</div></div>
+                    </template>
+                    <template lwc:if={data.header.campus}>
+                        <div><div class="k">CAMPUS</div><div class="v">
+                            <svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            {data.header.campus}
+                        </div></div>
+                    </template>
+                    <template lwc:if={data.header.status}>
+                        <div><div class="k">STATUS</div><div class="v">{data.header.status}</div></div>
+                    </template>
+                    <template lwc:if={data.header.stage}>
+                        <div><div class="k">STAGE</div><div class="v">{data.header.stage}</div></div>
+                    </template>
+                    <template lwc:if={data.header.legacyId}>
+                        <div><div class="k">LEGACY ID</div><div class="v">{data.header.legacyId}</div></div>
+                    </template>
+                </div>
+                <template lwc:if={data.header.verifyMessage}>
+                    <div class="verify">
+                        <svg class="i ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                        {data.header.verifyMessage}
+                    </div>
+                </template>
+                <template lwc:if={hasBadges}>
+                    <div class="badges">
+                        <template for:each={badgesView} for:item="badge">
+                            <span key={badge.label} class={badge.toneClass}>{badge.label}</span>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- ===== KPI snapshot strip (career + engagement) ===== -->
+        <section class="snap6 snap6-trim">
+            <template lwc:if={data.snapshot.currentCareer}>
+                <div class="snap-card acc-indigo">
+                    <div class="snap-head"><div class="snap-title">{data.snapshot.currentCareer.title}</div>
+                        <div class="snap-ico ico-indigo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg></div>
+                    </div>
+                    <div class="snap-big">{data.snapshot.currentCareer.bigValue}</div>
+                    <div class="snap-sub">{data.snapshot.currentCareer.subValue}</div>
+                    <div class="snap-divider"></div>
+                    <template for:each={data.snapshot.currentCareer.rows} for:item="row">
+                        <div key={row.label} class="snap-row"><span>{row.label}</span><b>{row.value}</b></div>
+                    </template>
+                </div>
+            </template>
+
+            <template lwc:if={data.snapshot.engagement}>
+                <div class="snap-card acc-brand">
+                    <div class="snap-head"><div class="snap-title">{data.snapshot.engagement.title}</div>
+                        <div class="snap-ico ico-brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"></path></svg></div>
+                    </div>
+                    <div class="snap-big">{data.snapshot.engagement.bigValue}</div>
+                    <div class="snap-sub">{data.snapshot.engagement.subValue}</div>
+                    <div class="snap-divider"></div>
+                    <template for:each={data.snapshot.engagement.rows} for:item="row">
+                        <div key={row.label} class="snap-row"><span>{row.label}</span><b>{row.value}</b></div>
+                    </template>
+                </div>
+            </template>
+        </section>
+
+        <!-- ===== Tabs + right rail ===== -->
+        <section class="grid">
+            <div class="tabs-wrap">
+
+                <nav class="tabs">
+                    <div class={cOverview}   data-tab="overview"   onclick={handleTab}>Overview</div>
+                    <div class={cAcademic}   data-tab="academic"   onclick={handleTab}>Academic Record</div>
+                    <div class={cContact}    data-tab="contact"    onclick={handleTab}>Contact</div>
+                    <div class={cCareer}     data-tab="career"     onclick={handleTab}>Career</div>
+                    <div class={cPortal}     data-tab="portal"     onclick={handleTab}>Portal</div>
+                    <div class={cEngagement} data-tab="engagement" onclick={handleTab}>Engagement</div>
+                    <div class={cHistory}    data-tab="history"    onclick={handleTab}>Update History</div>
+                    <div class={cActivity}   data-tab="activity"   onclick={handleTab}>Activity</div>
+                </nav>
+                <nav class="subtabs">
+                    <div class={cSupport}    data-tab="support"    onclick={handleTab}>Support</div>
+                </nav>
+
+                <!-- ============ OVERVIEW ============ -->
+                <template lwc:if={isOverview}>
+                <div class="tabpane">
+                    <!-- Edit affordance (top-right) -->
+                    <div class="a360-edit-bar">
+                        <template lwc:if={isEditingOverview}>
+                            <button type="button" class="a360-btn ghost" onclick={handleCancelEdit} disabled={saving}>Cancel</button>
+                            <button type="button" class="a360-btn primary" onclick={handleSaveEdit} disabled={saving}>
+                                <template lwc:if={saving}>Saving…</template>
+                                <template lwc:else>Save</template>
+                            </button>
+                        </template>
+                        <template lwc:else>
+                            <button type="button" class="a360-btn ghost" onclick={handleEditOverview}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                Edit
+                            </button>
+                        </template>
+                    </div>
+
+                    <template lwc:if={data.overview.snapshot}>
+                        <div class="section-label">ALUMNA SNAPSHOT</div>
+                        <div class="kv-block">
+                            <template for:each={overviewSnapshotRows} for:item="row">
+                                <div key={row.key} class="kv k2">
+                                    <div class="l">{row.label}</div>
+                                    <template lwc:if={row.editableNow}>
+                                        <lightning-input class="a360-edit-input" type={row.type} value={row.editValue}
+                                            data-key={row.fieldKey} onchange={handleEditChange} variant="label-hidden">
+                                        </lightning-input>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="v">{row.value}</div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={data.overview.personalContact}>
+                        <div class="section-label">PERSONAL &amp; CONTACT</div>
+                        <div class="kv-block">
+                            <template for:each={overviewContactRows} for:item="row">
+                                <div key={row.key} class="kv k2">
+                                    <div class="l">{row.label}</div>
+                                    <template lwc:if={row.editableNow}>
+                                        <template lwc:if={row.isAddress}>
+                                            <div class="a360-addr-grid">
+                                                <lightning-input class="a360-edit-input" type="text" label="Street" value={addrStreet} data-key="street" onchange={handleEditChange}></lightning-input>
+                                                <lightning-input class="a360-edit-input" type="text" label="City" value={addrCity} data-key="city" onchange={handleEditChange}></lightning-input>
+                                                <lightning-input class="a360-edit-input" type="text" label="State" value={addrState} data-key="state" onchange={handleEditChange}></lightning-input>
+                                                <lightning-input class="a360-edit-input" type="text" label="Postal Code" value={addrPostal} data-key="postalCode" onchange={handleEditChange}></lightning-input>
+                                                <lightning-input class="a360-edit-input" type="text" label="Country" value={addrCountry} data-key="country" onchange={handleEditChange}></lightning-input>
+                                            </div>
+                                        </template>
+                                        <template lwc:elseif={row.isSelect}>
+                                            <lightning-combobox class="a360-edit-input" value={row.editValue} options={row.options}
+                                                data-key={row.fieldKey} onchange={handleEditChange} variant="label-hidden" placeholder="—">
+                                            </lightning-combobox>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-input class="a360-edit-input" type={row.type} value={row.editValue}
+                                                data-key={row.fieldKey} onchange={handleEditChange} variant="label-hidden">
+                                            </lightning-input>
+                                        </template>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="v">{row.value}</div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={data.overview.relationships.length}>
+                        <div class="section-label">RELATIONSHIPS</div>
+                        <div class="rel-grid">
+                            <template for:each={data.overview.relationships} for:item="r">
+                                <div key={r.name} class="rel"><div class="av">{r.initials}</div><div class="r"><div class="rel-label">{r.label}</div><div class="rel-name">{r.name}</div><div class="rel-sub">{r.subline}</div></div><div class="arr">›</div></div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+                </template>
+
+                <!-- ============ ACADEMIC RECORD ============ -->
+                <template lwc:if={isAcademic}>
+                <div class="tabpane">
+                    <div class="a360-edit-bar">
+                        <template lwc:if={eduEditing}>
+                            <button type="button" class="a360-btn ghost" onclick={handleAddEducation}>+ Add</button>
+                            <button type="button" class="a360-btn ghost" onclick={handleCancelAcademic} disabled={eduSaving}>Cancel</button>
+                            <button type="button" class="a360-btn primary" onclick={handleSaveAcademic} disabled={eduSaving}>
+                                <template lwc:if={eduSaving}>Saving…</template>
+                                <template lwc:else>Save</template>
+                            </button>
+                        </template>
+                        <template lwc:elseif={academicEditable}>
+                            <button type="button" class="a360-btn ghost" onclick={handleEditAcademic}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                Edit
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- View mode -->
+                    <template lwc:if={eduEditing}>
+                        <div class="section-label">EDUCATION HISTORY</div>
+                        <table class="sem-table edu-table a360-edit-table">
+                            <thead>
+                                <tr><th>INSTITUTE</th><th>DEGREE</th><th>GRADE TYPE</th><th>GRADE</th><th>YEAR</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={eduRows} for:item="r">
+                                    <tr key={r.key}>
+                                        <td><lightning-input class="a360-edu-input" variant="label-hidden" value={r.institute} data-rowkey={r.key} data-field="institute" onchange={handleEduChange}></lightning-input></td>
+                                        <td><lightning-input class="a360-edu-input" variant="label-hidden" value={r.degree} data-rowkey={r.key} data-field="degree" onchange={handleEduChange}></lightning-input></td>
+                                        <td><lightning-combobox class="a360-edu-input" variant="label-hidden" value={r.gradeType} options={gradeTypeOptions} placeholder="—" data-rowkey={r.key} data-field="gradeType" onchange={handleEduChange}></lightning-combobox></td>
+                                        <td><lightning-input class="a360-edu-input" variant="label-hidden" value={r.grade} data-rowkey={r.key} data-field="grade" onchange={handleEduChange}></lightning-input></td>
+                                        <td><lightning-input class="a360-edu-input" variant="label-hidden" value={r.yearOfCompletion} data-rowkey={r.key} data-field="yearOfCompletion" onchange={handleEduChange}></lightning-input></td>
+                                        <td class="a360-row-del"><button type="button" class="a360-del-btn" data-rowkey={r.key} onclick={handleRemoveEducation} title="Remove">×</button></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                        <template lwc:if={eduRowsEmpty}>
+                            <div class="empty-tab">No education rows — use “+ Add”.</div>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <template lwc:if={data.academic.education.length}>
+                            <div class="section-label">EDUCATION HISTORY</div>
+                            <table class="sem-table edu-table">
+                                <thead>
+                                    <tr><th>INSTITUTE</th><th>DEGREE</th><th>GRADE</th><th>YEAR</th></tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={data.academic.education} for:item="e">
+                                        <tr key={e.institute}>
+                                            <td>{e.institute}</td>
+                                            <td>{e.degree}</td>
+                                            <td>{e.gradeLabel}</td>
+                                            <td>{e.yearOfCompletion}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+
+                        <template lwc:if={hasNoEducation}>
+                            <div class="empty-tab">No education records on file.</div>
+                        </template>
+
+                        <template lwc:if={data.academic.graduationFooter}>
+                            <div class="grad-footer">
+                                <strong>{data.academic.graduationFooter}</strong>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+                </template>
+
+                <!-- ============ CAREER ============ -->
+                <template lwc:if={isCareer}>
+                <div class="tabpane">
+                    <div class="a360-edit-bar">
+                        <template lwc:if={empEditing}>
+                            <button type="button" class="a360-btn ghost" onclick={handleAddEmployment}>+ Add</button>
+                            <button type="button" class="a360-btn ghost" onclick={handleCancelCareer} disabled={empSaving}>Cancel</button>
+                            <button type="button" class="a360-btn primary" onclick={handleSaveCareer} disabled={empSaving}>
+                                <template lwc:if={empSaving}>Saving…</template>
+                                <template lwc:else>Save</template>
+                            </button>
+                        </template>
+                        <template lwc:elseif={careerEditable}>
+                            <button type="button" class="a360-btn ghost" onclick={handleEditCareer}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                Edit
+                            </button>
+                        </template>
+                    </div>
+
+                    <!-- Edit mode -->
+                    <template lwc:if={empEditing}>
+                        <div class="section-label">EMPLOYMENT HISTORY</div>
+                        <template for:each={empRows} for:item="r">
+                            <div key={r.key} class="a360-emp-edit">
+                                <button type="button" class="a360-del-btn corner" data-rowkey={r.key} onclick={handleRemoveEmployment} title="Remove">×</button>
+                                <div class="a360-emp-grid">
+                                    <lightning-input class="a360-emp-input" label="Role" value={r.role} data-rowkey={r.key} data-field="role" onchange={handleEmpChange}></lightning-input>
+                                    <lightning-input class="a360-emp-input" label="Company" value={r.company} data-rowkey={r.key} data-field="company" onchange={handleEmpChange}></lightning-input>
+                                    <lightning-input class="a360-emp-input" label="Location" value={r.location} data-rowkey={r.key} data-field="location" onchange={handleEmpChange}></lightning-input>
+                                    <lightning-input class="a360-emp-input" type="date" label="Start Date" value={r.startDate} data-rowkey={r.key} data-field="startDate" onchange={handleEmpChange}></lightning-input>
+                                    <lightning-input class="a360-emp-input" type="date" label="End Date" value={r.endDate} data-rowkey={r.key} data-field="endDate" onchange={handleEmpChange}></lightning-input>
+                                    <lightning-input class="a360-emp-input" type="checkbox" label="Currently employed" checked={r.current} data-rowkey={r.key} data-field="current" onchange={handleEmpChange}></lightning-input>
+                                    <div class="a360-emp-desc">
+                                        <lightning-textarea class="a360-emp-input" label="Description" value={r.description} data-rowkey={r.key} data-field="description" onchange={handleEmpChange}></lightning-textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:if={empRowsEmpty}>
+                            <div class="empty-tab">No employment rows — use “+ Add”.</div>
+                        </template>
+                    </template>
+                    <!-- View mode -->
+                    <template lwc:else>
+                        <template lwc:if={data.career.employmentHistory.length}>
+                            <div class="section-label">EMPLOYMENT HISTORY</div>
+                            <template for:each={data.career.employmentHistory} for:item="job">
+                                <div key={job.period} class="car">
+                                    <div class="marker"></div>
+                                    <div class="r">
+                                        <div class="h">
+                                            <span class="role">{job.role}</span>
+                                            <span class="where">· {job.company}</span>
+                                            <template lwc:if={job.current}>
+                                                <span class="pill emerald sm">CURRENT</span>
+                                            </template>
+                                            <span class="when">{job.period}</span>
+                                        </div>
+                                        <div class="car-sub">{job.location} · Source: {job.source}</div>
+                                        <template lwc:if={job.description}>
+                                            <div class="desc">{job.description}</div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-tab">No employment records on file.</div>
+                        </template>
+                    </template>
+                </div>
+                </template>
+
+                <!-- ============ ENGAGEMENT ============ -->
+                <template lwc:if={isEngagement}>
+                <div class="tabpane">
+                    <div class="kpi-row">
+                        <div class="kpi"><div class="k">EVENTS ATTENDED</div><div class="v">{data.engagement.eventsAttendedCount}</div></div>
+                        <div class="kpi"><div class="k">ACTIVE MENTEES</div><div class="v">{data.engagement.activeMenteesCount}</div></div>
+                        <div class="kpi"><div class="k">TOTAL REFERRALS</div><div class="v">{data.engagement.totalReferralsCount}</div></div>
+                        <div class="kpi"><div class="k">TALKS ON CAMPUS</div><div class="v">{data.engagement.talksOnCampusCount}</div></div>
+                    </div>
+
+                    <template lwc:if={data.engagement.eventsHosted.length}>
+                        <div class="section-label">EVENTS HOSTED / ORGANIZED</div>
+                        <div class="list">
+                            <template for:each={data.engagement.eventsHosted} for:item="ev">
+                                <div key={ev.title} class="item"><div class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg></div><div class="grow"><div class="ttl">{ev.title} <span class="lite">· {ev.reference}</span></div><div class="item-sub">{ev.role} · {ev.details}</div></div><span class="right">{ev.when_x}</span></div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={data.engagement.eventsAttended.length}>
+                        <div class="section-label">EVENTS ATTENDED &amp; SPEAKING</div>
+                        <div class="list">
+                            <template for:each={data.engagement.eventsAttended} for:item="ev">
+                                <div key={ev.title} class="item"><div class="ico">♡</div><div class="grow"><div class="ttl">{ev.title}</div><div class="item-sub">{ev.role} · {ev.details}</div></div><span class="right">{ev.when_x}</span></div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={data.engagement.mentorship.length}>
+                        <div class="section-label">MENTORSHIP</div>
+                        <div class="list">
+                            <template for:each={data.engagement.mentorship} for:item="m">
+                                <div key={m.name} class="item"><div class="ico">{m.initials}</div><div class="grow"><div class="ttl">{m.name}</div><div class="item-sub">{m.sessions} · since {m.since}</div></div><span class="pill emerald sm">{m.status}</span></div>
+                            </template>
+                        </div>
+                    </template>
+
+                    <template lwc:if={data.engagement.hiringReferrals.length}>
+                        <div class="section-label">HIRING REFERRALS FROM KEN42</div>
+                        <div class="list">
+                            <template for:each={data.engagement.hiringReferrals} for:item="rf">
+                                <div key={rf.name} class="item"><div class="ico">{rf.initials}</div><div class="grow"><div class="ttl">{rf.name} <span class="lite">· Class of {rf.classOf}</span></div><div class="item-sub">{rf.role} · {rf.company}</div></div><span class="pill emerald sm">{rf.status}</span></div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+                </template>
+
+                <!-- ============ SUPPORT ============ -->
+                <template lwc:if={isSupport}>
+                <div class="tabpane">
+                    <div class="kpi-row">
+                        <div class="kpi"><div class="k">TICKETS RAISED</div><div class="v">{data.support.ticketsRaisedCount}</div></div>
+                        <div class="kpi"><div class="k">CURRENTLY OPEN</div><div class="v">{data.support.currentlyOpenCount}</div></div>
+                        <div class="kpi"><div class="k">AVG FIRST RESPONSE</div><div class="v">{data.support.avgFirstResponse}</div></div>
+                        <div class="kpi"><div class="k">SURVEYS SUBMITTED</div><div class="v">{data.support.surveysSubmittedCount}</div></div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="dc-title">Cases Raised by this Alumnus</div>
+                        <template lwc:if={hasRequestRows}>
+                            <table class="history-table">
+                                <thead><tr><th>Case #</th><th>Subject</th><th>Status</th><th>Priority</th><th>Opened</th><th>Owner</th></tr></thead>
+                                <tbody>
+                                    <template for:each={requestRows} for:item="c">
+                                        <tr key={c.reference}>
+                                            <td>{c.reference}</td>
+                                            <td>{c.title}</td>
+                                            <td>{c.status}</td>
+                                            <td>{c.priority}</td>
+                                            <td>{c.openedLabel}</td>
+                                            <td>{c.owner}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state">No cases raised by this alumnus.</div>
+                        </template>
+                    </div>
+
+                    <template lwc:if={data.support.surveys.length}>
+                        <div class="section-label">SURVEYS &amp; FEEDBACK SUBMITTED</div>
+                        <div class="list">
+                            <template for:each={data.support.surveys} for:item="srv">
+                                <div key={srv.title} class="item"><div class="ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="18" rx="2"></rect></svg></div><div class="grow"><div class="ttl">{srv.title}</div><div class="item-sub">{srv.details}</div></div><span class="pill emerald sm">{srv.sentiment}</span></div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+                </template>
+
+                <!-- ============ CONTACT (ported from removed Overview modal) ============ -->
+                <template lwc:if={isContact}>
+                <div class="tabpane">
+                    <div class="a360-edit-bar">
+                        <template lwc:if={isEditingContact}>
+                            <button type="button" class="a360-btn ghost" onclick={handleCancelEdit} disabled={saving}>Cancel</button>
+                            <button type="button" class="a360-btn primary" onclick={handleSaveEdit} disabled={saving}>
+                                <template lwc:if={saving}>Saving…</template>
+                                <template lwc:else>Save</template>
+                            </button>
+                        </template>
+                        <template lwc:elseif={accountEditable}>
+                            <button type="button" class="a360-btn ghost" onclick={handleEditContact}>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                Edit
+                            </button>
+                        </template>
+                    </div>
+                    <div class="detail-card">
+                        <div class="dc-title">Contact Information</div>
+                        <div class="dc-grid">
+                            <template lwc:if={isEditingContact}>
+                                <div><div class="dc-field-label">Email Address</div>
+                                    <lightning-input class="a360-edit-input" type="email" value={contactEditEmail} data-key="email" onchange={handleEditChange} variant="label-hidden"></lightning-input></div>
+                                <div><div class="dc-field-label">Phone Number</div>
+                                    <lightning-input class="a360-edit-input" type="tel" value={contactEditPhone} data-key="phone" onchange={handleEditChange} variant="label-hidden"></lightning-input></div>
+                                <div style="grid-column:1/-1"><div class="dc-field-label">LinkedIn Profile</div>
+                                    <lightning-input class="a360-edit-input" type="text" value={contactEditLinkedin} data-key="linkedin" onchange={handleEditChange} variant="label-hidden"></lightning-input></div>
+                            </template>
+                            <template lwc:else>
+                                <div><div class="dc-field-label">Email Address</div><div class="dc-field-value">{detailEmail}</div></div>
+                                <div><div class="dc-field-label">Phone Number</div><div class="dc-field-value">{detailPhone}</div></div>
+                                <div style="grid-column:1/-1"><div class="dc-field-label">LinkedIn Profile</div><div class="dc-field-value link">{detailLinkedin}</div></div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="dc-title">Communication Preferences</div>
+                        <div class="kv-row"><span class="k">Email Visible</span><span><span class={emailVisibilityPillClass}>{emailVisibilityLabel}</span></span></div>
+                        <div class="kv-row"><span class="k">Phone Visible</span><span><span class={phoneVisibilityPillClass}>{phoneVisibilityLabel}</span></span></div>
+                    </div>
+                </div>
+                </template>
+
+                <!-- ============ PORTAL ============ -->
+                <template lwc:if={isPortal}>
+                <div class="tabpane">
+                    <div class="detail-card">
+                        <div class="dc-title">Portal Lifecycle</div>
+                        <div class="kv-row"><span class="k">Invited Date</span><span class="v">—</span></div>
+                        <div class="kv-row"><span class="k">Link Opened</span><span class="v">—</span></div>
+                        <div class="kv-row"><span class="k">Registered Date</span><span class="v">{detailRegDate}</span></div>
+                        <div class="kv-row"><span class="k">Questionnaire Status</span><span class="v">—</span></div>
+                        <div class="kv-row"><span class="k">Last Login</span><span class="v">{detailLastLogin}</span></div>
+                    </div>
+                </div>
+                </template>
+
+                <!-- ============ UPDATE HISTORY ============ -->
+                <template lwc:if={isHistory}>
+                <div class="tabpane">
+                    <div class="detail-card">
+                        <div class="dc-title">Field Update History</div>
+                        <template lwc:if={hasHistoryRows}>
+                            <table class="history-table">
+                                <thead><tr><th>Date</th><th>Field</th><th>Previous Value</th><th>New Value</th><th>Source</th><th>Updated By</th></tr></thead>
+                                <tbody>
+                                    <template for:each={historyRows} for:item="h">
+                                        <tr key={h.key}>
+                                            <td>{h.dateLabel}</td>
+                                            <td>{h.field}</td>
+                                            <td class="strike">{h.previousValue}</td>
+                                            <td class="new">{h.newValue}</td>
+                                            <td><span class="source-tag">{h.sourceTag}</span></td>
+                                            <td>{h.updatedBy}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state">No tracked field changes yet.</div>
+                        </template>
+                    </div>
+                </div>
+                </template>
+
+                <!-- ============ ACTIVITY ============ -->
+                <template lwc:if={isActivity}>
+                <div class="tabpane">
+                    <div class="detail-card">
+                        <div class="dc-title">Activity Timeline</div>
+                        <template lwc:if={hasTimelineRows}>
+                            <div class="timeline">
+                                <template for:each={timelineRows} for:item="t">
+                                    <div class="tl-item" key={t.key}>
+                                        <div class="tl-title">{t.title}</div>
+                                        <div class="tl-meta"><span class="tl-tag">{t.actor}</span><span>{t.dateLabel}</span></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state">No activity recorded yet.</div>
+                        </template>
+                    </div>
+                </div>
+                </template>
+
+            </div>
+
+            <!-- ===== RIGHT RAIL ===== -->
+            <aside class="rail">
+
+                <!-- LinkedIn sync (shows only when we know the Person Account Id) -->
+                <template lwc:if={data.header.personAccountId}>
+                    <c-ken-linked-in-sync-button record-id={data.header.personAccountId} onsynccomplete={handleLinkedInSyncComplete}></c-ken-linked-in-sync-button>
+                </template>
+
+                <!-- Needs attention -->
+                <template lwc:if={data.rightRail.needsAttention.length}>
+                <div class="na-card">
+                    <div class="na-head"><div class="na-title">Needs attention</div></div>
+                    <template for:each={data.rightRail.needsAttention} for:item="n">
+                        <div key={n.title} class="na-item">
+                            <div class="na-ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 11h4a2 2 0 0 1 0 4H7l-4 4h12a4 4 0 0 0 4-4v-3a4 4 0 0 0-4-4h-2"></path><path d="M7 11V7a3 3 0 0 1 6 0"></path></svg></div>
+                            <div class="na-body"><div class="na-ttl">{n.title}</div><a class="na-link">{n.actionLabel}</a></div>
+                        </div>
+                    </template>
+                </div>
+                </template>
+
+                <!-- Recent activity -->
+                <template lwc:if={data.rightRail.recentActivity.length}>
+                <div class="ra-card">
+                    <div class="ra-title">Recent activity</div>
+                    <template for:each={data.rightRail.recentActivity} for:item="a">
+                        <div key={a.title} class="ra-item"><div class="ra-ico"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3 7h7l-5.5 4.5L18 21l-6-4.5L6 21l1.5-7.5L2 9h7z"></path></svg></div><div class="ra-body">{a.title}</div><span class="ra-when">{a.when_x}</span></div>
+                    </template>
+                </div>
+                </template>
+
+                <!-- Quick actions -->
+                <template lwc:if={data.rightRail.quickActions.length}>
+                <div class="ra-card">
+                    <div class="ra-title">Quick actions</div>
+                    <div class="qa-grid">
+                        <template for:each={data.rightRail.quickActions} for:item="q">
+                            <button key={q.label} class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"></path></svg>{q.label}</button>
+                        </template>
+                    </div>
+                </div>
+                </template>
+
+                <!-- Record health -->
+                <template lwc:if={data.rightRail.recordHealth.length}>
+                <div class="ra-card">
+                    <div class="ra-title">Record health</div>
+                    <div class="rh-list">
+                        <template for:each={data.rightRail.recordHealth} for:item="h">
+                            <div key={h.label} class="rh-item">
+                                <template lwc:if={h.ok}>
+                                    <svg class="rh-ck ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>
+                                </template>
+                                <template lwc:else>
+                                    <svg class="rh-ck warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 8v4M12 16h.01"></path></svg>
+                                </template>
+                                <span>{h.label}</span>
+                                <template lwc:if={h.missingNote}>
+                                    <span class="rh-missing">{h.missingNote}</span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                </template>
+
+            </aside>
+        </section>
+    </main>
+    </template>
+</template>

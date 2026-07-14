@@ -1,0 +1,84 @@
+<template>
+    <div class="events-container">
+        <h1 class="header-title">Events</h1>
+
+        <template if:true={error}>
+            <div class="error-banner">{error}</div>
+        </template>
+
+        <template if:true={isLoading}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={isSaving}>
+            <div class="loading-spinner">
+                <lightning-spinner alternative-text="Saving" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <div class="card events-card-content">
+                <h2 class="section-title">Preferences</h2>
+                <div class="form-container">
+
+                    <!-- Who can invite -->
+                    <div class="form-group row-group">
+                        <label class="field-label">Who can invite me to events</label>
+                        <div class="radio-group-custom">
+                            <template for:each={inviteOptions} for:item="opt">
+                                <label key={opt.value} class="custom-radio-wrapper">
+                                    <input type="radio" name="invite" class="custom-radio-input"
+                                           value={opt.value} checked={opt.checked} onchange={handleInviteChange} />
+                                    <span class="custom-radio-circle"></span>
+                                    <span class="custom-radio-label">{opt.label}</span>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Updates Toggle -->
+                    <div class="form-group updates-group">
+                        <label class="field-label">Receive updates and changes related to events you've been invited to</label>
+                        <div class="toggle-row">
+                            <span>Turn on updates</span>
+                            <div class="toggle-wrapper">
+                                <label class="custom-toggle">
+                                    <input type="checkbox" checked={updatesEnabled} onchange={handleUpdateToggle} />
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reminder -->
+                    <div class="form-group reminder-group">
+                        <label class="field-label">When should we remind you about an event?</label>
+                        <div class="custom-dropdown-wrapper">
+                            <div class="custom-dropdown-box" onclick={toggleReminderDropdown}>
+                                <span class={reminderLabelClass}>{reminderLabel}</span>
+                                <span class="dropdown-arrow">&#9660;</span>
+                            </div>
+                            <template if:true={showReminderDropdown}>
+                                <div class="dropdown-menu">
+                                    <template for:each={reminderOptions} for:item="opt">
+                                        <div key={opt.value} class="dropdown-item" onclick={handleSelectReminder} data-value={opt.value}>{opt.label}</div>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <button class="btn btn-outline" onclick={handleDiscard} disabled={isSaving}>Discard Changes</button>
+                <button class="btn btn-primary" onclick={handleSave} disabled={isSaving}>Save Changes</button>
+            </div>
+        </template>
+    </div>
+
+    <c-ken-status-popup visible={showSuccessPopup} message="Event preferences saved successfully" variant="success"></c-ken-status-popup>
+</template>

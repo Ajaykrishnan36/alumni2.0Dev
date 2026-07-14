@@ -1,0 +1,85 @@
+<template>
+    <div class="card">
+        <div class="topRow">
+            <div class="brand">
+                <div class="logoWrap" aria-hidden="true">
+                    <template if:true={hasLogoUrl}>
+                        <img class="logoImg" src={offer.logoUrl} alt="" />
+                    </template>
+                    <template if:false={hasLogoUrl}>
+                        <div class="logoFallback">{offer.logoText}</div>
+                    </template>
+                </div>
+
+                <div class="brandText">
+                    <div class="roleRow">
+                        <span class="role">{offer.role}</span>
+                        <lightning-icon icon-name="utility:down" size="xx-small" class="downIcon"></lightning-icon>
+                    </div>
+                    <div class="company">{offer.company}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ctcBox">
+            <div class="ctcHeader">
+                <div class="ctcTitle">Total CTA</div>
+                <div class="ctcTotal">{totalCtcFormatted}</div>
+            </div>
+
+            <div class="breakdown">
+                <div class="row">
+                    <span class="label">Fixed</span>
+                    <span class="value">{fixedFormatted}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Variable</span>
+                    <span class="value">{variableFormatted}</span>
+                </div>
+                <div class="row">
+                    <span class="label">Bonuses</span>
+                    <span class="value">{bonusesFormatted}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="attrs">
+            <template for:each={offer.attributes} for:item="a">
+                <div key={a.text} class="attrRow">
+                    <lightning-icon icon-name={a.icon} size="x-small" class="attrIcon"></lightning-icon>
+                    <span class="attrText">{a.text}</span>
+                </div>
+            </template>
+        </div>
+
+        <div class="section">
+            <div class="sectionTitle">
+                <lightning-icon icon-name="utility:favorite" size="x-small" class="sectionIcon"></lightning-icon>
+                <span>Perks &amp; Benefits</span>
+            </div>
+
+            <ul class="perkList">
+                <template for:each={offer.perks} for:item="p">
+                    <li key={p} class="perkItem">{p}</li>
+                </template>
+            </ul>
+        </div>
+
+        <div class="meta">
+            <div class="metaRow">
+                <lightning-icon icon-name="utility:event" size="x-small" class="metaIcon"></lightning-icon>
+                <span class="metaText">Joining: {offer.joining}</span>
+            </div>
+            <div class="metaRow">
+                <lightning-icon icon-name="utility:lock" size="x-small" class="metaIcon"></lightning-icon>
+                <span class="metaText">Bond: {offer.bond}</span>
+            </div>
+            <div class="acceptBy">Accept by: {offer.acceptBy}</div>
+        </div>
+
+        <div class="question">
+            <div class="questionLabel">{offer.questionLabel}</div>
+            <div class="questionText">{offer.question}</div>
+        </div>
+    </div>
+</template>

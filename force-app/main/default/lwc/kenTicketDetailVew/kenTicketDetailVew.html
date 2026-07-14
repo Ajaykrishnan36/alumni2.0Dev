@@ -1,0 +1,443 @@
+<template>
+    <header class="page-header">
+        <h1 class="page-heading">Ticket Detail</h1>
+        <c-ken-sns-breadcrumb items={crumbs}></c-ken-sns-breadcrumb>
+    </header>
+
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header-section">
+            <div class="title-group">
+                <h1 class="page-title">{ticket.title}</h1>
+                <template if:true={hasTicketStatus}>
+                    <span class={statusBadgeClass}>{ticket.status}</span>
+                </template>
+            </div>
+            <div class="action-group">
+                <template if:true={isTicketClosed}>
+                    <template if:true={hasSubmittedFeedback}>
+                        <button class="feedback-submitted-btn" disabled>
+                            <span>Feedback Submitted</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </template>
+                    <template if:false={hasSubmittedFeedback}>
+                        <button class="leave-feedback-btn" onclick={handleLeaveFeedback}>Leave Feedback</button>
+                    </template>
+                </template>
+                <template if:true={showViewPassButton}>
+                    <button class="view-pass-btn" onclick={handleViewPass}>View Pass</button>
+                </template>
+                <template if:true={canCancelRequest}>
+                    <button class="cancel-btn" onclick={handleCancelRequest} disabled={isClosing}>Cancel Request</button>
+                </template>
+            </div>
+        </div>
+
+        <!-- Gate Pass Modal -->
+        <template if:true={showGatePassModal}>
+            <div class="gp-modal-overlay" onclick={handleCloseGatePassModal}>
+                <div class="gp-modal-box" onclick={stopModalClose}>
+
+                    <div class="gp-modal-header">
+                        <h2 class="gp-modal-title">Gate Pass Details</h2>
+                        <button type="button" class="gp-modal-close" onclick={handleCloseGatePassModal}>✕</button>
+                    </div>
+
+                    <!-- Student Details -->
+                    <div class="gp-student-card">
+                        <div class="gp-student-avatar">
+                            <span class="gp-student-initials">{studentInitials}</span>
+                        </div>
+                        <div class="gp-student-info">
+                            <p class="gp-student-label">Student Name</p>
+                            <p class="gp-student-name">{gatePassRecord.contactName}</p>
+                            <template if:true={gatePassRecord.contactPhone}>
+                                <p class="gp-student-label" style="margin-top:6px;">Phone Number</p>
+                                <p class="gp-student-phone">{gatePassRecord.contactPhone}</p>
+                            </template>
+                        </div>
+                        <div class="gp-status-pill">
+                            <template if:true={gatePassRecord.isActive}>
+                                <span class="gp-badge gp-badge--active">Active</span>
+                            </template>
+                            <template if:true={gatePassRecord.isExpired}>
+                                <span class="gp-badge gp-badge--expired">Expired</span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- QR Code + Details side by side -->
+                    <div class="gp-modal-body">
+                        <div class="gp-qr-col">
+                            <p class="gp-col-label">Gate Pass QR Code</p>
+                            <template if:true={gatePassQrUrl}>
+                                <div class="gp-qr-frame">
+                                    <img src={gatePassQrUrl}
+                                         alt={gatePassRecord.name}
+                                         width="160" height="160"
+                                         class="gp-qr-img" />
+                                </div>
+                            </template>
+                            <p class="gp-qr-id">{gatePassRecord.name}</p>
+                        </div>
+
+                        <div class="gp-details-col">
+                            <p class="gp-col-label">Pass Details</p>
+                            <div class="gp-detail-row">
+                                <span class="gp-detail-label">Exit Time</span>
+                                <span class="gp-detail-value">{gatePassExitTimeFormatted}</span>
+                            </div>
+                            <div class="gp-detail-row">
+                                <span class="gp-detail-label">Return By</span>
+                                <span class="gp-detail-value">{gatePassEntryTimeFormatted}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="gp-instructions">
+                        <p class="gp-instructions-title">Instructions</p>
+                        <ul class="gp-instructions-list">
+                            <li>This gate pass must be presented at the campus entry point for verification.</li>
+                            <li>Entry is permitted only during the approved exit and return times on this pass.</li>
+                            <li>The gate pass is non-transferable and valid for the named student only.</li>
+                            <li>The university reserves the right to deny or revoke access if guidelines are not followed.</li>
+                        </ul>
+                    </div>
+
+                    <!-- Download -->
+                    <div class="gp-modal-footer">
+                        <button type="button" class="gp-download-primary-btn" onclick={handleQrDownload}>
+                            ⬇ Download Gate Pass
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </template>
+
+        <!-- Key Fields Section -->
+        <div class="key-fields">
+            <div class="field-item">
+                <span class="field-label">Request ID</span>
+                <span class="field-value">{ticket.requestId}</span>
+            </div>
+            <div class="field-item">
+                <span class="field-label">Date & Time</span>
+                <span class="field-value">{ticket.dateTime}</span>
+            </div>
+            <div class="field-item">
+                <span class="field-label">Request Type</span>
+                <span class="field-value">{ticket.requestType}</span>
+            </div>
+            <template if:true={ticket.issueType}>
+                <div class="field-item">
+                    <span class="field-label">Issue Type</span>
+                    <span class="field-value">{ticket.issueType}</span>
+                </div>
+            </template>
+        </div>
+
+        <!-- Conversation Section -->
+        <div class="conversation-section">
+            <template if:true={isLoading}>
+                <div class="loading">Loading ticket details...</div>
+            </template>
+            <template if:true={loadError}>
+                <div class="error-text">{loadError}</div>
+            </template>
+            <template if:true={hasConversation}>
+                <template for:each={timelineItems} for:item="message">
+                    <div key={message.id} class="message-wrapper">
+                        <div class="message-meta">
+                            <span class="author">{message.author}</span>
+                            <span class="separator">|</span>
+                            <span class="date">{message.date}</span>
+                        </div>
+
+                        <div class="message-card">
+                            <!-- Outbound (User) Message Structure -->
+                            <template if:true={message.isOutbound}>
+                                <template for:each={message.sections} for:item="section">
+                                    <div key={section.label} class="detail-block">
+                                        <h3 class="detail-label">{section.label}</h3>
+                                        <template if:true={section.isFileUpload}>
+                                                <template if:true={section.attachment}>
+                                                    <template if:true={section.attachment.url}>
+                                                        <a class="attachment-pill" href={section.attachment.url} target="_blank">
+                                                            <lightning-icon icon-name="utility:attach" size="x-small" alternative-text="Attachment" class="paperclip-icon"></lightning-icon>
+                                                            <span class="attachment-name">{section.attachment.name}</span>
+                                                        </a>
+                                                    </template>
+                                                    <template if:false={section.attachment.url}>
+                                                        <div class="attachment-pill">
+                                                            <lightning-icon icon-name="utility:attach" size="x-small" alternative-text="Attachment" class="paperclip-icon"></lightning-icon>
+                                                            <span class="attachment-name">{section.attachment.name}</span>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                            <template if:false={section.attachment}>
+                                                <p class="detail-text">{section.text}</p>
+                                            </template>
+                                        </template>
+                                        <template if:false={section.isFileUpload}>
+                                            <p class="detail-text">{section.text}</p>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template for:each={message.additionalInfo} for:item="info">
+                                    <div key={info.label} class="detail-block">
+                                        <h3 class="detail-label">{info.label}</h3>
+                                        <p class="detail-text">{info.text}</p>
+                                    </div>
+                                </template>
+                            </template>
+
+                            <!-- Inbound (Admin) Message Structure -->
+                            <template if:true={message.isInbound}>
+                                <div class="admin-content">
+                                    <p class="pre-wrap">{message.content}</p>
+                                </div>
+                                <template if:true={message.showReply}>
+                                    <div class="reply-action">
+                                        <button class="reply-btn">Reply</button>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template if:true={showEmptyState}>
+                <div class="empty-state">No request details are available for this ticket.</div>
+            </template>
+        </div>
+
+        <!-- Gate Pass Section — shown only for Gate Pass Request cases -->
+        <template if:true={isGatePass}>
+            <div class="gp-section">
+                <div class="gp-section-header">
+                    <span class="gp-section-icon">🎫</span>
+                    <h2 class="gp-section-title">Gate Pass</h2>
+                </div>
+
+                <template if:true={gatePassRecord}>
+                    <div class="gp-card">
+
+                        <!-- QR Code area -->
+                        <div class="gp-qr-area">
+                            <template if:true={gatePassQrUrl}>
+                                <div class="gp-qr-frame">
+                                    <img src={gatePassQrUrl}
+                                         alt={gatePassRecord.name}
+                                         class="gp-qr-img"
+                                         width="180" height="180" />
+                                </div>
+                            </template>
+                            <template if:true={gatePassRecord.isActive}>
+                                <span class="gp-badge gp-badge--active">Active</span>
+                            </template>
+                            <template if:true={gatePassRecord.isExpired}>
+                                <span class="gp-badge gp-badge--expired">Expired</span>
+                            </template>
+                            <button type="button" class="gp-download-btn" onclick={handleQrDownload}>
+                                ⬇ Download QR
+                            </button>
+                        </div>
+
+                        <!-- Details area -->
+                        <div class="gp-details">
+                            <template if:true={gatePassRecord.contactName}>
+                                <div class="gp-row">
+                                    <span class="gp-label">Name</span>
+                                    <span class="gp-value">{gatePassRecord.contactName}</span>
+                                </div>
+                            </template>
+                            <div class="gp-divider"></div>
+                            <div class="gp-row">
+                                <span class="gp-label">Exit Time</span>
+                                <span class="gp-value gp-time">{gatePassExitTimeFormatted}</span>
+                            </div>
+                            <div class="gp-row">
+                                <span class="gp-label">Return By</span>
+                                <span class="gp-value gp-time">{gatePassEntryTimeFormatted}</span>
+                            </div>
+                            <div class="gp-note">
+                                Show this QR code to security staff at the gate.
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <template if:false={gatePassRecord}>
+                    <div class="gp-pending-card">
+                        <p class="gp-pending-msg">Gate pass will be issued once your request is resolved by staff.</p>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Approval History Section -->
+        <template if:true={hasApprovalHistory}>
+            <div class="ah-section">
+                <h2 class="section-title">Approval History</h2>
+                <div class={ahTableClass}>
+                    <div class="ah-header">
+                        <span>Approver</span>
+                        <span>Decision</span>
+                        <span>Date/Time</span>
+                        <template if:true={hasAnyRejection}>
+                            <span>Comment</span>
+                        </template>
+                    </div>
+                    <template for:each={approvalHistory} for:item="entry">
+                        <div key={entry.id} class="ah-row">
+                            <span class="ah-cell ah-actor">{entry.actorName}</span>
+                            <span class={entry.decisionClass}>{entry.decisionLabel}</span>
+                            <span class="ah-cell ah-date">{entry.dateFormatted}</span>
+                            <template if:true={hasAnyRejection}>
+                                <span class="ah-cell ah-comment">
+                                    <template if:true={entry.showComment}>{entry.commentsDisplay}</template>
+                                </span>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <div class="comments-section">
+            <div class="comments-header">
+                <div>
+                    <h2 class="section-title">Case Comments</h2>
+                </div>
+                <span class="comments-count">{commentCountLabel}</span>
+            </div>
+
+            <div class="comment-thread">
+                <template if:true={hasComments}>
+                    <template for:each={comments} for:item="comment">
+                        <div key={comment.id} class={comment.wrapperClass}>
+                            <div class="comment-meta">
+                                <template if:true={comment.isAdmin}>
+                                    <span class="admin-badge">Admin Reply</span>
+                                    <span class="separator"> </span>
+                                </template>
+                                <span class="author">{comment.author}</span>
+                                <span class="separator">|</span>
+                                <span class="date">{comment.date}</span>
+                            </div>
+                            <div class={comment.bubbleClass}>
+                                <lightning-formatted-rich-text value={comment.body}></lightning-formatted-rich-text>
+                            </div>
+                        </div>
+                    </template>
+                </template>
+                <template if:false={hasComments}>
+                    <div class="empty-state">No comments yet. Add a comment to start the conversation.</div>
+                </template>
+            </div>
+
+            <div class="comment-composer">
+                <label class="composer-label" for="case-comment-input">Add Comment</label>
+                <textarea
+                    id="case-comment-input"
+                    class="comment-textarea"
+                    placeholder="Type your comment here"
+                    value={commentDraft}
+                    oninput={handleCommentInput}></textarea>
+                <div class="comment-actions">
+                    <button
+                        type="button"
+                        class="comment-submit-btn"
+                        onclick={handleSubmitComment}
+                        disabled={isPostCommentDisabled}>
+                        {commentButtonLabel}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+	<!-- Notification modal -->
+	<c-ken-notification-modal
+		is-visible={isToastVisible}
+		toast-title={toastTitle}
+		toast-message={toastMessage}
+		toast-variant={toastVariant}>
+	</c-ken-notification-modal>
+
+	<!-- Feedback Modal -->
+	<template if:true={showFeedbackModal}>
+		<div class="modal-overlay" onclick={handleBackdropClick}>
+			<div class="feedback-modal-container" onclick={handleModalContainerClick}>
+				<div class="feedback-modal-header">
+					<h2 class="feedback-modal-title">Rate Our Service</h2>
+				</div>
+				<div class="feedback-modal-content">
+					<div class="star-rating-container">
+						<div class="stars-wrapper">
+							<template for:each={starRatings} for:item="star">
+								<button
+									key={star.value}
+									type="button"
+									class="star-btn"
+									data-rating={star.value}
+									onclick={handleStarClick}>
+									<template if:true={star.isFilled}>
+										<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+											<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FFD700" stroke="#FFD700" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+										</svg>
+									</template>
+									<template if:false={star.isFilled}>
+										<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+											<path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#D1D5DB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+										</svg>
+									</template>
+								</button>
+							</template>
+						</div>
+						<template if:true={ratingBadge}>
+							<span class={ratingBadge.class}>{ratingBadge.text}</span>
+						</template>
+					</div>
+					<div class="feedback-textarea-container">
+						<textarea 
+							class="feedback-textarea"
+							placeholder="Provide your feedback (Optional)"
+							onchange={handleFeedbackTextChange}></textarea>
+					</div>
+				</div>
+				<div class="feedback-modal-footer">
+					<button type="button" class="cancel-feedback-btn" onclick={handleCancelFeedback}>Cancel</button>
+					<button type="button" class="submit-feedback-btn" onclick={handleSubmitFeedback}>Submit</button>
+				</div>
+			</div>
+		</div>
+	</template>
+
+	<!-- Feedback Success Dialog -->
+	<template if:true={showFeedbackSuccessDialog}>
+		<div class="modal-overlay" onclick={closeFeedbackSuccessDialog}>
+			<div class="success-dialog-container" onclick={handleModalContainerClick}>
+				<div class="success-icon-container">
+					<svg width="56" height="56" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<rect width="36" height="36" rx="18" fill="#C1DCC3"/>
+						<mask id="mask0_feedback_success_ticket" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="4" y="4" width="28" height="28">
+							<rect x="4.5" y="4.5" width="27" height="27" fill="#D9D9D9"/>
+						</mask>
+						<g mask="url(#mask0_feedback_success_ticket)">
+							<path d="M16.425 23.175L24.3562 15.2438L22.7812 13.6687L16.425 20.025L13.2188 16.8187L11.6437 18.3938L16.425 23.175ZM18 29.25C16.4438 29.25 14.9813 28.9545 13.6125 28.3635C12.2438 27.7733 11.0531 26.9719 10.0406 25.9594C9.02813 24.9469 8.22675 23.7563 7.6365 22.3875C7.0455 21.0187 6.75 19.5562 6.75 18C6.75 16.4438 7.0455 14.9813 7.6365 13.6125C8.22675 12.2438 9.02813 11.0531 10.0406 10.0406C11.0531 9.02813 12.2438 8.22637 13.6125 7.63537C14.9813 7.04512 16.4438 6.75 18 6.75C19.5562 6.75 21.0187 7.04512 22.3875 7.63537C23.7563 8.22637 24.9469 9.02813 25.9594 10.0406C26.9719 11.0531 27.7733 12.2438 28.3635 13.6125C28.9545 14.9813 29.25 16.4438 29.25 18C29.25 19.5562 28.9545 21.0187 28.3635 22.3875C27.7733 23.7563 26.9719 24.9469 25.9594 25.9594C24.9469 26.9719 23.7563 27.7733 22.3875 28.3635C21.0187 28.9545 19.5562 29.25 18 29.25Z" fill="#388E3C"/>
+						</g>
+					</svg>
+				</div>
+				<h2 class="success-title">Feedback submitted</h2>
+				<p class="success-message">Thank you for your valuable feedback!</p>
+			</div>
+		</div>
+	</template>
+</template>

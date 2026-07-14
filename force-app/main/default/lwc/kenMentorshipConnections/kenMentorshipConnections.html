@@ -1,0 +1,251 @@
+<template>
+    <div class="mentorship-connections-container">
+        <div class="section-header">
+            <div class="section-title-row">
+                <button type="button" class="mobile-back-icon-btn" onclick={handleMobileBack} aria-label="Back">
+                    <lightning-icon icon-name="utility:back" size="x-small"></lightning-icon>
+                </button>
+                <p class="section-title">Mentorship Connections</p>
+            </div>
+            <div class="search-filter-bar">
+                <c-ken-search-bar placeholder="Search" onsearch={handleSearch}></c-ken-search-bar>
+                <div class="filter-buttons">
+                    <div class="sort-wrapper">
+                        <button class="filter-btn sort-toggle-btn" onclick={handleSortClick}>
+                            <span>Sort by</span>
+                            <svg class={sortIconClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="filters-btn-wrapper">
+                        <button class={filtersButtonClass} onclick={handleFiltersClick} data-filter-trigger>
+                            <span>Filters</span>
+                            <img src={FilterIcon} alt="Filter" class="filter-icon" />
+                            <template if:true={showFilterCount}>
+                                <span class="filter-count-badge">{appliedFilterCount}</span>
+                            </template>
+                        </button>
+                        <template if:true={showFiltersPanel}>
+                            <div class="filters-panel" role="dialog" aria-modal="true" aria-label="Filters" onkeydown={handleFiltersPanelKeydown} onclick={handleFiltersPanelClick}>
+                                <p class="section-title">Filters</p>
+                                <template if:true={hasAppliedFilters}>
+                                    <p class="filters-panel-count">{appliedFilterCount} filter(s) applied</p>
+                                </template>
+                                <div class="filters-form">
+                                    <!-- Toggle: Show mentors near me -->
+                                    <div class="filter-field filter-field-toggle">
+                                        <div class="toggle-row">
+                                            <lightning-input
+                                                type="toggle"
+                                                name="showMentorsNearMe"
+                                                checked={filterDraft.showMentorsNearMe}
+                                                onchange={handleFilterDraftChange}
+                                                variant="label-hidden"
+                                                message-toggle-active=""
+                                                message-toggle-inactive=""
+                                                class="filter-toggle"
+                                                aria-label="Show mentors near me">
+                                            </lightning-input>
+                                            <span class="toggle-label">Show mentors near me</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Company -->
+                                    <div class="filter-field filter-multiselect">
+                                        <label class="filter-label">Company</label>
+                                        <button type="button" class={companyBtnClass} data-name="company" onclick={handleDropdownToggle}>
+                                            <span class={companyLabelClass}>{companyBtnLabel}</span>
+                                            <svg class={companyChevronClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                            </svg>
+                                        </button>
+                                        <template if:true={isCompanyOpen}>
+                                            <div class="ms-dropdown" onclick={handleDropdownStopProp}>
+                                                <template for:each={companyDropdownOptions} for:item="opt">
+                                                    <label key={opt.value} class={opt.itemClass}>
+                                                        <input type="checkbox" value={opt.value} checked={opt.isSelected} data-field="company" onchange={handleCheckboxChange}/>
+                                                        {opt.label}
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Industry -->
+                                    <div class="filter-field filter-multiselect">
+                                        <label class="filter-label">Industry</label>
+                                        <button type="button" class={industryBtnClass} data-name="industry" onclick={handleDropdownToggle}>
+                                            <span class={industryLabelClass}>{industryBtnLabel}</span>
+                                            <svg class={industryChevronClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                            </svg>
+                                        </button>
+                                        <template if:true={isIndustryOpen}>
+                                            <div class="ms-dropdown" onclick={handleDropdownStopProp}>
+                                                <template for:each={industryDropdownOptions} for:item="opt">
+                                                    <label key={opt.value} class={opt.itemClass}>
+                                                        <input type="checkbox" value={opt.value} checked={opt.isSelected} data-field="industry" onchange={handleCheckboxChange}/>
+                                                        {opt.label}
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Job function -->
+                                    <div class="filter-field filter-multiselect">
+                                        <label class="filter-label">Job function</label>
+                                        <button type="button" class={jobFunctionBtnClass} data-name="jobFunction" onclick={handleDropdownToggle}>
+                                            <span class={jobFunctionLabelClass}>{jobFunctionBtnLabel}</span>
+                                            <svg class={jobFunctionChevronClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                            </svg>
+                                        </button>
+                                        <template if:true={isJobFunctionOpen}>
+                                            <div class="ms-dropdown" onclick={handleDropdownStopProp}>
+                                                <template for:each={jobFunctionDropdownOptions} for:item="opt">
+                                                    <label key={opt.value} class={opt.itemClass}>
+                                                        <input type="checkbox" value={opt.value} checked={opt.isSelected} data-field="jobFunction" onchange={handleCheckboxChange}/>
+                                                        {opt.label}
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Program last attended -->
+                                    <div class="filter-field filter-multiselect">
+                                        <label class="filter-label">Program last attended</label>
+                                        <button type="button" class={programLastAttendedBtnClass} data-name="programLastAttended" onclick={handleDropdownToggle}>
+                                            <span class={programLastAttendedLabelClass}>{programLastAttendedBtnLabel}</span>
+                                            <svg class={programLastAttendedChevronClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                            </svg>
+                                        </button>
+                                        <template if:true={isProgramLastAttendedOpen}>
+                                            <div class="ms-dropdown" onclick={handleDropdownStopProp}>
+                                                <template for:each={programLastAttendedDropdownOptions} for:item="opt">
+                                                    <label key={opt.value} class={opt.itemClass}>
+                                                        <input type="checkbox" value={opt.value} checked={opt.isSelected} data-field="programLastAttended" onchange={handleCheckboxChange}/>
+                                                        {opt.label}
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Specialisation -->
+                                    <div class="filter-field filter-multiselect">
+                                        <label class="filter-label">Specialisation</label>
+                                        <button type="button" class={specialisationBtnClass} data-name="specialisation" onclick={handleDropdownToggle}>
+                                            <span class={specialisationLabelClass}>{specialisationBtnLabel}</span>
+                                            <svg class={specialisationChevronClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                            </svg>
+                                        </button>
+                                        <template if:true={isSpecialisationOpen}>
+                                            <div class="ms-dropdown" onclick={handleDropdownStopProp}>
+                                                <template for:each={specialisationDropdownOptions} for:item="opt">
+                                                    <label key={opt.value} class={opt.itemClass}>
+                                                        <input type="checkbox" value={opt.value} checked={opt.isSelected} data-field="specialisation" onchange={handleCheckboxChange}/>
+                                                        {opt.label}
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Graduation year -->
+                                    <div class="filter-field filter-multiselect">
+                                        <label class="filter-label">Graduation year</label>
+                                        <button type="button" class={graduationYearBtnClass} data-name="graduationYear" onclick={handleDropdownToggle}>
+                                            <span class={graduationYearLabelClass}>{graduationYearBtnLabel}</span>
+                                            <svg class={graduationYearChevronClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                            </svg>
+                                        </button>
+                                        <template if:true={isGraduationYearOpen}>
+                                            <div class="ms-dropdown" onclick={handleDropdownStopProp}>
+                                                <template for:each={graduationYearDropdownOptions} for:item="opt">
+                                                    <label key={opt.value} class={opt.itemClass}>
+                                                        <input type="checkbox" value={opt.value} checked={opt.isSelected} data-field="graduationYear" onchange={handleCheckboxChange}/>
+                                                        {opt.label}
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Current city -->
+                                    <div class="filter-field filter-multiselect">
+                                        <label class="filter-label">Current city</label>
+                                        <button type="button" class={currentCityBtnClass} data-name="currentCity" onclick={handleDropdownToggle}>
+                                            <span class={currentCityLabelClass}>{currentCityBtnLabel}</span>
+                                            <svg class={currentCityChevronClass} width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                                            </svg>
+                                        </button>
+                                        <template if:true={isCurrentCityOpen}>
+                                            <div class="ms-dropdown" onclick={handleDropdownStopProp}>
+                                                <template for:each={currentCityDropdownOptions} for:item="opt">
+                                                    <label key={opt.value} class={opt.itemClass}>
+                                                        <input type="checkbox" value={opt.value} checked={opt.isSelected} data-field="currentCity" onchange={handleCheckboxChange}/>
+                                                        {opt.label}
+                                                    </label>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="filters-panel-actions">
+                                    <div class="filters-panel-buttons">
+                                        <button type="button" class="filters-reset-btn" onclick={handleFilterClear}>Reset Filter</button>
+                                        <button type="button" class="filters-apply-btn" onclick={handleFilterApply}>Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mentors-grid">
+            <template if:true={isLoading}>
+                <div class="empty-state">Loading mentorship connections...</div>
+            </template>
+            <template if:false={isLoading}>
+                <template if:true={errorMessage}>
+                    <div class="empty-state">{errorMessage}</div>
+                </template>
+                <template if:true={hasDisplayedMentors}>
+                    <template for:each={displayedMentors} for:item="mentor">
+                        <c-ken-alumni-card
+                            key={mentor.id}
+                            record-id={mentor.id}
+                            name={mentor.name}
+                            title={mentor.title}
+                            company={mentor.company}
+                            expertise={mentor.industry}
+                            batch={mentor.batch}
+                            graduation-year={mentor.graduationYear}
+                            education={mentor.education}
+                            location={mentor.location}
+                            profile-image={mentor.profileImage}
+                            is-mentor={mentor.personIsMentor}
+                            is-online={mentor.isOnline}
+                            onprofileclick={handleMentorClick}
+                            class="mentor-card">
+                        </c-ken-alumni-card>
+                    </template>
+                </template>
+                <template if:true={showEmptyState}>
+                    <div class="empty-state">
+                        <img src={emptyStateImageUrl} alt="No mentorship connections" class="empty-state-image" />
+                        <p class="empty-state-title">No Mentorship Connections</p>
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>

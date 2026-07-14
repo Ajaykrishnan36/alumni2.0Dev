@@ -1,0 +1,125 @@
+<template>
+    <div class="ab-layout">
+        <!-- center: role & details -->
+        <div class="ab-main">
+            <h3 class="ab-title">Roles &amp; Details</h3>
+            <p class="ab-sub">Who do you want to include?</p>
+
+            <!-- role chips (from constituent roles configured at onboarding) -->
+            <div class="ab-chips">
+                <template for:each={roleChipRows} for:item="r">
+                    <button key={r.code} type="button" class={r.cls} data-code={r.code} data-name={r.name} onclick={handlePickRole}>
+                        {r.name}
+                        <template lwc:if={r.hasCount}><span class="ab-chip__badge">{r.count}</span></template>
+                    </button>
+                </template>
+            </div>
+
+            <!-- All vs Custom -->
+            <div class="ab-opts">
+                <button type="button" class={allOptionCls} onclick={pickAll}>
+                    <span class="ab-opt__radio"></span>
+                    <span class="ab-opt__body">
+                        <span class="ab-opt__title">{allLabel}</span>
+                        <span class="ab-opt__desc">{allDesc}</span>
+                    </span>
+                </button>
+                <button type="button" class={customOptionCls} onclick={pickCustom}>
+                    <span class="ab-opt__radio"></span>
+                    <span class="ab-opt__body">
+                        <span class="ab-opt__title">Create Custom Audience</span>
+                        <span class="ab-opt__desc">Create by selecting specific criteria such as academic year, program, and campus.</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- custom audience builder -->
+            <template lwc:if={isCustomMode}>
+                <div class="ab-custom">
+                    <div class="ab-custom__head">
+                        <h4 class="ab-custom__title">Custom Audience</h4>
+                        <button type="button" class="ab-add" onclick={handleAddToAudience} disabled={addDisabled}>Add to Audience</button>
+                    </div>
+
+                    <label class="ab-flabel">Audience Name</label>
+                    <input type="text" class="ab-input" placeholder="Enter Name" value={audienceName} oninput={handleAudienceName} />
+
+                    <template lwc:if={loadingFields}>
+                        <p class="ab-loading">Loading fields…</p>
+                    </template>
+                    <template lwc:if={noFields}>
+                        <p class="ab-loading">No filter attributes are configured for this role.</p>
+                    </template>
+
+                    <template for:each={fieldRows} for:item="f">
+                        <div key={f.key} class="ab-field">
+                            <label class="ab-flabel">{f.label}</label>
+                            <div class="ab-ms">
+                                <div class="ab-ms__control" data-key={f.key} onclick={toggleFieldMenu}>
+                                    <div class="ab-ms__values">
+                                        <template lwc:if={f.hasChips}>
+                                            <template for:each={f.chips} for:item="c">
+                                                <span key={c.value} class="ab-ms__chip">
+                                                    {c.label}
+                                                    <button type="button" class="ab-ms__chip-x" data-key={f.key} data-value={c.value} onclick={removeFieldChip}>×</button>
+                                                </span>
+                                            </template>
+                                        </template>
+                                        <template lwc:if={f.hasChips}></template>
+                                        <template lwc:else>
+                                            <span class="ab-ms__ph">{f.placeholder}</span>
+                                        </template>
+                                    </div>
+                                    <span class="ab-ms__caret">▾</span>
+                                </div>
+                                <template lwc:if={f.open}>
+                                    <div class="ab-ms__menu" onclick={stopMenuClick}>
+                                        <template lwc:if={f.hasOptions}>
+                                            <template for:each={f.options} for:item="o">
+                                                <div key={o.value} class={o.cls} data-key={f.key} data-value={o.value} data-label={o.label} onclick={toggleFieldValue}>
+                                                    <span class="ab-ms__box"></span>
+                                                    <span>{o.label}</span>
+                                                </div>
+                                            </template>
+                                        </template>
+                                        <template lwc:if={f.hasOptions}></template>
+                                        <template lwc:else>
+                                            <div class="ab-ms__empty">No values found.</div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </template>
+
+            <!-- All mode: single add button -->
+            <template lwc:if={isAllMode}>
+                <button type="button" class="ab-add ab-add--block" onclick={handleAddToAudience}>Add to Audience</button>
+            </template>
+        </div>
+
+        <!-- right: selected audience -->
+        <div class="ab-side">
+            <p class="ab-side__title">Selected Audience</p>
+            <template lwc:if={hasSelectedAudiences}>
+                <template for:each={selectedAudienceCards} for:item="a">
+                    <div key={a.id} class="ab-card">
+                        <div class="ab-card__head">
+                            <span class="ab-card__name">{a.name}</span>
+                            <button type="button" class="ab-card__x" data-id={a.id} onclick={handleRemoveAudience}>×</button>
+                        </div>
+                        <div class="ab-card__tags">
+                            <span class="ab-tag ab-tag--role">{a.roleName}</span>
+                            <span class="ab-tag">{a.memberLabel}</span>
+                        </div>
+                    </div>
+                </template>
+            </template>
+            <template lwc:else>
+                <p class="ab-side__empty">No audience added yet.</p>
+            </template>
+        </div>
+    </div>
+</template>

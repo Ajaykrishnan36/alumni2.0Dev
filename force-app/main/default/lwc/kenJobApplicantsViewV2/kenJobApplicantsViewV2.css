@@ -1,0 +1,45 @@
+:host { display: block; }
+.content { background: #fff; border-radius: 12px; flex: 1; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #EEF1F6; }
+.job-head { padding: 24px 32px; border-bottom: 1px solid #EEF1F6; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.job-head__left { display: flex; align-items: center; gap: 14px; }
+.job-head__logo { width: 54px; height: 54px; border-radius: 10px; background: #EAEFFF; display: flex; align-items: center; justify-content: center; color: #3061FF; font-weight: 700; font-size: 18px; }
+.job-head__title { font-weight: 700; font-size: 22px; margin: 0 0 4px; color: #111827; }
+.job-head__meta { font-weight: 500; font-size: 13px; color: #6B7280; margin: 0; }
+.job-head__pill { padding: 3px 10px; background: #EAEFFF; color: #2546B8; border-radius: 6px; font-weight: 600; font-size: 11px; }
+.job-head__salary { font-weight: 700; font-size: 14px; margin: 8px 0 0; color: #373A45; }
+.pill-row { margin-top: 6px; display: flex; gap: 8px; }
+.job-head__actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn { padding: 0 16px; height: 36px; border: 0; border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 12px; cursor: pointer; }
+.btn--outline { background: #EAEFFF; border: 1px solid #C7D3FF; color: #3061FF; }
+.btn--primary { background: #3061FF; color: #fff; }
+
+.tabs { display: flex; gap: 32px; padding: 0 32px; border-bottom: 1px solid #EEF1F6; }
+.tab { padding: 14px 4px; font-weight: 500; font-size: 14px; color: #9DA0A8; cursor: pointer; border: 0; border-bottom: 2px solid transparent; background: none; font-family: inherit; margin-bottom: -1px; }
+.tab--active { color: #3061FF; border-bottom-color: #3061FF; font-weight: 600; }
+
+.body { padding: 14px 32px 32px; }
+.apps-table { width: 100%; border-collapse: collapse; }
+.apps-table th { font-weight: 700; font-size: 13px; color: #2546B8; padding: 14px 8px; text-align: left; border-bottom: 1px solid #EEF1F6; }
+.apps-table td { padding: 18px 8px; border-bottom: 1px solid #EEF1F6; font-weight: 500; font-size: 13px; color: #373A45; }
+
+.status-pill { padding: 5px 14px; border-radius: 8px; font-weight: 600; font-size: 11px; display: inline-block; }
+.status-pill--applied { background: #FFF4E0; color: #F2A93B; }
+.status-pill--ongoing { background: #fff; color: #373A45; border: 1px solid #E53935; display: inline-flex; align-items: center; gap: 5px; }
+.status-pill--ongoing::before { content: ''; width: 6px; height: 6px; background: #E53935; border-radius: 50%; }
+.status-pill--approved { background: #E6F7EF; color: #19A974; }
+.status-pill--rejected { background: #FDE7E7; color: #E53935; }
+.status-pill--hired { background: #3061FF; color: #fff; }
+
+.view-btn { background: #EAEFFF; border: 1px solid #C7D3FF; color: #3061FF; padding: 7px 18px; border-radius: 8px; font-family: inherit; font-weight: 500; font-size: 12px; cursor: pointer; }
+
+/* ===== EMPTY STATE ===== */
+.empty { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 18px 6px 8px; }
+.empty--card { background: #F6F8FB; border: 1px dashed #D5D9E2; border-radius: 12px; padding: 48px 20px; margin: 12px 0; gap: 8px; }
+.empty__icon { font-size: 40px; line-height: 1; margin-bottom: 4px; }
+.empty__title { margin: 8px 0 0; font-size: 16px; font-weight: 600; color: #373A45; }
+.empty__copy { font-size: 13px; color: #6B7280; margin: 6px 0 14px; max-width: 420px; }
+.empty__cta-row { display: flex; gap: 8px; justify-content: center; }
+.btn--secondary { background: #3061FF; color: #fff; border: 1px solid #3061FF; }
+
+/* ===== SHARE TOAST ===== */
+.share-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 10000; }

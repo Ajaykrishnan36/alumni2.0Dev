@@ -1,0 +1,142 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="giving">
+        <div class="gp">
+            <!-- ============ LIST ============ -->
+            <template lwc:if={isList}>
+                <header class="gp-hero">
+                    <div class="gp-hero__glow" aria-hidden="true"></div>
+                    <div class="gp-hero__inner">
+                        <span class="gp-hero__eyebrow">Alumni Giving</span>
+                        <h1 class="gp-hero__title">Give back. Move us forward.</h1>
+                        <p class="gp-hero__sub">Support the causes that shape our community — scholarships, research, and the moments that change lives. Every gift makes an impact.</p>
+                    </div>
+                </header>
+
+                <template lwc:if={isLoading}>
+                    <div class="gp-empty">Loading campaigns…</div>
+                </template>
+                <template lwc:elseif={hasCampaigns}>
+                    <div class="gp-grid">
+                        <template for:each={campaigns} for:item="c">
+                            <article key={c.id} class="gp-card" data-id={c.id} onclick={handleOpen}>
+                                <div class="gp-card__hero" style={c.heroStyle}>
+                                    <template lwc:if={c.category}>
+                                        <span class="gp-chip">{c.category}</span>
+                                    </template>
+                                </div>
+                                <div class="gp-card__body">
+                                    <h3 class="gp-card__title">{c.name}</h3>
+                                    <div class="gp-bar"><span class="gp-bar__fill" style={c.barStyle}></span></div>
+                                    <div class="gp-card__stats">
+                                        <span class="gp-raised">{c.raisedDisplay}</span>
+                                        <span class="gp-goal">of {c.goalDisplay}</span>
+                                    </div>
+                                    <div class="gp-card__foot">
+                                        <span class="gp-donors">{c.donorLabel}</span>
+                                        <span class="gp-pct">{c.pct}%</span>
+                                    </div>
+                                    <button type="button" class="gp-btn gp-btn--primary gp-card__cta">Donate</button>
+                                </div>
+                            </article>
+                        </template>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="gp-empty">
+                        <div class="gp-empty__art" aria-hidden="true">
+                            <svg viewBox="0 0 200 200" width="180" height="180" role="img" aria-label="Community giving illustration">
+                                <defs>
+                                    <linearGradient id="gpGrad" x1="0" y1="0" x2="1" y2="1">
+                                        <stop offset="0" stop-color="#B033C8"/>
+                                        <stop offset="1" stop-color="#7A1FA2"/>
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="100" cy="100" r="92" fill="#F6ECFB"/>
+                                <circle cx="100" cy="100" r="66" fill="#FBF1FE" stroke="#EAD7F5" stroke-width="2"/>
+                                <!-- heart -->
+                                <path d="M100 132c-2 0-4-.7-5.6-2.1L72 110.5c-9.6-8.3-15.6-13.5-15.6-22.4 0-7.3 5.7-13.1 13-13.1 4.6 0 9 2.4 11.6 6.1 2.6-3.7 7-6.1 11.6-6.1 7.3 0 13 5.8 13 13.1 0 8.9-6 14.1-15.6 22.4l-22.4 19.4C104 131.3 102 132 100 132z" transform="translate(0 -6)" fill="url(#gpGrad)"/>
+                                <!-- community dots -->
+                                <circle cx="52" cy="150" r="11" fill="url(#gpGrad)" opacity="0.85"/>
+                                <circle cx="100" cy="160" r="13" fill="url(#gpGrad)"/>
+                                <circle cx="148" cy="150" r="11" fill="url(#gpGrad)" opacity="0.85"/>
+                                <rect x="40" y="162" width="24" height="20" rx="10" fill="url(#gpGrad)" opacity="0.85"/>
+                                <rect x="86" y="174" width="28" height="22" rx="11" fill="url(#gpGrad)"/>
+                                <rect x="136" y="162" width="24" height="20" rx="10" fill="url(#gpGrad)" opacity="0.85"/>
+                                <!-- sparkles -->
+                                <path d="M150 58l2.4 6.6 6.6 2.4-6.6 2.4-2.4 6.6-2.4-6.6-6.6-2.4 6.6-2.4z" fill="#D9A6EC"/>
+                                <circle cx="54" cy="64" r="4" fill="#D9A6EC"/>
+                            </svg>
+                        </div>
+                        <h3 class="gp-empty__title">No active campaigns yet</h3>
+                        <p class="gp-empty__copy">Check back soon — new giving opportunities are on the way. In the meantime, see the difference your community has already made.</p>
+                        <button type="button" class="gp-btn gp-btn--soft" onclick={handleLearnMore}>Read about our mission</button>
+                    </div>
+                </template>
+            </template>
+
+            <!-- ============ DETAIL ============ -->
+            <template lwc:if={isDetail}>
+                <button type="button" class="gp-back" onclick={handleBack}>&larr; All campaigns</button>
+                <template lwc:if={isLoadingDetail}>
+                    <div class="gp-empty">Loading…</div>
+                </template>
+                <template lwc:elseif={detail}>
+                    <div class="gp-detail">
+                        <div class="gp-detail__hero" style={detail.campaign.heroStyle}>
+                            <template lwc:if={detail.campaign.category}>
+                                <span class="gp-chip gp-chip--lg">{detail.campaign.category}</span>
+                            </template>
+                        </div>
+                        <div class="gp-detail__grid">
+                            <div class="gp-detail__main">
+                                <h1 class="gp-detail__title">{detail.campaign.name}</h1>
+                                <template lwc:if={detail.story}>
+                                    <lightning-formatted-rich-text value={detail.story}></lightning-formatted-rich-text>
+                                </template>
+                            </div>
+                            <aside class="gp-detail__rail">
+                                <div class="gp-progress-card">
+                                    <p class="gp-progress-card__raised">{detail.campaign.raisedDisplay}</p>
+                                    <p class="gp-progress-card__goal">raised of {detail.campaign.goalDisplay} goal</p>
+                                    <div class="gp-bar"><span class="gp-bar__fill" style={detail.campaign.barStyle}></span></div>
+                                    <div class="gp-progress-card__meta">
+                                        <span>{detail.campaign.donorLabel}</span>
+                                        <span>{detail.campaign.pct}%</span>
+                                    </div>
+                                    <button type="button" class="gp-btn gp-btn--primary gp-btn--block" onclick={handleDonate}>Donate now</button>
+                                    <template lwc:if={detail.tiers.length}>
+                                        <p class="gp-tiers__hint">Suggested gifts</p>
+                                        <div class="gp-tiers">
+                                            <template for:each={detail.tiers} for:item="t">
+                                                <button key={t.id} type="button" class="gp-tier" onclick={handleDonate}>
+                                                    <span class="gp-tier__amt">{t.amount}</span>
+                                                    <template lwc:if={t.label}><span class="gp-tier__lbl">{t.label}</span></template>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </template>
+            </template>
+
+            <!-- ============ DONATION WIZARD ============ -->
+            <template lwc:if={showWizard}>
+                <c-ken-gift-donate-wizard-v2
+                    campaign-id={wizardCampaignId}
+                    campaign-name={wizardCampaignName}
+                    tiers={wizardTiers}
+                    funds={wizardFunds}
+                    onclose={handleWizardClose}
+                    onsuccess={handleWizardSuccess}>
+                </c-ken-gift-donate-wizard-v2>
+            </template>
+
+            <template lwc:if={toastVisible}>
+                <div class="gp-toast">{toastMessage}</div>
+            </template>
+        </div>
+    </c-ken42-alumni-shell-v2>
+</template>

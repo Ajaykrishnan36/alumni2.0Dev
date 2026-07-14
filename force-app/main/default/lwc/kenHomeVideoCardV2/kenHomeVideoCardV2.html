@@ -1,0 +1,11 @@
+<template lwc:render-mode="light">
+    <div class="video-card">
+        <div class="video-card__bg"></div>
+        <span class="video-card__chip">{chipLabel}</span>
+        <button class="video-card__play" onclick={handlePlay}>&#9654;</button>
+        <div class="video-card__foot">
+            <div class="video-card__title">{title}</div>
+            <div class="video-card__sub">{meta}</div>
+        </div>
+    </div>
+</template>

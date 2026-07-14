@@ -1,0 +1,220 @@
+<template>
+    <div class="profile-page">
+        <!-- Loading spinner -->
+        <template if:true={isLoading}>
+            <div class="loading-container">
+                <lightning-spinner alternative-text="Loading profile" size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+
+        <!-- Profile Header -->
+        <c-ken-profile-header
+            name={profileData.name}
+            title={profileData.title}
+            company={profileData.company}
+            location={profileData.location}
+            profile-image={profileData.profileImage}
+            is-online={profileData.isOnline}
+            batch={profileData.batch}
+            expertise={profileData.expertise}
+            education={educationLine}
+            email={profileData.email}
+            phone={profileData.phone}
+            linkedin={profileData.linkedin}
+            willing-to-help={profileData.willingToHelp}
+            is-mentor={profileData.isMentor}
+            is-my-mentor={profileData.isMyMentor}
+            connection-status={connectionStatus}
+            mentorship-status={mentorshipStatus}
+            is-connect-loading={isConnectLoading}
+            is-mentorship-loading={isMentorshipLoading}
+            onopenchat={handleMessage}
+            onrequestconnection={handleRequestConnection}
+            onrequestmentorship={handleRequestMentorship}
+            onremoveconnection={handleRemoveConnection}
+            onremovementorship={handleRemoveMentorship}>
+        </c-ken-profile-header>
+
+        <!-- Confirmation Modal -->
+        <template if:true={showConfirmModal}>
+            <div class="modal-backdrop" onclick={handleConfirmCancel}></div>
+            <div class="confirm-modal">
+                <p class="confirm-message">{confirmMessage}</p>
+                <div class="confirm-actions">
+                    <button type="button" class="confirm-btn-cancel" onclick={handleConfirmCancel}>Cancel</button>
+                    <button type="button" class="confirm-btn-remove" onclick={handleConfirmYes}>Yes, Remove</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Success Toast -->
+        <c-ken-toast-notification
+            is-visible={showSuccessOverlay}
+            toast-title={successMessage}
+            toast-variant="success">
+        </c-ken-toast-notification>
+
+        <!-- Chatbox Overlay -->
+        <template if:true={showChatbox}>
+            <div class={chatContainerClass}>
+                <div class="chatbox-header">
+                    <div class="chat-user-info">
+                        <div class="chat-avatar-container">
+                            <img src={profileData.profileImage} alt={profileData.name} class="chat-avatar" onerror={handleImageError} />
+                            <template if:true={profileData.isOnline}>
+                                <span class="chat-online-indicator"></span>
+                            </template>
+                        </div>
+                        <span class="chat-username">{profileData.name}</span>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="chat-action-btn" onclick={handleToggleExpand} title="Expand/Contract">
+                            <lightning-icon icon-name={chatExpandIcon} size="x-small"></lightning-icon>
+                        </button>
+                        <button class="chat-action-btn" onclick={handleCloseChat} title="Close">
+                            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="chatbox-body">
+                    <template for:each={displayMessages} for:item="msg">
+                        <template if:true={msg.isDateSeparator}>
+                            <div class="timeline-separator" key={msg.id}>
+                                <span class="timeline-date">{msg.dateLabel}</span>
+                            </div>
+                        </template>
+                        <template if:true={msg.isReceived}>
+                            <!-- Received Message -->
+                            <div class="message received" key={msg.id}>
+                                <div class="message-bubble received-bubble">
+                                    <p>{msg.text}</p>
+                                    <span class="message-time">{msg.time}</span>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:true={msg.isSent}>
+                            <!-- Sent Message -->
+                            <div class="message sent" key={msg.id}>
+                                <div class="sent-user-row">
+                                    <span>You</span>
+                                    <div class="sent-avatar-placeholder"></div>
+                                </div> 
+                                <div class="message-bubble sent-bubble">
+                                    <p>{msg.text}</p>
+                                    <span class="message-time">{msg.time}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <div class="chatbox-footer">
+                    <div class="chat-input-wrapper">
+                        <input 
+                            type="text" 
+                            placeholder="Type here" 
+                            class="chat-input" 
+                            value={messageInput}
+                            oninput={handleInputChange}
+                            onkeyup={handleInputKeyup}
+                        />
+                        <button class="attach-btn">
+                            <lightning-icon icon-name="utility:attach" size="x-small" class="attach-icon"></lightning-icon>
+                        </button>
+                    </div>
+                    <button class="send-btn" onclick={handleSendMessage}>
+                        <lightning-icon icon-name="utility:send" size="x-small" class="send-icon"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- Main Content -->
+        <div class="profile-content">
+            <!-- Left Column (Education, Experience, Achievements) -->
+            <div class="left-column">
+                <!-- Personal Details Section -->
+                <div class="section personal-details-section">
+                    <div class="personal-details-content">
+                        <!-- Education Subsection -->
+                        <h3 class="subsection-title">Educational Background</h3>
+                        <div class="education-list">
+                            <template if:true={hasEducation}>
+                                <template for:each={profileData.education} for:item="edu">
+                                    <c-ken-education-card key={edu.id} degree={edu.degree} institution={edu.institution}
+                                        duration={edu.duration} score={edu.score} logo={edu.logo}></c-ken-education-card>
+                                </template>
+                            </template>
+                            <template if:false={hasEducation}>
+                                <p class="empty-state-message">No educational background added yet.</p>
+                            </template>
+                        </div>
+
+                        <!-- Experience Subsection -->
+                        <h3 class="subsection-title">Experience</h3>
+                        <div class="experience-list">
+                            <template if:true={hasExperience}>
+                                <template for:each={profileData.experience} for:item="exp">
+                                    <c-ken-experience-card key={exp.id} position={exp.position} company={exp.company}
+                                        employment-type={exp.employmentType} location={exp.location}
+                                        work-type={exp.workType} duration={exp.duration}
+                                        company-logo={exp.companyLogo} description={exp.description}></c-ken-experience-card>
+                                </template>
+                            </template>
+                            <template if:false={hasExperience}>
+                                <p class="empty-state-message">No experience added yet.</p>
+                            </template>
+                        </div>
+
+                        <!-- Achievements Subsection -->
+                        <h3 class="subsection-title">Achievements</h3>
+                        <div class="achievements-list">
+                            <template if:true={hasAchievements}>
+                                <template for:each={profileData.achievements} for:item="ach">
+                                    <c-ken-achievement-card
+                                        key={ach.id}
+                                        type={ach.type}
+                                        title={ach.title}
+                                        meta={ach.meta}
+                                        description={ach.description}>
+                                    </c-ken-achievement-card>
+                                </template>
+                            </template>
+                            <template if:false={hasAchievements}>
+                                <p class="empty-state-message">No achievements added yet.</p>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column (About + Contact Details) -->
+            <div class="right-column">
+                <div class="section about-section">
+                    <p class="section-title about-title">About</p>
+                    <div class="about-content">
+                        <lightning-formatted-rich-text value={profileData.about} class="about-text"></lightning-formatted-rich-text>
+                        <div class="contact-details-block">
+                            <p class="section-title contact-title">Contact Details</p>
+                            <div class="contact-details-list">
+                                <div class="contact-row">
+                                    <lightning-icon icon-name="utility:call" size="x-small" class="contact-icon"></lightning-icon>
+                                    <span class="contact-value">{profileData.phone}</span>
+                                </div>
+                                <div class="contact-row">
+                                    <lightning-icon icon-name="utility:email" size="x-small" class="contact-icon"></lightning-icon>
+                                    <span class="contact-value">{profileData.email}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </template>
+    </div>
+</template>

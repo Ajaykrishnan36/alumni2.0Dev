@@ -1,0 +1,348 @@
+<template>
+    <div class="step-content">
+        <!-- Info Banner - Dynamic text based on active section -->
+        <div class="info-banner-new">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#3061FF" />
+            </svg>
+            <span>{infoBannerText}</span>
+        </div>
+
+        <!-- 
+        <div class="survey-card-container">
+            <div class="survey-card-header">
+                <span class="survey-card-title">Offer Meals to Attendees</span>
+                <label class="switch-new">
+                    <input type="checkbox" checked={offerMealsEnabled} onchange={handleToggleOfferMeals} />
+                    <span class="slider-new round-new"></span>
+                </label>
+            </div>
+            
+           
+            <div class="survey-card-content" if:true={offerMealsEnabled}>
+              
+                <div class="meals-empty-state" if:false={hasMealDates}>
+                    <p>No session dates selected. Please select event session dates first.</p>
+                </div>
+
+                
+                <div class="meals-table-container" if:true={hasMealDates}>
+                    <table class="meals-table">
+                        <thead>
+                            <tr>
+                                <th class="checkbox-header-cell">
+                                    <input type="checkbox" id="select-all-meals" 
+                                        checked={allMealsSelected} 
+                                        onchange={handleSelectAllMeals} />
+                                </th>
+                                <th class="date-header-cell">Date / Meal</th>
+                                <th class="meal-header-cell">Breakfast</th>
+                                <th class="meal-header-cell">Lunch</th>
+                                <th class="meal-header-cell">Snacks</th>
+                                <th class="meal-header-cell">Dinner</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={mealsByDate} for:item="mealDate">
+                                <tr key={mealDate.dateISO} class="meal-row">
+                                    <td class="checkbox-cell">
+                                        <input type="checkbox" checked={mealDate.rowSelected} 
+                                            onchange={handleSelectRowMeals} 
+                                            data-date-iso={mealDate.dateISO} />
+                                    </td>
+                                    <td class="date-cell">{mealDate.dateLabel}</td>
+                                    <td class="checkbox-cell">
+                                        <input type="checkbox" checked={mealDate.breakfast} 
+                                            onchange={handleMealCheckboxChange} 
+                                            data-date-iso={mealDate.dateISO} 
+                                            data-meal="breakfast" />
+                                    </td>
+                                    <td class="checkbox-cell">
+                                        <input type="checkbox" checked={mealDate.lunch} 
+                                            onchange={handleMealCheckboxChange} 
+                                            data-date-iso={mealDate.dateISO} 
+                                            data-meal="lunch" />
+                                    </td>
+                                    <td class="checkbox-cell">
+                                        <input type="checkbox" checked={mealDate.snacks} 
+                                            onchange={handleMealCheckboxChange} 
+                                            data-date-iso={mealDate.dateISO} 
+                                            data-meal="snacks" />
+                                    </td>
+                                    <td class="checkbox-cell">
+                                        <input type="checkbox" checked={mealDate.dinner} 
+                                            onchange={handleMealCheckboxChange} 
+                                            data-date-iso={mealDate.dateISO} 
+                                            data-meal="dinner" />
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                
+                <div class="sub-card-row">
+                    <div class="sub-card-content">
+                        <div class="sub-card-title">Make Meals Paid (Optional Add-On)</div>
+                        <div class="sub-card-description">Attendees can opt in and pay during registration. Pricing is set in the next step.</div>
+                    </div>
+                    <label class="switch-new">
+                        <input type="checkbox" checked={mealsPaidAddonEnabled} onchange={handleToggleMealsPaid} />
+                        <span class="slider-new round-new"></span>
+                    </label>
+                </div>
+
+               
+                <div class="sub-card-row">
+                    <div class="sub-card-content">
+                        <div class="sub-card-title">Collect Dietary Preferences</div>
+                        <div class="sub-card-description" if:true={dietaryEnabled}>
+                            Attendees will receive a dietary preference survey and can choose only from the options selected below.
+                        </div>
+                    </div>
+                    <label class="switch-new">
+                        <input type="checkbox" checked={dietaryEnabled} onchange={handleToggleDietary} />
+                        <span class="slider-new round-new"></span>
+                    </label>
+                </div>
+
+              
+                <div class="dietary-options-container" if:true={dietaryEnabled}>
+                    <label class="dietary-option-label">
+                        <input type="checkbox" checked={dietaryOptions.vegetarian} 
+                            onchange={handleDietaryOptionChange} data-option="vegetarian" />
+                        <span>Vegetarian</span>
+                    </label>
+                    <label class="dietary-option-label">
+                        <input type="checkbox" checked={dietaryOptions.vegan} 
+                            onchange={handleDietaryOptionChange} data-option="vegan" />
+                        <span>Vegan</span>
+                    </label>
+                    <label class="dietary-option-label">
+                        <input type="checkbox" checked={dietaryOptions.eggetarian} 
+                            onchange={handleDietaryOptionChange} data-option="eggetarian" />
+                        <span>Eggetarian</span>
+                    </label>
+                    <label class="dietary-option-label">
+                        <input type="checkbox" checked={dietaryOptions.nonVegetarian} 
+                            onchange={handleDietaryOptionChange} data-option="nonVegetarian" />
+                        <span>Non-Vegetarian</span>
+                    </label>
+                    <label class="dietary-option-label">
+                        <input type="checkbox" checked={dietaryOptions.jain} 
+                            onchange={handleDietaryOptionChange} data-option="jain" />
+                        <span>Jain</span>
+                    </label>
+                </div>
+            </div>
+        </div> -->
+
+        <!-- Card B: Custom Survey -->
+        <div class="survey-card-container">
+            <div class="survey-card-header">
+                <span class="survey-card-title">Custom Survey</span>
+                <label class="switch-new">
+                    <input type="checkbox" checked={customSurveyEnabled} onchange={handleToggleCustomSurvey} />
+                    <span class="slider-new round-new"></span>
+                </label>
+            </div>
+
+            <!-- Custom Survey Content (shown when toggle is ON) -->
+            <div class="survey-card-content" if:true={customSurveyEnabled}>
+                <div class="custom-survey-section-title">Setup Preference Questions</div>
+
+                <!-- Copied from createSurvey.html (Questions List) and adapted to this component -->
+                <div class="questions-container">
+                    <template for:each={questions} for:item="question" for:index="index">
+                        <div
+                            key={question.id}
+                            class="question-card"
+                            draggable="true"
+                            data-question-id={question.id}
+                            ondragstart={handleDragStart}
+                            ondragover={handleDragOver}
+                            ondrop={handleDrop}
+                            ondragend={handleDragEnd}>
+
+                            <!-- Top Controls Row -->
+                            <div class="question-top-controls">
+                                <div class="drag-handle" title="Drag to reorder">
+                                    <svg width="10" height="16" viewBox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="2" cy="3" r="1.5" fill="#6B7280"/>
+                                        <circle cx="2" cy="8" r="1.5" fill="#6B7280"/>
+                                        <circle cx="2" cy="13" r="1.5" fill="#6B7280"/>
+                                        <circle cx="8" cy="3" r="1.5" fill="#6B7280"/>
+                                        <circle cx="8" cy="8" r="1.5" fill="#6B7280"/>
+                                        <circle cx="8" cy="13" r="1.5" fill="#6B7280"/>
+                                    </svg>
+                                </div>
+                                <div class="question-top-right-controls">
+                                    <div class="required-toggle">
+                                        <span class="required-label">Required</span>
+                                        <lightning-input
+                                            type="toggle"
+                                            checked={question.required}
+                                            onchange={handleRequiredToggle}
+                                            data-question-id={question.id}
+                                            class="toggle-input"
+                                            message-toggle-active=""
+                                            message-toggle-inactive="">
+                                        </lightning-input>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        class="delete-question-btn"
+                                        onclick={handleDeleteQuestion}
+                                        data-question-id={question.id}>
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="delete-icon">
+                                            <path d="M6 19C6 20.1 6.9 21 8 21H16C17.1 21 18 20.1 18 19V7H6V19ZM8 9H16V19H8V9ZM15.5 4L14.5 3H9.5L8.5 4H5V6H19V4H15.5Z" fill="#585A64"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Question Content Row -->
+                            <div class="question-header-row">
+                                <div class="question-left-section">
+                                    <span class="question-number">Question {question.number}</span>
+                                    <div class="question-input-field">
+                                        <lightning-input
+                                            type="text"
+                                            value={question.text}
+                                            placeholder="What did you like the most about this event?"
+                                            onchange={handleQuestionTextChange}
+                                            data-question-id={question.id}
+                                            variant="label-hidden"
+                                            class="custom-input">
+                                        </lightning-input>
+                                    </div>
+                                </div>
+                                <div class="question-right-section">
+                                    <div class="question-type-field">
+                                        <label class="field-label">Choose type</label>
+                                        <div class="question-type-dropdown">
+                                            <lightning-combobox
+                                                value={question.type}
+                                                options={questionTypeOptions}
+                                                placeholder="Select"
+                                                onchange={handleQuestionTypeChange}
+                                                data-question-id={question.id}
+                                                variant="label-hidden"
+                                                class="custom-select">
+                                            </lightning-combobox>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Multiple Choice / Checkbox Options -->
+                            <template if:true={question.showMultipleOptions}>
+                                <div class="question-options">
+                                    <template for:each={question.options} for:item="option" for:index="optionIndex">
+                                        <div key={option.id} class="option-item">
+                                            <div class="option-control">
+                                                <template if:true={question.isMultiple}>
+                                                    <div class="radio-button"></div>
+                                                </template>
+                                                <template if:true={question.isCheckboxType}>
+                                                    <div class="checkbox-button"></div>
+                                                </template>
+                                            </div>
+                                            <div class="option-label">
+                                                <span class="option-letter">{option.letter}</span>
+                                                <span>)</span>
+                                            </div>
+                                            <lightning-input
+                                                type="text"
+                                                value={option.text}
+                                                placeholder="Add option"
+                                                onchange={handleOptionTextChange}
+                                                data-question-id={question.id}
+                                                data-option-id={option.id}
+                                                variant="label-hidden"
+                                                class="option-input">
+                                            </lightning-input>
+                                            <button
+                                                type="button"
+                                                class="delete-option-btn"
+                                                onclick={handleDeleteOption}
+                                                data-question-id={question.id}
+                                                data-option-id={option.id}>
+                                                <lightning-icon icon-name="utility:close" size="x-small" class="delete-option-icon"></lightning-icon>
+                                            </button>
+                                        </div>
+                                    </template>
+                                    <button
+                                        type="button"
+                                        class="add-option-btn"
+                                        onclick={handleAddOptionClick}
+                                        data-question-id={question.id}>
+                                        Add option {question.nextOptionNumber}
+                                    </button>
+                                </div>
+                            </template>
+
+                            <!-- Linear Scale Configuration -->
+                            <template if:true={question.showLinearScale}>
+                                <div class="question-scale">
+                                    <div class="scale-range">
+                                        <lightning-combobox
+                                            value={question.scaleMin}
+                                            options={scaleNumberOptions}
+                                            onchange={handleScaleMinChange}
+                                            data-question-id={question.id}
+                                            variant="label-hidden"
+                                            class="scale-input custom-select">
+                                        </lightning-combobox>
+                                        <span class="scale-to">to</span>
+                                        <lightning-combobox
+                                            value={question.scaleMax}
+                                            options={scaleNumberOptions}
+                                            onchange={handleScaleMaxChange}
+                                            data-question-id={question.id}
+                                            variant="label-hidden"
+                                            class="scale-input custom-select">
+                                        </lightning-combobox>
+                                    </div>
+                                    <div class="scale-labels">
+                                        <div class="scale-label-item">
+                                            <span class="scale-label-number">{question.scaleMin}</span>
+                                            <lightning-input
+                                                type="text"
+                                                value={question.scaleMinLabel}
+                                                placeholder="Label(Optional)"
+                                                onchange={handleScaleMinLabelChange}
+                                                data-question-id={question.id}
+                                                variant="label-hidden"
+                                                class="scale-label-input">
+                                            </lightning-input>
+                                        </div>
+                                        <div class="scale-label-item">
+                                            <span class="scale-label-number">{question.scaleMax}</span>
+                                            <lightning-input
+                                                type="text"
+                                                value={question.scaleMaxLabel}
+                                                placeholder="Label(Optional)"
+                                                onchange={handleScaleMaxLabelChange}
+                                                data-question-id={question.id}
+                                                variant="label-hidden"
+                                                class="scale-label-input">
+                                            </lightning-input>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Add Questions Button -->
+                <button type="button" class="add-questions-btn" onclick={handleAddQuestion}>
+                    <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                    Add Questions
+                </button>
+            </div>
+        </div>
+    </div>
+</template>

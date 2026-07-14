@@ -1,0 +1,155 @@
+<template>
+    <section class="campaigns-shell">
+        <template if:true={showFilters}>
+            <div class="filter-backdrop" onclick={closeFilters}></div>
+        </template>
+
+        <div class="campaigns-header">
+            <h1 class="page-title">Active Campaigns</h1>
+
+            <div class="toolbar">
+                <label class="search-box" for="campaign-search">
+                    <lightning-icon
+                        icon-name="utility:search"
+                        size="xx-small"
+                        class="toolbar-icon search-icon"
+                        alternative-text="Search"
+                    ></lightning-icon>
+                    <input
+                        id="campaign-search"
+                        type="search"
+                        placeholder="Search"
+                        value={searchTerm}
+                        oninput={handleSearch}
+                    />
+                    <button class="icon-button" type="button" aria-label="Voice search">
+                        <svg class="mic-icon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 15.25a3.25 3.25 0 0 0 3.25-3.25V7.25a3.25 3.25 0 1 0-6.5 0V12A3.25 3.25 0 0 0 12 15.25Z"></path>
+                            <path d="M18 11.5a.75.75 0 0 0-1.5 0 4.5 4.5 0 0 1-9 0 .75.75 0 0 0-1.5 0 6.02 6.02 0 0 0 5.25 5.95V20H9.5a.75.75 0 0 0 0 1.5h5a.75.75 0 0 0 0-1.5h-1.75v-2.55A6.02 6.02 0 0 0 18 11.5Z"></path>
+                        </svg>
+                    </button>
+                </label>
+
+                <div class="filter-anchor">
+                    <button class="filter-button" type="button" onclick={openFilters}>
+                        <span>Filters</span>
+                        <lightning-icon
+                            icon-name="utility:filterList"
+                            size="xx-small"
+                            class="toolbar-icon"
+                            alternative-text="Filters"
+                        ></lightning-icon>
+                        <template if:true={hasActiveFilters}>
+                            <span class="filter-badge">{activeFilterCount}</span>
+                        </template>
+                    </button>
+
+                    <template if:true={showFilters}>
+                        <section class="filter-panel" onclick={stopPropagation}>
+                            <div class="filter-header">
+                                <h2>Filters</h2>
+                            </div>
+
+                            <div class="filter-fields">
+                                <div class="field input-with-icon date-field">
+                                    <input
+                                        class="native-date-input"
+                                        type="date"
+                                        name="createdOn"
+                                        value={draftFilters.createdOn}
+                                        onchange={handleDraftChange}
+                                    />
+                                    <div class="date-display">
+                                        <span class={createdOnDisplayClass}>{createdOnDisplayText}</span>
+                                    </div>
+                                    <lightning-icon
+                                        icon-name="utility:event"
+                                        size="xx-small"
+                                        class="field-icon"
+                                        alternative-text="Created on"
+                                    ></lightning-icon>
+                                </div>
+
+                                <div class="field select-field">
+                                    <select name="category" onchange={handleDraftChange}>
+                                        <option value="">Category</option>
+                                        <template for:each={categorySelectOptions} for:item="option">
+                                            <option key={option.value} value={option.value} selected={option.selected}>
+                                                {option.label}
+                                            </option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="filter-actions">
+                                <button class="reset-button" type="button" onclick={resetFilters}>Reset Filters</button>
+                                <button class="apply-button" type="button" onclick={applyFilters}>Apply</button>
+                            </div>
+                        </section>
+                    </template>
+                </div>
+
+                <button class="create-button" type="button" onclick={handleOpenCreateCampaign}>
+                    <lightning-icon
+                        icon-name="utility:add"
+                        size="xx-small"
+                        class="toolbar-icon toolbar-icon_inverse"
+                        alternative-text="Create"
+                    ></lightning-icon>
+                    <span>Create New Campaign</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="header-divider"></div>
+
+        <template if:true={hasNoResults}>
+            <div class="empty-state">
+                <p class="empty-state-message">{emptyStateMessage}</p>
+            </div>
+        </template>
+
+        <template if:false={hasNoResults}>
+            <div class="campaign-grid">
+                <template for:each={visibleCampaigns} for:item="campaign">
+                    <article
+                        key={campaign.id}
+                        class="campaign-card"
+                        data-id={campaign.id}
+                        onclick={handleCardClick}
+                    >
+                        <div class="image-frame">
+                            <img class="campaign-image" src={campaign.image} alt={campaign.title} onerror={handleImageError} />
+                            <span class="category-chip">{campaign.category}</span>
+                            <span class={campaign.statusClass}>{campaign.campaignStatus}</span>
+                        </div>
+
+                        <div class="card-content">
+                            <h2 class="campaign-title">{campaign.title}</h2>
+
+                            <div class="owner-row">
+                                <img class="owner-avatar" src={campaign.owner.avatar} alt={campaign.owner.name} />
+                                <span class="owner-name">{campaign.owner.name}</span>
+                            </div>
+
+                            <div class="date-pill">
+                                <lightning-icon
+                                    icon-name="utility:event"
+                                    size="xx-small"
+                                    class="date-icon"
+                                    alternative-text="Campaign dates"
+                                ></lightning-icon>
+                                <span>{campaign.dateRange}</span>
+                            </div>
+                        </div>
+                    </article>
+                </template>
+            </div>
+
+            <template if:true={hasMoreToShow}>
+                <div class="scroll-sentinel"></div>
+            </template>
+        </template>
+    </section>
+</template>

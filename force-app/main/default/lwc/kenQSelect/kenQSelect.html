@@ -1,0 +1,19 @@
+<template>
+    <div class="slds-form-element">
+        <label class="slds-form-element__label slds-clearfix labelClass" for={picklistName}>
+            <abbr class="slds-required requiredAsterisk" title="required" if:true={isRequired}>*</abbr>
+            {picklistLabel}
+            &nbsp;<lightning-helptext class="helpText" content={helpText} if:true={helpText}></lightning-helptext>
+        </label>
+        <div class="slds-form-element__control">
+            <div class="slds-select_container">
+                <select class="slds-select" id={picklistName} onchange={selectValue}>
+                    <option value="" if:true={showEmptyOption}>--Select Option--</option>
+                    <template for:each={picklistValues} for:item='picklistValue'>
+                        <option key={picklistValue.apiName} value={picklistValue.apiName}>{picklistValue.label}</option>
+                    </template>
+                </select>
+            </div>
+        </div>
+    </div>
+</template>

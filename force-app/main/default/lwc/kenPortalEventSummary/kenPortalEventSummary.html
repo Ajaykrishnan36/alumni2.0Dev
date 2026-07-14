@@ -1,0 +1,154 @@
+<template>
+    <div class="summary-page">
+        <div class="summary-page-inner">
+            <!-- Card 1: Event Setup -->
+            <section class="summary-card">
+                <div class="summary-card-header">
+                    <h3 class="summary-card-title">Event Setup</h3>
+                    <button type="button" class="summary-link" onclick={handleEditEventSetup}>Edit Details</button>
+                </div>
+                <div class="summary-two-col">
+                    <div class="summary-col">
+                        <div class="summary-field">
+                            <div class="summary-label">Event Title</div>
+                            <div class="summary-value">{cards.eventSetup.title}</div>
+                        </div>
+                        <div class="summary-field">
+                            <div class="summary-label">Language of Delivery</div>
+                            <div class="summary-value">{cards.eventSetup.language}</div>
+                        </div>
+                    </div>
+                    <div class="summary-col">
+                        <div class="summary-field">
+                            <div class="summary-label">Category</div>
+                            <div class="summary-value">{cards.eventSetup.category}</div>
+                        </div>
+                        <div class="summary-field">
+                            <div class="summary-label">Brochure for the Event</div>
+                            <a href={cards.eventSetup.brochure.url} class="summary-file" onclick={handleDownloadBrochure}>
+                                <span class="summary-file-icon" aria-hidden="true">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                        <path d="M12 3v10m0 0l4-4m-4 4l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </span>
+                                <span class="summary-file-name">{cards.eventSetup.brochure.name}</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card 2: Target Audience -->
+            <section class="summary-card">
+                <div class="summary-card-header">
+                    <h3 class="summary-card-title">Target Audience</h3>
+                    <button type="button" class="summary-link" onclick={handleEditTargetAudience}>Edit Details</button>
+                </div>
+                <div class="summary-grey-panel">
+                    <div class="summary-panel-top">
+                        <span class="summary-caret" aria-hidden="true">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                <path d="M7 10l5 5 5-5" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                        <span class="summary-panel-title">{cards.targetAudience.groupName}</span>
+                    </div>
+                    <div class="summary-pill-row">
+                        <span class="summary-pill summary-pill-blue">{cards.targetAudience.segment}</span>
+                        <span class="summary-pill summary-pill-grey">{cards.targetAudience.membersCount} Members</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card 3: Dates Selected -->
+            <section class="summary-card">
+                <div class="summary-card-header">
+                    <h3 class="summary-card-title">Dates Selected</h3>
+                    <button type="button" class="summary-link" onclick={handleEditDatesSelected}>Edit Details</button>
+                </div>
+                <div class="summary-pill-row">
+                    <template for:each={cards.datesSelected} for:item="d">
+                        <span key={d} class="summary-pill summary-pill-date">{d}</span>
+                    </template>
+                </div>
+            </section>
+
+            <!-- Card 4: Pre Event Surveys -->
+            <section class="summary-card">
+                <div class="summary-card-header">
+                    <h3 class="summary-card-title">Pre Event Surveys</h3>
+                    <button type="button" class="summary-link" onclick={handleEditPreEventSurveys}>Edit Details</button>
+                </div>
+                <div class="summary-survey-grid">
+                    <div class="summary-survey-col">
+                        <div class="summary-subhead">Offer Meals to Attendees</div>
+                        <template for:each={cards.preEventSurveys.mealsByDate} for:item="m">
+                            <div key={m.dateISO} class="summary-survey-line">
+                                {m.dateLabel} <span class="summary-muted">({m.mealsText})</span>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="summary-divider-vert" aria-hidden="true"></div>
+                    <div class="summary-survey-col">
+                        <div class="summary-subhead">Custom Survey</div>
+                        <div class="summary-survey-line">{cards.preEventSurveys.questionsCount} Questions</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Card 5: Session Details -->
+            <section class="summary-card">
+                <div class="summary-card-header">
+                    <h3 class="summary-card-title">Session Details</h3>
+                </div>
+
+                <div class="summary-session-head">
+                    <div class="summary-session-head-col">
+                        <div class="summary-subhead">Day &amp; Session Details</div>
+                        <button type="button" class="summary-link summary-link-under" onclick={handleEditSession}>Edit Session</button>
+                    </div>
+                    <div class="summary-session-head-col">
+                        <div class="summary-subhead">Price</div>
+                        <button type="button" class="summary-link summary-link-under" onclick={handleEditFees}>Edit Fees</button>
+                    </div>
+                    <div class="summary-session-head-col">
+                        <div class="summary-subhead">Feedback</div>
+                        <button type="button" class="summary-link summary-link-under" onclick={handleEditFeedback}>Edit Feedback</button>
+                    </div>
+                </div>
+
+                <div class="summary-session-body">
+                    <template for:each={cards.sessionDetails.days} for:item="day">
+                        <div key={day.dateISO} class="summary-day-group">
+                            <div class="summary-day-title">{day.dateLabel}</div>
+
+                            <template for:each={day.sessions} for:item="s">
+                                <div key={s.index} class="summary-session-row">
+                                    <div class="summary-session-left">
+                                        <div class="summary-session-index">Session {s.index}</div>
+                                        <div class="summary-session-name">{s.title}</div>
+                                    </div>
+                                    <div class="summary-session-mid">{s.priceText}</div>
+                                    <div class="summary-session-right">{s.feedbackText}</div>
+                                </div>
+                            </template>
+
+                            <div class="summary-row-divider" aria-hidden="true"></div>
+                        </div>
+                    </template>
+
+                    <div class="summary-total-row">
+                        <div class="summary-total-label">Meal Fees</div>
+                        <div class="summary-total-value">{cards.sessionDetails.mealFeesText}</div>
+                    </div>
+                    <div class="summary-row-divider" aria-hidden="true"></div>
+                    <div class="summary-total-row total-strong">
+                        <div class="summary-total-label">Total Event Cost</div>
+                        <div class="summary-total-value">{cards.sessionDetails.totalCostText}</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,50 @@
+<template>
+    <div class="overlay" onclick={cancel}>
+        <div class="modal" onclick={stopProp} role="dialog" aria-modal="true" aria-labelledby="af-title">
+            <header class="modal__header">
+                <h2 id="af-title" class="modal__title">{titleLabel}</h2>
+            </header>
+
+            <div class="modal__body">
+                <div class="grid">
+                    <div class="field">
+                        <label>Type</label>
+                        <select class="select" data-field="type" value={form.type} onchange={handleInput}>
+                            <template for:each={typeOptions} for:item="o">
+                                <option key={o.value} value={o.value}>{o.label}</option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Year</label>
+                        <select class="select" data-field="year" value={form.year} onchange={handleInput}>
+                            <template for:each={yearOptions} for:item="y">
+                                <option key={y.value} value={y.value}>{y.label}</option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div class="field full">
+                        <label>Title</label>
+                        <input data-field="title" type="text" placeholder="e.g., Best Student Award" value={form.title} oninput={handleInput} />
+                    </div>
+
+                    <div class="field full">
+                        <label>Organization</label>
+                        <input data-field="org" type="text" placeholder="e.g., Department of CSE" value={form.org} oninput={handleInput} />
+                    </div>
+
+                    <div class="field full">
+                        <label>Description</label>
+                        <textarea data-field="description" rows="4" placeholder="Optional details about this achievement" value={form.description} oninput={handleInput}></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="modal__footer">
+                <button type="button" class="btn btn--outline" onclick={cancel}>Cancel</button>
+                <button type="button" class="btn btn--primary" onclick={save}>Save</button>
+            </footer>
+        </div>
+    </div>
+</template>

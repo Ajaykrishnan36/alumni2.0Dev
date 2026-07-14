@@ -1,0 +1,328 @@
+<template>
+    <div class="all-events-container">
+        <!-- Featured Events Section - Hidden when filters are applied or no featured events -->
+        <div class="featured-events-section" if:true={showFeaturedEvents}>
+            <div class="section-header">
+                <div class="section-title">Featured events ({featuredEventsCount})</div>
+                <button class="filter-button" if:true={showFilterInFeatured} onclick={openFilterModal}>
+                    <svg class="filter-icon" width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_2443_23097)">
+                            <path
+                                d="M6.2222 4.5H18.7904L12.4937 12.375L6.2222 4.5ZM2.76595 4.0125C5.30472 7.25 9.99265 13.25 9.99265 13.25V20.75C9.99265 21.4375 10.5582 22 11.2495 22H13.7631C14.4544 22 15.0199 21.4375 15.0199 20.75V13.25C15.0199 13.25 19.6953 7.25 22.2341 4.0125C22.875 3.1875 22.2843 2 21.2412 2H3.75883C2.71567 2 2.12497 3.1875 2.76595 4.0125Z"
+                                fill="#585A64" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_2443_23097">
+                                <rect width="24" height="24" fill="white" transform="translate(0.5)" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                    <span class="filter-text">Filters</span>
+                    <span class="filter-count" if:true={hasActiveFilters}>{activeFiltersCount}</span>
+                </button>
+            </div>
+            <div class="events-grid">
+                <template for:each={featuredEvents} for:item="event">
+                    <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.id}>
+                        <div class="event-image-container">
+                            <img src={event.imageUrl} alt={event.title} class="event-image" />
+                            <div class="event-type-badge">
+                                <span class="badge-text">{event.eventType}</span>
+                            </div>
+                        </div>
+                        <div class="event-content">
+                            <div class="event-title">{event.title}</div>
+                            <div class="event-details">
+                                <!-- <div class="event-date-time">
+                                    {event.formattedDateRange}, {event.formattedTimeRange}
+                                </div> -->
+                                <div class="event-location">
+                                    <!-- <div class="location-content">
+                                        {event.location}
+                                    </div> -->
+                                    <div class="event-date-time">
+                                        {event.formattedDateRange}
+                                    </div>
+                                    <div class="event-arrow">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"
+                                                fill="white" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Upcoming Events Section - Hidden when filters are applied or no upcoming events -->
+        <div class="upcoming-events-section" if:true={showUpcomingEvents}>
+             <!-- Breadcrumb -->
+             <div class="breadcrumb-container">
+                <p class="breadcrumb">
+                    <span class="breadcrumb-link" onclick={navigateToEventsHome}>Events</span>
+                    <span> &gt; All Events</span>
+                </p>
+            </div>
+            <div class="section-header">
+                 
+                <div class="section-title">Upcoming events ({upcomingEventsLength})</div>
+                <button class="filter-button" if:true={showFilterInUpcoming} onclick={openFilterModal}>
+                    <svg class="filter-icon" width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_2443_23099)">
+                            <path
+                                d="M6.2222 4.5H18.7904L12.4937 12.375L6.2222 4.5ZM2.76595 4.0125C5.30472 7.25 9.99265 13.25 9.99265 13.25V20.75C9.99265 21.4375 10.5582 22 11.2495 22H13.7631C14.4544 22 15.0199 21.4375 15.0199 20.75V13.25C15.0199 13.25 19.6953 7.25 22.2341 4.0125C22.875 3.1875 22.2843 2 21.2412 2H3.75883C2.71567 2 2.12497 3.1875 2.76595 4.0125Z"
+                                fill="#585A64" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_2443_23099">
+                                <rect width="24" height="24" fill="white" transform="translate(0.5)" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                    <span class="filter-text">Filters</span>
+                    <span class="filter-count" if:true={hasActiveFilters}>{activeFiltersCount}</span>
+                    <span></span>
+                </button>
+            </div>
+            <div class="events-grid">
+                <template for:each={upcomingEvents} for:item="event">
+                    <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.id}>
+                        <div class="event-image-container">
+                            <img src={event.imageUrl} alt={event.title} class="event-image" />
+                            <div class="event-type-badge">
+                                <span class="badge-text">{event.eventType}</span>
+                            </div>
+                        </div>
+                        <div class="event-content">
+                            <div class="event-title">{event.title}</div>
+                            <div class="event-details">
+                                <!-- <div class="event-date-time">
+                                    {event.formattedDateRange}, {event.formattedTimeRange}
+                                </div> -->
+                                <div class="event-location">
+                                    <!-- <div class="location-content">
+                                        {event.location}
+                                    </div> -->
+                                    <div class="event-date-time">
+                                        {event.formattedDateRange}
+                                    </div>
+                                    <div class="event-arrow">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"
+                                                fill="white" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <!-- <template if:true={isMobile}>
+                <div style="margin: 10px;">
+                <button class="view-more-button" >View more</button>
+                </div>
+            </template> -->
+        </div>
+
+          <!-- all events section  -->
+          <div class="upcoming-events-section" if:true={showAllEvents}>
+            <!-- Breadcrumb -->
+            <div class="breadcrumb-container">
+               <p class="breadcrumb">
+                   <span class="breadcrumb-link" onclick={navigateToEventsHome}>Events</span>
+                   <span> &gt; All Events</span>
+               </p>
+           </div>
+           <div class="section-header">
+                
+               <div class="section-title">All Events ({allEvents.length})</div>
+               <button class="filter-button" if:true={showFilterInUpcoming} onclick={openFilterModal}>
+                   <svg class="filter-icon" width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                       <g clip-path="url(#clip0_2443_23099)">
+                           <path
+                               d="M6.2222 4.5H18.7904L12.4937 12.375L6.2222 4.5ZM2.76595 4.0125C5.30472 7.25 9.99265 13.25 9.99265 13.25V20.75C9.99265 21.4375 10.5582 22 11.2495 22H13.7631C14.4544 22 15.0199 21.4375 15.0199 20.75V13.25C15.0199 13.25 19.6953 7.25 22.2341 4.0125C22.875 3.1875 22.2843 2 21.2412 2H3.75883C2.71567 2 2.12497 3.1875 2.76595 4.0125Z"
+                               fill="#585A64" />
+                       </g>
+                       <defs>
+                           <clipPath id="clip1_2443_23099">
+                               <rect width="24" height="24" fill="white" transform="translate(0.5)" />
+                           </clipPath>
+                       </defs>
+                   </svg>
+                   <span class="filter-text">Filters</span>
+                   <span class="filter-count" if:true={hasActiveFilters}>{activeFiltersCount}</span>
+                   <span></span>
+               </button>
+           </div>
+           <div class="events-grid">
+               <template for:each={allEvents} for:item="event">
+                   <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.id}>
+                       <div class="event-image-container">
+                           <img src={event.imageUrl} alt={event.title} class="event-image" />
+                           <div class="event-type-badge">
+                               <span class="badge-text">{event.eventType}</span>
+                           </div>
+                       </div>
+                       <div class="event-content">
+                           <div class="event-title">{event.title}</div>
+                           <div class="event-details">
+                               <!-- <div class="event-date-time">
+                                   {event.formattedDateRange}, {event.formattedTimeRange}
+                               </div> -->
+                               <div class="event-location">
+                                   <!-- <div class="location-content">
+                                       {event.location}
+                                   </div> -->
+                                   <div class="event-date-time">
+                                       {event.formattedDateRange}
+                                   </div>
+                                   <div class="event-arrow">
+                                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                           xmlns="http://www.w3.org/2000/svg">
+                                           <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"
+                                               fill="white" />
+                                       </svg>
+                                   </div>
+                               </div>
+                           </div>
+                       </div>
+                   </div>
+               </template>
+           </div>
+           <!-- <template if:true={isMobile}>
+               <div style="margin: 10px;">
+               <button class="view-more-button" >View more</button>
+               </div>
+           </template> -->
+       </div>
+
+        <!-- Filtered Events Section - Shown when filters are applied -->
+        <div class="filtered-events-section" if:true={hasActiveFilters}>
+            <div class="section-header">
+                <div class="filter-chips desktop-view">
+                    <template for:each={activeFilters} for:item="filter">
+                        <div key={filter.id} class="filter-chip">
+                            <span class="chip-text">{filter.label}: {filter.value}</span>
+                            <button class="chip-close" onclick={removeFilter} data-filter-id={filter.id}>
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 3L3 9M3 3L9 9" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+                <button class="filter-button mobile-filter-button" onclick={openFilterModal}>
+                    <svg class="filter-icon" width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <g clip-path="url(#clip0_2443_23098)">
+                            <path
+                                d="M6.2222 4.5H18.7904L12.4937 12.375L6.2222 4.5ZM2.76595 4.0125C5.30472 7.25 9.99265 13.25 9.99265 13.25V20.75C9.99265 21.4375 10.5582 22 11.2495 22H13.7631C14.4544 22 15.0199 21.4375 15.0199 20.75V13.25C15.0199 13.25 19.6953 7.25 22.2341 4.0125C22.875 3.1875 22.2843 2 21.2412 2H3.75883C2.71567 2 2.12497 3.1875 2.76595 4.0125Z"
+                                fill="#585A64" />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_2443_23098">
+                                <rect width="24" height="24" fill="white" transform="translate(0.5)" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                    <span class="filter-text">Filters</span>
+                    <span class="filter-count" if:true={hasActiveFilters}>{activeFiltersCount}</span>
+                </button>
+            </div>
+            <div class="events-grid">
+                <template for:each={filteredEvents} for:item="event">
+                    <div key={event.id} class="event-card" onclick={handleEventClick} data-id={event.id}>
+                        <div class="event-image-container">
+                            <img src={event.imageUrl} alt={event.title} class="event-image" />
+                            <div class="event-type-badge">
+                                <span class="badge-text">{event.eventType}</span>
+                            </div>
+                        </div>
+                        <div class="event-content">
+                            <div class="event-title">{event.title}</div>
+                            <div class="event-details">
+                                <!-- <div class="event-date-time">
+                                    {event.formattedDateRange}, {event.formattedTimeRange}
+                                </div> -->
+                                <div class="event-location">
+                                    <!-- <div class="location-content">
+                                        {event.location}
+                                    </div> -->
+                                    <div class="event-date-time">
+                                        {event.formattedDateRange}
+                                    </div>
+                                    <div class="event-arrow">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z"
+                                                fill="white" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Filter Modal -->
+        <div class="modal-overlay" if:true={showFilterModal}>
+            <div class="modal-content" onclick={stopPropagation}>
+                <div class="modal-header">
+                    <div class="modal-title">Filters</div>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="eventType">Event type</label>
+                        <select id="eventType" class="form-control" onchange={handleFilterChange}
+                            data-field="eventType">
+                            <option value="">Select event type</option>
+                            <option value="One-day">One-day</option>
+                            <option value="Multi-day">Multi-day</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" class="form-control" placeholder="Search by title"
+                            onchange={handleFilterChange} data-field="title" />
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">Start date</label>
+                        <input type="date" id="startDate" class="form-control" onchange={handleFilterChange}
+                            data-field="startDate" />
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End date</label>
+                        <input type="date" id="endDate" class="form-control" onchange={handleFilterChange}
+                            data-field="endDate" />
+                    </div>
+                    <!-- <div class="form-group">
+                        <label for="location">Location</label>
+                        <select id="location" class="form-control" onchange={handleFilterChange} data-field="location">
+                            <option value="">Select location</option>
+                            <option value="Bangalore, India">Bangalore, India</option>
+                            <option value="Mumbai, India">Mumbai, India</option>
+                            <option value="Delhi, India">Delhi, India</option>
+                        </select>
+                    </div> -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick={closeFilterModal}>Cancel</button>
+                    <button class="btn btn-primary" onclick={applyFilters}>Apply</button>
+                </div>
+            </div>
+        </div>
+    <!-- <template if:true={isMobile}>
+        <c-ken-bottom-navigation-mobile></c-ken-bottom-navigation-mobile>
+
+    </template> -->
+    </div>
+</template>

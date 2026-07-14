@@ -1,0 +1,258 @@
+.photo-upload-page {
+    width: 100%;
+    min-height: 100vh;
+    background-color: transparent;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+        sans-serif;
+}
+
+.page-container {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    background-color: transparent;
+    padding: 0;
+}
+
+.upload-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+    margin-bottom: 0;
+    margin-top: 0;
+    min-height: calc(100vh - 120px);
+}
+
+/* Upload Section */
+.upload-section {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: calc(100vh - 120px);
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 20px 0;
+}
+
+.upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 40px 20px;
+    text-align: center;
+    background-color: #ffffff;
+    position: relative;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.2s, background-color 0.2s;
+    cursor: pointer;
+}
+
+.upload-area.drag-over {
+    border-color: var(--primary-color);
+    background-color: #eff6ff;
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.upload-icon {
+    color: #9ca3af;
+    margin-bottom: 16px;
+    width: 48px;
+    height: 48px;
+}
+
+.upload-text {
+    font-size: 16px;
+    font-weight: 500;
+    color: #374151;
+    margin: 0;
+}
+
+.upload-info {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 4px 0;
+}
+
+.file-input {
+    display: none;
+}
+
+.upload-button {
+    margin-top: 24px;
+    --slds-c-button-neutral-color-background: #4b5563;
+    --slds-c-button-neutral-color-background-hover: #374151;
+    --slds-c-button-text-color: #ffffff;
+}
+
+.uploaded-images-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.uploaded-images-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.image-card {
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    background-color: #ffffff;
+}
+
+.card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+
+.delete-image-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: none;
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: background-color 0.2s;
+    padding: 0;
+}
+
+.delete-image-btn:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.add-more-button {
+    --slds-c-button-neutral-color-background: #f3f4f6;
+    --slds-c-button-neutral-color-background-hover: #e5e7eb;
+    --slds-c-button-text-color: #374151;
+    width: 100%;
+}
+
+/* Details Section */
+.details-section {
+    display: flex;
+    flex-direction: column;
+    background-color: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    min-height: calc(100vh - 120px);
+    justify-content: space-between;
+}
+
+.details-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 16px 0;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    flex: 1;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.field-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+/* Hide empty labels from lightning components */
+.form-field lightning-input label:empty,
+.form-field lightning-combobox label:empty,
+.form-field lightning-input label[aria-label=""],
+.form-field lightning-combobox label[aria-label=""] {
+    display: none;
+}
+
+/* Hide label spans that are empty */
+.form-field span.slds-form-element__label:empty {
+    display: none;
+}
+
+/* Page Actions */
+.page-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 24px;
+    margin-top: auto;
+}
+
+.cancel-button {
+    --slds-c-button-neutral-color-background: #f3f4f6;
+    --slds-c-button-neutral-color-background-hover: #e5e7eb;
+    --slds-c-button-text-color: #374151;
+}
+
+.post-button {
+    --slds-c-button-brand-color-background: var(--primary-color);
+    --slds-c-button-brand-color-background-hover: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .photo-upload-page {
+        padding: 16px;
+    }
+
+    .page-container {
+        padding: 24px;
+    }
+
+    .upload-layout {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .upload-area {
+        min-height: 300px;
+    }
+
+    .uploaded-images-list {
+        max-height: 400px;
+    }
+}

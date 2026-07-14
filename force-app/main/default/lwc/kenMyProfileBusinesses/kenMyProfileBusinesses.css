@@ -1,0 +1,226 @@
+.businesses-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    padding-bottom: 16px;
+    margin-bottom: 8px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--portal-text-primary, #1f2333);
+    margin: 0;
+}
+
+.list-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.list-btn:hover {
+    background-color: var(--primary-color);
+}
+
+.add-icon {
+    --lwc-colorTextIconDefault: white;
+}
+
+/* Grid Layout */
+.businesses-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.business-card {
+    background-color: var(--portal-page-bg, #F6F8FB);
+    border-radius: 8px;
+    padding: var(--portal-card-padding, 24px);
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+}
+
+.card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    position: relative;
+}
+
+.business-icon-wrapper {
+    flex-shrink: 0;
+}
+
+.spaceman-icon {
+    width: 48px;
+    height: 48px;
+    background-color: black;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.business-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+.business-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--portal-text-primary, #1f2333);
+    margin: 0;
+}
+
+.business-location {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+}
+
+.location-icon {
+    --lwc-colorTextIconDefault: #555;
+}
+
+/* Status Badge */
+.status-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.in-review {
+    background-color: #FFF8E1;
+    /* Light Yellow */
+    color: #F57F17;
+    /* Dark Yellow/Orange */
+    /* Screenshot: Light yellow/brownish text */
+    background-color: #fff4d6;
+    color: #8a6d00;
+}
+
+.status-badge.active {
+    background-color: #E8F5E9;
+    /* Light Green */
+    color: #2E7D32;
+    /* Dark Green */
+    /* Screenshot: 'Active' Green */
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.rejected {
+    background-color: #ffeaea;
+    /* Light Red */
+    color: #c62828;
+    /* Dark Red */
+}
+
+.status-badge.deactivated {
+    background-color: #cfd8dc;
+    /* Gray */
+    color: #546e7a;
+    /* Dark Gray */
+    /* Screenshot: 'De-activated' Dark gray tag */
+}
+
+/* Tooltip */
+.rejected-info-wrapper {
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.info-icon {
+    --lwc-colorTextIconDefault: #c62828;
+    /* Red info icon */
+}
+
+.tooltip {
+    visibility: hidden;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background-color: var(--portal-surface, #ffffff);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    border-radius: 8px;
+    width: 250px;
+    z-index: 10;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 12px;
+    color: #555;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.tooltip::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    right: 10px;
+    /* Aligned with icon */
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent var(--portal-surface, #ffffff) transparent;
+}
+
+.rejected-info-wrapper:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+.tooltip-icon {
+    --lwc-colorTextIconDefault: #555;
+    margin-top: 2px;
+}
+
+/* Card Bottom */
+.card-bottom {
+    margin-top: auto;
+}
+
+.category-badge {
+    border: 1px solid var(--primary-color, #2f61d5);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--primary-color, #2f61d5);
+    background-color: var(--portal-surface, #ffffff);
+    display: inline-block;
+}

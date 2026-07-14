@@ -1,0 +1,110 @@
+<template>
+    <lightning-spinner if:true={isLoading} alternative-text="Loading" size="medium"></lightning-spinner>
+    <div class="center-form">
+        <section class="event-header">
+            <div class="event-header__icon">
+                <lightning-icon icon-name="utility:event" size="small"></lightning-icon>
+            </div>
+            <div>
+                <h1 class="event-header__title">Create Event</h1>
+                <p class="event-header__subtitle">Configure event details, audience capacity, schedule, agenda, and cover image.</p>
+            </div>
+        </section>
+
+        <div class="slds-box slds-theme_default form-container">
+            <!-- Cover Photo Upload -->
+            <div class="cover-photo">
+                <lightning-card title="Image Upload">
+                    <div class="slds-m-around_medium">
+                        <!-- File input: Visible only when no image is selected -->
+                        <template if:true={isFileInputVisible}>
+                            <input type="file" accept="image/*" onchange={handleFileChange} />
+                        </template>
+
+                        <!-- Display image preview if selected -->
+                        <template if:true={imageUrl}>
+                            <div class  ="image-preview">
+                                <img src={imageUrl} alt="Selected Image" class="slds-image" /><br/>
+                                <lightning-button variant="neutral" label="Remove" onclick={removeImage}>
+                                </lightning-button>
+                            </div>
+                        </template>
+                    </div>
+                </lightning-card>
+            </div>
+
+
+
+            <!-- Event Section -->
+            <div class="event-group">
+                <lightning-input type="checkbox" label="This is an Event Group" checked={isEventGroup}
+                    data-id="isEventGroup" onchange={handleCheckboxChange}>
+                </lightning-input>
+                <template if:false={isEventGroup}>
+                    <div class="slds-grid slds-gutters">
+                        <div class="slds-col">
+                            <lightning-input label="Event Title*" value={eventTitle} onchange={handleInputChange}
+                                data-id="eventTitle" placeholder="Event Title*">
+                            </lightning-input>
+                        </div>
+                        <div class="slds-col">
+                            <c-ken-custom-lookup-lwc onlookupupdate={handleLookupUpdate} label="Event Group"
+                                s-object-api-name="Ken_Event_Master__c"  iconname={objecticonname} sobjectapiname={apiname} recordtypename={recordtype}>
+                            </c-ken-custom-lookup-lwc>
+                        </div>
+                    </div>
+                </template>
+
+                <template if:true={isEventGroup}>
+                    <lightning-input label="Event Group Title*" value={eventGroupTitle} onchange={handleInputChange}
+                        data-id="eventGroupTitle" placeholder="Event Group Title">
+                    </lightning-input>
+                </template>
+                <div class="slds-grid slds-gutters">
+                    <div class="slds-col">
+                <c-ken-event-multi-select-combobox label="Event Type*" showpills="true" onselected={handleSelection}
+                    placeholder="Select Event Type" options={parentOptions}></c-ken-event-multi-select-combobox>
+                </div>
+                <div class="slds-col">
+                    <lightning-input label="Maximum Number of Participants Allowed*" value={maximumNumberOfParticipants}
+                        onchange={handleInputChange} data-id="maximumNumberOfParticipants" type="number"></lightning-input>
+                </div>
+            </div>
+                    <div class="slds-grid slds-gutters">
+                    <div class="slds-col">
+                        <lightning-input type="date" label="Select Start Date*" value={startdate}
+                            data-id="startdate" onchange={handleInputChange} min={todayDate}>
+                        </lightning-input>
+                    </div>
+                    <div class="slds-col">
+                        <lightning-input type="date" label="Select End Date*" value={enddate} data-id="enddate"
+                            onchange={handleInputChange} min={todayDate}>
+                        </lightning-input>
+                    </div>
+                </div>
+                <lightning-textarea label="Enter Description*" value={description} onchange={handleInputChange}
+                    data-id="description"
+                    placeholder="Describe your event for the audience. This will be visible on the event page">
+                </lightning-textarea>
+
+                <lightning-textarea label="Agenda*" value={agenda} onchange={handleInputChange} data-id="agenda"
+                    placeholder="Share a brief agenda for the event to help the audiance know what to expect">
+                </lightning-textarea>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="slds-grid slds-m-top_medium">
+                <div class="slds-col slds-size_1-of-3">
+                    <lightning-button label="Cancel" onclick={handleCancel} style="float:left;"></lightning-button>
+                </div>
+                <div class="slds-col slds-size_2-of-3 slds-text-align_right">
+                    <lightning-button label="Save as Draft" onclick={handleSaveAsDraft} style="padding: 0.5rem 1rem;">
+                    </lightning-button>
+                    <lightning-button label="Save and Proceed" variant="brand" onclick={handleSaveAndProceed}>
+                    </lightning-button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</template>

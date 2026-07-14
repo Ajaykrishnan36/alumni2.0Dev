@@ -1,0 +1,96 @@
+<template>
+    <!-- Loading -->
+    <template if:true={isLoading}>
+        <div class="spotlight-loading">
+            <lightning-spinner alternative-text="Loading" size="small" variant="inverse"></lightning-spinner>
+        </div>
+    </template>
+
+    <!-- Spotlights carousel -->
+    <template if:true={hasSpotlights}>
+        <div class="spotlight-wrapper">
+            <!-- Header row -->
+            <div class="spotlight-header">
+                <span class="spotlight-badge">Alumni Spotlight</span>
+                <template if:true={showPrevNext}>
+                    <div class="spotlight-nav">
+                        <button type="button" class="nav-btn" onclick={handlePrev} aria-label="Previous">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button type="button" class="nav-btn" onclick={handleNext} aria-label="Next">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Scrollable content area (thumbnail + body) -->
+            <div class="spotlight-scroll-area">
+                <!-- YouTube thumbnail -->
+                <template if:true={isYouTube}>
+                    <a href={contentLink} target="_blank" rel="noopener noreferrer" class="thumbnail-link">
+                        <div class="video-thumbnail-wrap">
+                            <img src={youTubeThumbnailUrl} alt={currentTitle} class="video-thumbnail" />
+                            <div class="play-overlay">
+                                <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="20" cy="20" r="20" fill="rgba(0,0,0,0.55)"/>
+                                    <path d="M16 14L28 20L16 26V14Z" fill="white"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </a>
+                </template>
+
+                <!-- Inline image (same slot as the YouTube thumbnail) -->
+                <template if:true={isImage}>
+                    <div class="spotlight-image-wrap">
+                        <div class="video-thumbnail-wrap">
+                            <img src={contentLink} alt={currentTitle} class="video-thumbnail" />
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Spotlight body -->
+                <div class="spotlight-body">
+                    <h4 class="spotlight-title">{currentTitle}</h4>
+                    <template if:true={hasDescription}>
+                        <div class="spotlight-description">
+                            <lightning-formatted-rich-text value={currentDescription}></lightning-formatted-rich-text>
+                        </div>
+                    </template>
+                    <!-- CTA link (blog only) -->
+                    <template if:true={isBlog}>
+                        <a href={contentLink} target="_blank" rel="noopener noreferrer" class="spotlight-cta">
+                            {contentLinkLabel}
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M18 13V19C18 19.5304 17.7893 20.0391 17.4142 20.4142C17.0391 20.7893 16.5304 21 16 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V8C3 7.46957 3.21071 6.96086 3.58579 6.58579C3.96086 6.21071 4.46957 6 5 6H11M15 3H21M21 3V9M21 3L10 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Dot indicators — always fixed at bottom -->
+            <template if:true={showDots}>
+                <div class="dots-row">
+                    <template for:each={dotItems} for:item="dot">
+                        <button key={dot.key} type="button" class={dot.cssClass}
+                            data-index={dot.index} onclick={handleDotClick}
+                            aria-label="Go to slide"></button>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </template>
+
+    <!-- Empty state — admin has no active spotlights -->
+    <template if:true={isEmpty}>
+        <div class="spotlight-empty">
+            <p>No spotlight content available.</p>
+        </div>
+    </template>
+</template>

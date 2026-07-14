@@ -1,0 +1,34 @@
+<template>
+    <div class="discover-container" style={backgroundStyle}> <!-- Dynamic Background -->
+        <div class="header">
+            <h2>Suggested for You (04)</h2>
+            <div class="badge">Created by Admin</div>
+            <div class="controls">
+                <button class="nav-btn left" onclick={handlePrev}>❮</button>
+                <button class="nav-btn right" onclick={handleNext}>❯</button>
+            </div>
+        </div>
+
+        <div class="cards-scroll-container">
+            <template for:each={suggestedGroups} for:item="group">
+                <div key={group.id} class="group-card">
+                    <div class="card-image-wrapper">
+                        <img src={group.image} alt={group.name} class="group-image">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="group-name">{group.name}</h3>
+                        <p class="member-count">{group.members} members</p>
+                        <div class="friends-preview">
+                            <div class="avatars">
+                                <template for:each={group.friendsImages} for:item="img">
+                                    <img key={img} src={img} class="avatar-sm" />
+                                </template>
+                            </div>
+                            <span class="friends-text">{group.friends}</span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,8 @@
+:host { display: block; }
+.filter-bar { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.search-input { width: 100%; padding: 9px 14px; border: 1px solid #E5E6E8; border-radius: 8px; font-family: inherit; font-size: 13px; background: #fff; outline: none; }
+.search-input:focus { border-color: #3061FF; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { background: #fff; border: 1px solid #E5E6E8; color: #373A45; border-radius: 999px; padding: 6px 14px; font-family: inherit; font-weight: 500; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+.chip:hover { background: #F6F8FB; }
+.chip--active { background: #3061FF; border-color: #3061FF; color: #fff; }

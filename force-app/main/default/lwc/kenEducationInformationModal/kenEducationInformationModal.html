@@ -1,0 +1,136 @@
+<template>
+    <div class="modal-overlay" onclick={handleBackdropClick}>
+        <div class="modal-container" onclick={handleModalClick}>
+            <div class="modal-header">
+                <h2 class="modal-title">{modalTitle}</h2>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-fields">
+                    <div class="institution-status-container">
+                        <label class="field-label">Institution Type</label>
+                        <div class="institution-status-buttons">
+                            <button type="button" class={instituteTabClass} data-type="institute" onclick={handleInstitutionTypeChange}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 3 1 8l11 5 9-4.09V15h2V8L12 3Z" fill="#373A45"/>
+                                    <path d="M5 11.18v4C5 16.72 8.13 18 12 18s7-1.28 7-2.82v-4L12 14.5l-7-3.32Z" fill="#B2B3B7"/>
+                                </svg>
+                                <span class="button-text mobile-button-text">{instituteTabLabel}</span>
+                            </button>
+                            <button type="button" class={otherTabClass} data-type="other" onclick={handleInstitutionTypeChange}>
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16h-3v-4H7v4H4Z" fill="#B2B3B7"/>
+                                    <path d="M14 21V9h5a1 1 0 0 1 1 1v11h-6Z" fill="#373A45"/>
+                                    <path d="M6.5 6.5h2v2h-2v-2Zm4 0h2v2h-2v-2Zm-4 4h2v2h-2v-2Zm4 0h2v2h-2v-2Zm5.5 2h2v2h-2v-2Zm0 4h2v2h-2v-2Z" fill="#FFFFFF"/>
+                                </svg>
+                                <span class="button-text mobile-button-text">Other Institute</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label">Degree<span class="required">*</span></label>
+                            <lightning-input class={degreeErrorClass} type="text" placeholder="e.g., Bachelor of Science"
+                                value={degree} data-field="degree" variant="label-hidden" maxlength="100" onchange={handleInput}></lightning-input>
+                            <template if:true={errors.degree}><div class="error-message">{errors.degree}</div></template>
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label">Institution / University<span class="required">*</span></label>
+                            <template if:true={isInstituteType}>
+                                <c-ken-searchable-picklist placeholder="Select institute" search-placeholder="Search institute..."
+                                    value={institution} options={instituteOptions} data-field="institution"
+                                    onchange={handleInstitutionPicklistChange}></c-ken-searchable-picklist>
+                            </template>
+                            <template if:true={isOtherType}>
+                                <lightning-input class={institutionErrorClass} type="text" placeholder="e.g., Jain University"
+                                    value={institution} data-field="institution" variant="label-hidden" maxlength="100" onchange={handleInput}></lightning-input>
+                            </template>
+                            <template if:true={errors.institution}><div class="error-message">{errors.institution}</div></template>
+                        </div>
+                    </div>
+
+                    <template if:true={isInstituteType}>
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="field-label">Program Plan<span class="required">*</span></label>
+                                <c-ken-searchable-picklist placeholder="Select program plan" search-placeholder="Search program..."
+                                    value={programPlan} options={programOptions} data-field="programPlan"
+                                    onchange={handleProgramPlanChange}></c-ken-searchable-picklist>
+                                <template if:true={errors.programPlan}><div class="error-message">{errors.programPlan}</div></template>
+                            </div>
+                            <div class="form-field">
+                                <label class="field-label">University Registration Number</label>
+                                <lightning-input class="custom-input" type="text" placeholder="Optional (e.g., university roll no.)"
+                                    value={registrationNumber} data-field="registrationNumber" variant="label-hidden"
+                                    maxlength="35" onchange={handleInput}></lightning-input>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="form-row single-col">
+                        <div class="form-field">
+                            <label class="field-label">Start Date<span class="required">*</span></label>
+                            <div class="date-inputs">
+                                <div class="date-field-wrapper">
+                                    <lightning-combobox class="custom-select" placeholder="Month" options={monthOptions}
+                                        value={startMonth} data-field="startMonth" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                                </div>
+                                <div class="date-field-wrapper">
+                                    <lightning-combobox class="custom-select" placeholder="Year" options={yearOptions}
+                                        value={startYear} data-field="startYear" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                                </div>
+                            </div>
+                            <template if:true={errors.startDate}>
+                                <div class="error-message">{errors.startDate}</div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="form-row single-col">
+                        <div class="form-field">
+                            <label class="field-label">End Date<span class="required">*</span></label>
+                            <div class="date-inputs">
+                                <div class="date-field-wrapper">
+                                    <lightning-combobox class="custom-select" placeholder="Month" options={monthOptions}
+                                        value={endMonth} data-field="endMonth" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                                </div>
+                                <div class="date-field-wrapper">
+                                    <lightning-combobox class="custom-select" placeholder="Year" options={yearOptions}
+                                        value={endYear} data-field="endYear" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                                </div>
+                            </div>
+                            <template if:true={errors.endDate}>
+                                <div class="error-message">{errors.endDate}</div>
+                            </template>
+                            <template if:true={errors.dateRange}>
+                                <div class="error-message">{errors.dateRange}</div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label class="field-label">Grading format</label>
+                            <div class="radio-row">
+                                <label class="radio-option"><input type="radio" value="CGPA" checked={isCgpa} onchange={handleGrading} /> CGPA</label>
+                                <label class="radio-option"><input type="radio" value="Percentage" checked={isPercentage} onchange={handleGrading} /> Percentage</label>
+                            </div>
+                        </div>
+                        <div class="form-field">
+                            <label class="field-label">{gradeFieldLabel}</label>
+                            <lightning-input class={cgpaErrorClass} type="number" placeholder={gradePlaceholder}
+                                value={cgpa} data-field="cgpa" variant="label-hidden" step="0.01"
+                                onchange={handleInput}></lightning-input>
+                            <template if:true={errors.cgpa}><div class="error-message">{errors.cgpa}</div></template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="cancel-button" onclick={handleClose}>Cancel</button>
+                <button type="button" class="save-button" onclick={handleSave}>Save</button>
+            </div>
+        </div>
+    </div>
+</template>

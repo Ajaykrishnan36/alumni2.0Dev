@@ -1,0 +1,380 @@
+<template>
+    <div class="survey-details-page">
+        <div class="component-container">
+            <!-- Header Section with Title, Status Badge, and Action Buttons -->
+            <div class="survey-details-header">
+                <div class="header-left">
+                    <h1 class="survey-title">{surveyData.title}</h1>
+                    <template if:true={statusInfo}>
+                        <div class={statusInfo.className}>
+                            <template if:true={showStatusIcon}>
+                                <div class="status-icon"></div>
+                            </template>
+                            {statusInfo.label}
+                        </div>
+                    </template>
+                </div>
+                <div class="header-right">
+                    <!-- Upcoming: Delete Survey -->
+                    <template if:true={showDeleteButton}>
+                        <button class="delete-survey-btn" onclick={handleDeleteClick}>
+                            Delete Survey
+                        </button>
+                    </template>
+                    
+                    <!-- Ongoing/Completed: Get Help and Download Results -->
+                    <template if:true={showGetHelpButton}>
+                        <button class="get-help-btn" onclick={handleNeedHelpClick}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="flag-icon">
+                                <path d="M4 20V3H13L13.4 5H19V15H12L11.6 13H6V20H4ZM13.65 13H17V7H11.75L11.35 5H6V11H13.25L13.65 13Z" fill="#2C58E8"/>
+                            </svg>
+                            Get Help
+                        </button>
+                    </template>
+                    <template if:true={showDownloadButton}>
+                        <button class="download-results-btn" onclick={handleDownloadResults} disabled={isDownloading}>
+                            <lightning-icon icon-name="utility:download" size="x-small" class="btn-icon"></lightning-icon>
+                            {downloadButtonText}
+                        </button>
+                    </template>
+                    
+                    <!-- In Review: Edit Survey and Delete Survey -->
+                    <template if:true={showEditButton}>
+                        <button class="edit-survey-btn" onclick={handleEditClick}>
+                            Edit Survey
+                        </button>
+                    </template>
+                    <template if:true={showDeleteInReviewButton}>
+                        <button class="delete-survey-btn" onclick={handleDeleteClick}>
+                            Delete Survey
+                        </button>
+                    </template>
+                    
+                    <!-- Rejected: Edit & Resubmit -->
+                    <template if:true={showEditResubmitButton}>
+                        <button class="edit-resubmit-btn" onclick={handleEditResubmitClick}>
+                            Edit & Resubmit
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Delete Confirmation Dialog -->
+            <template if:true={showDeleteConfirmation}>
+                <div class="modal-overlay" onclick={handleCloseDeleteConfirmation}></div>
+                <div class="delete-confirmation-dialog" onclick={handleDeleteDialogClick}>
+                    <div class="delete-confirmation-content">
+                        <p class="delete-confirmation-message">
+                            Are you sure you want to delete this survey?
+                        </p>
+                    </div>
+                    <div class="delete-confirmation-footer">
+                        <button class="go-back-btn" onclick={handleCloseDeleteConfirmation} disabled={isDeleting}>Go Back</button>
+                        <button class="request-deletion-btn" onclick={handleRequestDeletion} disabled={isDeleting}>
+                            {deleteButtonLabel}
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+            <!-- Get Help Dialog 
+            <template if:true={showGetHelpDialog}>
+                <div class="modal-overlay" onclick={handleCloseGetHelpDialog}></div>
+                <div class="get-help-dialog" onclick={handleGetHelpDialogClick}>
+                    <div class="get-help-header">
+                        <h2 class="get-help-title">Get Help</h2>
+                    </div>
+                    <div class="get-help-content">
+                      
+                        <div class="get-help-field">
+                            <label class="get-help-label">Description of the issue (Optional)</label>
+                            <div class="textarea-container">
+                                <textarea 
+                                    class="get-help-textarea" 
+                                    placeholder="Enter description"
+                                    value={issueDescription}
+                                    onchange={handleDescriptionChange}
+                                ></textarea>
+                                <button class="auto-create-btn" onclick={handleAutoCreateForm}>
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" class="sparkle-icon">
+                                        <path d="M8 0L9.5 5.5L15 7L9.5 8.5L8 14L6.5 8.5L1 7L6.5 5.5L8 0Z" fill="#2C58E8"/>
+                                        <circle cx="3" cy="3" r="1" fill="#2C58E8"/>
+                                        <circle cx="13" cy="3" r="1" fill="#2C58E8"/>
+                                        <circle cx="3" cy="13" r="1" fill="#2C58E8"/>
+                                        <circle cx="13" cy="13" r="1" fill="#2C58E8"/>
+                                    </svg>
+                                    Auto-Create Form Now
+                                </button>
+                            </div>
+                        </div>
+
+                       
+                        <div class="get-help-field">
+                            <label class="get-help-label">Choose Issue Type<span class="required-asterisk">*</span></label>
+                            <select 
+                                class="get-help-select" 
+                                value={selectedIssueType}
+                                onchange={handleIssueTypeChange}
+                            >
+                                <template for:each={issueTypeOptions} for:item="option">
+                                    <option key={option.value} value={option.value}>{option.label}</option>
+                                </template>
+                            </select>
+                        </div>
+
+                        
+                        <div class="get-help-field">
+                            <label class="get-help-label">Issue Subject<span class="required-asterisk">*</span></label>
+                            <input 
+                                type="text" 
+                                class="get-help-input" 
+                                placeholder="Enter issue subject"
+                                value={issueSubject}
+                                onchange={handleIssueSubjectChange}
+                            />
+                        </div>
+                    </div>
+                    <div class="get-help-footer">
+                        <button class="cancel-help-btn" onclick={handleCloseGetHelpDialog} disabled={isSubmittingHelp}>Cancel</button>
+                        <button class="submit-help-btn" onclick={handleSubmitHelp} disabled={isSubmittingHelp}>
+                            {submitHelpButtonLabel}
+                        </button>
+                    </div>
+                </div>
+            </template> -->
+
+            <template if:true={showNeedHelpModal}>
+                <c-ken-need-help-modal
+                    onclose={handleCloseNeedHelpModal}
+                    onsubmit={handleNeedHelpSubmit}>
+                </c-ken-need-help-modal>
+            </template>
+
+            
+            <!-- Component Scrollable Content -->
+            <div class="component-content">
+                <div class="summary-step-content">
+                    <div class="summary-layout">
+                        <!-- Left Column -->
+                        <div class="summary-left-column">
+                            <!-- About the Survey Card -->
+                            <div class="summary-card">
+                                <div class="summary-card-header">
+                                    <h3 class="summary-card-title">About the Survey</h3>
+                                </div>
+                                <div class="summary-card-body">
+                                    <template if:true={isLoading}>
+                                        <div class="loading-container">
+                                            <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                    <template if:false={isLoading}>
+                                        <!-- Show Survey Title for Upcoming, Responses for others -->
+                                        <template if:true={isUpcoming}>
+                                            <div class="summary-field">
+                                                <label class="summary-field-label">Survey Title</label>
+                                                <div class="summary-field-value">
+                                                    <template if:true={hasSurveyTitle}>{surveyData.title}</template>
+                                                    <template if:false={hasSurveyTitle}>-</template>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <template if:false={isUpcoming}>
+                                            <div class="responses-section">
+                                                <label class="responses-label">Responses</label>
+                                                <div class="responses-value">{surveyData.responseCount}</div>
+                                            </div>
+                                        </template>
+                                        <div class="summary-field">
+                                            <label class="summary-field-label">Survey Description</label>
+                                            <div class="summary-field-value">
+                                                <template if:true={hasSurveyDescription}>{surveyData.description}</template>
+                                                <template if:false={hasSurveyDescription}>-</template>
+                                            </div>
+                                        </div>
+                                        <div class="summary-field-row">
+                                            <div class="summary-field">
+                                                <label class="summary-field-label">Start Date</label>
+                                                <div class="summary-field-value">
+                                                    <template if:true={hasStartDate}>{formattedStartDate}</template>
+                                                    <template if:false={hasStartDate}>-</template>
+                                                </div>
+                                            </div>
+                                            <div class="summary-field">
+                                                <label class="summary-field-label">End Date</label>
+                                                <div class="summary-field-value">
+                                                    <template if:true={hasEndDate}>{formattedEndDate}</template>
+                                                    <template if:false={hasEndDate}>-</template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Target Audience Card -->  
+                            <div class="summary-card">
+                                <div class="summary-card-header">
+                                    <h3 class="summary-card-title">Target Audience</h3>
+                                </div>
+                                <div class="summary-card-body">
+                                    <template if:true={isLoading}>
+                                        <div class="loading-container">
+                                            <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                    <template if:false={isLoading}>
+                                        <template if:true={hasTargetAudience}>
+                                            <template for:each={audienceItems} for:item="aud">
+                                                <div key={aud.id} class="audience-group">
+                                                    <div class="audience-group-header">
+                                                        <span class="group-name">{aud.title}</span>
+                                                    </div>
+                                                    <div class="audience-tags">
+                                                        <template if:true={aud.roleLabel}>
+                                                            <span class="audience-tag audience-tag-primary">{aud.roleLabel}</span>
+                                                        </template>
+                                                        <template if:true={aud.membersLabel}>
+                                                            <span class="audience-tag audience-tag-secondary">{aud.membersLabel}</span>
+                                                        </template>
+                                                    </div>
+                                                    <template if:true={aud.criteria.length}>
+                                                        <div class="audience-filter-criteria">
+                                                            <template for:each={aud.criteria} for:item="criteria">
+                                                                <div key={criteria.key} class="filter-criteria-section">
+                                                                    <label class="filter-criteria-label">{criteria.label}</label>
+                                                                    <div class="filter-criteria-tags">
+                                                                        <template for:each={criteria.values} for:item="value">
+                                                                            <span key={value} class="audience-tag audience-tag-secondary">{value}</span>
+                                                                        </template>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </template>
+                                        <template if:false={hasTargetAudience}>
+                                            <div class="summary-empty">-</div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="summary-right-column">
+                            <!-- Setup Survey Card -->
+                            <div class="summary-card">
+                                <div class="summary-card-header">
+                                    <h3 class="summary-card-title">Survey ({totalQuestions} Questions)</h3>
+                                </div>
+                                <div class="summary-card-body">
+                                    <template if:true={isLoading}>
+                                        <div class="loading-container">
+                                            <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+                                        </div>
+                                    </template>
+                                    <template if:false={isLoading}>
+                                        <div class="questions-summary">
+                                            <template for:each={summaryQuestions} for:item="question" for:index="index">
+                                                <div key={question.id} class="question-summary-card">
+                                                    <div class="question-summary-number">Question {question.number}</div>
+                                                    <div class="question-summary-text">{question.text}</div>
+                                                    
+                                                   <!-- Multiple Choice / Checkbox Options -->
+                                                    <template if:true={question.showOptions}>
+                                                        <div class="question-summary-options">
+                                                            <template for:each={question.options} for:item="option">
+                                                                <div key={option.id} class="question-summary-option option-row">
+                                                                    <div class="option-left">
+                                                                        <div class="option-radio"></div>
+                                                                        <span>{option.text}</span>
+                                                                    </div>
+
+                                                                    <div class="option-right">
+                                                                        <span class="option-count">{option.count}</span>
+                                                                        <span class="option-percent">({option.percent}%)</span>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+
+
+                                                    <!-- Linear Scale Preview -->
+                                                    <template if:true={question.showLinearScale}>
+                                                        <div class="question-summary-scale">
+                                                            <div class="scale-values">
+                                                                <template for:each={question.scaleStats} for:item="s">
+                                                                    <div key={s.value} class="scale-item">
+                                                                        <div class="scale-circle">{s.value}</div>
+                                                                        <div class="scale-metric">
+                                                                            <span class="scale-count">{s.count}</span>
+                                                                            <span class="scale-percent">({s.percent}%)</span>
+                                                                        </div>
+                                                                        <template if:true={question.hasLabels}>
+                                                                            <template if:true={s.isFirst}>
+                                                                                <div class="scale-label">{question.scaleMinLabel}</div>
+                                                                            </template>
+                                                                            <template if:true={s.isLast}>
+                                                                                <div class="scale-label">{question.scaleMaxLabel}</div>
+                                                                            </template>
+                                                                        </template>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+
+
+                                                  <!-- Short Answer Preview -->
+                                                    <template if:true={question.showShortAnswer}>
+                                                        <div class="short-answer-card">
+                                                            <div class="short-answer-left">
+                                                                <div class="short-answer-title">
+                                                                    Total text responses:
+                                                                    <span class="short-answer-count">{question.textResponseCount}</span>
+                                                                </div>
+                                                                <div class="short-answer-subtitle">Download to view all responses</div>
+                                                            </div>
+
+                                                            <button class="short-answer-download-btn"
+                                                                    data-questionid={question.sfId}
+                                                                    onclick={handleDownloadShortAnswer}
+                                                                    disabled={question.shortAnswerDownloading}>
+                                                                <svg class="download-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                                    <path d="M19 12V19H5V12H3V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V12H19ZM13 12.67L15.59 10.09L17 11.5L12 16.5L7 11.5L8.41 10.09L11 12.67V3H13V12.67Z" fill="#2C58E8"/>
+                                                                </svg>
+                                                                {question.shortAnswerDownloadLabel}
+                                                            </button>
+                                                        </div>
+                                                    </template>
+
+
+                                                </div>
+                                            </template>
+                                            <template if:false={hasQuestions}>
+                                                <div class="summary-empty">No questions added</div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification -->
+    <c-ken-toast-notification
+        is-visible={isSuccessToastVisible}
+        toast-title={successTitle}
+        toast-message={successDescription}
+        toast-variant="success">
+    </c-ken-toast-notification>
+
+</template>

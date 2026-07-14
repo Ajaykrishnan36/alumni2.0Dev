@@ -1,0 +1,209 @@
+:host {
+    --primary-color: #E85D04;
+    --primary-light: #FFF4ED;
+    --secondary-color: #FFF4ED;
+    display: block;
+}
+
+.request-service-container {
+    --brand-primary: var(--primary-color, var(--primary, #E85D04));
+    --text-main: var(--text-primary, #1A1D26);
+    --text-muted: var(--text-secondary, #64748B);
+    --line: var(--border, #DBE3EF);
+    padding: 1rem;
+    background: transparent;
+    overflow: scroll;
+    max-height: calc(100vh - 100px);
+    font-family: var(--font-family, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+    color: var(--text-main);
+}
+
+.page-header {
+    margin-bottom: 1rem;
+}
+
+.service-header {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.35;
+}
+
+.service-separator {
+    height: 1px;
+    background-color: #B8C0DA;
+    margin-bottom: 2rem;
+}
+
+.service-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+.service-container{
+    min-height: 300px;
+    padding: 0;
+}
+.service-card {
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    font-family: inherit;
+    width: 100%;
+    min-height: 150px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.service-card:hover {
+    transform: translateY(-2px);
+    background: #FFFBF8;
+    border-color: rgba(232, 93, 4, 0.25);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+.service-icon {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.service-title {
+    font-size: 14px;
+    font-weight: 500;
+    /* color: var(--brand-primary); */
+    margin: 0 0 0.5rem 0;
+    line-height: 1.4;
+}
+
+.service-description {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+@media (max-width: 1200px) {
+    .service-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .request-service-container {
+        padding: 1rem;
+    }
+
+    .service-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .service-header {
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .service-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* ── Gate Pass Type Modal ──────────────────────────────────────────── */
+.gp-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px;
+}
+.gp-modal {
+    background: #fff; border-radius: 20px; width: 100%; max-width: 600px;
+    max-height: 92vh; overflow-y: auto;
+    box-shadow: 0 24px 64px rgba(15,23,42,0.22), 0 4px 16px rgba(15,23,42,0.08);
+    padding: 28px 28px 24px;
+    animation: gp-slide-up 0.22s ease;
+}
+@keyframes gp-slide-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.gp-modal-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 6px;
+}
+.gp-modal-title-wrap { display: flex; flex-direction: column; gap: 4px; }
+.gp-modal-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #f0ebff; color: #6c3fc5;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 20px; margin-bottom: 6px; width: fit-content;
+}
+
+.gp-modal-badge lightning-icon {
+    --sds-c-icon-color-foreground-default: #6c3fc5;
+}
+.gp-modal-title { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.2; }
+.gp-modal-subtitle { font-size: 13px; color: #64748b; margin: 4px 0 0; }
+.gp-modal-close {
+    background: #f8fafc; border: 1px solid #e2e8f0; color: #475569;
+    font-size: 14px; cursor: pointer; padding: 6px 10px;
+    border-radius: 8px; line-height: 1; flex-shrink: 0; margin-top: 2px;
+    transition: background 0.15s;
+}
+.gp-modal-close:hover { background: #f1f5f9; color: #1e293b; }
+
+.gp-type-cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px;
+}
+.gp-type-card {
+    display: flex; flex-direction: column; align-items: flex-start;
+    padding: 22px 20px 18px; border: 1.5px solid #e2e8f0; border-radius: 14px;
+    background: #fafafa; cursor: pointer; text-align: left;
+    transition: all 0.18s ease;
+    position: relative; overflow: hidden;
+}
+.gp-type-card::before {
+    content: ''; position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.18s;
+}
+.gp-type-card:hover {
+    border-color: #6c3fc5;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(108,63,197,0.12), 0 2px 8px rgba(108,63,197,0.06);
+    transform: translateY(-3px);
+}
+.gp-type-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.gp-icon-student { background: linear-gradient(135deg, #5b21b6, #7c3aed); }
+.gp-icon-visitor  { background: linear-gradient(135deg, #0369a1, #0ea5e9); }
+
+.gp-type-title {
+    font-size: 16px; font-weight: 700; color: #0f172a; margin: 0 0 6px; letter-spacing: -0.2px;
+}
+.gp-type-desc {
+    font-size: 12.5px; color: #64748b; line-height: 1.55;
+    margin: 0 0 14px; flex: 1;
+}
+.gp-type-cta {
+    font-size: 12.5px; font-weight: 700;
+    color: #6c3fc5;
+    display: flex; align-items: center; gap: 4px;
+}

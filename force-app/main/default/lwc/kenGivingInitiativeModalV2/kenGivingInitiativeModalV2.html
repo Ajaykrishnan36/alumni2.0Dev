@@ -1,0 +1,317 @@
+<template>
+    <section role="dialog" tabindex="-1" aria-modal="true" aria-labelledby="ini-title"
+        class="slds-modal slds-fade-in-open slds-modal_medium ini-host"
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh;
+               z-index: 9001; display: flex; align-items: flex-start; justify-content: center;
+               overflow-y: auto; opacity: 1; visibility: visible;">
+        <div class="ini-container"
+            style="background-color: #ffffff !important; border-radius: 12px;
+                   box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+                   max-width: 720px; width: calc(100vw - 32px); margin: 4rem auto 2rem;
+                   display: flex; flex-direction: column; position: relative; z-index: 9002;">
+
+            <!-- ===== Header ===== -->
+            <header class="ini-hd"
+                style="background-color: #ffffff; display: flex; align-items: flex-start;
+                       justify-content: space-between; padding: 1.5rem 2rem;
+                       border-bottom: 1px solid #e5e7eb; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <h2 id="ini-title" style="margin: 0; font-size: 18px; font-weight: 700; color: #1a1a2e; line-height: 1.25;">
+                        Start a giving initiative
+                    </h2>
+                    <p style="margin: 0; color: #6b7280; font-size: 13px;">
+                        Goes to the institution for review
+                    </p>
+                </div>
+                <button type="button"
+                    class="slds-button slds-button_icon slds-modal__close"
+                    title="Close" aria-label="Close" onclick={handleClose}
+                    style="width: 32px; height: 32px; border-radius: 50%; background: #f1f3f7;
+                           color: #444; border: none; cursor: pointer; flex: 0 0 auto;
+                           display: inline-flex; align-items: center; justify-content: center;">
+                    <svg aria-hidden="true"
+                        style="width:1rem;height:1rem;max-width:1rem;max-height:1rem;"
+                        viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 3 L13 13 M13 3 L3 13"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    </svg>
+                </button>
+            </header>
+
+            <!-- ===== Body ===== -->
+            <div class="ini-body" style="background-color: #ffffff; padding: 1.5rem 2rem;">
+
+                <template lwc:if={errorMsg}>
+                    <div role="alert" style="background: #fdecea; color: #b3261e;
+                        padding: 10px 14px; border-radius: 8px; font-size: 13px;
+                        font-weight: 500; margin-bottom: 1.5rem;">{errorMsg}</div>
+                </template>
+
+                <!-- Initiative title (required) -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="ini-title-input"
+                        style="display: block; margin: 0 0 8px; font-size: 13px;
+                               font-weight: 500; color: #1a1a2e; line-height: 1.4;">
+                        Initiative title<span style="color: #ea001e; font-weight: 700; margin-left: 4px;">*</span>
+                    </label>
+                    <input type="text" id="ini-title-input"
+                        style="width: 100%; box-sizing: border-box;
+                               padding: 0.625rem 0.875rem; min-height: 40px;
+                               font-size: 14px; color: #1a1a2e; background: #fff;
+                               border: 1px solid #d1d5db; border-radius: 8px;
+                               font-family: inherit; line-height: 1.4;"
+                        placeholder="e.g. Batch of 2020 wellness room"
+                        value={title} oninput={handleTitle} required />
+                </div>
+
+                <!-- Row: Category (required) | Suggested target -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem;">
+                    <div>
+                        <label for="ini-category"
+                            style="display: block; margin: 0 0 8px; font-size: 13px;
+                                   font-weight: 500; color: #1a1a2e; line-height: 1.4;">
+                            Category<span style="color: #ea001e; font-weight: 700; margin-left: 4px;">*</span>
+                        </label>
+                        <div style="position: relative;">
+                            <select id="ini-category"
+                                style="width: 100%; box-sizing: border-box;
+                                       padding: 0.625rem 2.25rem 0.625rem 0.875rem;
+                                       min-height: 40px; font-size: 14px; color: #1a1a2e;
+                                       background: #fff; border: 1px solid #d1d5db;
+                                       border-radius: 8px; font-family: inherit; line-height: 1.4;
+                                       -webkit-appearance: none; -moz-appearance: none; appearance: none;"
+                                value={category} onchange={handleCategory} required>
+                                <template for:each={categoryOptions} for:item="o">
+                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                </template>
+                            </select>
+                            <svg aria-hidden="true"
+                                style="width:1rem;height:1rem;max-width:1rem;max-height:1rem;
+                                       position: absolute; right: 12px; top: 50%;
+                                       transform: translateY(-50%); pointer-events: none;"
+                                viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M2 4 L6 8 L10 4 Z" fill="#6b7280"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="ini-target"
+                            style="display: block; margin: 0 0 8px; font-size: 13px;
+                                   font-weight: 500; color: #1a1a2e; line-height: 1.4;">
+                            Suggested target (INR, optional)
+                        </label>
+                        <input type="number" id="ini-target"
+                            style="width: 100%; box-sizing: border-box;
+                                   padding: 0.625rem 0.875rem; min-height: 40px;
+                                   font-size: 14px; color: #1a1a2e; background: #fff;
+                                   border: 1px solid #d1d5db; border-radius: 8px;
+                                   font-family: inherit; line-height: 1.4;"
+                            placeholder="e.g. 600000" min="0" step="1000"
+                            value={goalAmount} oninput={handleGoal} />
+                    </div>
+                </div>
+
+                <!-- Short description (required) -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="ini-short"
+                        style="display: block; margin: 0 0 8px; font-size: 13px;
+                               font-weight: 500; color: #1a1a2e; line-height: 1.4;">
+                        Short description<span style="color: #ea001e; font-weight: 700; margin-left: 4px;">*</span>
+                    </label>
+                    <textarea id="ini-short" rows="3"
+                        style="width: 100%; box-sizing: border-box;
+                               padding: 0.625rem 0.875rem; min-height: 96px;
+                               font-size: 14px; color: #1a1a2e; background: #fff;
+                               border: 1px solid #d1d5db; border-radius: 8px;
+                               font-family: inherit; line-height: 1.4; resize: vertical;"
+                        placeholder="What this initiative will fund"
+                        value={shortDescription} oninput={handleShortDesc} required></textarea>
+                </div>
+
+                <!-- Why this matters (required) -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label for="ini-why"
+                        style="display: block; margin: 0 0 8px; font-size: 13px;
+                               font-weight: 500; color: #1a1a2e; line-height: 1.4;">
+                        Why this matters<span style="color: #ea001e; font-weight: 700; margin-left: 4px;">*</span>
+                    </label>
+                    <textarea id="ini-why" rows="3"
+                        style="width: 100%; box-sizing: border-box;
+                               padding: 0.625rem 0.875rem; min-height: 96px;
+                               font-size: 14px; color: #1a1a2e; background: #fff;
+                               border: 1px solid #d1d5db; border-radius: 8px;
+                               font-family: inherit; line-height: 1.4; resize: vertical;"
+                        placeholder="The student or campus impact you expect"
+                        value={whyItMatters} oninput={handleWhy} required></textarea>
+                </div>
+
+                <!-- Row: Beneficiary group | Batch / program -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1.5rem;">
+                    <div>
+                        <label for="ini-benef"
+                            style="display: block; margin: 0 0 8px; font-size: 13px;
+                                   font-weight: 500; color: #1a1a2e; line-height: 1.4;">
+                            Beneficiary group
+                        </label>
+                        <input type="text" id="ini-benef"
+                            style="width: 100%; box-sizing: border-box;
+                                   padding: 0.625rem 0.875rem; min-height: 40px;
+                                   font-size: 14px; color: #1a1a2e; background: #fff;
+                                   border: 1px solid #d1d5db; border-radius: 8px;
+                                   font-family: inherit; line-height: 1.4;"
+                            placeholder="e.g. First-year CSE students"
+                            value={beneficiaryGroup} oninput={handleBeneficiary} />
+                    </div>
+                    <div>
+                        <label for="ini-batch"
+                            style="display: block; margin: 0 0 8px; font-size: 13px;
+                                   font-weight: 500; color: #1a1a2e; line-height: 1.4;">
+                            Batch or program association (optional)
+                        </label>
+                        <input type="text" id="ini-batch"
+                            style="width: 100%; box-sizing: border-box;
+                                   padding: 0.625rem 0.875rem; min-height: 40px;
+                                   font-size: 14px; color: #1a1a2e; background: #fff;
+                                   border: 1px solid #d1d5db; border-radius: 8px;
+                                   font-family: inherit; line-height: 1.4;"
+                            placeholder="e.g. Batch of 2020 - CSE"
+                            value={batchAssociation} oninput={handleBatchAssoc} />
+                    </div>
+                </div>
+
+                <!-- Checkboxes -->
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="margin-bottom: 0.75rem;">
+                        <div class="slds-checkbox">
+                            <input type="checkbox" id="cb-reunion"
+                                checked={isReunionLinked} onchange={handleReunion} />
+                            <label class="slds-checkbox__label" for="cb-reunion">
+                                <span class="slds-checkbox_faux"></span>
+                                <span style="margin: 0; font-size: 13px; color: #1a1a2e; font-weight: 400;">This is linked to a reunion or alumni event</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 0.75rem;">
+                        <div class="slds-checkbox">
+                            <input type="checkbox" id="cb-initiator"
+                                checked={listAsInitiator} onchange={handleListInitiator} />
+                            <label class="slds-checkbox__label" for="cb-initiator">
+                                <span class="slds-checkbox_faux"></span>
+                                <span style="margin: 0; font-size: 13px; color: #1a1a2e; font-weight: 400;">I'm willing to be listed as the initiator</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="slds-checkbox">
+                            <input type="checkbox" id="cb-invite"
+                                checked={inviteBatchmates} onchange={handleInviteBatchmates} />
+                            <label class="slds-checkbox__label" for="cb-invite">
+                                <span class="slds-checkbox_faux"></span>
+                                <span style="margin: 0; font-size: 13px; color: #1a1a2e; font-weight: 400;">I'd like to invite batchmates to join</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cover image upload -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label
+                        style="display: block; margin: 0 0 8px; font-size: 13px;
+                               font-weight: 500; color: #1a1a2e; line-height: 1.4;">
+                        Cover image (optional)
+                    </label>
+
+                    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+                        <!-- Preview thumbnail (shown only when an image is uploaded) -->
+                        <template lwc:if={hasCover}>
+                            <div style={coverPreviewStyle}></div>
+                        </template>
+
+                        <label for="ini-cover"
+                            style="display: inline-flex; align-items: center; gap: 10px;
+                                   border: 1px solid #d1d5db; border-radius: 8px;
+                                   padding: 0.5rem 1rem; background: #fff; color: #3730a3;
+                                   cursor: pointer; font-size: 13px; font-weight: 600;">
+                            <svg aria-hidden="true"
+                                style="width:1rem;height:1rem;max-width:1rem;max-height:1rem;"
+                                viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 2 L8 11 M4 6 L8 2 L12 6 M2 14 L14 14"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" fill="none"/>
+                            </svg>
+                            <span style="color: #1a1a2e; font-weight: 500;">{coverLabel}</span>
+                            <input type="file" id="ini-cover"
+                                style="position: absolute; width: 1px; height: 1px; overflow: hidden;
+                                       clip: rect(0 0 0 0); border: 0; padding: 0; margin: -1px;"
+                                accept="image/png,image/jpeg,image/gif,image/webp"
+                                onchange={handleCoverPhoto} />
+                        </label>
+
+                        <!-- Remove (shown only when an image is uploaded) -->
+                        <template lwc:if={hasCover}>
+                            <button type="button" onclick={handleRemoveCover}
+                                style="display: inline-flex; align-items: center; gap: 6px;
+                                       background: transparent; border: none; cursor: pointer;
+                                       color: #b3261e; font-size: 13px; font-weight: 600; padding: 0;">
+                                <svg aria-hidden="true"
+                                    style="width:0.875rem;height:0.875rem;max-width:0.875rem;max-height:0.875rem;"
+                                    viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 3 L13 13 M13 3 L3 13"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                                </svg>
+                                Remove
+                            </button>
+                        </template>
+                    </div>
+
+                    <template lwc:if={coverError}>
+                        <p role="alert" style="margin: 8px 0 0; color: #b3261e; font-size: 12px; font-weight: 500;">{coverError}</p>
+                    </template>
+                </div>
+
+                <!-- Info note -->
+                <div role="note"
+                    style="display: flex; align-items: center; gap: 12px; margin-top: 1rem;
+                           background: #f3f4f6; border-radius: 10px; padding: 12px 16px;
+                           color: #4b5563; font-size: 13px;">
+                    <svg aria-hidden="true"
+                        style="width:1rem;height:1rem;max-width:1rem;max-height:1rem;flex:0 0 auto;"
+                        viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="8" cy="8" r="7" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+                        <path d="M8 6.5 L8 11.5 M8 4.5 L8 4.6" stroke="#6b7280"
+                            stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <span style="line-height: 1.45;">
+                        Initiatives are reviewed for fit, feasibility, and compliance before going live to alumni.
+                    </span>
+                </div>
+            </div>
+
+            <!-- ===== Footer ===== -->
+            <footer
+                style="background-color: #ffffff; display: flex; align-items: center;
+                       justify-content: flex-end; gap: 12px; padding: 1.25rem 2rem;
+                       border-top: 1px solid #e5e7eb;
+                       border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                <button type="button" onclick={handleClose}
+                    style="padding: 0.625rem 1.25rem; font-size: 14px; font-weight: 600;
+                           border-radius: 8px; cursor: pointer; border: none;
+                           background: transparent; color: #1a1a2e; line-height: 1;">
+                    Cancel
+                </button>
+                <button type="button" onclick={handleSubmit} disabled={submitting}
+                    style="padding: 0.625rem 1.25rem; font-size: 14px; font-weight: 600;
+                           border-radius: 8px; cursor: pointer;
+                           background: #0f172a; color: #fff; border: 1px solid #0f172a;
+                           line-height: 1;">
+                    <template lwc:if={submitting}>Submitting…</template>
+                    <template lwc:else>Submit for review</template>
+                </button>
+            </footer>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open" onclick={handleClose}
+        style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100vw; height: 100vh;
+               z-index: 9000; background: rgba(17, 24, 39, 0.55);
+               display: block; visibility: visible; opacity: 1;"></div>
+</template>

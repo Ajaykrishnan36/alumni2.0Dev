@@ -1,0 +1,332 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="support">
+        <div class="ss-root">
+
+            <!-- ============================ DASHBOARD ============================ -->
+            <template lwc:if={isDashboard}>
+                <div class="hero">
+                    <p class="hero__greet">{greeting}</p>
+                    <div class="hero__search">
+                        <svg class="hero__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        <input type="search" class="hero__input" placeholder="Search" value={searchQuery} oninput={handleSearchInput} />
+                        <template lwc:if={searchActive}><button class="hero__clear" onclick={clearSearch} title="Clear">×</button></template>
+                    </div>
+                </div>
+
+                <!-- Search results -->
+                <template lwc:if={searchActive}>
+                    <div class="results">
+                        <p class="results__count">Showing {searchResults.length} results</p>
+                        <template for:each={searchResults} for:item="r">
+                            <button key={r.key} class="result-row" data-id={r.recordId} onclick={handleSearchResult}>
+                                <span class="result-row__text">
+                                    <span class="result-row__title">{r.title}</span>
+                                    <span class="result-row__sub">{r.sub}</span>
+                                </span>
+                                <span class={r.typeClass}>{r.type}</span>
+                            </button>
+                        </template>
+                        <template lwc:if={noSearchResults}><div class="empty">No result found for “{searchQuery}”.</div></template>
+                    </div>
+                </template>
+
+                <!-- Dashboard body -->
+                <template lwc:else>
+                    <div class="dash-grid">
+                        <div class="card faq-card">
+                            <div class="card__head card__head--row">
+                                <h3 class="card__title">Frequently Asked Questions</h3>
+                                <button class="faq-viewmore" onclick={handleFaqViewMore} type="button">View More</button>
+                            </div>
+                            <ul class="slds-accordion faq-accordion">
+                                <template for:each={faqGroups} for:item="g">
+                                    <li key={g.key} class={g.sectionClass}>
+                                        <button class="faq-cat" data-key={g.key} onclick={toggleCategory} type="button" aria-expanded={g.catOpen}>
+                                            <span class="faq-cat__name">{g.category}</span>
+                                            <svg class={g.catIconClass} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                        </button>
+                                        <template lwc:if={g.catOpen}>
+                                            <div class="faq-questions">
+                                                <template for:each={g.questions} for:item="f">
+                                                    <div key={f.id} class="faq-item">
+                                                        <button class="faq-q" data-id={f.id} onclick={toggleFaq} type="button">
+                                                            <svg class={f.iconClass} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                            <span class="faq-q__text">{f.q}</span>
+                                                        </button>
+                                                        <template lwc:if={f.expanded}><div class="faq-answer"><p>{f.a}</p></div></template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </li>
+                                </template>
+                                <template lwc:if={noFaqs}><div class="empty empty--sm">No FAQs published yet.</div></template>
+                            </ul>
+                        </div>
+
+                        <div class="action-col">
+                            <button class="action-card action-card--blue" onclick={openCatalog}>
+                                <span class="action-card__pattern" aria-hidden="true"></span>
+                                <span class="action-card__row">
+                                    <span class="action-card__title">Request for a Service</span>
+                                    <span class="action-card__arrow">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M19 12l-6-6M19 12l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </span>
+                                </span>
+                                <span class="action-card__art" aria-hidden="true">
+                                    <svg viewBox="0 0 200 130" fill="none" preserveAspectRatio="xMidYMid meet">
+                                        <rect x="118" y="12" width="62" height="34" rx="6" fill="rgba(255,255,255,0.22)"/>
+                                        <rect x="127" y="21" width="42" height="5" rx="2.5" fill="rgba(255,255,255,0.55)"/>
+                                        <rect x="127" y="31" width="28" height="5" rx="2.5" fill="rgba(255,255,255,0.38)"/>
+                                        <rect x="58" y="48" width="74" height="48" rx="6" fill="rgba(255,255,255,0.16)" stroke="rgba(255,255,255,0.5)" stroke-width="1.6"/>
+                                        <rect x="86" y="96" width="18" height="10" fill="rgba(255,255,255,0.3)"/>
+                                        <rect x="68" y="108" width="54" height="5" rx="2.5" fill="rgba(255,255,255,0.42)"/>
+                                        <circle cx="36" cy="56" r="13" fill="rgba(255,255,255,0.88)"/>
+                                        <path d="M16 100c0-13 9-23 20-23s20 10 20 23z" fill="rgba(255,255,255,0.88)"/>
+                                    </svg>
+                                </span>
+                            </button>
+                            <button class="action-card action-card--white" onclick={openNeedHelp}>
+                                <span class="action-card__row">
+                                    <span class="action-card__title action-card__title--dark">Need Help?</span>
+                                    <span class="action-card__arrow action-card__arrow--light">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M19 12l-6-6M19 12l-6 6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </span>
+                                </span>
+                                <span class="action-card__art" aria-hidden="true">
+                                    <svg viewBox="0 0 200 130" fill="none" preserveAspectRatio="xMidYMid meet">
+                                        <path d="M100 65L52 36M100 65L148 36M100 65L52 94M100 65L148 94" stroke="#C7D3FF" stroke-width="1.6"/>
+                                        <circle cx="100" cy="65" r="22" fill="#EAEFFF" stroke="#3B5BFF" stroke-width="1.6"/>
+                                        <path d="M95.5 60.5C95.5 58.2 97.6 56 100 56C102.4 56 104.5 58.2 104.5 60.5C104.5 63 100 63.5 100 66.5" stroke="#3B5BFF" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="100" cy="71.5" r="1.4" fill="#3B5BFF"/>
+                                        <circle cx="52" cy="36" r="13" fill="#fff" stroke="#C7D3FF" stroke-width="1.6"/>
+                                        <circle cx="148" cy="36" r="13" fill="#fff" stroke="#C7D3FF" stroke-width="1.6"/>
+                                        <circle cx="52" cy="94" r="13" fill="#fff" stroke="#C7D3FF" stroke-width="1.6"/>
+                                        <circle cx="148" cy="94" r="13" fill="#fff" stroke="#C7D3FF" stroke-width="1.6"/>
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card list-card">
+                        <div class="list-tabs">
+                            <div class="list-tabs__left">
+                                <button class={serviceTabClass} onclick={selectServiceTab}>Service Requests</button>
+                                <button class={supportTabClass} onclick={selectSupportTab}>Support Tickets</button>
+                            </div>
+                            <button class="list-viewall" onclick={handleViewAllTickets} type="button">View All</button>
+                        </div>
+                        <template lwc:if={hasRows}>
+                            <template for:each={activeRows} for:item="row">
+                                <div key={row.rowId} class="ticket-row" data-id={row.rowId} onclick={handleRowClick}>
+                                    <div class="ticket-row__main">
+                                        <p class="ticket-row__id">{row.id}</p>
+                                        <p class="ticket-row__title">{row.titleLine}</p>
+                                        <p class="ticket-row__sub">{row.subLine}</p>
+                                    </div>
+                                    <div class="ticket-row__right">
+                                        <template lwc:if={row.showClosedDate}><span class="ticket-row__closed">Closed on: <b>{row.closedDateStr}</b></span></template>
+                                        <span class={row.pillClass}>{row.statusLabel}</span>
+                                        <template lwc:if={row.canFeedback}>
+                                            <button class="btn-feedback" data-id={row.rowId} onclick={handleLeaveFeedback}>Leave Feedback</button>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                        <template lwc:else><div class="empty">You have no {activeTab} requests yet.</div></template>
+                    </div>
+                </template>
+            </template>
+
+            <!-- ============================ CATALOG ============================ -->
+            <template lwc:if={isCatalog}>
+                <div class="sub-head">
+                    <button class="back" onclick={backToDashboard}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Back
+                    </button>
+                    <div>
+                        <h2 class="sub-head__title">Request for a Service</h2>
+                        <p class="sub-head__sub">Choose a category to get started.</p>
+                    </div>
+                </div>
+                <div class="cat-grid">
+                    <template for:each={catalogCards} for:item="c">
+                        <button key={c.id} class="cat-card" data-id={c.id} onclick={selectCategory}>
+                            <span class="cat-card__icon" style={c.iconStyle}>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <template for:each={c.iconPaths} for:item="p"><path key={p.key} d={p.d}></path></template>
+                                </svg>
+                            </span>
+                            <span class="cat-card__name">{c.name}</span>
+                            <span class="cat-card__desc">{c.description}</span>
+                            <span class="cat-card__count">{c.countLabel}</span>
+                        </button>
+                    </template>
+                </div>
+                <template lwc:if={catalogEmpty}><div class="empty">No service categories are available yet.</div></template>
+            </template>
+
+            <!-- ============================ FORM ============================ -->
+            <template lwc:if={isForm}>
+                <div class="sub-head">
+                    <button class="back" onclick={backToCatalog}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Back
+                    </button>
+                    <div><h2 class="sub-head__title">{selectedCategory.name}</h2></div>
+                </div>
+                <div class="form-split">
+                    <aside class="form-nav">
+                        <p class="form-nav__label">{selectedCategory.name}</p>
+                        <template for:each={categoryOfferings} for:item="o">
+                            <button key={o.id} class={o.navClass} data-id={o.id} onclick={selectOffering}>
+                                <span class="subnav-item__label">{o.name}</span>
+                                <template lwc:if={o.showChevron}>
+                                    <svg class="subnav-item__chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"></polyline></svg>
+                                </template>
+                            </button>
+                        </template>
+                    </aside>
+                    <div class="card form-pane">
+                        <h3 class="form-pane__title">{formTitle}</h3>
+                        <div class="field">
+                            <label>Detail your requirement here<span class="req">*</span></label>
+                            <textarea class="field__textarea" value={formRequirement} oninput={handleRequirementInput} placeholder="Describe what you need help with…"></textarea>
+                        </div>
+                        <div class="field">
+                            <label>Upload supporting document (Optional)</label>
+                            <div class="slds-file-selector slds-file-selector_files file-line-wrap">
+                                <label class="slds-file-selector__body file-line">
+                                    <input type="file" class="slds-file-selector__input slds-assistive-text" onchange={handleFileChange} />
+                                    <span class="file-line__text">{fileLabel}</span>
+                                    <template lwc:if={hasFile}>
+                                        <button type="button" class="file-line__clear" onclick={removeFile} title="Remove">×</button>
+                                    </template>
+                                    <span class="file-line__icon">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B5BFF" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                        <template lwc:if={formError}><div class="form-error">{formError}</div></template>
+                        <div class="form-actions">
+                            <button class="btn btn--ghost" onclick={backToCatalog} type="button">Cancel</button>
+                            <button class="btn btn--primary" onclick={submitRequest} disabled={submitDisabled} type="button">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ============================ DETAIL ============================ -->
+            <template lwc:if={isDetail}>
+                <div class="sub-head sub-head--detail">
+                    <button class="back" onclick={backToDashboard}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        Back
+                    </button>
+                    <template lwc:if={detail}>
+                        <div class="detail-actions">
+                            <template lwc:if={detail.canCancel}><button class="btn btn--danger" onclick={askCancel} type="button">Cancel Request</button></template>
+                            <template lwc:if={detail.canFeedback}><button class="btn btn--primary" onclick={openFeedback} type="button">Leave Feedback</button></template>
+                        </div>
+                    </template>
+                </div>
+
+                <template lwc:if={detailLoading}><div class="empty">Loading request…</div></template>
+                <template lwc:if={detail}>
+                    <div class="card detail-card">
+                        <div class="detail-card__head">
+                            <div>
+                                <p class="detail-card__id">{detail.id}</p>
+                                <p class="detail-card__meta">{detail.dateStr} · {detail.category}</p>
+                            </div>
+                            <span class={detailStatusClass}>{detail.status}</span>
+                        </div>
+                        <div class="detail-block">
+                            <p class="detail-block__label">Requirement</p>
+                            <p class="detail-block__text">{detail.requirement}</p>
+                        </div>
+                        <template lwc:if={hasDocuments}>
+                            <div class="detail-block">
+                                <p class="detail-block__label">Supporting Documents</p>
+                                <div class="doc-pills">
+                                    <template for:each={detail.documents} for:item="d">
+                                        <a key={d.id} class="doc-pill" href={d.url} target="_blank" rel="noopener">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                                            {d.name}
+                                        </a>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                        <template lwc:if={hasAdminReply}>
+                            <div class="detail-block">
+                                <p class="detail-block__label">Response</p>
+                                <div class="admin-reply"><p>{detail.adminReply}</p></div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </template>
+
+            <!-- ============================ MODALS ============================ -->
+            <template lwc:if={showSuccessModal}>
+                <div class="overlay" onclick={closeSuccessAny}>
+                    <div class="toast-modal" onclick={stop}>
+                        <span class="toast-modal__check"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>
+                        <p class="toast-modal__title">{successTitle}</p>
+                        <p class="toast-modal__sub">{successSub}</p>
+                    </div>
+                </div>
+            </template>
+
+            <template lwc:if={showErrorModal}>
+                <div class="overlay" onclick={closeError}>
+                    <div class="toast-modal" onclick={stop}>
+                        <span class="toast-modal__x"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
+                        <p class="toast-modal__title">Unable to Raise a Request</p>
+                        <p class="toast-modal__sub">{errorText}</p>
+                    </div>
+                </div>
+            </template>
+
+            <template lwc:if={showCancelConfirm}>
+                <div class="overlay" onclick={dismissCancel}>
+                    <div class="confirm-modal" onclick={stop}>
+                        <p class="confirm-modal__title">Cancel request?</p>
+                        <p class="confirm-modal__text">Are you sure you want to cancel this request? This action cannot be undone.</p>
+                        <div class="confirm-modal__actions">
+                            <button class="btn btn--ghost" onclick={dismissCancel} type="button">No, keep it</button>
+                            <button class="btn btn--danger" onclick={confirmCancel} type="button">Yes, cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template lwc:if={showFeedbackModal}>
+                <div class="overlay" onclick={dismissFeedback}>
+                    <div class="confirm-modal" onclick={stop}>
+                        <p class="confirm-modal__title">Leave Feedback</p>
+                        <p class="confirm-modal__text">How would you rate the resolution of this request?</p>
+                        <div class="stars">
+                            <template for:each={stars} for:item="s">
+                                <button key={s.n} class={s.cls} data-n={s.n} onclick={setStar} type="button" aria-label="rate">
+                                    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                </button>
+                            </template>
+                        </div>
+                        <textarea class="field__textarea" value={feedbackComment} oninput={handleFeedbackComment} placeholder="Share any additional comments (optional)…"></textarea>
+                        <div class="confirm-modal__actions">
+                            <button class="btn btn--ghost" onclick={dismissFeedback} type="button">Cancel</button>
+                            <button class="btn btn--primary" onclick={submitFeedback} type="button">Submit Feedback</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+        </div>
+    </c-ken42-alumni-shell-v2>
+</template>

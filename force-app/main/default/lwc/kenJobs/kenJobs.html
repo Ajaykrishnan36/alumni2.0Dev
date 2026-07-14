@@ -1,0 +1,101 @@
+<template>
+    <section class="jobs-page">
+        <div class="jobs-main">
+            <div class="jobs-header">
+                <div class="jobs-title">
+                    <h2>All Jobs (24)</h2>
+                </div>
+                <div class="jobs-actions">
+                    <div class="search-field">
+                        <lightning-icon icon-name="utility:search" size="x-small" class="icon-muted"></lightning-icon>
+                        <input type="text" placeholder="Search">
+                        <lightning-icon icon-name="utility:mic" size="x-small" class="icon-muted"></lightning-icon>
+                    </div>
+                    <button class="action-btn">
+                        <span>Sort by</span>
+                        <lightning-icon icon-name="utility:sort" size="x-small"></lightning-icon>
+                    </button>
+                    <button class="action-btn">
+                        <span>Filters</span>
+                        <lightning-icon icon-name="utility:filterList" size="x-small"></lightning-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div class="jobs-grid">
+                <template for:each={jobs} for:item="job">
+                    <article key={job.id} class="job-card">
+                        <div class="job-card__header">
+                            <div class="company">
+                                <div class={job.color} title={job.company}>{job.initials}</div>
+                                <span class="company-name">{job.company}</span>
+                            </div>
+                            <lightning-icon icon-name="utility:bookmark" size="x-small" class="bookmark"></lightning-icon>
+                        </div>
+                        <h3 class="job-title">{job.title}</h3>
+                        <div class="job-tags">
+                            <span class="tag">{job.type}</span>
+                            <span class="tag">{job.experience}</span>
+                            <span class="tag">
+                                <lightning-icon icon-name="utility:location" size="xx-small" class="tag-icon"></lightning-icon>
+                                {job.location}
+                            </span>
+                        </div>
+                        <div class="job-salary">{job.salary}</div>
+                        <div class="job-footer">
+                            <span class="posted-label">Posted by:</span>
+                            <div class="poster">
+                                <span class="poster-avatar">O</span>
+                                <span class="poster-name">{job.postedBy}</span>
+                            </div>
+                        </div>
+                    </article>
+                </template>
+            </div>
+        </div>
+
+        <aside class="jobs-sidebar">
+            <div class="sidebar-card">
+                <div class="tabs">
+                    <button class="tab active">Applied</button>
+                    <button class="tab">Saved</button>
+                </div>
+
+                <div class="applied-list">
+                    <template for:each={appliedJobs} for:item="item">
+                        <div key={item.id} class="applied-item">
+                            <div class={item.color} title={item.company}>{item.initials}</div>
+                            <div class="applied-info">
+                                <div class="applied-title">{item.title}</div>
+                                <div class="applied-meta">{item.company} | {item.location}</div>
+                                <div class="applied-tags">
+                                    <template for:each={item.tags} for:item="tag">
+                                        <span key={tag} class="tag tag-blue">{tag}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <button class="view-more">View More</button>
+            </div>
+
+            <div class="cta-card post-job">
+                <div class="cta-content">
+                    <div class="cta-illustration"></div>
+                    <div class="cta-text">Post a Job</div>
+                </div>
+                <lightning-icon icon-name="utility:chevronright" size="small" class="cta-arrow"></lightning-icon>
+            </div>
+
+            <div class="cta-card resume">
+                <div class="cta-content">
+                    <div class="cta-illustration resume"></div>
+                    <div class="cta-text">Resume Library</div>
+                </div>
+                <lightning-icon icon-name="utility:chevronright" size="small" class="cta-arrow"></lightning-icon>
+            </div>
+        </aside>
+    </section>
+</template>

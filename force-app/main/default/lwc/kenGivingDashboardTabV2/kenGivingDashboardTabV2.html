@@ -1,0 +1,158 @@
+<template>
+    <section class="gd">
+        <!-- ===== Metric ribbon ===== -->
+        <div class="gd-ribbon">
+            <div class="gd-metric">
+                <span class="gd-metric__lbl">Raised this season</span>
+                <span class="gd-metric__val gd-metric__val--violet">{metrics.raisedDisplay}</span>
+                <span class="gd-metric__sub">{acrossLiveLine}</span>
+            </div>
+            <div class="gd-metric">
+                <span class="gd-metric__lbl">Alumni contributors</span>
+                <span class="gd-metric__val">{metrics.contributorsCount}</span>
+                <span class="gd-metric__sub">{contributorsSubtotal}</span>
+            </div>
+            <div class="gd-metric">
+                <span class="gd-metric__lbl">Live campaigns</span>
+                <span class="gd-metric__val">{metrics.liveCampaignsCount}</span>
+                <span class="gd-metric__sub">{liveAllApprovedLine}</span>
+            </div>
+            <div class="gd-metric">
+                <span class="gd-metric__lbl">Top batch</span>
+                <span class="gd-metric__val">{metrics.topBatchName}</span>
+                <span class="gd-metric__sub">{topBatchLine}</span>
+            </div>
+        </div>
+
+        <!-- ===== Main (70) + Rail (30) ===== -->
+        <div class="gd-grid">
+            <!-- MAIN COLUMN -->
+            <div class="gd-main">
+                <article class="gd-card">
+                    <header class="gd-card__hd">
+                        <p class="gd-card__eyebrow">Impact and transparency</p>
+                        <h3 class="gd-card__title">What giving has funded</h3>
+                        <a class="gd-card__link" href="javascript:void(0)" onclick={handleAllUpdates}>All updates →</a>
+                    </header>
+                    <template lwc:if={hasImpactUpdates}>
+                        <div class="gd-impact">
+                            <template for:each={impactUpdates} for:item="i">
+                                <article key={i.id} class="gd-impact__card">
+                                    <div class="gd-impact__img" style={i.imgStyle}>
+                                        <template lwc:if={i.hasImage}></template>
+                                        <template lwc:else>
+                                            <span class="gd-impact__img-glyph" aria-hidden="true">🎓</span>
+                                        </template>
+                                    </div>
+                                    <div class="gd-impact__body">
+                                        <div class="gd-impact__row">
+                                            <span class="gd-impact__date">{i.dateLabel}</span>
+                                            <template lwc:if={i.metric}>
+                                                <span class="gd-impact__tag">{i.metric}</span>
+                                            </template>
+                                        </div>
+                                        <p class="gd-impact__title">{i.headline}</p>
+                                        <p class="gd-impact__blurb">{i.body}</p>
+                                        <a class="gd-impact__cta" href="#" data-id={i.opportunityId}>{i.ctaLabel} →</a>
+                                    </div>
+                                </article>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <p class="gd-empty">No impact updates published yet.</p>
+                    </template>
+                </article>
+
+                <article class="gd-card">
+                    <header class="gd-card__hd">
+                        <p class="gd-card__eyebrow">Leaderboard</p>
+                        <h3 class="gd-card__title">Top batches by giving</h3>
+                    </header>
+                    <template lwc:if={hasLeaderboard}>
+                        <ul class="gd-lb">
+                            <template for:each={leaderboard} for:item="b">
+                                <li key={b.id} class="gd-lb__row">
+                                    <span class="gd-lb__rank">{b.rank}</span>
+                                    <div class="gd-lb__meta">
+                                        <p class="gd-lb__name">{b.batchName}</p>
+                                        <p class="gd-lb__sub">{b.contributorsLabel}</p>
+                                    </div>
+                                    <span class="gd-lb__amt">{b.raisedDisplay}</span>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:else>
+                        <p class="gd-empty">No batch giving data yet.</p>
+                    </template>
+                </article>
+            </div>
+
+            <!-- RAIL -->
+            <aside class="gd-rail">
+                <article class="gd-card">
+                    <p class="gd-card__eyebrow">Needs your attention</p>
+                    <h4 class="gd-card__title-sm">Your action items</h4>
+                    <template lwc:if={hasActionItems}>
+                        <ul class="gd-actions">
+                            <template for:each={rail.actionItems} for:item="a">
+                                <li key={a.refId} class="gd-action">
+                                    <div class="gd-action__icon">★</div>
+                                    <div class="gd-action__body">
+                                        <p class="gd-action__title">{a.title}</p>
+                                        <p class="gd-action__sub">{a.subtitle}</p>
+                                    </div>
+                                    <button type="button" class="gd-action__cta">{a.cta}</button>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:else>
+                        <p class="gd-empty">You're all caught up.</p>
+                    </template>
+                </article>
+
+                <article class="gd-card">
+                    <p class="gd-card__eyebrow">Community</p>
+                    <h4 class="gd-card__title-sm">Recent contributors</h4>
+                    <p class="gd-private">⌀ {privateLine}</p>
+                    <template lwc:if={hasContributors}>
+                        <ul class="gd-contributors">
+                            <template for:each={contributorRows} for:item="c">
+                                <li key={c.id} class="gd-contributor">
+                                    <span class="gd-contributor__av" style={c.avatarStyle}>
+                                        <template lwc:if={c.showInitial}>{c.initial}</template>
+                                    </span>
+                                    <div class="gd-contributor__meta">
+                                        <p class="gd-contributor__name">{c.displayName}</p>
+                                        <p class="gd-contributor__sub">{c.batchOrFund}</p>
+                                    </div>
+                                    <span class={c.amountClass}>{c.amountDisplay}</span>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:else>
+                        <p class="gd-empty">No public contributions yet.</p>
+                    </template>
+                </article>
+
+                <article class="gd-card">
+                    <p class="gd-card__eyebrow">Corporate supporters</p>
+                    <h4 class="gd-card__title-sm">CSR partners this year</h4>
+                    <template lwc:if={hasSupporters}>
+                        <div class="gd-pills">
+                            <template for:each={rail.corporateSupporters} for:item="s">
+                                <span key={s} class="gd-pill">{s}</span>
+                            </template>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <p class="gd-empty">No CSR partners listed yet.</p>
+                    </template>
+                </article>
+            </aside>
+        </div>
+    </section>
+</template>

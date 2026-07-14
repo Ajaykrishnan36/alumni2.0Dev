@@ -1,0 +1,22 @@
+:host { display: block; }
+h2 { font-weight: 700; font-size: 20px; margin: 0 0 14px; }
+.muted { font-weight: 500; font-size: 12px; color: #9DA0A8; margin: 0 0 14px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; row-gap: 16px; }
+@media (max-width: 720px) { .grid-2 { grid-template-columns: 1fr; } }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.field label { font-weight: 500; font-size: 12px; color: #373A45; }
+.field input, .field select, .field textarea { width: 100%; height: 44px; padding: 8px 12px; border: 1px solid #E5E6E8; border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: #fff; box-sizing: border-box; }
+.field textarea { height: auto; min-height: 88px; }
+
+/* Host-type segmented control */
+.seg { display: inline-flex; border: 1px solid #E5E6E8; border-radius: 8px; overflow: hidden; }
+.seg-btn { appearance: none; border: 0; background: #fff; padding: 0 22px; height: 40px; font-family: inherit; font-size: 13px; font-weight: 500; color: #5B5E68; cursor: pointer; }
+.seg-btn + .seg-btn { border-left: 1px solid #E5E6E8; }
+.seg-btn--on { background: #3061FF; color: #fff; }
+
+/* Language multi-select */
+.hint { font-weight: 400; font-size: 11px; color: #9DA0A8; }
+.lang-group { display: flex; flex-wrap: wrap; gap: 8px; }
+.lang-chip { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border: 1px solid #E5E6E8; border-radius: 8px; font-size: 13px; color: #373A45; cursor: pointer; background: #fff; }
+.lang-chip input { width: 16px; height: 16px; margin: 0; }
+.lang-chip:hover { border-color: #B5C5FF; }

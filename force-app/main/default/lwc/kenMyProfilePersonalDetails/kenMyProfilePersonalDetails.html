@@ -1,0 +1,298 @@
+<template>
+    <div class="details-container">
+        <h1 class="header-title">Personal Details</h1>
+
+        <!-- Basic Details Card -->
+        <div class="card">
+            <h2 class="section-title" style="margin-bottom: 20px;">Basic Details</h2>
+
+            <div class="profile-pic-section">
+                <div class="profile-pic-wrapper">
+                    <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="profile-img">
+                    <button class="edit-pic-btn">
+                        <lightning-icon icon-name="utility:edit" size="xx-small"></lightning-icon>
+                    </button>
+                </div>
+                <div class="pic-info">
+                    <h3>Edit profile picture</h3>
+                    <p>Max: 120px | 12mb</p>
+                </div>
+            </div>
+
+            <div class="basic-details-form">
+                <div class="form-group">
+                    <label class="field-label">First Name</label>
+                    <input type="text" class="text-input" value={firstName} onchange={handleFirstNameChange} />
+                </div>
+                <div class="form-group">
+                    <label class="field-label">Last Name</label>
+                    <input type="text" class="text-input" value={lastName} onchange={handleLastNameChange} />
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label">Email ID</label>
+                    <div class="input-wrapper">
+                        <input type="email" class="text-input" value={email} disabled />
+                        <button class="input-suffix-btn" onclick={handleEditEmail}>Edit</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="field-label">Phone Number</label>
+                    <div class="phone-input-group">
+                        <div class="country-selector">
+                            <img src={flagUrl} class="flag-icon" alt="Flag" />
+                            <span>{countryCode}</span>
+                            <lightning-icon icon-name="utility:down" size="xx-small"
+                                class="chevron-down"></lightning-icon>
+                        </div>
+                        <input type="tel" class="phone-input" value={phoneNumber} disabled />
+                        <button class="input-suffix-btn" style="position: static;"
+                            onclick={handleEditPhone}>Edit</button>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label class="field-label">Current City / Town of Residence</label>
+                    <input type="text" class="text-input" value={city} onchange={handleCityChange} />
+                </div>
+            </div>
+        </div>
+
+        <!-- Personalize Based on Interest Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="section-title">Personalize Based on Interest</h2>
+                <button class="edit-btn" onclick={handleEditInterests}>
+                    <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                    Edit
+                </button>
+            </div>
+
+            <div class="interests-grid">
+                <template for:each={interests} for:item="interest">
+                    <div key={interest.id} class="interest-card">
+                        <img src={interest.iconUrl} class="interest-img" alt="" />
+                        <span class="interest-label">{interest.label}</span>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- About Me Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="section-title">About Me</h2>
+                <button class="edit-btn" onclick={handleEditAboutMe}>
+                    <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                    Edit
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label class="field-label">Tell us about yourself</label>
+                <textarea class="text-input" rows="4" style="resize: none;" disabled>{aboutMe}</textarea>
+            </div>
+        </div>
+
+        <!-- Social Media Card -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="section-title">Social Media</h2>
+                <button class="edit-btn" onclick={handleEditSocialMedia}>
+                    <lightning-icon icon-name="utility:edit" size="x-small"></lightning-icon>
+                    Edit
+                </button>
+            </div>
+
+            <div class="basic-details-form">
+                <div class="form-group">
+                    <label class="field-label">Linkedin Profile Link</label>
+                    <input type="text" class="text-input" value={linkedinLink} disabled
+                        placeholder="www.linkedin.com/in/" />
+                </div>
+                <div class="form-group">
+                    <label class="field-label">Twitter (X) Profile Link</label>
+                    <input type="text" class="text-input" value={twitterLink} disabled placeholder="x.com/" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Photo Modal -->
+    <template lwc:if={showPhotoModal}>
+        <div class="modal-overlay">
+            <div class="modal-content photo-modal">
+                <div class="modal-header">
+                    <h2>Upload image</h2>
+                </div>
+                <div class="modal-body">
+                    <div class="upload-area">
+                        <div class="upload-placeholder">
+                            <lightning-icon icon-name="utility:image" size="large"></lightning-icon>
+                            <p>Drop your image here, or <span class="blue-text">browse</span></p>
+                            <p class="support-text">Supports: PNG, JPG, JPEG</p>
+                        </div>
+                    </div>
+                    <!-- Mock upload progress -->
+                    <div class="upload-progress-item">
+                        <div class="file-info">
+                            <lightning-icon icon-name="doctype:image" size="small"></lightning-icon>
+                            <div>
+                                <p class="file-name">laptop.png</p>
+                                <p class="file-size">12 MB</p>
+                            </div>
+                        </div>
+                        <div class="progress-actions">
+                            <lightning-icon icon-name="utility:close" size="x-small"
+                                class="close-icon"></lightning-icon>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="cancel-btn" onclick={closePhotoModal}>Cancel</button>
+                    <button class="save-btn" onclick={savePhoto}>Done</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Email Modal -->
+    <template lwc:if={showEmailModal}>
+        <div class="modal-overlay">
+            <div class="modal-content small-modal">
+                <div class="modal-header">
+                    <h2>Edit Email ID</h2>
+                    <lightning-icon icon-name="utility:close" size="small" class="close-modal-icon"
+                        onclick={closeEmailModal}></lightning-icon>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <input type="email" class="text-input" value={tempEmail} onchange={handleEmailChange}
+                            placeholder="Enter new email" />
+                    </div>
+                </div>
+                <div class="modal-footer centered-footer">
+                    <button class="cancel-btn" onclick={closeEmailModal}>Cancel</button>
+                    <button class="save-btn" onclick={saveEmail}>Verify</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Phone Modal -->
+    <template lwc:if={showPhoneModal}>
+        <div class="modal-overlay">
+            <div class="modal-content small-modal">
+                <div class="modal-header">
+                    <h2>Edit Phone Number</h2>
+                    <lightning-icon icon-name="utility:close" size="small" class="close-modal-icon"
+                        onclick={closePhoneModal}></lightning-icon>
+                </div>
+                <div class="modal-body">
+                    <div class="phone-input-group">
+                        <div class="country-selector">
+                            <img src={flagUrl} class="flag-icon" alt="Flag" />
+                            <span>{tempCountryCode}</span>
+                            <lightning-icon icon-name="utility:down" size="xx-small"
+                                class="chevron-down"></lightning-icon>
+                        </div>
+                        <input type="tel" class="phone-input" value={tempPhone} onchange={handlePhoneChange} />
+                    </div>
+                </div>
+                <div class="modal-footer centered-footer">
+                    <button class="cancel-btn" onclick={closePhoneModal}>Cancel</button>
+                    <button class="save-btn" onclick={savePhone}>Verify</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Interests Modal -->
+    <template lwc:if={showInterestsModal}>
+        <div class="modal-overlay">
+            <div class="modal-content wide-modal">
+                <div class="modal-header">
+                    <h2>Preferences</h2>
+                    <lightning-icon icon-name="utility:close" size="small" class="close-modal-icon"
+                        onclick={closeInterestsModal}></lightning-icon>
+                </div>
+                <p class="modal-subtitle">Kindly select all applicable options that align with your requirements.</p>
+                <div class="modal-body">
+                    <div class="interests-selection-grid">
+                        <template for:each={tempInterests} for:item="item">
+                            <div key={item.id} class="interest-selection-card" data-id={item.id}
+                                onclick={toggleInterest}>
+                                <div class="card-image">
+                                    <img src={item.iconUrl} alt="" />
+                                </div>
+                                <div class="card-checkbox">
+                                    <div class={item.checkboxClass}>
+                                        <lightning-icon icon-name="utility:check" size="xx-small"
+                                            if:true={item.selected}></lightning-icon>
+                                    </div>
+                                    <span>{item.label}</span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                <div class="modal-footer centered-footer">
+                    <button class="save-btn" onclick={saveInterests}>Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- About Me Modal -->
+    <template lwc:if={showAboutMeModal}>
+        <div class="modal-overlay">
+            <div class="modal-content medium-modal">
+                <div class="modal-header">
+                    <h2>About Me</h2>
+                    <lightning-icon icon-name="utility:close" size="small" class="close-modal-icon"
+                        onclick={closeAboutMeModal}></lightning-icon>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="field-label">Tell us about yourself</label>
+                        <textarea class="text-input" rows="6" onchange={handleAboutMeChange}>{tempAboutMe}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer centered-footer">
+                    <button class="cancel-btn" onclick={closeAboutMeModal}>Discard Changes</button>
+                    <button class="save-btn" onclick={saveAboutMe}>Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    <!-- Social Media Modal -->
+    <template lwc:if={showSocialMediaModal}>
+        <div class="modal-overlay">
+            <div class="modal-content medium-modal">
+                <div class="modal-header">
+                    <h2>Social Media Links</h2>
+                    <lightning-icon icon-name="utility:close" size="small" class="close-modal-icon"
+                        onclick={closeSocialMediaModal}></lightning-icon>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="field-label">Linkedin Profile Link</label>
+                        <input type="text" class="text-input" value={tempLinkedin} onchange={handleLinkedinChange}
+                            placeholder="Paste profile link" />
+                    </div>
+                    <div class="form-group">
+                        <label class="field-label">Twitter Profile Link</label>
+                        <input type="text" class="text-input" value={tempTwitter} onchange={handleTwitterChange}
+                            placeholder="Paste profile link" />
+                    </div>
+                </div>
+                <!-- Using left-aligned footer to match screenshot if possible, but centered-footer was used for About Me. 
+                     The screenshot shows buttons on the left. I'll add a specific class or style. -->
+                <div class="modal-footer" style="justify-content: flex-start;">
+                    <button class="cancel-btn" onclick={closeSocialMediaModal}>Discard Changes</button>
+                    <button class="save-btn" onclick={saveSocialMedia}>Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

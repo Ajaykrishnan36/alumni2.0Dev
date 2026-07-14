@@ -1,0 +1,186 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="mentorship">
+        <template lwc:if={viewState.isProfile}>
+            <c-ken-mentor-profile-page-v2 mentor={selectedMentor} onback={handleBackToBoard} onbook={handleBookFromProfile} onmessage={handleMessageFromProfile}></c-ken-mentor-profile-page-v2>
+        </template>
+
+        <section class="page" lwc:if={viewState.isBoard}>
+            <template lwc:if={isLanding}>
+                <div class="layout">
+                    <div class="col-main">
+                        <div class="card">
+                            <div class="card__head">
+                                <h2 class="card__title">Mentorship Connections</h2>
+                                <c-ken-mentorship-top-tabs-v2 active-tab={activeTab} ontabchange={handleTabChange}></c-ken-mentorship-top-tabs-v2>
+                            </div>
+
+                            <template lwc:if={isConnectionsTab}>
+                                <template lwc:if={hasCallRequests}>
+                                    <div class="cr-panel">
+                                        <div class="cr-panel__head">
+                                            <h3 class="cr-panel__title">Call Requests</h3>
+                                            <span class="cr-panel__count">{callRequests.length} pending</span>
+                                        </div>
+                                        <template for:each={callRequests} for:item="c">
+                                            <div key={c.id} class="cr-row">
+                                                <div class="cr-row__body">
+                                                    <p class="cr-row__title">{c.title}</p>
+                                                    <p class="cr-row__meta">From {c.requester} · {c.role}</p>
+                                                    <p class="cr-row__when">{c.dateLabel} · {c.timeLabel}</p>
+                                                    <template lwc:if={c.agenda}>
+                                                        <p class="cr-row__agenda">{c.agenda}</p>
+                                                    </template>
+                                                </div>
+                                                <div class="cr-row__actions">
+                                                    <button type="button" class="btn btn--outline btn--sm" data-id={c.id} onclick={handleRejectCallRequest}>Reject</button>
+                                                    <button type="button" class="btn btn--primary btn--sm" data-id={c.id} onclick={handleAcceptCallRequest}>Accept</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:if={isLoading}>
+                                    <div class="skeleton-list">
+                                        <div class="skeleton-card"></div>
+                                        <div class="skeleton-card"></div>
+                                        <div class="skeleton-card"></div>
+                                    </div>
+                                </template>
+                                <template lwc:elseif={hasMentors}>
+                                    <div class="mentor-grid">
+                                        <template for:each={mentors} for:item="m">
+                                            <c-ken-mentor-card-v2 key={m.id} record-id={m.id} name={m.name} title={m.role} company={m.company} location={m.city} initial={m.initial} avatar-color={m.color} tag={m.tag} role="mentor" onmentorclick={handleMentorClick}></c-ken-mentor-card-v2>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="empty-state-card">
+                                        <div class="empty-state-card__icon" aria-hidden="true">&#129309;</div>
+                                        <h3 class="empty-state-card__title">No mentorship connections yet</h3>
+                                        <p class="empty-state-card__sub">Connect with alumni and request a mentor to get started.</p>
+                                    </div>
+                                </template>
+                            </template>
+
+                            <template lwc:if={isMenteesTab}>
+                                <template lwc:if={hasMentees}>
+                                    <div class="mentor-grid">
+                                        <template for:each={mentees} for:item="m">
+                                            <c-ken-mentor-card-v2 key={m.id} record-id={m.id} name={m.name} title={m.role} company={m.company} location={m.city} initial={m.initial} avatar-color={m.color} tag={m.tag} role="mentee" onmentorclick={handleMentorClick}></c-ken-mentor-card-v2>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="empty-state-card">
+                                        <div class="empty-state-card__icon" aria-hidden="true">&#127891;</div>
+                                        <h3 class="empty-state-card__title">No mentees yet</h3>
+                                        <p class="empty-state-card__sub">Mentees you accept will appear here.</p>
+                                    </div>
+                                </template>
+                            </template>
+
+                            <template lwc:if={isTasksTab}>
+                                <c-ken-mentorship-tasks-panel-v2 tasks={tasks} onaddtask={handleAddTaskOpen}></c-ken-mentorship-tasks-panel-v2>
+                            </template>
+
+                            <template lwc:if={isSessionsTab}>
+                                <template lwc:if={hasSessions}>
+                                    <div class="sessions">
+                                        <template for:each={sessions} for:item="s">
+                                            <c-ken-session-row-v2 key={s.id} session={s}></c-ken-session-row-v2>
+                                        </template>
+                                    </div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="empty-state-card">
+                                        <div class="empty-state-card__icon" aria-hidden="true">&#128197;</div>
+                                        <h3 class="empty-state-card__title">No scheduled calls</h3>
+                                        <p class="empty-state-card__sub">Schedule a call with a mentor to see it here.</p>
+                                        <button type="button" class="btn btn--primary" onclick={handleOpenSchedule}>Schedule a Call</button>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
+
+                        <div class="card">
+                            <div class="card__head">
+                                <h2 class="card__title">{currentMonthYearLabel}</h2>
+                                <button type="button" class="btn btn--primary" onclick={handleOpenSchedule}>Schedule a Call</button>
+                            </div>
+                            <div class="cal-row">
+                                <c-ken-mentorship-calendar-v2 month-label={currentMonthYearLabel} onmonthchange={handleCalendarMonthChange}></c-ken-mentorship-calendar-v2>
+                                <div class="sessions">
+                                    <template for:each={sessions} for:item="s">
+                                        <c-ken-session-row-v2 key={s.id} session={s}></c-ken-session-row-v2>
+                                    </template>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn--ghost" onclick={handleOpenScheduleList}>View full schedule</button>
+                        </div>
+                    </div>
+
+                    <aside class="col-side">
+                        <c-ken-mentorship-tasks-panel-v2 tasks={tasks} onaddtask={handleAddTaskOpen}></c-ken-mentorship-tasks-panel-v2>
+                        <button type="button" class="btn--block-blue" onclick={handleOpenPreferences}>
+                            <span>Edit Mentorship Preference</span>
+                            <span>&rarr;</span>
+                        </button>
+                    </aside>
+                </div>
+            </template>
+
+            <template lwc:if={isScheduleList}>
+                <div class="card">
+                    <div class="card__head">
+                        <h2 class="card__title">Your Mentorship Schedule</h2>
+                        <button type="button" class="btn btn--outline btn--sm" onclick={handleBackToLanding}>Back</button>
+                    </div>
+                    <div class="sessions">
+                        <template for:each={sessions} for:item="s">
+                            <c-ken-session-row-v2 key={s.id} session={s}></c-ken-session-row-v2>
+                        </template>
+                    </div>
+                </div>
+            </template>
+        </section>
+
+        <template lwc:if={isScheduleCall}>
+            <c-ken-schedule-call-wizard-v2 mentor={selectedMentor} onclose={handleCloseSchedule} onconfirm={handleScheduleConfirm}></c-ken-schedule-call-wizard-v2>
+        </template>
+
+        <template lwc:if={showAddTask}>
+            <div class="modal-backdrop" onclick={handleAddTaskBackdrop}>
+                <div class="modal modal--md" onclick={handleStopProp}>
+                    <button type="button" class="modal__close" onclick={handleAddTaskClose}>x</button>
+                    <div class="modal__body">
+                        <h2 class="modal__title">Add A Task</h2>
+                        <label class="field">
+                            <span class="field__label">Task title</span>
+                            <input type="text" class="input" value={newTaskTitle} oninput={handleTaskTitle}/>
+                        </label>
+                        <label class="field">
+                            <span class="field__label">Description</span>
+                            <textarea class="input" value={newTaskDesc} oninput={handleTaskDesc}></textarea>
+                        </label>
+                        <label class="field">
+                            <span class="field__label">Priority</span>
+                            <select class="input" value={newTaskPriority} onchange={handleTaskPriority}>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </label>
+                        <div class="modal__actions">
+                            <button type="button" class="btn btn--outline" onclick={handleAddTaskClose}>Cancel</button>
+                            <button type="button" class="btn btn--primary" onclick={handleAddTaskSubmit}>Add task</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={toastVisible}>
+            <div class="toast">{toastMessage}</div>
+        </template>
+    </c-ken42-alumni-shell-v2>
+</template>

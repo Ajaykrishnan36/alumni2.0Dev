@@ -1,0 +1,224 @@
+.events-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    /* Optional based on visual preference */
+    padding-bottom: 16px;
+    margin-bottom: 8px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.host-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.host-btn:hover {
+    background-color: var(--primary-color);
+}
+
+.add-icon {
+    --lwc-colorTextIconDefault: white;
+}
+
+/* Event List & Card */
+.events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.event-card {
+    background-color: #F6F8FB;
+    /* Light gray background */
+    border-radius: 8px;
+    padding: 24px 52px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    /* To handle rejection box if it wraps? Screenshot shows mostly row. */
+}
+
+.card-content-wrapper {
+    display: grid;
+    grid-template-columns: 25% 40% 35%;
+    /* Adjust column widths as needed */
+    gap: 16px;
+    align-items: flex-start;
+}
+
+/* Left Section */
+.event-main-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.event-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.event-type {
+    font-size: 14px;
+    color: #555;
+    margin: 0;
+}
+
+.type-detail {
+    color: #1a1a1a;
+    /* Or darker */
+    font-weight: 500;
+}
+
+/* Middle Section */
+.event-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+.detail-icon {
+    --lwc-colorTextIconDefault: #555;
+    width: 16px;
+    /* Ensure generic icon size alignment */
+}
+
+/* Right Section */
+.event-status-action {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    /* Right align badges and buttons */
+    gap: 16px;
+}
+
+.status-wrapper {
+    margin-bottom: 4px;
+    /* Space if button exists */
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-badge.in-review {
+    background-color: #FFF8E1;
+    /* Light Yellow */
+    color: #F57F17;
+    /* Dark Yellow/Orange */
+    /* Screenshot: Light yellow bg, brownish text 'In review' from screenshot 1 top right */
+    background-color: #fff4d6;
+    color: #8a6d00;
+}
+
+.status-badge.upcoming {
+    background-color: #F6F8FB;
+    /* Light Blue */
+    color: #1976D2;
+    /* Dark Blue */
+    background-color: #e6f0ff;
+    color: #2f61d5;
+}
+
+.status-badge.approved {
+    background-color: #E8F5E9;
+    /* Light Green */
+    color: #2E7D32;
+    /* Dark Green */
+    /* Screenshot 'Approved' badge */
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.action-btn {
+    background-color: white;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* Rejection Box */
+/* The rejection box modifies the layout heavily in screenshot 4. 
+   It looks like it takes up the right side space completely with a reddish background. 
+   We might need to style the container differently if rejected. */
+
+.rejection-container {
+    background-color: #ffeaea;
+    /* Light red */
+    padding: 16px;
+    border-radius: 6px;
+    width: 100%;
+    text-align: left;
+    /* Reset alignment */
+}
+
+.rejection-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+}
+
+.rejection-label {
+    background-color: #e57373;
+    /* Red badge */
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.rejection-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #c62828;
+    /* Dark red */
+    margin: 0 0 4px 0;
+}
+
+.rejection-desc {
+    font-size: 13px;
+    color: #555;
+    /* Normal text color or reddish gray? */
+    margin: 0;
+    line-height: 1.4;
+}

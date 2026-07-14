@@ -1,0 +1,119 @@
+<template>
+    <div class="overlay" onclick={cancel}>
+        <div class="modal" onclick={stopProp} role="dialog" aria-modal="true" aria-labelledby="emp-title">
+            <header class="modal__header">
+                <h2 id="emp-title" class="modal__title">Add Career Information</h2>
+            </header>
+
+            <div class="modal__body">
+                <div class="field">
+                    <label>Your Role<span class="req">*</span></label>
+                    <div class="segs">
+                        <button type="button" class={businessClass} onclick={setBusiness}>
+                            <span class="seg__icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3061FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 21h18"/>
+                                    <path d="M5 21V7l8-4v18"/>
+                                    <path d="M19 21V11l-6-4"/>
+                                </svg>
+                            </span>
+                            <span>Running my own Business</span>
+                        </button>
+                        <button type="button" class={orgClass} onclick={setOrg}>
+                            <span class="seg__icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3061FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="7" height="9"/>
+                                    <rect x="14" y="3" width="7" height="5"/>
+                                    <rect x="14" y="12" width="7" height="9"/>
+                                    <rect x="3" y="16" width="7" height="5"/>
+                                </svg>
+                            </span>
+                            <span>Working at an Organization</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="field">
+                        <label>Job Title<span class="req">*</span></label>
+                        <input data-field="jobTitle" type="text" placeholder="UX Designer" value={form.jobTitle} oninput={handleInput} />
+                    </div>
+                    <div class="field">
+                        <label>{companyLabel}</label>
+                        <input data-field="company" type="text" placeholder="PixelCraft Studios" value={form.company} oninput={handleInput} />
+                    </div>
+
+                    <div class="field">
+                        <label>Employment Type <span class="opt">(Optional)</span></label>
+                        <select class="select" data-field="employmentType" value={form.employmentType} onchange={handleInput}>
+                            <template for:each={typeOptions} for:item="o"><option key={o.value} value={o.value}>{o.label}</option></template>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Location <span class="opt">(Optional)</span></label>
+                        <input data-field="location" type="text" placeholder="Ex: Chennai, India" value={form.location} oninput={handleInput} />
+                    </div>
+
+                    <div class="field">
+                        <label>Start Date<span class="req">*</span></label>
+                        <div class="row">
+                            <select class="select" data-field="startMonth" value={form.startMonth} onchange={handleInput}>
+                                <template for:each={monthOptions} for:item="m"><option key={m.value} value={m.value}>{m.label}</option></template>
+                            </select>
+                            <select class="select" data-field="startYear" value={form.startYear} onchange={handleInput}>
+                                <template for:each={yearOptions} for:item="y"><option key={y.value} value={y.value}>{y.label}</option></template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field"><label>&nbsp;</label></div>
+
+                    <div class="field">
+                        <label>End Date<span class="req">*</span></label>
+                        <div class="row">
+                            <select class="select" data-field="endMonth" value={form.endMonth} onchange={handleInput}>
+                                <template for:each={monthOptions} for:item="m"><option key={m.value} value={m.value}>{m.label}</option></template>
+                            </select>
+                            <select class="select" data-field="endYear" value={form.endYear} onchange={handleInput}>
+                                <template for:each={yearOptions} for:item="y"><option key={y.value} value={y.value}>{y.label}</option></template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field"><label>&nbsp;</label></div>
+                </div>
+
+                <label class="checkbox">
+                    <input type="checkbox" data-field="currentlyWorking" checked={form.currentlyWorking} onchange={handleInput}/>
+                    <span>I am currently working in this role</span>
+                </label>
+
+                <div class="field desc-field">
+                    <label>Role Description <span class="opt">(Optional)</span></label>
+                    <div class="rte">
+                        <div class="rte__area" contenteditable="true" oninput={handleDescription}></div>
+                        <div class="rte__toolbar">
+                            <div class="rte__group">
+                                <button type="button" class="rte__btn rte__btn--bold" onclick={handleBold} aria-label="Bold"><b>B</b></button>
+                                <button type="button" class="rte__btn rte__btn--italic" onclick={handleItalic} aria-label="Italic"><i>I</i></button>
+                                <button type="button" class="rte__btn" onclick={handleBullets} aria-label="Bulleted list">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#373A45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.5"/><circle cx="4" cy="12" r="1.5"/><circle cx="4" cy="18" r="1.5"/></svg>
+                                </button>
+                                <button type="button" class="rte__btn" onclick={handleNumbered} aria-label="Numbered list">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#373A45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><text x="2" y="9" font-size="7" fill="#373A45" stroke="none">1</text><text x="2" y="15" font-size="7" fill="#373A45" stroke="none">2</text><text x="2" y="21" font-size="7" fill="#373A45" stroke="none">3</text></svg>
+                                </button>
+                            </div>
+                            <button type="button" class="rte__ai" onclick={handleAi}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="#3061FF"><path d="M12 2l1.8 5.2L19 9l-5.2 1.8L12 16l-1.8-5.2L5 9l5.2-1.8z"/></svg>
+                                Continue writing with AI
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="modal__footer">
+                <button type="button" class="btn btn--outline" onclick={cancel}>Cancel</button>
+                <button type="button" class="btn btn--primary" onclick={save}>Save</button>
+            </footer>
+        </div>
+    </div>
+</template>

@@ -1,0 +1,57 @@
+:host{
+    --blue:#3061FF; --blue-100:#EAEFFF; --blue-200:#B5C5FF;
+    --ink:#1A1A2E; --ink-2:#373A45; --muted:#8E9099; --line:#E5E6E8; --red:#E5484D;
+    --font:"General Sans","Inter",system-ui,sans-serif;
+    display:block; font-family:var(--font); color:var(--ink-2);
+}
+*{box-sizing:border-box;}
+
+.rl{ padding:24px; }
+.rl-bar{ display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+.rl-title{ margin:0; font-size:20px; font-weight:700; color:var(--ink); }
+.rl-bar__right{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+
+.rl-search{ display:flex; align-items:center; gap:8px; height:40px; padding:0 14px; background:#fff; border:1px solid var(--line); border-radius:10px; min-width:240px; }
+.rl-search:focus-within{ border-color:var(--blue); box-shadow:0 0 0 3px rgba(48,97,255,.12); }
+.rl-search svg{ color:var(--muted); flex-shrink:0; }
+.rl-search input{ flex:1; border:0; outline:none; background:transparent; font-family:inherit; font-size:14px; color:var(--ink); }
+.rl-search input::placeholder{ color:var(--muted); }
+
+.rl-btn{ height:40px; border-radius:9px; font-family:inherit; font-weight:600; font-size:13px; cursor:pointer; border:1.5px solid transparent; padding:0 20px; display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+.rl-btn--primary{ background:var(--blue); color:#fff; }
+.rl-btn--primary:hover{ background:#2752D6; }
+.rl-btn--primary:disabled{ background:#AFC0F6; cursor:not-allowed; }
+
+.rl-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:16px; }
+.rl-card{ background:#fff; border:1px solid #EEF0F4; border-radius:14px; padding:16px 18px; }
+.rl-card__head{ display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--line); }
+.rl-pdf{ flex-shrink:0; background:#E5484D; color:#fff; font-size:10px; font-weight:700; padding:4px 6px; border-radius:5px; letter-spacing:.5px; }
+.rl-card__name{ flex:1; min-width:0; font-size:14px; font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rl-trash{ flex-shrink:0; background:none; border:0; color:var(--muted); cursor:pointer; padding:4px; display:inline-flex; border-radius:6px; }
+.rl-trash:hover{ color:var(--red); background:#FDECEC; }
+
+.rl-download{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:14px; font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; cursor:pointer; }
+.rl-download:hover{ color:var(--blue); }
+.rl-download svg{ color:var(--ink-2); }
+.rl-download--disabled{ color:var(--muted); cursor:default; }
+
+.rl-empty{ display:flex; flex-direction:column; align-items:center; gap:8px; padding:48px 16px; text-align:center; background:#FAFBFD; border:1px dashed #E1E5EE; border-radius:14px; }
+.rl-empty__icon{ font-size:40px; }
+.rl-empty h3{ margin:6px 0 0; font-size:16px; font-weight:600; color:var(--ink); }
+.rl-empty p{ margin:0 0 8px; font-size:13px; color:var(--muted); max-width:380px; }
+
+/* Upload modal */
+.rl-modal-backdrop{ position:fixed; inset:0; background:rgba(26,26,46,.5); display:flex; align-items:center; justify-content:center; z-index:9999; padding:20px; }
+.rl-modal{ background:#fff; border-radius:16px; padding:24px 26px; width:100%; max-width:560px; box-shadow:0 24px 60px rgba(0,0,0,.22); }
+.rl-modal__head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.rl-modal__title{ font-size:15px; font-weight:700; color:var(--ink); }
+.rl-req{ color:var(--red); }
+.rl-modal__close{ background:none; border:0; font-size:24px; line-height:1; cursor:pointer; color:var(--muted); }
+.rl-file{ display:flex; align-items:center; justify-content:space-between; gap:10px; height:48px; padding:0 14px; border:1px solid var(--line); border-radius:10px; cursor:pointer; }
+.rl-file:hover{ border-color:var(--blue-200); }
+.rl-file__hint{ color:var(--muted); font-size:14px; }
+.rl-file__name{ color:var(--ink); font-size:14px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rl-file svg{ color:var(--muted); flex-shrink:0; }
+.rl-modal__foot{ display:flex; justify-content:flex-end; margin-top:20px; }
+
+.rl-toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#1F2937; color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; font-weight:500; z-index:10000; box-shadow:0 4px 20px rgba(0,0,0,.2); }

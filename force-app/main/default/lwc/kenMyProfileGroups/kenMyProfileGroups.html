@@ -1,0 +1,65 @@
+<template>
+    <div class="groups-container">
+        <!-- Header -->
+        <div class="header-section">
+            <h2 class="section-title">Groups Created</h2>
+            <button class="create-btn" onclick={handleCreateGroup}>
+                <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                Create a New Group
+            </button>
+        </div>
+
+        <!-- Groups Grid -->
+        <div class="groups-grid">
+            <template for:each={groups} for:item="group">
+                <div key={group.id} class="group-card">
+                    <!-- Banner Image Section -->
+                    <div class="card-banner" style={group.bannerStyle}>
+                        <!-- Use img tag for object-fit control or background image logic in CSS? 
+                             Img tag is easier for sizing. -->
+                        <img src={group.bannerUrl} alt={group.name} class="banner-img" />
+
+                        <!-- Badges Overlay -->
+                        <div class="badges-overlay">
+                            <!-- Status Badge (Top Left) -->
+                            <template lwc:if={group.status}>
+                                <span class={group.statusClass}>{group.status}</span>
+                            </template>
+
+                            <!-- Private Badge (Top Right) -->
+                            <template lwc:if={group.isPrivate}>
+                                <span class="privacy-badge">Private</span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Content Section -->
+                    <div class="card-content">
+                        <h3 class="group-name">{group.name}</h3>
+                        <p class="member-count">{group.membersCount}</p>
+                    </div>
+
+                    <!-- Footer Section -->
+                    <div class="card-footer">
+                        <div class="avatar-stack">
+                            <template for:each={group.avatars} for:item="avatar" for:index="index">
+                                <img key={avatar} src={avatar} class="stack-avatar" style={getZIndex} />
+                                <!-- z-index needs to decrease? Actually first item on top? 
+                                     Usually first item is left-most and bottom-most or top-most.
+                                     Screenshot: Left-most is bottom? No, they overlap. Left one is visible fully? 
+                                     Actually looks like left-most is on top of next one? 
+                                     Or Right-most on top? 
+                                     Screenshot: Avatar 1 (Left), Avatar 2 (Middle), Avatar 3 (Right/Orange +74). 
+                                     Left overlaps Middle. So Left is z-index 3, Middle 2, Right 1. -->
+                            </template>
+                            <!-- Hardcoding +74 badge as separate element or part of avatar list logic? 
+                                 Screenshot shows an orange circle with +74. I'll mock it as a static element for now or part of design. -->
+                            <div class="stack-avatar count-badge">+74</div>
+                        </div>
+                        <span class="friends-text">{group.friendsText}</span>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>

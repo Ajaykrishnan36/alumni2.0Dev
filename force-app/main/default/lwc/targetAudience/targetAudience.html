@@ -1,0 +1,164 @@
+<template>
+    <div class="page">
+        <div class="slds-p-horizontal_medium slds-m-bottom_small">
+            <h2 class="step-title step-title-step2">2. Target Audience Selection</h2>
+            <p class="step-subtitle">Choose who this should go to. You can combine multiple groups of people.</p>
+        </div>
+
+        <!-- Main container -->
+        <section class="slds-box slds-theme_default mainCard slds-m-horizontal_medium">
+            <div class="slds-grid slds-gutters">
+
+                <!-- Left nav placeholder -->
+                <div class="slds-col slds-size_2-of-12 leftCol">
+                    <div class="leftNavPlaceholder">
+                        <div class="navItem navItemActive">Suitable For</div>
+                        <div class="navItem">Languages</div>
+                    </div>
+                </div>
+
+                <!-- Middle content -->
+                <div class="slds-col slds-size_7-of-12 middleCol">
+                    <div class="slds-p-around_medium rolePanel">
+
+                        <!-- Suitable For -->
+                        <div class="tabHeader">
+                            <div>
+                                <div class="sectionTitle">Suitable For</div>
+                                <div class="sectionSubtitle">Who is this intended for?</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-select-container form-group" data-field="suitableFor" onclick={handleDropdownContainerClick}>
+                            <div class="multi-select-input searchRow" onclick={handleSuitableForDropdownToggle}>
+                                <div class="selected-tags">
+                                    <template if:true={selectedSuitableFor.length}>
+                                        <template for:each={selectedSuitableFor} for:item="tag">
+                                            <span key={tag} class="tag">
+                                                {tag}
+                                                <button class="tag-remove" type="button" data-value={tag} onclick={handleRemoveSuitableFor}>&#x2715;</button>
+                                            </span>
+                                        </template>
+                                    </template>
+                                    <template if:false={selectedSuitableFor.length}>
+                                        <span class="placeholder">Select suitable audience</span>
+                                    </template>
+                                </div>
+                                <span class="dropdown-arrow">&#x25BE;</span>
+                            </div>
+
+                            <template if:true={showSuitableForDropdown}>
+                                <div class="dropdown-options">
+                                    <template if:false={isPicklistDataLoaded}>
+                                        <div class="dropdown-option loading">Loading...</div>
+                                    </template>
+                                    <template if:true={isPicklistDataLoaded}>
+                                        <template if:true={suitableForOptions.length}>
+                                            <template for:each={suitableForOptions} for:item="option">
+                                                <div key={option.value} class="dropdown-option" data-value={option.value} onclick={handleSuitableForSelect}>
+                                                    <span class="option-label">{option.label}</span>
+                                                </div>
+                                            </template>
+                                        </template>
+                                        <template if:false={suitableForOptions.length}>
+                                            <div class="dropdown-option no-options">No options available</div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Languages -->
+                        <div class="tabHeader slds-m-top_large">
+                            <div>
+                                <div class="sectionTitle">Languages</div>
+                                <div class="sectionSubtitle">Select supported languages.</div>
+                            </div>
+                        </div>
+
+                        <div class="multi-select-container form-group" data-field="language" onclick={handleDropdownContainerClick}>
+                            <div class="multi-select-input searchRow" onclick={handleLanguageDropdownToggle}>
+                                <div class="selected-tags">
+                                    <template if:true={selectedLanguages.length}>
+                                        <template for:each={selectedLanguages} for:item="lang">
+                                            <span key={lang} class="tag">
+                                                {lang}
+                                                <button class="tag-remove" type="button" data-value={lang} onclick={handleRemoveLanguage}>&#x2715;</button>
+                                            </span>
+                                        </template>
+                                    </template>
+                                    <template if:false={selectedLanguages.length}>
+                                        <span class="placeholder">Select languages</span>
+                                    </template>
+                                </div>
+                                <span class="dropdown-arrow">&#x25BE;</span>
+                            </div>
+
+                            <template if:true={showLanguageDropdown}>
+                                <div class="dropdown-options">
+                                    <template if:false={isPicklistDataLoaded}>
+                                        <div class="dropdown-option loading">Loading...</div>
+                                    </template>
+                                    <template if:true={isPicklistDataLoaded}>
+                                        <template if:true={languageOptions.length}>
+                                            <template for:each={languageOptions} for:item="option">
+                                                <div key={option.value} class="dropdown-option" data-value={option.value} onclick={handleLanguageSelect}>
+                                                    <span class="option-label">{option.label}</span>
+                                                </div>
+                                            </template>
+                                        </template>
+                                        <template if:false={languageOptions.length}>
+                                            <div class="dropdown-option no-options">No options available</div>
+                                        </template>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Right panel — selected summary -->
+                <div class="slds-col slds-size_3-of-12 rightCol">
+                    <div class="slds-p-around_medium">
+                        <div class="sectionTitle slds-m-bottom_small">Selected Audience</div>
+
+                        <template if:true={selectedSuitableFor.length}>
+                            <div class="savedSection">
+                                <div class="savedSectionTitle">Suitable For</div>
+                                <template for:each={selectedSuitableFor} for:item="item">
+                                    <div key={item} class="savedRow">
+                                        <div class="savedRowName">{item}</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template if:true={selectedLanguages.length}>
+                            <div class="savedSection">
+                                <div class="savedSectionTitle">Languages</div>
+                                <template for:each={selectedLanguages} for:item="lang">
+                                    <div key={lang} class="savedRow">
+                                        <div class="savedRowName">{lang}</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <template if:false={selectedSuitableFor.length}>
+                            <template if:false={selectedLanguages.length}>
+                                <div class="emptyState">
+                                    <div class="emptyTitle">No audience selected yet</div>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer slds-m-horizontal_medium slds-m-top_medium slds-p-vertical_small"></footer>
+    </div>
+</template>

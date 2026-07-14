@@ -1,0 +1,14 @@
+<template>
+    <div class="create-campaign-card" onclick={handleClick}>
+        <div class="card-header">
+            <div class="header-content">
+                <h3 class="card-title">Create New Campaign</h3>
+                <lightning-icon icon-name="utility:chevronright" size="small" class="arrow-icon"></lightning-icon>
+            </div>
+            <div class="header-line"></div>
+        </div>
+        <div class="illustration-container">
+            <img src={illustrationUrl} alt="Create New Campaign" class="illustration-img" onerror={handleImageError} />
+        </div>
+    </div>
+</template>

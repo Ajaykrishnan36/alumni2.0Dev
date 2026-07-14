@@ -1,0 +1,354 @@
+<template>
+    <div class="create-campaign-page">
+        <div class="component-container">
+            <!-- Header with Stepper -->
+            <div class="component-header">
+                <c-ken-campaign-stepper
+                    current-step={currentStep}
+                    is-step1-completed={isStep1Completed}
+                    is-step2-completed={isStep2Completed}
+                    is-step3-completed={isStep3Completed}>
+                </c-ken-campaign-stepper>
+            </div>
+
+            <!-- Content Area -->
+            <div class={contentClass}>
+                <!-- Step 1: Setup Campaign / Edit Campaign -->
+                <template if:true={isStep1Active}>
+                    <div class="step-content">
+                        <h2 class="step-title">{pageTitleLabel}</h2>
+
+                        <!-- Loading overlay while fetching existing data -->
+                        <template if:true={_isLoadingData}>
+                            <div class="loading-overlay">
+                                <lightning-spinner alternative-text="Loading campaign data" size="medium"></lightning-spinner>
+                            </div>
+                        </template>
+
+                        <!-- Image Upload Area -->
+                        <div class="image-upload-container" data-field-id="coverPhoto">
+                            <div class="upload-card">
+                                <!-- Preview when photo selected -->
+                                <template if:true={coverPhotoUrl}>
+                                    <img src={coverPhotoUrl} alt="Cover preview" class="cover-preview"/>
+                                    <button class="cover-remove-btn" onclick={handleRemoveCover} title="Remove photo" type="button">&#10005;</button>
+                                    <div class="cover-change-hint">
+                                        <lightning-icon icon-name="utility:upload" size="xx-small" class="upload-icon-sm"></lightning-icon>
+                                        <span class="change-text">Click to change photo</span>
+                                    </div>
+                                </template>
+                                <!-- Placeholder when no photo -->
+                                <template if:false={coverPhotoUrl}>
+                                    <div class="upload-content">
+                                        <lightning-icon icon-name="utility:upload" size="small" class="upload-icon"></lightning-icon>
+                                        <span class="upload-text">Choose a cover photo (Optional)</span>
+                                    </div>
+                                    <div class="upload-footer">
+                                        <div class="upload-divider"></div>
+                                        <div class="upload-info">
+                                            <lightning-icon icon-name="utility:info" size="xx-small" class="info-icon"></lightning-icon>
+                                            <span>Max image size: 5 MB | Image format: PNG, JPEG</span>
+                                        </div>
+                                    </div>
+                                </template>
+                                <input type="file" class="file-input" accept="image/png, image/jpeg" onchange={handleFileChange}/>
+                            </div>
+                        </div>
+
+                        <!-- Form Fields -->
+                        <div class="form-container">
+
+                            <div class={titleFieldClass} data-field-id="campaignTitle">
+                                <label class="field-label">Title of the Fundraising Campaign<span class="required">*</span></label>
+                                <input
+                                    type="text"
+                                    placeholder="Add title"
+                                    value={campaignTitle}
+                                    oninput={handleTitleChange}
+                                    class="custom-input"/>
+                                <template if:true={step1Errors.campaignTitle}>
+                                    <span class="error-message">{step1Errors.campaignTitle}</span>
+                                </template>
+                            </div>
+
+                            <div class={categoryFieldClass} data-field-id="category">
+                                <label class="field-label">Choose Category<span class="required">*</span></label>
+                                <div class="select-wrapper">
+                                    <select
+                                        name="category"
+                                        onchange={handleCategoryChange}
+                                        class="custom-select">
+                                        <option value="" disabled selected={isNoCategorySelected}>Select</option>
+                                        <template for:each={categoryOptions} for:item="option">
+                                            <option key={option.value} value={option.value} selected={option.selected}>{option.label}</option>
+                                        </template>
+                                    </select>
+                                    <lightning-icon icon-name="utility:chevrondown" size="xx-small" class="select-icon"></lightning-icon>
+                                </div>
+                                <template if:true={step1Errors.category}>
+                                    <span class="error-message">{step1Errors.category}</span>
+                                </template>
+                            </div>
+
+                            <div class={descriptionFieldClass} data-field-id="description">
+                                <label class="field-label">Description<span class="required">*</span></label>
+                                <textarea
+                                    placeholder="Please provide a detailed explanation of why the funds are needed"
+                                    oninput={handleDescriptionChange}
+                                    class="custom-textarea">{description}</textarea>
+                                <template if:true={step1Errors.description}>
+                                    <span class="error-message">{step1Errors.description}</span>
+                                </template>
+                            </div>
+
+                            <!-- Currency + Fundraising Goal -->
+                            <div class="form-row-2col">
+                                <div class="form-field">
+                                    <label class="field-label">Currency<span class="required">*</span></label>
+                                    <div class="select-wrapper">
+                                        <select name="currency" onchange={handleCurrencyChange} class="custom-select">
+                                            <template for:each={currencyOptions} for:item="opt">
+                                                <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                            </template>
+                                        </select>
+                                        <lightning-icon icon-name="utility:chevrondown" size="xx-small" class="select-icon"></lightning-icon>
+                                    </div>
+                                </div>
+                                <div class={goalFieldClass} data-field-id="fundraisingGoal">
+                                    <label class="field-label">Fundraising Goal<span class="required">*</span></label>
+                                    <div class="amount-wrapper">
+                                        <input
+                                            type="number"
+                                            placeholder="00"
+                                            min="0"
+                                            value={fundraisingGoal}
+                                            oninput={handleGoalChange}
+                                            class="custom-input amount-input"/>
+                                        <span class="currency-symbol">{currencySymbol}</span>
+                                    </div>
+                                    <template if:true={step1Errors.fundraisingGoal}>
+                                        <span class="error-message">{step1Errors.fundraisingGoal}</span>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Collection Method -->
+                            <div class="form-field">
+                                <label class="field-label">How would you like to collect funds?<span class="required">*</span></label>
+                                <div class="radio-group radio-group--inline">
+                                    <label class="radio-option">
+                                        <input type="radio" name="collectionMethod" value="internal" checked={isInternalCollection} onchange={handleCollectionMethodChange}/>
+                                        <span class="radio-label">Within the Alumni Community</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="collectionMethod" value="external" checked={isExternalCollection} onchange={handleCollectionMethodChange}/>
+                                        <span class="radio-label">External fundraising link</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- External Link — shown only when External is selected -->
+                            <template if:true={isExternalCollection}>
+                                <div class={externalLinkFieldClass} data-field-id="externalLink">
+                                    <label class="field-label">Paste your External Fundraiser Link Here<span class="required">*</span></label>
+                                    <div class="link-input-wrapper">
+                                        <input
+                                            type="url"
+                                            placeholder="Paste link"
+                                            value={externalLink}
+                                            oninput={handleExternalLinkChange}
+                                            class="custom-input link-input"/>
+                                        <button class="btn-go" type="button" onclick={handleGoLink}>GO</button>
+                                    </div>
+                                    <template if:true={step1Errors.externalLink}>
+                                        <span class="error-message">{step1Errors.externalLink}</span>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <!-- Timeline -->
+                            <div class="form-field">
+                                <label class="field-label">Set a Timeline<span class="required">*</span></label>
+                                <div class="form-row-2col">
+                                    <div class={startDateFieldClass} data-field-id="startDate">
+                                        <div class="date-wrapper">
+                                            <input
+                                                type="date"
+                                                value={startDate}
+                                                onchange={handleStartDateChange}
+                                                class="custom-input date-input"
+                                                placeholder="Start date"/>
+                                            <lightning-icon icon-name="utility:event" size="xx-small" class="date-icon"></lightning-icon>
+                                        </div>
+                                        <template if:true={step1Errors.startDate}>
+                                            <span class="error-message">{step1Errors.startDate}</span>
+                                        </template>
+                                    </div>
+                                    <div class={endDateFieldClass} data-field-id="endDate">
+                                        <div class="date-wrapper">
+                                            <input
+                                                type="date"
+                                                value={endDate}
+                                                onchange={handleEndDateChange}
+                                                class="custom-input date-input"
+                                                placeholder="End date"/>
+                                            <lightning-icon icon-name="utility:event" size="xx-small" class="date-icon"></lightning-icon>
+                                        </div>
+                                        <template if:true={step1Errors.endDate}>
+                                            <span class="error-message">{step1Errors.endDate}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Step 2: Target Audience Selection -->
+                <template if:true={isStep2Active}>
+                    <c-ken-target-audience
+                        parent-object-type="Campaign"
+                        parent-record-id={campaignId}
+                        initial-audience-data={selectedAudienceData}
+                        onaudiencechange={handleAudienceChange}>
+                    </c-ken-target-audience>
+                </template>
+
+                <!-- Step 3: Summary -->
+                <template if:true={isStep3Active}>
+                    <div class="summary-step-content">
+                        <div class="summary-grid">
+                            <!-- Setup Campaign Summary -->
+                            <div class="summary-card">
+                                <div class="card-header">
+                                    <h3 class="summary-card-title">Setup Campaign</h3>
+                                    <button class="btn-edit" onclick={handleEditStep1}>Edit Details</button>
+                                </div>
+                                <div class="card-body">
+                                    <div class="summary-field">
+                                        <label class="summary-label">Title of the fundraising campaign*</label>
+                                        <p class="summary-value">{campaignTitle}</p>
+                                    </div>
+                                    <div class="summary-row">
+                                        <div class="summary-field">
+                                            <label class="summary-label">Category*</label>
+                                            <p class="summary-value">{category}</p>
+                                        </div>
+                                        <div class="summary-field">
+                                            <label class="summary-label">Currency*</label>
+                                            <p class="summary-value">{currencyLabel}</p>
+                                        </div>
+                                    </div>
+                                    <div class="summary-field">
+                                        <label class="summary-label">Fundraising goal*</label>
+                                        <p class="summary-goal">{currencySymbol}{formattedGoal}</p>
+                                    </div>
+                                    <div class="summary-field">
+                                        <label class="summary-label">Description*</label>
+                                        <p class="summary-value">{description}</p>
+                                    </div>
+                                    <div class="summary-field">
+                                        <label class="summary-label">How would you like to collect funds?*</label>
+                                        <p class="summary-value">{collectionMethodLabel}</p>
+                                    </div>
+                                    <div class="summary-row">
+                                        <div class="summary-field">
+                                            <label class="summary-label">Start date</label>
+                                            <p class="summary-value">{formattedStartDate}</p>
+                                        </div>
+                                        <div class="summary-field">
+                                            <label class="summary-label">End date</label>
+                                            <p class="summary-value">{formattedEndDate}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Target Audience Summary -->
+                            <div class="summary-card">
+                                <div class="card-header">
+                                    <h3 class="summary-card-title">Target Audience</h3>
+                                    <button class="btn-edit" onclick={handleEditStep2}>Edit Details</button>
+                                </div>
+                                <div class="card-body">
+                                    <template if:true={hasSelectedAudience}>
+                                        <template for:each={audienceSummaryItems} for:item="aud">
+                                            <div key={aud.id} class="audience-group">
+                                                <div class="audience-group-header" data-id={aud.id} onclick={handleToggleAudienceSummary}>
+                                                    <svg class={aud.caretClass} width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M1.41 7.41L6 2.83L10.59 7.41L12 6L6 0L0 6L1.41 7.41Z" fill="#585A64"/>
+                                                    </svg>
+                                                    <span class="group-name">{aud.title}</span>
+                                                </div>
+                                                <div class="audience-tags">
+                                                    <span class="audience-tag audience-tag-primary">{aud.roleTag}</span>
+                                                    <span class="audience-tag audience-tag-secondary">{aud.membersTag}</span>
+                                                </div>
+                                                <template if:true={aud.expanded}>
+                                                    <template if:true={aud.hasCriteria}>
+                                                        <div class="audience-filter-criteria">
+                                                            <template for:each={aud.criteria} for:item="crit">
+                                                                <div key={crit.label} class="filter-criteria-section">
+                                                                    <label class="filter-criteria-label">{crit.label}</label>
+                                                                    <div class="filter-criteria-tags">
+                                                                        <template for:each={crit.values} for:item="val">
+                                                                            <span key={val} class="audience-tag audience-tag-secondary">{val}</span>
+                                                                        </template>
+                                                                    </div>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                    <template if:false={aud.hasCriteria}>
+                                                        <div class="summary-empty">No filters applied</div>
+                                                    </template>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </template>
+                                    <template if:false={hasSelectedAudience}>
+                                        <div class="summary-empty">No audience selected</div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Footer — sticky, always visible -->
+            <div class="component-footer">
+                <template if:false={isStep3Active}>
+                    <template if:true={isStep1Active}>
+                        <div class="footer-right">
+                            <template if:true={submitError}>
+                                <p class="submit-error-msg">{submitError}</p>
+                            </template>
+                            <button class="btn-secondary" onclick={handleCancel} disabled={isProceeding}>Cancel</button>
+                            <button class="btn-primary" onclick={handleNext} disabled={isProceeding}>{nextButtonLabel}</button>
+                        </div>
+                    </template>
+                    <template if:true={isStep2Active}>
+                        <div class="footer-right">
+                            <template if:true={step2Error}>
+                                <p class="submit-error-msg">{step2Error}</p>
+                            </template>
+                            <button class="btn-secondary" onclick={handleBack}>Back</button>
+                            <button class={step2NextBtnClass} onclick={handleNext}>Next</button>
+                        </div>
+                    </template>
+                </template>
+                <template if:true={isStep3Active}>
+                    <template if:true={submitError}>
+                        <p class="submit-error-msg">{submitError}</p>
+                    </template>
+                    <div class="footer-right">
+                        <button class="btn-secondary" onclick={handleBack} disabled={isSubmitting}>Back</button>
+                        <button class={submitButtonClass} onclick={handleSubmit} disabled={isSubmitting}>{submitButtonLabel}</button>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+</template>

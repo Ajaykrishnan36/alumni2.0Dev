@@ -1,0 +1,146 @@
+:host { display: block; }
+
+/* ============================================================
+ * Survey row card — premium look with status-driven left accent
+ * ============================================================ */
+
+.row {
+    position: relative;
+    background: #FFFFFF;
+    border: 0;
+    border-radius: 12px;
+    padding: 32px 22px 18px 26px;       /* extra left padding for the 4px accent bar */
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr auto;
+    align-items: center;
+    gap: 28px;
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.05),
+        0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+.row:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 10px 20px -4px rgba(0, 0, 0, 0.08),
+        0 4px 8px -2px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* 4px gradient left-accent bar (CSS borders can't take gradients, so use ::before) */
+.row::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: #E5E6E8;                 /* neutral default */
+}
+
+/* Status modifiers — gradient accent + matching very-soft horizontal tint */
+.row--ongoing::before   { background: linear-gradient(to bottom, #EF4444, #F87171); }
+.row--upcoming::before  { background: linear-gradient(to bottom, #F59E0B, #FBBF24); }
+.row--completed::before { background: linear-gradient(to bottom, #10B981, #34D399); }
+.row--rejected::before  { background: linear-gradient(to bottom, #DC2626, #EF4444); }
+
+.row--ongoing   { background: linear-gradient(to right, rgba(239, 68, 68, 0.04) 0%, #FFFFFF 35%); }
+.row--upcoming  { background: linear-gradient(to right, rgba(245, 158, 11, 0.04) 0%, #FFFFFF 35%); }
+.row--completed { background: linear-gradient(to right, rgba(16, 185, 129, 0.04) 0%, #FFFFFF 35%); }
+
+/* Status ribbon pill — top-left, rounded bottom corners */
+.row__pill {
+    position: absolute;
+    top: 0;
+    left: 26px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 0 0 6px 6px;
+    letter-spacing: 0.3px;
+    line-height: 1;
+    z-index: 1;
+}
+.pill--upcoming  { background: #FFF7E6; color: #B45309; }
+.pill--ongoing   { background: #FFE6E6; color: #B91C1C; }
+.pill--completed { background: #E6F7EF; color: #047857; }
+.pill--rejected  { background: #FDECEC; color: #B91C1C; }
+
+/* Main column — title + subtitle */
+.row__title {
+    margin: 0 0 6px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #1F2937;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+}
+.row__sub {
+    margin: 0;
+    font-size: 12.5px;
+    color: #6B7280;
+    line-height: 1.4;
+}
+.row__sub b {
+    color: #1F2937;
+    font-weight: 600;
+}
+
+/* Metric columns — uppercase mini-labels + tabular numeric values */
+.col__label {
+    margin: 0 0 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1;
+}
+.col__val {
+    margin: 0;
+    font-weight: 700;
+    font-size: 18px;
+    color: #1F2937;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+/* CTA — secondary outlined button, thin gray border, crisp dark text */
+.btn {
+    height: 36px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 8px;
+    border: 1px solid transparent;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+}
+.btn--secondary {
+    background: #FFFFFF;
+    border-color: #D1D5DB;
+    color: #1F2937;
+}
+.btn--secondary:hover {
+    background: #F9FAFB;
+    border-color: #9CA3AF;
+    color: #111827;
+}
+
+/* Responsive — stack on narrow widths */
+@media (max-width: 900px) {
+    .row {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 36px 18px 18px 22px;
+    }
+    .btn { margin-left: 0; width: 100%; }
+}

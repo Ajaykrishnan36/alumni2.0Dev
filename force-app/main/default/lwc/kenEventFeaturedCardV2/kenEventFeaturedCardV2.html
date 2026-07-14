@@ -1,0 +1,20 @@
+<template>
+    <article class="ev-feat-card" onclick={handleClick}>
+        <div class="ev-feat-cover" style={coverStyle}>
+            <span class="ev-feat-cat">{displayCategory}</span>
+            <svg class="ev-feat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                <path d="M16 3v4M8 3v4M3 11h18"></path>
+            </svg>
+            <h3 class="ev-feat-title">{title}</h3>
+        </div>
+        <div class="ev-feat-body">
+            <div class="ev-feat-meta">
+                <span class="ev-feat-meta__item">📅 {displayDate}</span>
+                <span class="ev-feat-meta__item">🕓 {displayTime}</span>
+            </div>
+            <div class="ev-feat-loc">📍 {displayLocation}</div>
+            <div class="ev-feat-going">👥 {goingCount} going</div>
+        </div>
+    </article>
+</template>

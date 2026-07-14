@@ -1,0 +1,12 @@
+<template>
+    <div class="member">
+        <div class="member__avatar-wrap">
+            <div class="member__avatar" style={avatarStyle}>{initial}</div>
+            <template lwc:if={showDot}>
+                <span class="member__dot"></span>
+            </template>
+        </div>
+        <p class="member__name">{name}</p>
+        <p class="member__batch">{batch}</p>
+    </div>
+</template>

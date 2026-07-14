@@ -1,0 +1,39 @@
+.breadcrumb-container {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+/* Use CSS custom properties for lightning-breadcrumb shadow DOM */
+.breadcrumb-container lightning-breadcrumbs {
+    --slds-c-breadcrumb-item-text-font-size: 14px;
+    --slds-c-breadcrumb-item-text-font-weight: 500;
+    --slds-c-breadcrumb-item-text-color: #373A45;
+}
+
+.breadcrumb-container lightning-breadcrumb {
+    --slds-c-breadcrumb-item-text-font-size: 14px;
+    --slds-c-breadcrumb-item-text-font-weight: 500;
+    --slds-c-breadcrumb-item-text-color: #373A45;
+}
+
+/* Target breadcrumb using part attribute */
+.breadcrumb-container lightning-breadcrumb::part(breadcrumb) {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #373A45 !important;
+}
+
+/* Global styles to target SLDS breadcrumb classes as fallback */
+:global(.slds-breadcrumb .slds-breadcrumb__item > a),
+:global(.slds-breadcrumb__item > a),
+:global([part="breadcrumb"]) {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #373A45 !important;
+}
+
+:global(.slds-breadcrumb__item > a:hover),
+:global([part="breadcrumb"]:hover) {
+    color: #373A45 !important;
+    text-decoration: underline;
+}

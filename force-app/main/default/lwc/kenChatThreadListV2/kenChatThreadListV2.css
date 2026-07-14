@@ -1,0 +1,20 @@
+/* Light-DOM child styles for kenChatThreadListV2 */
+.threads{border-right:1px solid #E5E6E8;display:flex;flex-direction:column;background:#fff}
+.threads__head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px}
+.threads__title{margin:0;font-weight:700;font-size:18px;color:#373A45;font-family:"General Sans","Inter",system-ui,sans-serif}
+.threads__new{width:32px;height:32px;border:0;border-radius:8px;background:#EAEFFF;color:#3061FF;font-size:18px;cursor:pointer}
+.threads__search{padding:0 16px 12px}
+.threads__search input{width:100%;height:36px;padding:8px 12px;background:#F6F8FB;border:1px solid transparent;border-radius:8px;font-family:inherit;font-weight:500;font-size:13px;outline:none}
+.threads__search input:focus{background:#fff;border-color:#3061FF}
+.threads__list{list-style:none;padding:0;margin:0;overflow-y:auto;flex:1}
+.thread{display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;transition:background .15s;border-left:3px solid transparent}
+.thread:hover{background:#F6F8FB}
+.thread--active{background:#EAEFFF;border-left-color:#3061FF}
+.thread__avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;color:#fff}
+.thread__body{flex:1;min-width:0}
+.thread__name{margin:0 0 2px;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#373A45}
+.thread__last{margin:0;font-weight:500;font-size:12px;color:#B2B3B7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thread__right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.thread__time{font-weight:500;font-size:11px;color:#B2B3B7}
+.thread__unread{background:#3061FF;color:#fff;border-radius:10px;padding:1px 7px;font-weight:600;font-size:11px;min-width:18px;text-align:center}
+@media (max-width:768px){.threads{display:none}}

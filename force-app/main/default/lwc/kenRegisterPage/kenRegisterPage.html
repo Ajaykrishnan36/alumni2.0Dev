@@ -1,0 +1,158 @@
+<template>
+	<div class="section-width">
+		<template if:true={isLoading}>
+			<lightning-spinner alternative-text="Loading..." size="medium" variant="brand"></lightning-spinner>
+		</template>
+
+		<template if:false={showOTP}>
+			<div class="register-page-wrapper">
+				<p class="register-title">Registration</p>
+				<p class="register-subtitle">Please enter all details as per your institution records.</p>
+
+				<div class="form-grid">
+					<div class="form-field">
+						<div class="field-label">First Name<span style="color:red">*</span></div>
+						<lightning-input id="firstName" label="First Name" type="text" placeholder=""
+							data-id="firstName" value={firstName} variant="label-hidden" oninput={handleInputChange}
+							onchange={handleInputChange} onblur={handleOnBlur} class="studentportalInputsLogin">
+						</lightning-input>
+					</div>
+
+					<div class="form-field">
+						<div class="field-label">Last Name<span style="color:red">*</span></div>
+						<lightning-input id="lastName" label="Last Name" type="text" placeholder=""
+							data-id="lastName" value={lastName} variant="label-hidden" oninput={handleInputChange}
+							onchange={handleInputChange} onblur={handleOnBlur} class="studentportalInputsLogin">
+						</lightning-input>
+					</div>
+
+					<div class="form-field">
+						<div class="field-label">Email<span style="color:red">*</span></div>
+						<lightning-input id="email" label="Email" type="email" placeholder="" data-id="email"
+							value={email} variant="label-hidden" oninput={handleInputChange}
+							onchange={handleInputChange} onblur={handleOnBlur} onkeyup={handleEnterKey}
+							class="studentportalInputsLogin">
+						</lightning-input>
+					</div>
+
+					<div class="form-field">
+						<div class="field-label">Mobile Number<span style="color:red">*</span></div>
+						<template if:true={optionsLoaded}>
+							<c-ken-custom-phone-input value={phone} placeholder=""
+								initial-country={defaultDialCountry} required="true" onphonechange={handlePhoneChange}
+								class="phone-input-component">
+							</c-ken-custom-phone-input>
+						</template>
+					</div>
+
+					<div class="form-field">
+						<div class="field-label">Registration no./Member ID/Roll no.</div>
+						<lightning-input id="regNumber" label="Registration Number" type="text"
+							placeholder="" data-id="regNumber" value={regNumber}
+							variant="label-hidden" oninput={handleInputChange} onchange={handleInputChange}
+							onblur={handleOnBlur} class="studentportalInputsLogin">
+						</lightning-input>
+					</div>
+
+					<div class="form-field">
+						<div class="field-label">Institute Name</div>
+						<c-ken-searchable-picklist placeholder="Select" search-placeholder="Search institute..." value={institutionName} options={instituteOptions} data-id="institutionName" onchange={handlePicklistChange} class="register-searchable"></c-ken-searchable-picklist>
+					</div>
+
+					<div class="form-field">
+						<div class="field-label">Select Programme<span style="color:red">*</span></div>
+						<c-ken-searchable-picklist placeholder="Select" search-placeholder="Search program..." value={programPlan} options={programOptions} data-id="programPlan" onchange={handlePicklistChange} class="register-searchable"></c-ken-searchable-picklist>
+					</div>
+
+					<div class="form-field">
+						<div class="field-label">Year of Graduation<span style="color:red">*</span></div>
+						<c-ken-searchable-picklist placeholder="Select" search-placeholder="Search year..." value={gradYear} options={gradOptions} data-id="gradYear" onchange={handlePicklistChange} class="register-searchable"></c-ken-searchable-picklist>
+					</div>
+				</div>
+
+				<div class="register-btn-wrap">
+					<lightning-button variant="brand" disable-animation="true" label="Register" type="submit"
+						onclick={handleRegister} stretch class="studentportal-BlueButtonLogin"></lightning-button>
+				</div>
+
+				<div class="card-footer">
+					<div class="already-member-text">Already a member? <button type="button" class="already-member-link" onclick={handleLoginRedirect}>Login</button></div>
+					<div class="card-powered-by">
+						<span class="card-powered-text">Powered by</span>
+						<img src={kenPoweredbyLogo} alt="ken42" class="card-powered-logo" />
+					</div>
+				</div>
+			</div>
+		</template>
+
+		<template if:true={showOTP}>
+			<p class="register-title">Verify OTP</p>
+			<div class="otp-container">
+				<div class="otp-email-section">
+					<span class="otp-email-text">An OTP has been sent to </span>
+					<span class="otp-email-address">{email}</span>
+					<button type="button" class="edit-email-btn" onclick={handleEditEmail} aria-label="Edit email">
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path
+								d="M3 17.25V21H6.75L17.81 9.94L14.06 6.19L3 17.25ZM20.71 7.04C21.1 6.65 21.1 6.02 20.71 5.63L18.37 3.29C17.98 2.9 17.35 2.9 16.96 3.29L15.12 5.13L18.87 8.88L20.71 7.04Z"
+								fill="currentColor" />
+						</svg>
+					</button>
+				</div>
+				<div class="otp-input-container">
+					<template for:each={otpInputs} for:item="input">
+						<input key={input.id} type="text" class="otp-input" maxlength="1" value={input.value}
+							data-index={input.id} oninput={handleOTPInput} onkeydown={handleOTPKeyDown}
+							onpaste={handleOTPPaste} />
+					</template>
+				</div>
+				<div class="otp-timer-section">
+					<template if:true={canResend}>
+						<span class="resend-text">Did not receive it yet? <button type="button" class="resend-link"
+								onclick={handleResendOTP}>Resend OTP</button></span>
+					</template>
+					<template if:false={canResend}>
+						<span class="timer-text">Resend OTP in <span class="timer-value">{timerDisplay}</span></span>
+					</template>
+				</div>
+				<div style="margin-top: 25px;">
+					<lightning-button variant="brand" disable-animation="true" label="Verify" type="submit"
+						onclick={handleVerifyOTP} stretch class="studentportal-BlueButtonLogin"></lightning-button>
+				</div>
+				<!-- <div class="powered-by-section">
+					<span class="powered-by-text">Powered by</span>
+					<img src={kenPoweredbyLogo} alt="ken42" class="ken42-logo-image" />
+				</div> -->
+			</div>
+		</template>
+	</div>
+
+	<template if:true={showSuccessGif}>
+		<div class="success-page-container">
+			<div class="success-modal">
+				<div class="success-content">
+					<div class="success-gif-container">
+						<img src={registrationSuccessGifUrl} alt="Registration Success" class="success-gif" />
+					</div>
+					<h1 class="success-title">Thank you for registering!</h1>
+					<p class="success-message">
+						Your application is under review. You'll receive a confirmation email within 3 working days once
+						it's approved.
+					</p>
+					<button type="button" class="got-it-button" onclick={handleGotIt}>
+						Got it!
+					</button>
+				</div>
+			</div>
+		</div>
+	</template>
+
+	<!-- Toast notifications -->
+	<c-ken-toast-notification is-visible={isSuccessToastVisible} toast-title={successTitle}
+		toast-message={successDescription} toast-variant="success">
+	</c-ken-toast-notification>
+
+	<c-ken-toast-notification is-visible={isErrorToastVisible} toast-title={errorTitle} toast-message={errorDescription}
+		toast-variant="error">
+	</c-ken-toast-notification>
+</template>

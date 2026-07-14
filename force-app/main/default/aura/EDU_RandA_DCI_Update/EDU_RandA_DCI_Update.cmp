@@ -1,0 +1,9 @@
+<aura:component implements="flexipage:availableForRecordHome,force:hasRecordId" access="global">
+    <div class="slds-m-top_medium">
+        <lightning:buttonGroup>
+            <lightning:button label="Waive" onclick="{!c.handleWaive}" />
+            <lightning:button label="Approve" onclick="{!c.handleApprove}" />
+            <lightning:button label="Reject" onclick="{!c.handleReject}" />
+        </lightning:buttonGroup>
+    </div>
+</aura:component>

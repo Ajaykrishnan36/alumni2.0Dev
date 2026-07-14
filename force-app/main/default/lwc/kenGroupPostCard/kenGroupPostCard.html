@@ -1,0 +1,95 @@
+<template>
+    <article class="post-card">
+        <header class="post-header">
+            <div class="avatar-wrap">
+                <template if:true={hasAuthorPhoto}>
+                    <img src={post.authorPhotoUrl} alt={post.authorName} class="avatar" />
+                </template>
+                <template if:false={hasAuthorPhoto}>
+                    <div class="avatar avatar-fallback">{authorInitial}</div>
+                </template>
+            </div>
+            <div class="author-meta">
+                <p class="author-name">{post.authorName}</p>
+                <p class="author-sub">
+                    <template if:true={post.authorBatch}>
+                        <span>{post.authorBatch}</span>
+                        <span class="dot">·</span>
+                    </template>
+                    <span class="time">{post.createdAtLabel}</span>
+                </p>
+            </div>
+
+            <template if:true={showMenu}>
+                <div class="menu-wrap">
+                    <button type="button" class="menu-toggle" aria-label="Post actions" onclick={handleToggleMenu}>
+                        <lightning-icon icon-name="utility:threedots_vertical" size="x-small"></lightning-icon>
+                    </button>
+                    <template if:true={menuOpen}>
+                        <div class="menu-popover" role="menu">
+                            <template if:true={post.canDelete}>
+                                <button type="button" class="menu-item menu-item-danger" onclick={handleDelete}>
+                                    Delete post
+                                </button>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </header>
+
+        <template if:true={hasBody}>
+            <div class="post-body" lwc:dom="manual"></div>
+        </template>
+
+        <template if:true={hasPoll}>
+            <c-ken-group-post-poll poll={post.pollState}></c-ken-group-post-poll>
+        </template>
+
+        <template if:true={hasAttachments}>
+            <div class="post-attachments">
+                <template for:each={attachmentItems} for:item="att">
+                    <template if:true={att.isImage}>
+                        <a key={att.key} href={att.downloadUrl} target="_blank" class="attachment-image-link">
+                            <img src={att.previewUrl} alt={att.fileName} class="attachment-image" />
+                        </a>
+                    </template>
+                    <template if:false={att.isImage}>
+                        <a key={att.key} href={att.downloadUrl} target="_blank" class="attachment-file">
+                            <lightning-icon icon-name="utility:attach" size="small"></lightning-icon>
+                            <span>{att.fileName}</span>
+                        </a>
+                    </template>
+                </template>
+            </div>
+        </template>
+
+        <div class="post-stats">
+            <template if:true={hasLikes}>
+                <span class="stat">{likesLabel}</span>
+            </template>
+            <template if:true={hasComments}>
+                <span class="stat">{commentsLabel}</span>
+            </template>
+        </div>
+
+        <div class="post-actions">
+            <button type="button" class={likeButtonClass} onclick={handleToggleLike} disabled={isLiking}>
+                <lightning-icon icon-name={likeIcon} size="x-small"></lightning-icon>
+                <span>{likeLabel}</span>
+            </button>
+            <button type="button" class="action-btn" onclick={handleToggleComments}>
+                <lightning-icon icon-name="utility:comments" size="x-small"></lightning-icon>
+                <span>Comment</span>
+            </button>
+            <button type="button" class="action-btn" disabled>
+                <lightning-icon icon-name="utility:share" size="x-small"></lightning-icon>
+                <span>Share</span>
+            </button>
+        </div>
+
+        <template if:true={showComments}>
+            <c-ken-group-comment-section feed-item-id={post.feedItemId}></c-ken-group-comment-section>
+        </template>
+    </article>
+</template>

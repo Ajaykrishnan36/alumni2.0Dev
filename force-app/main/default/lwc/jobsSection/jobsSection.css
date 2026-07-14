@@ -1,0 +1,352 @@
+:host {
+    display: block;
+    background: #f6f8fb;
+    color: #1f2430;
+}
+
+.jobs-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: 1.5rem;
+}
+
+.jobs-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem 1.5rem;
+    box-shadow: 0 8px 24px rgba(22, 34, 51, 0.06);
+}
+
+.jobs-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.tabs {
+   
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 6px;
+}
+
+.tab {
+    background: none;
+    border: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #6b7282;
+    padding: 0.2rem 0 0.7rem;
+    border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+    color: var(--primary-color, #1f2430);
+    border-color: var(--primary-color, #2f5bff);
+}
+
+.view-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border: none;
+    background: var(--primary-color, #2f5bff);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    padding: 0.45rem 0.85rem;
+}
+
+.view-all__icon {
+    --sds-c-icon-color-foreground-default: #ffffff;
+}
+
+.preferences {
+    margin-top: 0.6rem;
+    font-size: 0.82rem;
+    color: #6b7282;
+}
+
+.preferences__label {
+    text-decoration: underline;
+    margin-right: 0.3rem;
+}
+
+.jobs-grid {
+    margin-top: 1.25rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.1rem;
+}
+
+.job-card {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 1rem 1.1rem 1.1rem;
+    border: 1px solid #eef2f9;
+}
+
+.job-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.company {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.company__name {
+    font-size: 0.82rem;
+    color: #5f6776;
+}
+
+.bookmark {
+    --sds-c-icon-color-foreground-default: #8f99aa;
+}
+
+.bookmark-btn {
+    background: none;
+    border: none;
+    padding: 0.2rem;
+    border-radius: 999px;
+    cursor: pointer;
+    --sds-c-icon-color-foreground-default: #8f99aa;
+}
+
+.bookmark-btn.bookmarked {
+    background: var(--secondary-color, #eef2ff);
+    --sds-c-icon-color-foreground-default: var(--primary-color, #2f5bff);
+}
+
+.brand-badge {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 0.8rem;
+}
+
+.brand-1 {
+    background: var(--primary-color, #1f6feb);
+}
+
+.brand-2 {
+    background: var(--tertiary-color, #6f51ff);
+}
+
+.brand-3 {
+    background: #f8b400;
+}
+
+.brand-4 {
+    background: #3b82f6;
+}
+
+.brand-5 {
+    background: #ef4444;
+}
+
+.brand-6 {
+    background: #16a34a;
+}
+
+.job-title {
+    font-size: 1.02rem;
+    margin: 0.75rem 0 0.6rem;
+}
+
+.job-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.8rem;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.72rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #e3e8f2;
+    color: #4b5563;
+}
+
+.tag-icon {
+    --sds-c-icon-color-foreground-default: #7c8796;
+}
+
+.job-salary {
+    font-weight: 600;
+    margin-bottom: 0.55rem;
+}
+
+.job-match {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    color: #4b5563;
+}
+
+.match-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #e7f6ec;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.match-icon__inner {
+    --sds-c-icon-color-foreground-default: #22a06b;
+}
+
+.jobs-right {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    /* height: calc(60vh - 112px);
+    overflow-y: auto; */
+}
+
+.side-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem 1.3rem;
+    box-shadow: 0 8px 24px rgba(22, 34, 51, 0.06);
+}
+
+.side-card .tabs {
+    gap: 1rem;
+}
+
+.saved-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.saved-item {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.saved-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.saved-title {
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.saved-meta {
+    font-size: 0.75rem;
+    color: #7a8497;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.6rem;
+    padding: 1.8rem 1rem 1rem;
+    color: #7a8497;
+    font-size: 0.85rem;
+   
+}
+
+.empty-illustration {
+    width: 140px;
+    height: 110px;
+}
+
+.empty-illustration svg {
+    width: 100%;
+    height: 100%;
+}
+
+.ill-line {
+    stroke: #c7cfde;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+}
+
+.ill-accent {
+    fill: var(--primary-color, #2f5bff);
+    opacity: 0.9;
+}
+
+.posted {
+    border: 2px solid var(--primary-color, #2f5bff);
+    box-shadow: none;
+}
+
+.posted-header {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.2rem;
+}
+
+.post-job {
+    width: 100%;
+    margin-top: 0.6rem;
+    border: none;
+    background: var(--primary-color, #2f5bff);
+    color: #ffffff;
+    padding: 0.5rem 0.8rem;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+@media (max-width: 1080px) {
+    .jobs-shell {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .jobs-card {
+        padding: 1rem;
+    }
+
+    .jobs-card__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .tabs {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .view-all {
+        align-self: flex-start;
+    }
+}
+
+.jobs-card__body{
+    height: calc(100vh - 267px);
+    overflow-y: auto;
+}

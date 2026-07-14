@@ -1,0 +1,304 @@
+<template>
+    <div class="commsPage">
+
+        <!-- ============= HOME ============= -->
+        <template lwc:if={isHome}>
+            <header class="pageHeader">
+                <div>
+                    <h1>Communications</h1>
+                    <p>Send bulk email to any alumni segmentation and track delivery + opens.</p>
+                </div>
+                <lightning-button label="New Campaign" variant="brand" icon-name="utility:add" onclick={handleNewCampaign}></lightning-button>
+            </header>
+
+            <section class="card">
+                <div class="cardHeader">
+                    <h2>Campaigns</h2>
+                </div>
+                <template lwc:if={campaignsLoading}>
+                    <div class="empty">Loading…</div>
+                </template>
+                <template lwc:elseif={campaigns.length}>
+                    <div class="tableWrap">
+                        <table class="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Audience</th>
+                                    <th>Recipients</th>
+                                    <th>Delivery</th>
+                                    <th>Sent</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={campaigns} for:item="c">
+                                    <tr key={c.id} data-id={c.id} onclick={handleOpenCampaign} class="rowClickable">
+                                        <td><div class="campName">{c.name}</div><div class="campSubject">{c.subject}</div></td>
+                                        <td><span class={c.statusPillClass}>{c.status}</span></td>
+                                        <td>{c.segmentationName}</td>
+                                        <td>{c.totalRecipients}</td>
+                                        <td>{c.deliveryLabel}</td>
+                                        <td>{c.sentLabel}</td>
+                                        <td>{c.createdLabel}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+                <template lwc:else>
+                    <div class="empty">No campaigns yet. Create one to get started.</div>
+                </template>
+            </section>
+        </template>
+
+        <!-- ============= WIZARD ============= -->
+        <template lwc:if={isWizard}>
+            <header class="pageHeader">
+                <div>
+                    <h1>New Communication</h1>
+                    <p>Select audience → compose → send.</p>
+                </div>
+                <lightning-button label="Back to Campaigns" variant="neutral" onclick={handleBackHome}></lightning-button>
+            </header>
+
+            <div class="stepper-container">
+                <div class="stepper">
+                    <template for:each={stepperItems} for:item="step">
+                        <div key={step.number} class="stepper-item-wrapper">
+                            <div class="stepper-item">
+                                <div class={step.statusClass}>
+                                    <div class="step-icon">
+                                        <template lwc:if={step.isCompleted}><span>&#10003;</span></template>
+                                        <template lwc:else><span>{step.number}</span></template>
+                                    </div>
+                                    <span class="step-label">{step.label}</span>
+                                </div>
+                            </div>
+                            <template lwc:if={step.isLast}></template>
+                            <template lwc:else>
+                                <div class={step.lineClass}></div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style={progressFillStyle}></div>
+                    </div>
+                    <div class="step-indicator">{stepIndicatorLabel}</div>
+                </div>
+            </div>
+
+            <!-- Step 1 -->
+            <template lwc:if={isAudienceStep}>
+                <section class="card">
+                    <div class="cardHeader">
+                        <h2>Pick a Segmentation</h2>
+                    </div>
+
+                    <c-ken-saved-audience-picker
+                        lwc:ref="savedPicker"
+                        add-new-label="Create New Segmentation"
+                        onaddnew={handleCreateSegmentation}
+                        onaudienceadded={handleAudiencePicked}>
+                    </c-ken-saved-audience-picker>
+
+                    <template lwc:if={selectedSegmentationId}>
+                        <div class="audienceSummary">
+                            <div>Selected: <strong>{selectedSegmentationName}</strong></div>
+                            <div class="audienceCount">{recipientCountLabel}</div>
+                        </div>
+                    </template>
+
+                    <footer class="cardFooter">
+                        <lightning-button label="Cancel" variant="neutral" onclick={handleBackHome}></lightning-button>
+                        <lightning-button label="Next: Compose" variant="brand" disabled={composeDisabled} onclick={handleNextFromAudience}></lightning-button>
+                    </footer>
+                </section>
+            </template>
+
+            <!-- Step 2 -->
+            <template lwc:if={isComposeStep}>
+                <section class="card">
+                    <div class="cardHeader"><h2>Compose Email</h2></div>
+
+                    <div class="formGrid">
+                        <lightning-input label="Campaign Name (internal)" data-field="name" value={form.name} onchange={handleFormChange}></lightning-input>
+                        <lightning-input label="From Name" data-field="fromName" value={form.fromName} placeholder="Alumni Relations" onchange={handleFormChange}></lightning-input>
+                        <lightning-input label="From Address" data-field="fromAddress" type="email" value={form.fromAddress} onchange={handleFormChange}></lightning-input>
+                        <lightning-input label="Subject" data-field="subject" value={form.subject} placeholder={subjectPlaceholder} onchange={handleFormChange}></lightning-input>
+                    </div>
+
+                    <div class="formFull">
+                        <label class="bodyLabel">{bodyLabel}</label>
+                        <textarea class="bodyTextarea" data-field="body" rows="12" oninput={handleFormChange} lwc:dom="manual" lwc:ref="bodyArea"></textarea>
+                    </div>
+
+                    <footer class="cardFooter">
+                        <lightning-button label="Back" variant="neutral" onclick={handleBackToAudience}></lightning-button>
+                        <div>
+                            <lightning-button label="Save Draft" variant="neutral" onclick={handleSaveDraft} disabled={saving} class="slds-m-right_small"></lightning-button>
+                            <lightning-button label="Next: Review" variant="brand" disabled={reviewDisabled} onclick={handleNextFromCompose}></lightning-button>
+                        </div>
+                    </footer>
+                </section>
+            </template>
+
+            <!-- Step 3 -->
+            <template lwc:if={isReviewStep}>
+                <section class="card">
+                    <div class="cardHeader"><h2>Review &amp; Send</h2></div>
+
+                    <div class="reviewGrid">
+                        <div>
+                            <div class="reviewLabel">Audience</div>
+                            <div class="reviewValue">{selectedSegmentationName}</div>
+                            <div class="reviewSub">{recipientCountLabel}</div>
+                        </div>
+                        <div>
+                            <div class="reviewLabel">From</div>
+                            <div class="reviewValue">{form.fromName}</div>
+                            <div class="reviewSub">{form.fromAddress}</div>
+                        </div>
+                        <div>
+                            <div class="reviewLabel">Subject</div>
+                            <div class="reviewValue">{form.subject}</div>
+                        </div>
+                    </div>
+
+                    <div class="previewBox">
+                        <div class="previewHeader">Preview</div>
+                        <div class="previewBody" lwc:dom="manual" lwc:ref="previewBody"></div>
+                    </div>
+
+                    <div class="scheduleRow">
+                        <lightning-input label="Schedule for (optional)" type="datetime" data-field="scheduledFor" value={form.scheduledFor} onchange={handleFormChange}></lightning-input>
+                    </div>
+
+                    <footer class="cardFooter">
+                        <lightning-button label="Back" variant="neutral" onclick={handleBackToCompose}></lightning-button>
+                        <div>
+                            <lightning-button label="Schedule" variant="neutral" onclick={handleSchedule} disabled={sendDisabled} class="slds-m-right_small"></lightning-button>
+                            <lightning-button label="Send Now" variant="brand" onclick={handleSendNow} disabled={sendDisabled}></lightning-button>
+                        </div>
+                    </footer>
+                </section>
+            </template>
+        </template>
+
+        <!-- ============= ANALYTICS ============= -->
+        <template lwc:if={isAnalytics}>
+            <header class="pageHeader">
+                <div>
+                    <h1>Campaign Analytics</h1>
+                    <template lwc:if={activeCampaign}>
+                        <p>{activeCampaign.name} · <span class={activeCampaign.statusPillClass}>{activeCampaign.status}</span></p>
+                    </template>
+                </div>
+                <div class="analyticsActions">
+                    <lightning-button label="Refresh" variant="neutral" icon-name="utility:refresh" onclick={handleRefresh} disabled={analyticsRefreshing}></lightning-button>
+                    <lightning-button label="Back to Campaigns" variant="neutral" onclick={handleBackHome}></lightning-button>
+                </div>
+            </header>
+
+            <template lwc:if={activeCampaign}>
+                <section class="kpiGrid">
+                    <div class="kpiCard">
+                        <div class="kpiLabel">Recipients</div>
+                        <div class="kpiValue">{activeCampaign.totalRecipients}</div>
+                    </div>
+                    <div class="kpiCard">
+                        <div class="kpiLabel">Sent</div>
+                        <div class="kpiValue">{activeCampaign.sentCount}</div>
+                    </div>
+                    <div class="kpiCard kpiCardGreen">
+                        <div class="kpiLabel">Delivered</div>
+                        <div class="kpiValue">{activeCampaign.deliveredCount}</div>
+                        <div class="kpiSub">{activeCampaign.deliveryLabel}</div>
+                    </div>
+                    <div class="kpiCard kpiCardBlue">
+                        <div class="kpiLabel">Opened</div>
+                        <div class="kpiValue">{activeCampaign.openedCount}</div>
+                        <div class="kpiSub">{activeCampaign.openLabel}</div>
+                    </div>
+                    <div class="kpiCard kpiCardRed">
+                        <div class="kpiLabel">Bounced</div>
+                        <div class="kpiValue">{activeCampaign.bouncedCount}</div>
+                        <div class="kpiSub">{activeCampaign.bounceLabel}</div>
+                    </div>
+                    <div class="kpiCard">
+                        <div class="kpiLabel">Failed</div>
+                        <div class="kpiValue">{activeCampaign.failedCount}</div>
+                    </div>
+                </section>
+
+                <template lwc:if={activeCampaign.errorMessage}>
+                    <div class="errorBanner">{activeCampaign.errorMessage}</div>
+                </template>
+
+                <section class="card">
+                    <div class="cardHeader">
+                        <h2>Recipients</h2>
+                        <lightning-combobox label="" variant="label-hidden" value={recipientStatusFilter} options={statusFilterOptions} onchange={handleStatusFilterChange}></lightning-combobox>
+                    </div>
+                    <template lwc:if={recipients.length}>
+                        <div class="tableWrap">
+                            <table class="dataTable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Sent</th>
+                                        <th>Opened</th>
+                                        <th>Error</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={recipients} for:item="r">
+                                        <tr key={r.id}>
+                                            <td>{r.name}</td>
+                                            <td>{r.email}</td>
+                                            <td><span class={r.statusPillClass}>{r.status}</span></td>
+                                            <td>{r.sentLabel}</td>
+                                            <td>{r.openedLabel}</td>
+                                            <td class="errCell">{r.error}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                    <template lwc:else>
+                        <div class="empty">No recipients in this view.</div>
+                    </template>
+                </section>
+            </template>
+        </template>
+
+        <!-- ============= AUDIENCE BUILDER MODAL ============= -->
+        <template lwc:if={showAudienceBuilder}>
+            <section class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+                <div class="slds-modal__container builderModal">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close" title="Close" onclick={handleCloseAudienceBuilder}>
+                            <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
+                        </button>
+                        <h2 class="slds-text-heading_medium">Create Segmentation</h2>
+                    </header>
+                    <div class="slds-modal__content builderBody">
+                        <c-ken-target-audience-selection lwc:ref="audienceBuilder"></c-ken-target-audience-selection>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Done" variant="brand" onclick={handleCloseAudienceBuilder}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+    </div>
+</template>

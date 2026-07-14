@@ -1,0 +1,87 @@
+<template>
+    <div class={composerClass}>
+        <p class="composer-label">Share your Thoughts</p>
+
+        <template if:false={isExpanded}>
+            <input
+                type="text"
+                class="composer-collapsed-input"
+                placeholder="What's on your mind?"
+                onfocus={handleFocus} />
+        </template>
+
+        <template if:true={isExpanded}>
+            <div class="rich-text-wrap">
+                <c-ken-rich-text-editor
+                    value={body}
+                    placeholder="What's on your mind?"
+                    onchange={handleRichTextChange}>
+                </c-ken-rich-text-editor>
+            </div>
+
+            <template if:true={hasAttachments}>
+                <ul class="attachment-list">
+                    <template for:each={attachments} for:item="att">
+                        <li key={att.contentDocumentId} class="attachment-chip">
+                            <lightning-icon icon-name="utility:image" size="xx-small"></lightning-icon>
+                            <span class="attachment-name">{att.name}</span>
+                            <button
+                                type="button"
+                                class="attachment-remove"
+                                data-id={att.contentDocumentId}
+                                onclick={handleRemoveAttachment}
+                                aria-label="Remove attachment">
+                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
+                            </button>
+                        </li>
+                    </template>
+                </ul>
+            </template>
+
+            <div class="composer-footer">
+                <div class="footer-left">
+                    <button type="button" class="icon-btn" onclick={handleClickAttach} disabled={isUploading} title="Attach image">
+                        <lightning-icon icon-name="utility:image" size="x-small"></lightning-icon>
+                    </button>
+                    <input
+                        type="file"
+                        class="hidden-file-input"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        multiple
+                        onchange={handleFileChange} />
+
+                    <button type="button" class="pill-btn" onclick={handleOpenPoll}>
+                        <lightning-icon icon-name="utility:poll" size="x-small"></lightning-icon>
+                        <span>Create a Poll</span>
+                    </button>
+
+                    <template if:true={isUploading}>
+                        <span class="upload-status">
+                            <lightning-spinner alternative-text="Uploading" size="x-small"></lightning-spinner>
+                            <span>Uploading…</span>
+                        </span>
+                    </template>
+                </div>
+
+                <div class="footer-right">
+                    <span class="char-counter">{counterLabel}</span>
+                    <button type="button" class="btn btn-secondary" onclick={handleCancel} disabled={isPosting}>
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick={handleSubmit} disabled={postDisabled}>
+                        <template if:true={isPosting}>Posting…</template>
+                        <template if:false={isPosting}>Post</template>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={showPollModal}>
+            <c-ken-group-poll-modal
+                group-id={groupId}
+                onclose={handleClosePoll}
+                oncreated={handlePollCreated}>
+            </c-ken-group-poll-modal>
+        </template>
+    </div>
+</template>

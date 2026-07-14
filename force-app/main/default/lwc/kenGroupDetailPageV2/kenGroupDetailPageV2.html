@@ -1,0 +1,150 @@
+<template>
+    <template lwc:if={decoratedGroup}>
+        <section class="group-page">
+            <div class="gp-topbar">
+                <button type="button" class="gp-back" onclick={handleBack} title="Back">
+                    <span class="gp-back__arrow">&larr;</span>
+                    <span>Back</span>
+                </button>
+            </div>
+
+            <div class="gp-card">
+                <div class="gp-cover" style={decoratedGroup.coverStyle}>
+                    <div class="gp-cover-overlay">
+                        <div class="gp-cover-icon">{decoratedGroup.initial}</div>
+                        <div class="gp-cover-text">
+                            <div class="gp-cover-category">{decoratedGroup.category}</div>
+                            <div class="gp-cover-name">{decoratedGroup.name}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="gp-head">
+                    <p class="gp-sub">{decoratedGroup.metaLine}</p>
+                    <div class="gp-head__actions">
+                        <template lwc:if={canInvite}>
+                            <button type="button" class="btn btn--outline" onclick={handleOpenInvite}>+ Invite</button>
+                        </template>
+                        <button type="button" class={decoratedGroup.joinClass} onclick={handleJoin}>{decoratedGroup.joinLabel}</button>
+                    </div>
+                </div>
+                <nav class="tabs detail-tabs">
+                    <template for:each={tabs} for:item="t">
+                        <button key={t.id} type="button" class={t.cssClass} data-id={t.id} onclick={handleTab}>{t.label}</button>
+                    </template>
+                </nav>
+                <div class="gp-body">
+                    <template lwc:if={isAbout}>
+                        <div class="about-grid">
+                            <div class="about-card">
+                                <h4>About the Group</h4>
+                                <p>{decoratedGroup.description}</p>
+                                <div class="footer-info">
+                                    <span class="footer-info__chip">Created on: {decoratedGroup.created}</span>
+                                    <span class="footer-info__chip">{decoratedGroup.membersLabel}</span>
+                                </div>
+                            </div>
+                            <div class="rules-card">
+                                <h4>Rules of the Group</h4>
+                                <ul>
+                                    <template for:each={decoratedGroup.rulesList} for:item="r">
+                                        <li key={r.id}>{r.text}</li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template lwc:if={isFeed}>
+                        <template lwc:if={isLoadingSubTabs}>
+                            <div class="empty-state-card">
+                                <p class="empty-state-card__sub">Loading updates…</p>
+                            </div>
+                        </template>
+                        <template lwc:elseif={hasUpdates}>
+                            <template for:each={feedDecorated} for:item="u">
+                                <c-ken-group-update-row-v2 key={u.id} update={u}></c-ken-group-update-row-v2>
+                            </template>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state-card">
+                                <div class="empty-state-card__icon" aria-hidden="true">&#128240;</div>
+                                <h3 class="empty-state-card__title">No posts yet</h3>
+                                <p class="empty-state-card__sub">Be the first to share something with the group.</p>
+                                <button type="button" class="btn btn--primary" onclick={handleOpenInvite}>Create a post</button>
+                            </div>
+                        </template>
+                    </template>
+
+                    <template lwc:if={isEvents}>
+                        <template lwc:if={isLoadingSubTabs}>
+                            <div class="empty-state-card">
+                                <p class="empty-state-card__sub">Loading events…</p>
+                            </div>
+                        </template>
+                        <template lwc:elseif={hasEvents}>
+                            <div class="events-grid">
+                                <template for:each={eventsDecorated} for:item="e">
+                                    <article key={e.id} class="event">
+                                        <div class="event__cover" style={e.coverStyle}></div>
+                                        <div class="event__body">
+                                            <h4 class="event__name">{e.name}</h4>
+                                            <p class="event__meta">{e.date} · {e.time}</p>
+                                            <p class="event__location">{e.location}</p>
+                                        </div>
+                                    </article>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state-card">
+                                <div class="empty-state-card__icon" aria-hidden="true">&#128197;</div>
+                                <h3 class="empty-state-card__title">No upcoming events for this group</h3>
+                                <p class="empty-state-card__sub">Group events will appear here.</p>
+                            </div>
+                        </template>
+                    </template>
+
+                    <template lwc:if={isMembers}>
+                        <template lwc:if={hasPendingMembers}>
+                            <div class="pending-card">
+                                <h4 class="pending-card__title">Pending Join Requests</h4>
+                                <template for:each={pendingMembers} for:item="p">
+                                    <div key={p.id} class="pending-row">
+                                        <div class="pending-row__avatar" style={p.avatarStyle}>{p.initial}</div>
+                                        <div class="pending-row__body">
+                                            <p class="pending-row__name">{p.name}</p>
+                                            <p class="pending-row__meta">{p.batch}</p>
+                                        </div>
+                                        <div class="pending-row__actions">
+                                            <button type="button" class="btn btn--outline btn--sm" data-id={p.memberRecordId} onclick={handleRejectPending}>Reject</button>
+                                            <button type="button" class="btn btn--primary btn--sm" data-id={p.memberRecordId} onclick={handleApprovePending}>Approve</button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:if={isLoadingSubTabs}>
+                            <div class="empty-state-card">
+                                <p class="empty-state-card__sub">Loading members…</p>
+                            </div>
+                        </template>
+                        <template lwc:elseif={hasMembers}>
+                            <div class="members-grid">
+                                <template for:each={membersDecorated} for:item="m">
+                                    <c-ken-group-member-avatar-v2 key={m.id} member={m}></c-ken-group-member-avatar-v2>
+                                </template>
+                            </div>
+                        </template>
+                        <template lwc:else>
+                            <div class="empty-state-card">
+                                <div class="empty-state-card__icon" aria-hidden="true">&#128101;</div>
+                                <h3 class="empty-state-card__title">No members yet</h3>
+                                <p class="empty-state-card__sub">Members will appear here once they join.</p>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </section>
+    </template>
+</template>

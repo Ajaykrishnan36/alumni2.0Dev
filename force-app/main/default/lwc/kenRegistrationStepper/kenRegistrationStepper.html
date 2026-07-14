@@ -1,0 +1,76 @@
+<template>
+	<div class="stepper-container">
+	<!-- Toast Notification -->
+	<c-ken-toast-notification 
+		is-visible={showToast}
+		toast-title={toastTitle}
+		toast-message={toastMessage}
+		toast-variant={toastVariant}>
+	</c-ken-toast-notification>
+		<div class="header-banner">
+			<img src={registrationHeaderImage} class="header-image" alt="Registration Header" />
+			<div class="banner-overlay">
+				<h1 class="banner-text">Your Gateway to the {institutionAlias} Alumni Network</h1>
+			</div>
+		</div>
+
+		<div class="steps-indicator">
+			<div class={step1Class}>
+				<div class="step-circle">
+					<template if:true={isStep1Completed}>1</template>
+				</div>
+				<span class="step-label">Basic profile</span>
+			</div>
+			<div class={step2Class}>
+				<div class="step-circle">
+					<template if:true={isStep2Completed}>2</template>
+				</div>
+				<span class="step-label">Education</span>
+			</div>
+			<div class={step3Class}>
+				<div class="step-circle">
+					<template if:true={isStep3Completed}>3</template>
+				</div>
+				<span class="step-label">Employment and Career Information</span>
+			</div>
+			<div class={step4Class}>
+				<div class="step-circle">
+					<template if:true={isStep4Completed}>4</template>
+				</div>
+				<span class="step-label">Engagement & Contributions</span>
+			</div>
+		</div>
+
+		<div class="step-content-wrapper">
+			<template if:true={isStep1Active}>
+				<c-ken-basic-profile email={userEmail} oncontinue={handleStep1Continue} onprofilechange={handleBasicProfileChange} onnotify={handleNotify}></c-ken-basic-profile>
+			</template>
+			<template if:true={isStep2Active}>
+				<c-ken-education-step
+					onprevious={handleStep2Previous}
+					onskip={handleStep2Skip}
+					onsaveandnext={handleStep2SaveAndNext}
+					onnotify={handleNotify}>
+				</c-ken-education-step>
+			</template>
+			<template if:true={isStep3Active}>
+				<c-ken-employment-career-info
+					onprevious={handleStep3Previous}
+					onskip={handleStep3Skip}
+					onsaveandnext={handleStep3SaveAndNext}
+					onnotify={handleNotify}>
+				</c-ken-employment-career-info>
+			</template>
+			<template if:true={isStep4Active}>
+				<c-ken-engagement-contributions
+					onprevious={handleStep4Previous}
+					onsaveandnext={handleStep4SaveAndNext}>
+				</c-ken-engagement-contributions>
+			</template>
+		</div>
+
+		<template if:true={showOptInModal}>
+			<c-ken-opt-in-modal onclose={handleCloseOptIn} onfinish={handleFinishSetup}></c-ken-opt-in-modal>
+		</template>
+	</div>
+</template>

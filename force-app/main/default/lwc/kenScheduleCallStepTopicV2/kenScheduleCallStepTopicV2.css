@@ -1,0 +1,5 @@
+:host { display: block; }
+.fld { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.fld label { font-weight: 600; font-size: 13px; color: #373A45; }
+.fld input, .fld textarea { border: 1px solid #E5E6E8; border-radius: 8px; padding: 10px 12px; font-family: inherit; font-size: 14px; outline: none; box-sizing: border-box; }
+.fld textarea { min-height: 100px; resize: vertical; }

@@ -1,0 +1,43 @@
+<template>
+    <section class="comparison">
+        <div class="header">
+            <div class="headerText">
+                <h2 class="title">Job Offers Comparison</h2>
+                <p class="subtitle">Compare compensation, work type, perks, and joining details.</p>
+            </div>
+
+            <template if:true={isMobile}>
+                <div class="mobilePicker">
+                    <lightning-combobox
+                        class="mobileCombobox"
+                        variant="label-hidden"
+                        label="Select company"
+                        value={selectedOfferId}
+                        options={offerOptions}
+                        onchange={handleOfferChange}
+                    ></lightning-combobox>
+                </div>
+            </template>
+        </div>
+
+        <template if:true={isMobile}>
+            <div class="grid oneCol">
+                <template if:true={selectedOffer}>
+                    <article class="offerCard">
+                        <c-ken-jobs-offers-comparison-card offer={selectedOffer}></c-ken-jobs-offers-comparison-card>
+                    </article>
+                </template>
+            </div>
+        </template>
+
+        <template if:false={isMobile}>
+            <div class="grid threeCol">
+                <template for:each={offers} for:item="offer">
+                    <article key={offer.id} class="offerCard">
+                        <c-ken-jobs-offers-comparison-card offer={offer}></c-ken-jobs-offers-comparison-card>
+                    </article>
+                </template>
+            </div>
+        </template>
+    </section>
+</template>

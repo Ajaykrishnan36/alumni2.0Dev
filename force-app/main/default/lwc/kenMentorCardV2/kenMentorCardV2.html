@@ -1,0 +1,10 @@
+<template>
+    <article class="mentor" onclick={handleClick}>
+        <span class="mentor__tag" style={tagStyle}>{tag}</span>
+        <div class="mentor__avatar" style={avatarStyle}>{displayInitial}</div>
+        <h3 class="mentor__name">{name}</h3>
+        <p class="mentor__role">{title}</p>
+        <p class="mentor__company">{company}</p>
+        <p class="mentor__loc">&#128205; {location}</p>
+    </article>
+</template>

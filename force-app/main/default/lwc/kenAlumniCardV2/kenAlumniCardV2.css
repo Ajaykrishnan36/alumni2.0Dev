@@ -1,0 +1,13 @@
+:host { display: block; }
+.alum { background: #fff; border: 1px solid #E5E6E8; border-radius: 12px; padding: 30px 14px 16px; position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; cursor: pointer; transition: .15s; }
+.alum:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); transform: translateY(-2px); }
+.willing { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg,#8A38F5,#C026D3); color: #fff; font-size: 9.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.alum__photo-wrap { position: relative; margin-top: 6px; }
+.alum__photo { width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 28px; color: #1F2937; background: #EAEFFF; overflow: hidden; }
+.alum__status { position: absolute; bottom: 4px; right: 4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #fff; }
+.alum__status--online { background: #19A974; }
+.alum__status--offline { background: #B2B3B7; }
+.alum__name { margin: 10px 0 2px; font-weight: 600; font-size: 13.5px; color: #373A45; }
+.alum__role { margin: 0 0 1px; font-size: 11px; color: #5C5F6B; font-weight: 500; }
+.alum__co { margin: 0 0 5px; font-size: 11px; color: #3061FF; font-weight: 600; }
+.alum__meta { margin: 0; font-size: 10.5px; color: #9DA0A8; font-weight: 500; }

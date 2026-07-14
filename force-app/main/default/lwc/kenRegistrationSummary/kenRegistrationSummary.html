@@ -1,0 +1,201 @@
+<template>
+    <div class="rs-card">
+        <!-- Event header row -->
+        <div class="rs-header">
+            <h1 class="rs-title">{eventName}</h1>
+            <div class="rs-header-right">
+                <template if:true={dateRange}>
+                    <div class="rs-meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z" fill="#585A64"/></svg>
+                        <span>{dateRange}</span>
+                    </div>
+                </template>
+                <template if:true={locationType}>
+                    <div class="rs-meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#585A64"/></svg>
+                        <span>{locationType}</span>
+                    </div>
+                </template>
+                <template if:true={formattedLanguage}>
+                    <div class="rs-meta-item">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z" fill="#585A64"/></svg>
+                        <span>{formattedLanguage}</span>
+                    </div>
+                </template>
+                <template if:true={showCancelButton}>
+                    <button class="rs-cancel-btn" onclick={handleCancelRegistration}>Cancel Registration</button>
+                </template>
+                <template if:true={cancellationClosed}>
+                    <span class="rs-cancel-closed" title="Cancellation closes 72 hours before the event starts">Cancellation closed</span>
+                </template>
+            </div>
+        </div>
+
+        <!-- Body grid -->
+        <div class="rs-body slds-grid slds-wrap slds-gutters_medium">
+            <!-- Left: Participant Details -->
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_7-of-12">
+                <div class="rs-panel">
+                    <div class="rs-panel-head">
+                        <h2 class="rs-panel-title">Participant Details</h2>
+                        <div class="rs-search">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" fill="#8C8E94"/></svg>
+                            <input type="text" placeholder="Search" class="rs-search-input" />
+                        </div>
+                    </div>
+
+                    <table class="rs-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Contact</th>
+                                <th>Type</th>
+                                <th>Meals</th>
+                                <th>Dietary Pref.</th>
+                                <th>Custom Survey</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={participants} for:item="p">
+                                <tr key={p.id}>
+                                    <td class="rs-td-name">{p.name}</td>
+                                    <td class="rs-td-contact">
+                                        <template for:each={p.contactLines} for:item="line">
+                                            <div key={line}>{line}</div>
+                                        </template>
+                                    </td>
+                                    <td><span class={p.typeClass}>{p.type}</span></td>
+                                    <td>
+                                        <label class="rs-toggle">
+                                            <input type="checkbox" checked={p.meals} disabled />
+                                            <span class="rs-toggle-slider"></span>
+                                        </label>
+                                    </td>
+                                    <td class="rs-td-diet">{p.dietaryLabel}</td>
+                                    <td class="rs-td-actions">
+                                        <template if:true={p.surveySubmitted}>
+                                            <button class="rs-fill-btn submitted" disabled>Submitted</button>
+                                        </template>
+                                        <template if:false={p.surveySubmitted}>
+                                            <button class="rs-fill-btn" data-id={p.id} onclick={handleFillSurvey}>Fill</button>
+                                        </template>
+                                        <button class="rs-share-btn">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></svg>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template if:false={hasParticipants}>
+                                <tr><td colspan="6" class="rs-empty">No participants found.</td></tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Right: Sessions + Payment -->
+            <div class="slds-col slds-size_1-of-1 slds-medium-size_5-of-12">
+                <div class="rs-panel">
+                    <h2 class="rs-panel-title">Registered Sessions</h2>
+                    <template for:each={sessionsByDate} for:item="dg">
+                        <div key={dg.dateKey} class="rs-sess-group">
+                            <div class="rs-sess-date">{dg.displayDate}</div>
+                            <template for:each={dg.sessions} for:item="s">
+                                <div key={s.id} class="rs-sess-row">
+                                    <div class="rs-sess-info">
+                                        <div class="rs-sess-name">{s.name}</div>
+                                        <div class="rs-sess-time">{s.timeLabel}</div>
+                                    </div>
+                                    <span class="rs-sess-price">{s.priceLabel}</span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasSessions}>
+                        <div class="rs-empty">No registered sessions.</div>
+                    </template>
+                </div>
+
+                <div class="rs-panel rs-payment">
+                    <div class="rs-payment-head">
+                        <h2 class="rs-panel-title">Payment Summary</h2>
+                        <button class="rs-invoice-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                            Download Invoice
+                        </button>
+                    </div>
+                    <div class="rs-pay-row">
+                        <span class="rs-pay-label">Session Fee</span>
+                        <span class="rs-pay-mid">&#8377;{perSessionLabel} &times; {sessionCount} sessions</span>
+                        <span class="rs-pay-amt">&#8377;{sessionSubtotalLabel}</span>
+                    </div>
+                    <hr class="rs-pay-divider" />
+                    <div class="rs-pay-row total">
+                        <span class="rs-pay-label total">Total Payable</span>
+                        <span class="rs-pay-mid">&#8377;{sessionSubtotalLabel} x {participantCount} participants</span>
+                        <span class="rs-pay-amt total">&#8377;{totalPayableLabel}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel confirm modal -->
+    <template if:true={showCancelConfirm}>
+        <div class="rs-modal-backdrop"></div>
+        <section class="rs-modal rs-modal-confirm">
+            <div class="rs-confirm-head">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#DC2626"/><path d="M12 7v6M12 16h.01" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+                <h2 class="rs-confirm-title">Please note, this is a bulk booking!</h2>
+            </div>
+            <p class="rs-confirm-text">Registration for all participants will be canceled. Are you sure you want to proceed?</p>
+            <div class="rs-confirm-actions">
+                <button class="rs-btn-no" onclick={handleConfirmNo}>No</button>
+                <button class="rs-btn-yes" onclick={handleConfirmYes}>Yes</button>
+            </div>
+        </section>
+    </template>
+
+    <!-- Cancel session-select modal -->
+    <template if:true={showCancelSelect}>
+        <div class="rs-modal-backdrop"></div>
+        <section class="rs-modal rs-modal-select">
+            <div class="rs-select-head">
+                <div>
+                    <h2 class="rs-select-title">Select events that you want to cancel</h2>
+                    <p class="rs-select-sub">Select the workshops that you would like to cancel</p>
+                </div>
+                <button class="rs-close-btn" onclick={handleCloseCancelSelect}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6l12 12" stroke="#373A45" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+
+            <div class="rs-select-body">
+                <label class="rs-cancel-all">
+                    <input type="checkbox" checked={cancelAll} onchange={handleToggleCancelAll} />
+                    <span>Cancel all events</span>
+                </label>
+
+                <template for:each={cancelSessionGroups} for:item="dg">
+                    <div key={dg.dateKey} class="rs-cancel-group">
+                        <div class="rs-cancel-day">{dg.dayLabel}</div>
+                        <template for:each={dg.sessions} for:item="s">
+                            <label key={s.id} class="rs-cancel-row">
+                                <input type="checkbox" data-id={s.id} checked={s.checked} onchange={handleToggleCancelSession} />
+                                <div class="rs-cancel-info">
+                                    <div class="rs-cancel-name">{s.name}</div>
+                                    <div class="rs-cancel-time">{s.timeLabel}</div>
+                                </div>
+                                <span class="rs-cancel-price">{s.priceLabel}</span>
+                            </label>
+                        </template>
+                    </div>
+                </template>
+            </div>
+
+            <div class="rs-select-footer">
+                <button class="rs-cancel-now" onclick={handleCancelNow}>Cancel Now</button>
+            </div>
+        </section>
+    </template>
+</template>

@@ -1,0 +1,321 @@
+.builder {
+    display: block;
+}
+
+.infoBanner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid #e3e8f2;
+    border-radius: 0.6rem;
+    background: #f6f8fc;
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.infoIcon {
+    --slds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+.addAnotherRow {
+    margin-bottom: 1rem;
+}
+
+.addAnotherButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--secondary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 0.25rem;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.addAnotherButton:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.addIcon {
+    --slds-c-icon-color-foreground-default: var(--primary-color);
+}
+
+.groupCard {
+    border: 1px solid var(--primary-color);
+    border-radius: 0.75rem;
+    padding: 1.1rem 1rem;
+    background: var(--secondary-color);
+    margin-bottom: 1.25rem;
+}
+
+.groupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.groupActions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.groupTitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.saveButton {
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    border-radius: 0.25rem;
+    color: var(--primary-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.saveButton:hover {
+    background-color: transparent;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.saveLaterLink {
+    color: #F6F8FB;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.saveLaterLink:hover {
+    text-decoration: underline;
+}
+
+.divider {
+    height: 1px;
+    background: #e4e8f0;
+    margin: 0.8rem 0 1rem;
+}
+
+.savedGroups {
+    margin-top: 1.5rem;
+}
+
+.savedTitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1f2430;
+    margin-bottom: 0.75rem;
+}
+
+.savedCard {
+    border: 1px solid #e6e9ef;
+    border-radius: 0.7rem;
+    padding: 0.9rem 1rem 1rem;
+    background: #ffffff;
+    margin-bottom: 0.75rem;
+}
+
+.savedHeaderRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.savedToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: #2f3545;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.savedName {
+    font-size: 0.9rem;
+}
+
+.chevronIcon {
+    --slds-c-icon-color-foreground-default: #5b6270;
+}
+
+.editButton {
+    --slds-c-icon-color-foreground-default: #5b6270;
+}
+
+.menuWrapper {
+    position: relative;
+}
+
+.menuTrigger {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 0.25rem;
+    color: #5b6270;
+}
+
+.menuTrigger:hover {
+    background: #eceff5;
+}
+
+.editMenuIcon {
+    --slds-c-icon-color-foreground-default: #5b6270;
+}
+
+.menuBackdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+}
+
+.menuDropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 0.25rem;
+    min-width: 120px;
+    background: #fff;
+    border: 1px solid #e6e9ef;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2;
+    overflow: hidden;
+}
+
+.menuItem {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    background: none;
+    text-align: left;
+    font-size: 0.875rem;
+    color: #2f3545;
+    cursor: pointer;
+}
+
+.menuItem:hover {
+    background: #f6f8fc;
+}
+
+.pillRow {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+}
+
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    background: #eceff5;
+    color: #2f3545;
+}
+
+.pillPrimary {
+    background: var(--secondary-color);
+    color: var(--primary-color);
+}
+
+.criteriaList {
+    margin-top: 0.9rem;
+    font-size: 0.8rem;
+}
+
+.criteriaItem {
+    margin-bottom: 0.75rem;
+}
+
+.criteriaLabel {
+    color: #2f3545;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+
+.criteriaPills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.criteriaPill {
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: #eef2fb;
+    color: #2f4b8f;
+    font-size: 0.75rem;
+}
+
+@media (max-width: 48rem) {
+    .groupHeader {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .groupActions {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .infoBanner {
+        flex-wrap: wrap;
+    }
+
+    .savedHeaderRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pillRow {
+        flex-wrap: wrap;
+    }
+}
+
+@media screen and (max-width: 1280px) and (max-height: 600px) {
+    .groupCard {
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .infoBanner {
+        padding: 0.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .addAnotherRow {
+        margin-bottom: 0.75rem;
+    }
+
+    .savedGroups {
+        margin-top: 1rem;
+    }
+
+    .savedCard {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+}

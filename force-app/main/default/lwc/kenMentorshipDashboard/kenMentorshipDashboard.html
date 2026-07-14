@@ -1,0 +1,183 @@
+<template>
+    <div class="dashboard">
+
+        <!-- Header -->
+        <div class="dash-header">
+            <div class="dash-header-top">
+                <div>
+                    <h1 class="dash-title">Mentorship Dashboard</h1>
+                    <p class="dash-subtitle">Connection requests, call activity &amp; insights across {totalMentorships} records</p>
+                </div>
+                <button class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
+                    <template if:true={isRefreshing}>
+                        <span class="btn-spinner"></span>Refreshing...
+                    </template>
+                    <template if:false={isRefreshing}>
+                        &#x21BB; Refresh
+                    </template>
+                </button>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label class="filter-label">Type</label>
+                    <select class="filter-select" onchange={handleRtChange}>
+                        <option value="">All Types</option>
+                        <option value="Connection_Request">Connection Requests</option>
+                        <option value="Call_Request">Call Requests</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select class="filter-select" onchange={handleStatusChange}>
+                        <option value="">All Statuses</option>
+                        <option value="Requested">Requested</option>
+                        <option value="Accepted">Accepted</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Year</label>
+                    <select class="filter-select" onchange={handleYearChange}>
+                        <option value="">All Years</option>
+                        <template for:each={availableYears} for:item="yr">
+                            <option key={yr} value={yr}>{yr}</option>
+                        </template>
+                    </select>
+                </div>
+                <button class="clear-btn" onclick={clearFilters}>&#x2715; Clear</button>
+            </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stat-row">
+            <div class="stat-card stat-card-clickable" data-type="total" onclick={handleStatCardClick} title="Click to view all records">
+                <div class="stat-icon-wrap stat-purple">🤝</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.total}</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="active" onclick={handleStatCardClick} title="Click to view active mentorships">
+                <div class="stat-icon-wrap stat-green">✅</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.activeConnections}</div>
+                    <div class="stat-label">Active Mentorships</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="pending" onclick={handleStatCardClick} title="Click to view pending requests">
+                <div class="stat-icon-wrap stat-orange">⏳</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.pendingRequests}</div>
+                    <div class="stat-label">Pending Requests</div>
+                </div>
+            </div>
+            <div class="stat-card stat-card-clickable" data-type="calls" onclick={handleStatCardClick} title="Click to view completed calls">
+                <div class="stat-icon-wrap stat-blue">📞</div>
+                <div class="stat-body">
+                    <div class="stat-val">{summaryStats.callsCompleted}<span class="stat-denom"> / {summaryStats.totalCalls}</span></div>
+                    <div class="stat-label">Calls Completed · {summaryStats.completionRate}%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 1: Mentorship Status, Monthly Trend, Meeting Mode -->
+        <div class="grid grid-3">
+            <c-ken-donut-chart
+                title="Mentorship Status"
+                description="Connection requests breakdown by status"
+                data={mentorshipByStatusData}
+                is-loading={loadingConnStatus}
+                dimension="conn_status"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Monthly Activity"
+                description="Records created per month"
+                data={monthlyTrendData}
+                is-loading={loadingMonthlyTrend}
+                dimension="monthly"
+                chart-type="line"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-donut-chart
+                title="Meeting Mode"
+                description="Online vs In-person distribution"
+                data={meetingModeData}
+                is-loading={loadingMeetingMode}
+                dimension="mode"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+        </div>
+
+        <!-- Row 2: Call Status, Top Mentors, Top Mentees -->
+        <div class="grid grid-3">
+            <c-ken-donut-chart
+                title="Call Request Status"
+                description="Scheduled call outcomes breakdown"
+                data={callByStatusData}
+                is-loading={loadingCallStatus}
+                dimension="call_status"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+
+            <c-ken-bar-chart
+                title="Top Mentors"
+                description="Alumni with the most mentee connections"
+                data={topMentorsData}
+                is-loading={loadingTopMentors}
+                dimension="mentor"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-bar-chart
+                title="Top Mentees"
+                description="Alumni with the most mentor connections"
+                data={topMenteesData}
+                is-loading={loadingTopMentees}
+                dimension="mentee"
+                chart-type="table"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+        </div>
+
+        <!-- Row 3: Yearly Growth, Record Type Split -->
+        <div class="grid grid-3">
+            <c-ken-bar-chart
+                title="Yearly Growth"
+                description="Total mentorship activity per year"
+                data={yearlyGrowthData}
+                is-loading={loadingYearlyGrowth}
+                dimension="yearly"
+                chart-type="vertical"
+                ondrilldown={handleDrilldown}
+            ></c-ken-bar-chart>
+
+            <c-ken-donut-chart
+                title="Record Type Split"
+                description="Connection Requests vs Call Requests"
+                data={recordTypeData}
+                is-loading={loadingRecordType}
+                dimension="rt"
+                ondrilldown={handleDrilldown}
+            ></c-ken-donut-chart>
+        </div>
+
+    </div>
+
+    <!-- Drill-down Modal -->
+    <c-ken-mentorship-list-modal
+        show={modalVisible}
+        title={modalTitle}
+        records={modalRecords}
+        is-loading={modalLoading}
+        onclose={handleModalClose}>
+    </c-ken-mentorship-list-modal>
+</template>

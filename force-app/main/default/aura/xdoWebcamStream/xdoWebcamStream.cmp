@@ -1,0 +1,23 @@
+<aura:component>
+    <aura:handler name="init" value="{!this}" action="{!c.startVideoStream}"/>
+    <aura:handler event="c:xdoEnableWebcamEvent" action="{!c.toggleWebcam}"/>
+
+    <aura:attribute name="streamObj" type="Object"/>
+    <aura:attribute name="showYouText" type="Boolean" default="false"/>
+    <aura:attribute name="youTextEnabled" type="Boolean" default="false"/>
+    <aura:attribute name="showMicLogo" type="Boolean" default="false"/>
+    <aura:attribute name="micLogoEnabled" type="Boolean" default="false"/>
+
+    <aura:if isTrue="{!v.youTextEnabled}">
+        <div class="youBubble slds-text-align_center">You</div>
+    </aura:if>
+    <aura:if isTrue="{!v.micLogoEnabled}">
+        <div class="micLogoContainer">
+            <lightning:icon iconName="utility:unmuted" alternativeText="Microphone" title="Microphone" size="xx-small" class="slds-align_absolute-center slds-m-top_xxx-small micLogo"/>
+        </div>
+    </aura:if>
+    <video autoplay="true" playsinline="true" aura:id="videostream" class="videoStream"></video>
+
+    <!-- <lightning:button variant="brand" label="Start Webcam" title="Start Webcam" onclick="{!c.startVideoStream}"/> -->
+    <!-- <lightning:button variant="brand" label="Stop Webcam" title="Start Webcam" onclick="{!c.stopVideoStream}"/> -->
+</aura:component>

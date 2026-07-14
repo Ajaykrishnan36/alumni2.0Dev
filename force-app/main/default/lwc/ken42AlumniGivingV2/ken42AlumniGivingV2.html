@@ -1,0 +1,57 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="giving">
+        <main class="giving-v2">
+            <c-ken-giving-hero-v2 onexplore={handleExplore} onstartinitiative={handleStartInitiative} oncsrconnect={handleCsrConnect}></c-ken-giving-hero-v2>
+
+            <c-ken-giving-sub-nav-v2 active-tab={activeTab} ontabchange={handleTabChange} onnewinitiative={handleNewInitiative}></c-ken-giving-sub-nav-v2>
+
+            <template lwc:if={isDashboard}>
+                <c-ken-giving-dashboard-tab-v2 ontabchange={handleTabChange}></c-ken-giving-dashboard-tab-v2>
+            </template>
+
+            <template lwc:if={isOpportunities}>
+                <c-ken-giving-opportunities-tab-v2
+                    ondetails={handleDetails} ondonate={handleGive}>
+                </c-ken-giving-opportunities-tab-v2>
+            </template>
+
+            <template lwc:if={isMyGiving}>
+                <c-ken-giving-my-v2 entries={myGivingEntries} totals={myGivingTotals} visibility-options={visibilityOptions} onexplore={handleExplore}></c-ken-giving-my-v2>
+            </template>
+            <template lwc:if={isStartInitiative}>
+                <c-ken-giving-start-initiative-v2 steps={initiativeSteps} initiatives={myInitiatives} has-initiatives={hasInitiatives} has-no-initiatives={hasNoInitiatives} onnewinitiative={handleNewInitiative}></c-ken-giving-start-initiative-v2>
+            </template>
+            <template lwc:if={isImpact}>
+                <c-ken-giving-impact-updates-v2 updates={impactUpdates}></c-ken-giving-impact-updates-v2>
+            </template>
+
+            <template lwc:if={showDetailsModal}>
+                <c-ken-opportunity-detail-modal-v2 detail={detailView} onclose={handleClose} ondonate={handleGive} onpledge={handleGive} oninkind={handleGive}></c-ken-opportunity-detail-modal-v2>
+            </template>
+
+            <template lwc:if={showGiveModal}>
+                <c-ken-give-now-wizard-v2 opp={detailView} user-first-name={userFirstName} onclose={handleClose} onsubmit={handleGiveSubmit}></c-ken-give-now-wizard-v2>
+            </template>
+
+            <template lwc:if={showInitiativeModal}>
+                <c-ken-new-initiative-modal-v2 onclose={handleClose} onsubmit={handleInitiativeSubmit}></c-ken-new-initiative-modal-v2>
+            </template>
+
+            <template lwc:if={showCampaignModal}>
+                <!-- New single-form "Start a giving initiative" modal (replaces multi-step wizard). -->
+                <c-ken-giving-initiative-modal-v2
+                    onclose={handleClose}
+                    onsubmitted={handleInitiativeSubmitted}>
+                </c-ken-giving-initiative-modal-v2>
+                <template lwc:if={legacyWizardEnabled}>
+                    <div class="g-campaign-backdrop" onclick={handleClose}>
+                        <div class="g-campaign-modal" onclick={stopPropagation}>
+                            <button class="g-campaign-close" onclick={handleClose} title="Close">×</button>
+                            <c-ken-gift-campaign-wizard-v2></c-ken-gift-campaign-wizard-v2>
+                        </div>
+                    </div>
+                </template>
+            </template>
+        </main>
+    </c-ken42-alumni-shell-v2>
+</template>

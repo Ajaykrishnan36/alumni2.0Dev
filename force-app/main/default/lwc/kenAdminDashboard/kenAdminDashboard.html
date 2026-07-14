@@ -1,0 +1,348 @@
+<template>
+    <main class="content">
+
+        <!-- Banner -->
+        <div class="banner">
+            <div class="banner-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </div>
+            <div>
+                <h1>Alumni Dashboard</h1>
+                <p>Live counts of your alumni base, the onboarding pipeline, engagement channels, and what is pending right now.</p>
+            </div>
+        </div>
+
+        <!-- KPI tiles -->
+        <div class="kpi-grid">
+            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-total" onclick={handleKpiClick} role="button" tabindex="0">
+                <div class="kpi-head">Total Alumni
+                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                </div>
+                <div class="kpi-value">{totalAlumniDisplay}</div>
+                <div class="kpi-sub">rows in the master database</div>
+            </div>
+            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-verified" onclick={handleKpiClick} role="button" tabindex="0">
+                <div class="kpi-head">Institution Verified
+                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+                </div>
+                <div class="kpi-value">{institutionVerifiedDisplay}</div>
+                <div class="kpi-sub">confirmed against institute records</div>
+            </div>
+            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-registered" onclick={handleKpiClick} role="button" tabindex="0">
+                <div class="kpi-head">Portal Registered
+                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="m17 11 2 2 4-4"></path></svg></div>
+                </div>
+                <div class="kpi-value">{portalRegisteredDisplay}</div>
+                <div class="kpi-sub">claimed and signed in at least once</div>
+            </div>
+            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-pending" onclick={handleKpiClick} role="button" tabindex="0">
+                <div class="kpi-head">Pending Activation
+                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg></div>
+                </div>
+                <div class="kpi-value">{pendingActivationDisplay}</div>
+                <div class="kpi-sub">invited but not yet registered</div>
+            </div>
+        </div>
+
+        <!-- Main grid: left content + right rail -->
+        <div class="main-grid">
+
+            <!-- LEFT COLUMN -->
+            <div>
+
+                <!-- Funnel 01 -->
+                <div class="card">
+                    <div class="card-head"><div class="card-title">{uploadTitle}</div></div>
+                    <template lwc:if={isLoadingUpload}>Loading…</template>
+                    <template lwc:else>
+                        <div class="funnel funnel-orange">
+                            <template for:each={uploadFunnel.steps} for:item="step">
+                                <div key={step.key} style="display:contents">
+                                    <template lwc:if={step.showArrow}><div class="funnel-arrow"></div></template>
+                                    <div class="funnel-step funnel-step-clickable" data-dashboardfilter={step.dashboardFilter} onclick={handleFunnelStepClick} role="button" tabindex="0"><div class="funnel-num">{step.value}</div><div class="funnel-lbl">{step.label}</div></div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Funnel 02 -->
+                <div class="card">
+                    <div class="card-head"><div class="card-title">{transitionTitle}</div></div>
+                    <template lwc:if={isLoadingTransition}>Loading…</template>
+                    <template lwc:else>
+                        <div class="funnel funnel-blue">
+                            <template for:each={transitionFunnel.steps} for:item="step">
+                                <div key={step.key} style="display:contents">
+                                    <template lwc:if={step.showArrow}><div class="funnel-arrow"></div></template>
+                                    <div class="funnel-step funnel-step-clickable" data-dashboardfilter={step.dashboardFilter} onclick={handleFunnelStepClick} role="button" tabindex="0"><div class="funnel-num">{step.value}</div><div class="funnel-lbl">{step.label}</div></div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Funnel 03 -->
+                <div class="card">
+                    <div class="card-head"><div class="card-title">{leadsTitle}</div></div>
+                    <template lwc:if={isLoadingLeads}>Loading…</template>
+                    <template lwc:else>
+                        <div class="funnel funnel-green">
+                            <template for:each={leadsFunnel.steps} for:item="step">
+                                <div key={step.key} style="display:contents">
+                                    <template lwc:if={step.showArrow}><div class="funnel-arrow"></div></template>
+                                    <div class="funnel-step funnel-step-clickable" data-dashboardfilter={step.dashboardFilter} onclick={handleFunnelStepClick} role="button" tabindex="0"><div class="funnel-num">{step.value}</div><div class="funnel-lbl">{step.label}</div></div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Source + Data Health -->
+                <div class="row-2">
+                    <div class="card">
+                        <div class="card-head"><div class="card-title">Source Distribution</div><button class="export">Export</button></div>
+                        <template lwc:if={isLoadingSource}>Loading…</template>
+                        <template lwc:elseif={isSourceEmpty}>No source data available.</template>
+                        <template lwc:else>
+                            <div class="chart-wrap">
+                                <div class="css-donut" style={donutGradientStyle}>
+                                    <div class="css-donut-hole"></div>
+                                </div>
+                            </div>
+                            <div class="donut-legend">
+                                <template for:each={sourceSlices} for:item="slice">
+                                    <span class="item" key={slice.label}><span class="dot" style={slice.style}></span>{slice.label} <strong>{slice.value}</strong></span>
+                                </template>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="card">
+                        <div class="card-head"><div class="card-title">Data Health Breakdown</div><button class="export">Export</button></div>
+                        <template lwc:if={isLoadingHealth}>Loading…</template>
+                        <template lwc:elseif={isHealthEmpty}>No data health metrics available.</template>
+                        <template lwc:else>
+                            <template for:each={healthBars} for:item="bar">
+                                <div class={bar.rowClass} key={bar.field}><div>{bar.field}</div><div class="dh-val">{bar.percentLabel}</div><div class={bar.barClass}><div class="dh-fill" style={bar.fillStyle}></div></div></div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Trend -->
+                <div class="card">
+                    <div class="card-head"><div class="card-title">Monthly Onboarding Trend</div><button class="export">Export</button></div>
+                    <template lwc:if={isLoadingTrend}>Loading…</template>
+                    <template lwc:elseif={isTrendEmpty}>No onboarding trend data.</template>
+                    <template lwc:else>
+                        <div class="trend-grid">
+                            <div class="trend-y-labels">
+                                <template for:each={trendYTicks} for:item="t">
+                                    <span key={t.value}>{t.value}</span>
+                                </template>
+                            </div>
+                            <div class="trend-plot" onmousemove={handleTrendMove} onmouseleave={handleTrendLeave}>
+                                <svg class="trend-svg" viewBox="0 0 600 200" preserveAspectRatio="none">
+                                    <template for:each={trendYTicks} for:item="t">
+                                        <line key={t.value} x1="0" x2="600" y1={t.y} y2={t.y} class="trend-grid-line"></line>
+                                    </template>
+                                    <polyline class="trend-area" points={trendAreaPoints}></polyline>
+                                    <polyline class="trend-line trend-line-registered" points={trendLinePoints}></polyline>
+                                    <polyline class="trend-line trend-line-invited" points={trendInvitedPoints}></polyline>
+                                    <polyline class="trend-line trend-line-active" points={trendActivePoints}></polyline>
+                                    <template lwc:if={trendHover}>
+                                        <line class="trend-hover-line" x1={trendHover.x} x2={trendHover.x} y1="10" y2="190"></line>
+                                        <circle class="trend-hover-dot trend-dot-registered" cx={trendHover.x} cy={trendHover.regY} r="4"></circle>
+                                        <circle class="trend-hover-dot trend-dot-invited" cx={trendHover.x} cy={trendHover.invY} r="4"></circle>
+                                        <circle class="trend-hover-dot trend-dot-active" cx={trendHover.x} cy={trendHover.actY} r="4"></circle>
+                                    </template>
+                                </svg>
+                                <template lwc:if={trendHover}>
+                                    <div class={trendHover.tooltipClass} style={trendHover.tooltipStyle}>
+                                        <div class="tt-label">{trendHover.label}</div>
+                                        <div class="tt-row tt-registered">Registered : {trendHover.registered}</div>
+                                        <div class="tt-row tt-invited">Invited : {trendHover.invited}</div>
+                                        <div class="tt-row tt-active">Active : {trendHover.active}</div>
+                                    </div>
+                                </template>
+                                <div class="trend-x-labels">
+                                    <template for:each={trendDots} for:item="dot">
+                                        <span key={dot.label}>{dot.label}</span>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Engagement Performance -->
+                <div class="card">
+                    <div class="card-head"><div class="card-title">Engagement Performance Summary</div><button class="export">Export</button></div>
+                    <p style="margin:-4px 0 14px;color:var(--slate-500);font-size:11.5px">Per channel: reach (% of alumni base engaged), quality (active in last 90 days, repeat rate), and direction vs the prior 90 days.</p>
+
+                    <template lwc:if={isLoadingEngagement}>Loading…</template>
+                    <template lwc:elseif={isEngagementEmpty}>No engagement data available.</template>
+                    <template lwc:else>
+                        <div class="eng-grid">
+                            <template for:each={engagementChannels} for:item="ch">
+                                <div class="eng-card" key={ch.key}>
+                                    <div class="eng-channel-lbl">Channel</div>
+                                    <div class="eng-channel">{ch.channel}</div>
+                                    <div class="eng-pct-row"><div class="eng-big">{ch.reachPctLabel}</div><div class={ch.trendClass}>{ch.trendLabel}</div></div>
+                                    <div class="eng-of">of alumni base</div>
+                                    <div class="eng-engaged">{ch.engagedLabel}</div>
+                                    <div class="eng-stats">
+                                        <div class="eng-stat"><div class="eng-stat-l">Active 90d</div><div class="eng-stat-v">{ch.active90d}</div><div class="eng-stat-s">{ch.active90dShare}</div></div>
+                                        <div class="eng-stat"><div class="eng-stat-l">Repeat Rate</div><div class="eng-stat-v">{ch.repeatRatePctLabel}</div><div class="eng-stat-s">came back 2x+</div></div>
+                                        <div class="eng-stat"><div class="eng-stat-l">New / Mo</div><div class="eng-stat-v">{ch.newPerMonthLabel}</div><div class="eng-stat-s">first-time</div></div>
+                                    </div>
+                                    <div class={ch.insightClass}>
+                                        <div class="eng-insight-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.2 1 2v1h6v-1c0-.8.4-1.5 1-2A7 7 0 0 0 12 2z"></path></svg></div>
+                                        <div><span class="eng-insight-tag">Insight</span>{ch.insight}</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Quick Reports -->
+                <div class="qr-label">Quick Reports</div>
+                <div class="qr-title">Demographics &amp; outcomes at a glance</div>
+                <div class="qr-tabs">
+                    <button class={qrTabAllClass} data-audience="all" onclick={handleAudienceChange}>All Master Alumni</button>
+                    <button class={qrTabActiveClass} data-audience="active" onclick={handleAudienceChange}>Registered &amp; Active</button>
+                    <div class="qr-meta"><strong>{audienceTotalDisplay}</strong> alumni · {audienceMetaLabel}</div>
+                </div>
+
+                <div class="row-2">
+                    <div class="card">
+                        <div class="card-head"><div class="card-title">Profile Completeness</div></div>
+                        <template lwc:if={isLoadingCompleteness}>Loading…</template>
+                        <template lwc:elseif={isCompletenessEmpty}>No alumni rows yet.</template>
+                        <template lwc:else>
+                            <template for:each={completenessBuckets} for:item="b">
+                                <div class="pc-row" key={b.label}><div>{b.label}</div><div class="pc-bar"><div class="pc-fill" style={b.fillStyle}></div></div><div class="pc-val">{b.count}</div></div>
+                            </template>
+                            <div class="pc-foot"><span>Most-skipped: LinkedIn, Phone, Company</span></div>
+                        </template>
+                    </div>
+                    <div class="card">
+                        <div class="card-head"><div class="card-title">Regional Demographics — Top Cities</div></div>
+                        <template lwc:if={isLoadingRegions}>Loading…</template>
+                        <template lwc:elseif={isRegionsEmpty}>No location data captured.</template>
+                        <template lwc:else>
+                            <template for:each={regionRows} for:item="r">
+                                <div class="region-row" key={r.city}><div>{r.city}</div><div class="region-bar" style={r.barStyle}></div><div class="region-val">{r.count}</div></div>
+                            </template>
+                        </template>
+                    </div>
+                </div>
+
+                <div class="row-2">
+                    <div class="card">
+                        <div class="card-head"><div class="card-title">Age Distribution</div></div>
+                        <template lwc:if={isLoadingAge}>Loading…</template>
+                        <template lwc:elseif={isAgeEmpty}>No graduation-year data.</template>
+                        <template lwc:else>
+                            <div class="age-bars">
+                                <template for:each={ageBars} for:item="b">
+                                    <div class="age-bar-col" key={b.label}>
+                                        <div class="age-bar-fill" style={b.fillStyle}></div>
+                                        <div class="age-bar-lbl">{b.label}</div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="pc-foot"><span>Estimated from graduation year (assumes age 22 at graduation)</span></div>
+                        </template>
+                    </div>
+                    <div class="card">
+                        <div class="card-head"><div class="card-title">Employment Status</div></div>
+                        <template lwc:if={isLoadingEmployment}>Loading…</template>
+                        <template lwc:elseif={isEmploymentEmpty}>No employment data.</template>
+                        <template lwc:else>
+                            <div class="emp-row">
+                                <div class="emp-donut" style={employmentDonutStyle}><div class="css-donut-hole"></div></div>
+                                <div class="emp-legend">
+                                    <template for:each={employmentSlices} for:item="s">
+                                        <div class="emp-legend-row" key={s.label}>
+                                            <span><span class="emp-dot" style={s.dotStyle}></span>{s.label}</span>
+                                            <strong>{s.percent}%</strong>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="pc-foot"><span>Derived from Current Company presence</span></div>
+                        </template>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT RAIL -->
+            <div>
+                <div class="card">
+                    <div class="card-title" style="margin-bottom:6px">Suggested Next Actions</div>
+                    <template lwc:if={isLoadingActions}>Loading…</template>
+                    <template lwc:elseif={isActionsEmpty}>No suggested actions right now.</template>
+                    <template lwc:else>
+                        <template for:each={suggestedActions} for:item="act">
+                            <div class="sna-item" key={act.key}><div class="sna-text">{act.message}</div><button class="sna-btn">{act.ctaLabel}</button></div>
+                        </template>
+                    </template>
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="margin-bottom:6px">Featured Reports</div>
+                    <div class="fr-item fr-item-clickable" data-reportkey="active-alumni" onclick={handleReportClick} role="button" tabindex="0"><div class="fr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"></path><rect x="7" y="13" width="3" height="5"></rect><rect x="12" y="9" width="3" height="9"></rect><rect x="17" y="5" width="3" height="13"></rect></svg></div><div><div class="fr-title">Active Alumni Profile Report</div><div class="fr-desc">Identify active alumni and understand their demographic details.</div></div></div>
+                    <div class="fr-item fr-item-clickable" data-reportkey="profile-completeness" onclick={handleReportClick} role="button" tabindex="0"><div class="fr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"></path><rect x="7" y="13" width="3" height="5"></rect><rect x="12" y="9" width="3" height="9"></rect><rect x="17" y="5" width="3" height="13"></rect></svg></div><div><div class="fr-title">Alumni Profile Completeness Report</div><div class="fr-desc">Analyze profile completeness to encourage more data entry.</div></div></div>
+                    <div class="fr-item fr-item-clickable" data-reportkey="professional-distribution" onclick={handleReportClick} role="button" tabindex="0"><div class="fr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"></path><rect x="7" y="13" width="3" height="9"></rect><rect x="12" y="9" width="3" height="9"></rect><rect x="17" y="5" width="3" height="13"></rect></svg></div><div><div class="fr-title">Professional Distribution Report</div><div class="fr-desc">Industries and job roles alumni occupy.</div></div></div>
+                    <div class="fr-item fr-item-clickable" data-reportkey="alumni-lifecycle" onclick={handleReportClick} role="button" tabindex="0"><div class="fr-ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"></path><rect x="7" y="13" width="3" height="5"></rect><rect x="12" y="9" width="3" height="9"></rect><rect x="17" y="5" width="3" height="13"></rect></svg></div><div><div class="fr-title">Alumni Lifecycle Report</div><div class="fr-desc">Alumni activity over time from graduation to current.</div></div></div>
+                    <div class="fr-foot">Open the full Reports Library →</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head"><div class="card-title">Communications Snapshot</div><button class="export">Export</button></div>
+                    <div style="font-size:11.5px;color:var(--slate-500);margin-bottom:12px">Last 30 days · 12 campaigns · Email · WhatsApp · SMS</div>
+                    <template lwc:if={isLoadingComms}>Loading…</template>
+                    <template lwc:else>
+                        <div class="cs-window">
+                            <div class="cs-window-l">Messages sent in window</div>
+                            <div class="cs-window-v">{messagesSentDisplay}</div>
+                            <div class="cs-window-s">{campaignsDisplay}</div>
+                        </div>
+                        <div class="cs-grid">
+                            <div class="cs-tile green"><div class="cs-tile-l">Delivery</div><div class="cs-tile-v">{deliveryDisplay}</div><div class="cs-tile-s">delivered</div></div>
+                            <div class="cs-tile red"><div class="cs-tile-l">Bounced</div><div class="cs-tile-v">{bouncedDisplay}</div><div class="cs-tile-s">bounced</div></div>
+                            <div class="cs-tile"><div class="cs-tile-l">Open rate</div><div class="cs-tile-v">{openRateDisplay}</div><div class="cs-tile-s">of delivered</div></div>
+                            <div class="cs-tile"><div class="cs-tile-l">Click rate</div><div class="cs-tile-v">{clickRateDisplay}</div><div class="cs-tile-s">of delivered</div></div>
+                        </div>
+                        <div class="by-channel">
+                            <div class="by-channel-h">By Channel</div>
+                            <div class="by-channel-row"><span class="by-channel-ch">Email</span><span>{emailSentDisplay} sent</span></div>
+                            <div class="by-channel-row"><span class="by-channel-ch">WhatsApp</span><span>{whatsappSentDisplay} sent</span></div>
+                            <div class="by-channel-row"><span class="by-channel-ch">SMS</span><span>{smsSentDisplay} sent</span></div>
+                        </div>
+                        <div class="cs-foot">
+                            <span>Scheduled <strong style="margin-left:6px">{scheduledDisplay}</strong></span>
+                            <span>Awaiting reply <strong style="margin-left:6px">{awaitingReplyDisplay}</strong></span>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="margin-bottom:6px">Recent Activity</div>
+                    <template lwc:if={isLoadingActivity}>Loading…</template>
+                    <template lwc:elseif={isActivityEmpty}>No recent activity.</template>
+                    <template lwc:else>
+                        <template for:each={recentActivity} for:item="act">
+                            <div class="ra-item" key={act.key}><div class="ra-dot"></div><div><div class="ra-title">{act.title}</div><div class="ra-meta"><span class="ra-tag">{act.actor}</span><span>{act.relative}</span></div></div></div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+</template>

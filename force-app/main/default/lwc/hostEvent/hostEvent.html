@@ -1,0 +1,48 @@
+<template>
+    <!-- Event Requests List View -->
+    <template if:true={hasEventRequests}>
+        <div class="event-requests-container">
+            <div class="event-requests-heading">Your event requests</div>
+
+            <div class="event-requests-list">
+                <template for:each={processedEventRequests} for:item="event" for:index="index">
+                    <div key={event.id} class="event-card">
+                        <div class="event-thumbnail">
+                            <img src={event.imgurl} alt={event.eventtitle} class="event-image" />
+                        </div>
+                        <div class="event-details">
+                            <div class="event-title">{event.eventtitle}</div>
+                        </div>
+                        <div class="event-status">
+                            <span class="status-badge" data-status={event.status}>
+                                {event.status}
+                            </span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" onclick={handleViewAll}>View all</button>
+                <button class="btn btn-primary" onclick={handleHostEvent}>Host an event</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Empty State - Host Event -->
+    <template if:false={hasEventRequests}>
+        <div class="host-event-container" onclick={openModal}>
+            <div class="event-host-wrapper">
+                <div class="event-host-heading">Host Event</div>
+                <div class="event-arrow">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 4L10.59 5.41L16.17 11H4V13H16.17L10.59 18.59L12 20L20 12L12 4Z" fill="white" />
+                    </svg>
+                </div>
+            </div>
+            <center>
+                <img src={bgimage} alt="host-event" class="host-event-image" />
+            </center>
+        </div>
+    </template>
+</template>

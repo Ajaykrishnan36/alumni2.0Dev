@@ -1,0 +1,115 @@
+<template>
+    <template lwc:if={showSpinner}>
+        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+    </template>
+    <template lwc:else>
+        <lightning-card title="Questionnaire" icon-name="custom:custom63" class="centered-form">
+    <div class="slds-p-horizontal_small">
+        <lightning-input label="Title" value={questionnaire.title} onchange={handleInputChange} data-id="title">
+        </lightning-input>
+        <lightning-input label="Description" value={questionnaire.description} onchange={handleInputChange}
+            data-id="description"></lightning-input>
+
+        <template if:true ={groupedQuestions.length}>
+            <template for:each={groupedQuestions} for:item = "section">
+                <div key={section.sectionId} class="slds-m-top_medium slds-box slds-box_x-small">
+                    <div class="slds-grid slds-gutters slds-m-around_medium">
+                        <div class="slds-col slds-size_11-of-12 ">
+                            <lightning-input label="Section Title" value={section.sectionName} onchange={handleSectionNameChange}
+                            data-sectionid={section.sectionId}></lightning-input>
+                        </div>
+                        
+                        <div class="slds-col slds-text-align_right slds-align-middle">
+                            <lightning-button-icon icon-name="utility:delete" alternative-text="Remove" title="Remove Section"
+                                onclick={removeSection} data-sectionid={section.sectionId}></lightning-button-icon>
+                        </div>
+                    </div>
+                <template if:true={section.questions.length}>
+                    <template for:each={section.questions} for:item="question">
+                        <div key={question.id} class="slds-m-around_medium slds-grid slds-gutters slds-wrap">
+                            <p class="slds-text-heading_medium slds-align_absolute-center">{question.id}.</p>
+                            <div class="slds-col slds-size_1-of-3">
+                            <lightning-input label="Question Label" value={question.label} onchange={handleQuestionChange}
+                            data-sectionid={section.sectionId} data-questionid={question.id} data-name="label"></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <lightning-combobox label="Question Type" value={question.type} options={questionTypeOptions}
+                                onchange={handleQuestionChange} data-sectionid={section.sectionId}
+                                data-questionid={question.id} data-name="type"></lightning-combobox>
+                        </div>
+
+                        <template if:true={question.showGatePassMapping}>
+                            <div class="slds-col slds-size_1-of-3">
+                                <lightning-combobox
+                                    label="Gate Pass Mapping"
+                                    value={question.gatePassMapping}
+                                    options={gatePassMappingOptions}
+                                    onchange={handleQuestionChange}
+                                    data-sectionid={section.sectionId}
+                                    data-questionid={question.id}
+                                    data-name="gatePassMapping"
+                                    placeholder="Select mapping...">
+                                </lightning-combobox>
+                            </div>
+                        </template>
+
+                        <div class="slds-col">
+                            <template if:true={question.isMCQ}>
+                                <lightning-textarea label="Options (comma separated)" value={question.options}
+                                    onchange={handleQuestionChange} data-sectionid={section.sectionId} 
+                                    data-questionid={question.id} data-name="options">
+                                </lightning-textarea>
+                            </template>
+                            </div>
+
+                            
+                        <div class="slds-col slds-align_absolute-center">
+                            <lightning-input label="Required" type="checkbox" checked={question.isRequired}
+                                onchange={handleQuestionChange} data-sectionid={section.sectionId} 
+                                    data-questionid={question.id} data-name="isRequired" variant="label-stacked"></lightning-input>
+                        </div>
+
+                        <div class="slds-col slds-align_absolute-center">
+                            <lightning-input label="Section Header" type="checkbox" checked={question.sectionHeader}
+                                onchange={handleQuestionChange} data-sectionid={section.sectionId} 
+                                    data-questionid={question.id} data-name="sectionHeader" variant="label-stacked" disabled={question.isHeaderDisabled}></lightning-input>
+                        </div>
+
+                            <div class="slds-col slds-text-align_right slds-align-middle">
+                            <lightning-button-icon icon-name="utility:delete" alternative-text="Remove Question" title="Remove Question"
+                                onclick={removeQuestion} data-sectionid={section.sectionId} 
+                                data-questionid={question.id}></lightning-button-icon>
+                                </div>
+                        </div>
+                    </template>
+                </template>
+    
+                <template if:false={section.questions.length}>
+                    <p>No questions added yet. Click "Add Question" to get started.</p>
+                </template>
+                
+                <div class="slds-margin-top_small">
+                <lightning-button label="Add Question" onclick={addQuestion} class="slds-m-top_medium" data-sectionid={section.sectionId} icon-name="utility:add" ></lightning-button>
+            </div>
+        </div>
+            </template>
+    </template>
+    
+    <template if:false={groupedQuestions.length}>
+        <p>No Sections added yet. Click "Add Section" to get started.</p>
+    </template>
+
+    <div class="slds-m-top_small">
+    <lightning-button label="Add Section" onclick={addSection} icon-name="utility:add" ></lightning-button>
+</div>
+        <div class="slds-col slds-text-align_right">
+            <lightning-button label="Cancel" style="padding-right:10px;" onclick={handleCancel}
+                class="slds-m-top_medium">
+            </lightning-button>
+            <lightning-button label="Save Questionnaire" onclick={saveQuestionnaire} variant="brand"
+                class="slds-m-top_medium"></lightning-button>
+        </div>
+    </div>
+</lightning-card>
+</template>
+</template>

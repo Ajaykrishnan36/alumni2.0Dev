@@ -1,0 +1,126 @@
+<template>
+    <c-ken42-alumni-shell-v2 active-nav="home">
+    <section class="page">
+        <template lwc:if={isFolders}>
+            <header class="page__head">
+                <div>
+                    <h1 class="page__title">Resources</h1>
+                    <p class="page__subtitle">Newsletters, journals, recordings &amp; toolkits</p>
+                </div>
+                <div class="page__actions">
+                    <button type="button" class="btn btn--outline" onclick={handleOpenNewFolder}>+ New Folder</button>
+                    <button type="button" class="btn btn--primary" onclick={handleOpenUpload}>+ Upload</button>
+                </div>
+            </header>
+            <template lwc:if={hasFolders}>
+            <div class="folder-grid">
+                <template for:each={folders} for:item="f">
+                    <article key={f.id} class="folder" data-id={f.id} onclick={handleFolderOpen}>
+                        <span class="folder__icon" style={f.iconStyle}>{f.icon}</span>
+                        <h3 class="folder__name rg-clamp-1">{f.name}</h3>
+                        <p class="folder__owner">by {f.owner}</p>
+                        <p class="folder__meta">{f.meta}</p>
+                    </article>
+                </template>
+            </div>
+            </template>
+            <template lwc:else>
+                <div class="rg-empty"><div class="rg-empty__icon">📁</div><h3>No resources yet</h3><p>Create a folder or upload your first file to get started.</p><button type="button" class="btn btn--primary" onclick={handleOpenNewFolder}>+ New Folder</button></div>
+            </template>
+        </template>
+
+        <template lwc:if={isInsideFolder}>
+            <header class="page__head">
+                <div>
+                    <button type="button" class="back-btn" onclick={handleBackToFolders}>← Back to Resources</button>
+                    <h1 class="page__title">{selectedFolderName}</h1>
+                    <p class="page__subtitle">{selectedFolderMeta}</p>
+                </div>
+                <button type="button" class="btn btn--primary" onclick={handleOpenUpload}>+ Upload</button>
+            </header>
+            <template lwc:if={hasFiles}>
+                <div class="file-list">
+                    <template for:each={files} for:item="f">
+                        <div key={f.id} class="file">
+                            <span class="file__ext">{f.ext}</span>
+                            <div class="file__body">
+                                <p class="file__name rg-clamp-1">{f.name}</p>
+                                <p class="file__meta">{f.date} · {f.size}</p>
+                            </div>
+                            <button type="button" class="btn btn--outline file__btn" data-id={f.id} onclick={handleDownload}>Download</button>
+                        </div>
+                    </template>
+                </div>
+            </template>
+            <template lwc:else>
+                <div class="rg-empty"><div class="rg-empty__icon">📄</div><h3>No resources in this folder</h3><p>Upload a file to share it with the community.</p><button type="button" class="btn btn--primary" onclick={handleOpenUpload}>+ Upload</button></div>
+            </template>
+        </template>
+
+        <!-- Upload modal -->
+        <template lwc:if={showUpload}>
+            <div class="modal-backdrop" onclick={handleBackdropClick}>
+                <div class="modal" onclick={handleStopProp}>
+                    <button type="button" class="modal__close" onclick={handleCloseUpload}>×</button>
+                    <h2 class="modal__title">Upload Resource</h2>
+                    <div class="dropzone">
+                        <p class="dropzone__icon">📤</p>
+                        <p class="dropzone__text">Drag &amp; drop a file here, or click to browse</p>
+                        <p class="dropzone__hint">PDF, DOCX, PPTX, MP4 up to 200 MB</p>
+                    </div>
+                    <div class="field">
+                        <label>Display name</label>
+                        <input type="text" data-field="name" value={uploadForm.name} oninput={handleUploadField} placeholder="e.g. October 2025 Newsletter"/>
+                    </div>
+                    <div class="field">
+                        <label>Folder</label>
+                        <select data-field="folder" value={uploadForm.folder} onchange={handleUploadField}>
+                            <template for:each={folderOptions} for:item="opt">
+                                <option key={opt.id} value={opt.id}>{opt.label}</option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Notes (optional)</label>
+                        <textarea rows="3" data-field="notes" value={uploadForm.notes} oninput={handleUploadField}></textarea>
+                    </div>
+                    <div class="modal__actions">
+                        <button type="button" class="btn btn--outline" onclick={handleCloseUpload}>Cancel</button>
+                        <button type="button" class="btn btn--primary" onclick={handleUploadSubmit}>Upload</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- New Folder modal -->
+        <template lwc:if={showNewFolder}>
+            <div class="modal-backdrop" onclick={handleBackdropClick}>
+                <div class="modal" onclick={handleStopProp}>
+                    <button type="button" class="modal__close" onclick={handleCloseNewFolder}>×</button>
+                    <h2 class="modal__title">New Folder</h2>
+                    <div class="field">
+                        <label>Folder name</label>
+                        <input type="text" data-field="name" value={folderForm.name} oninput={handleFolderField} placeholder="e.g. Mentorship Resources"/>
+                    </div>
+                    <div class="field">
+                        <label>Owner / department</label>
+                        <input type="text" data-field="owner" value={folderForm.owner} oninput={handleFolderField} placeholder="e.g. Mentorship Team"/>
+                    </div>
+                    <div class="field">
+                        <label>Color</label>
+                        <input type="color" data-field="color" value={folderForm.color} oninput={handleFolderField}/>
+                    </div>
+                    <div class="modal__actions">
+                        <button type="button" class="btn btn--outline" onclick={handleCloseNewFolder}>Cancel</button>
+                        <button type="button" class="btn btn--primary" onclick={handleFolderSubmit}>Create Folder</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:if={toastVisible}>
+            <div class="toast">{toastMessage}</div>
+        </template>
+    </section>
+    </c-ken42-alumni-shell-v2>
+</template>

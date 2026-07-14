@@ -1,0 +1,234 @@
+<template>
+    <div class="resume-builder-page">
+        <div class="component-container">
+            <!-- Inline Stepper -->
+            <div class="component-header">
+                <div class="resume-stepper">
+                    <div class="stepper-container">
+                        <div class="stepper">
+                            <template for:each={stepperItems} for:item="step">
+                                <div key={step.number} class="stepper-item-wrapper">
+                                    <div class="stepper-item">
+                                        <div class={step.statusClass}>
+                                            <div class="step-icon">
+                                                <template if:true={step.isCompleted}><span class="step-check">&#10003;</span></template>
+                                                <template if:false={step.isCompleted}><span class="step-number">{step.number}</span></template>
+                                            </div>
+                                            <span class="step-label">{step.label}</span>
+                                        </div>
+                                    </div>
+                                    <template if:false={step.isLast}><div class={step.lineClass}></div></template>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="progress-row">
+                            <div class="progress-bar"><div class="progress-fill" style={progressStyle}></div></div>
+                            <span class="step-out-of">{stepLabel}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="component-content">
+                <!-- Step 1: Inline Template Selector -->
+                <template if:true={isStep1Active}>
+                    <div class="template-selector">
+                        <h2 class="step-heading">1. Choose Resume Template</h2>
+                        <div class="template-grid">
+                            <template for:each={templatesList} for:item="tpl">
+                                <div key={tpl.key} class={tpl.cardClass} role="button" tabindex="0" data-template={tpl.key} onclick={handleTemplateSelect} onkeydown={handleTemplateKeydown}>
+                                    <div class="template-card-header">{tpl.label}</div>
+                                    <div class="template-card-preview">
+                                        <!-- New York: name, title, contact; sections no photo -->
+                                        <template if:true={tpl.isNewYork}>
+                                            <article class="preview-mini preview-mini-newyork">
+                                                <header class="preview-mini-header">
+                                                    <div class="preview-mini-name">{previewFullName}</div>
+                                                    <div class="preview-mini-title">{previewRoleTitle}</div>
+                                                    <div class="preview-mini-contact">{previewContactLine}</div>
+                                                </header>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">ABOUT ME</h4>
+                                                    <div class="preview-mini-text">{previewSummary}</div>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">EDUCATION</h4>
+                                                    <template for:each={previewEducationList} for:item="edu">
+                                                        <div key={edu.id} class="preview-mini-item">
+                                                            <div class="preview-mini-item-title">{edu.degree}</div>
+                                                            <div class="preview-mini-item-sub">{edu.school} | {edu.yearRange}</div>
+                                                        </div>
+                                                    </template>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">WORK EXPERIENCE</h4>
+                                                    <template for:each={previewExperienceList} for:item="exp">
+                                                        <div key={exp.id} class="preview-mini-item">
+                                                            <div class="preview-mini-item-title">{exp.title}</div>
+                                                            <div class="preview-mini-item-sub">{exp.company} | {exp.dateLabel}</div>
+                                                        </div>
+                                                    </template>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">SKILLS</h4>
+                                                    <div class="preview-mini-skills">{previewSkillsText}</div>
+                                                </section>
+                                            </article>
+                                        </template>
+                                        <!-- Toronto: photo + name/title/contact; Summary, Experience, Education, Skills -->
+                                        <template if:true={tpl.isToronto}>
+                                            <article class="preview-mini preview-mini-toronto">
+                                                <header class="preview-mini-header preview-mini-header-toronto">
+                                                    <div class="preview-mini-header-text">
+                                                        <div class="preview-mini-name">{previewFullName}</div>
+                                                        <div class="preview-mini-title">{previewRoleTitle}</div>
+                                                        <div class="preview-mini-contact">{previewContactLine}</div>
+                                                    </div>
+                                                    <template if:true={hasPreviewPhoto}><img src={previewPhotoUrl} alt="" class="preview-mini-photo" /></template>
+                                                </header>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Summary</h4>
+                                                    <div class="preview-mini-text">{previewSummary}</div>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Experience</h4>
+                                                    <template for:each={previewExperienceList} for:item="exp">
+                                                        <div key={exp.id} class="preview-mini-item">
+                                                            <div class="preview-mini-item-sub">{exp.company} — {exp.dateLabel}</div>
+                                                            <div class="preview-mini-item-title">{exp.title}</div>
+                                                        </div>
+                                                    </template>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Education</h4>
+                                                    <template for:each={previewEducationList} for:item="edu">
+                                                        <div key={edu.id} class="preview-mini-item">
+                                                            <div class="preview-mini-item-title">{edu.degree}</div>
+                                                            <div class="preview-mini-item-sub">{edu.school} · {edu.yearRange}</div>
+                                                        </div>
+                                                    </template>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Skills</h4>
+                                                    <div class="preview-mini-skills">{previewSkillsText}</div>
+                                                </section>
+                                            </article>
+                                        </template>
+                                        <!-- Modern: centered photo, name, title, contact; sections -->
+                                        <template if:true={tpl.isModern}>
+                                            <article class="preview-mini preview-mini-modern">
+                                                <header class="preview-mini-header preview-mini-header-modern">
+                                                    <template if:true={hasPreviewPhoto}><img src={previewPhotoUrl} alt="" class="preview-mini-photo preview-mini-photo-center" /></template>
+                                                    <div class="preview-mini-name">{previewFullName}</div>
+                                                    <div class="preview-mini-title">{previewRoleTitle}</div>
+                                                    <div class="preview-mini-contact">{previewContactLine}</div>
+                                                </header>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Summary</h4>
+                                                    <div class="preview-mini-text">{previewSummary}</div>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Experience</h4>
+                                                    <template for:each={previewExperienceList} for:item="exp">
+                                                        <div key={exp.id} class="preview-mini-item">
+                                                            <div class="preview-mini-item-title">{exp.title}</div>
+                                                            <div class="preview-mini-item-sub">{exp.company} · {exp.dateLabel}</div>
+                                                        </div>
+                                                    </template>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Education</h4>
+                                                    <template for:each={previewEducationList} for:item="edu">
+                                                        <div key={edu.id} class="preview-mini-item">
+                                                            <div class="preview-mini-item-title">{edu.degree}</div>
+                                                            <div class="preview-mini-item-sub">{edu.school} · {edu.yearRange}</div>
+                                                        </div>
+                                                    </template>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Skills</h4>
+                                                    <div class="preview-mini-skills">{previewSkillsText}</div>
+                                                </section>
+                                            </article>
+                                        </template>
+                                        <!-- Classic: no photo; serif; border under header -->
+                                        <template if:true={tpl.isClassic}>
+                                            <article class="preview-mini preview-mini-classic">
+                                                <header class="preview-mini-header preview-mini-header-classic">
+                                                    <div class="preview-mini-name">{previewFullName}</div>
+                                                    <div class="preview-mini-title">{previewRoleTitle}</div>
+                                                    <div class="preview-mini-contact">{previewContactLine}</div>
+                                                </header>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Summary</h4>
+                                                    <div class="preview-mini-text">{previewSummary}</div>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Work Experience</h4>
+                                                    <template for:each={previewExperienceList} for:item="exp">
+                                                        <div key={exp.id} class="preview-mini-item">
+                                                            <div class="preview-mini-item-title">{exp.title}</div>
+                                                            <div class="preview-mini-item-sub">{exp.company} — {exp.dateLabel}</div>
+                                                        </div>
+                                                    </template>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Education</h4>
+                                                    <template for:each={previewEducationList} for:item="edu">
+                                                        <div key={edu.id} class="preview-mini-item">
+                                                            <div class="preview-mini-item-title">{edu.degree}</div>
+                                                            <div class="preview-mini-item-sub">{edu.school}, {edu.yearRange}</div>
+                                                        </div>
+                                                    </template>
+                                                </section>
+                                                <section class="preview-mini-section">
+                                                    <h4 class="preview-mini-heading">Skills</h4>
+                                                    <div class="preview-mini-skills">{previewSkillsText}</div>
+                                                </section>
+                                            </article>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+                <template if:true={isStep2Active}>
+                    <c-ken-resume-edit-details
+                        resume-data={resumeData}
+                        onpersonalchange={handlePersonalChange}
+                        oneducationadd={handleEducationAdd}
+                        oneducationedit={handleEducationEdit}
+                        oneducationremove={handleEducationRemove}
+                        onexperienceadd={handleExperienceAdd}
+                        onexperienceedit={handleExperienceEdit}
+                        onexperienceremove={handleExperienceRemove}
+                        onskilladd={handleSkillAdd}
+                        onskillremove={handleSkillRemove}
+                        oncustomsectionadd={handleCustomSectionAdd}
+                    ></c-ken-resume-edit-details>
+                </template>
+                <template if:true={isStep3Active}>
+                    <c-ken-resume-preview resume-data={resumeData} selected-template={selectedTemplate}></c-ken-resume-preview>
+                </template>
+            </div>
+
+            <div class="component-footer">
+                <div class="button-group">
+                    <template if:true={isStep1Active}>
+                        <button type="button" class="secondary-button" onclick={handleCancel}>Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick={handleNextStep}>Next</button>
+                    </template>
+                    <template if:true={isStep2Active}>
+                        <button type="button" class="secondary-button" onclick={handlePreviousStep}>Back</button>
+                        <button type="button" class="btn btn-primary" onclick={handleNextStep} disabled={nextDisabledStep2}>Next</button>
+                    </template>
+                    <template if:true={isStep3Active}>
+                        <button type="button" class="secondary-button" onclick={handlePreviousStep}>Back</button>
+                        <button type="button" class="btn btn-primary" onclick={handleSaveResume}>Save</button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

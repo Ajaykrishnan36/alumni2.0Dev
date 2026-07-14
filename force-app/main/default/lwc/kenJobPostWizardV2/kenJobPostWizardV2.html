@@ -1,0 +1,73 @@
+<template>
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal modal--md" onclick={stopBubble}>
+            <div class="give-progress"><div class="give-progress-fill" style={progressStyle}></div></div>
+            <div class="modal-head-row">
+                <div>
+                    <div class="give-step-label">{stepLabel}</div>
+                    <h2 class="modal-title">Post a Job</h2>
+                </div>
+                <button class="modal-close" onclick={handleClose}>×</button>
+            </div>
+            <div class="modal-body">
+                <!-- QA Bug #116: inline validation banner -->
+                <template lwc:if={stepError}>
+                    <div role="alert" style="background:#fdecea;color:#b3261e;border:1px solid #f5c2c0;
+                        padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;margin-bottom:14px;">
+                        {stepError}
+                    </div>
+                </template>
+                <template lwc:if={step1}>
+                    <h3 class="step-h">Basics</h3>
+                    <label class="field-label">Job title</label>
+                    <input class="text-input" type="text" data-field="postTitle" value={postTitle} oninput={handleField} placeholder="e.g. Senior Backend Engineer"/>
+                    <label class="field-label">Company</label>
+                    <input class="text-input" type="text" data-field="postCompany" value={postCompany} oninput={handleField} placeholder="Company name"/>
+                    <label class="field-label">Location</label>
+                    <input class="text-input" type="text" data-field="postLocation" value={postLocation} oninput={handleField} placeholder="Bangalore / Remote"/>
+                    <label class="field-label">Salary range</label>
+                    <input class="text-input" type="text" data-field="postSalary" value={postSalary} oninput={handleField} placeholder="₹ 8,00,000 - ₹ 12,00,000"/>
+                </template>
+
+                <template lwc:if={step2}>
+                    <h3 class="step-h">Who should see this job?</h3>
+                    <template for:each={audienceOptions} for:item="o">
+                        <button key={o.id} type="button" class={o.cls} data-id={o.id} onclick={handleAudiencePick}>
+                            <div>
+                                <div class="opt-title">{o.label}</div>
+                                <div class="opt-desc">{o.desc}</div>
+                            </div>
+                        </button>
+                    </template>
+                </template>
+
+                <template lwc:if={step3}>
+                    <h3 class="step-h">Stages & Timeline</h3>
+                    <label class="field-label">Hiring timeline</label>
+                    <div class="pills-row">
+                        <template for:each={timelineOptions} for:item="tl">
+                            <button key={tl.id} type="button" class={tl.cls} data-id={tl.id} onclick={handleTimelinePick}>{tl.label}</button>
+                        </template>
+                    </div>
+                    <label class="field-label">Description</label>
+                    <textarea class="text-area" rows="5" data-field="postDescription" value={postDescription} oninput={handleField}></textarea>
+                </template>
+
+                <template lwc:if={step4}>
+                    <h3 class="step-h">Summary</h3>
+                    <div class="review-row"><span class="kv-l">TITLE</span><div class="kv-v">{postTitle}</div></div>
+                    <div class="review-row"><span class="kv-l">COMPANY</span><div class="kv-v">{postCompany}</div></div>
+                    <div class="review-row"><span class="kv-l">LOCATION</span><div class="kv-v">{postLocation}</div></div>
+                    <div class="review-row"><span class="kv-l">SALARY</span><div class="kv-v">{postSalary}</div></div>
+                    <div class="review-row"><span class="kv-l">AUDIENCE</span><div class="kv-v">{postAudienceLabel}</div></div>
+                    <div class="review-row"><span class="kv-l">TIMELINE</span><div class="kv-v">{postTimeline}</div></div>
+                </template>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn--ghost" onclick={handleBack} disabled={backDisabled}>Back</button>
+                <button class="btn btn--primary" onclick={handleNext}>{nextLabel}</button>
+                <a class="footer-link" onclick={handleClose}>Cancel</a>
+            </div>
+        </div>
+    </div>
+</template>

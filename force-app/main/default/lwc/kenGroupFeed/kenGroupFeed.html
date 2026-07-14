@@ -1,0 +1,50 @@
+<template>
+    <div class="group-feed">
+        <template if:true={canPost}>
+            <c-ken-group-post-composer
+                group-id={effectiveGroupId}
+                is-posting={isPosting}
+                onsubmit={handleSubmit}
+                onpollcreated={handlePollCreated}>
+            </c-ken-group-post-composer>
+        </template>
+
+        <template if:true={showError}>
+            <div class="error-banner">{errorMessage}</div>
+        </template>
+
+        <template if:true={hasPosts}>
+            <ul class="post-list">
+                <template for:each={posts} for:item="post">
+                    <li key={post.feedItemId} class="post-list-item">
+                        <c-ken-group-post-card
+                            post={post}
+                            ondeleted={handlePostDeleted}>
+                        </c-ken-group-post-card>
+                    </li>
+                </template>
+            </ul>
+        </template>
+
+        <template if:true={isLoading}>
+            <div class="loading-row">
+                <lightning-spinner alternative-text="Loading posts" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={hasMore}>
+            <div class="load-more-row">
+                <button type="button" class="load-more-btn" onclick={handleLoadMore} disabled={isLoading}>
+                    Load more posts
+                </button>
+            </div>
+        </template>
+
+        <template if:true={showEmpty}>
+            <div class="empty-state">
+                <p class="empty-title">No posts yet</p>
+                <p class="empty-sub">Be the first to share something in this group.</p>
+            </div>
+        </template>
+    </div>
+</template>

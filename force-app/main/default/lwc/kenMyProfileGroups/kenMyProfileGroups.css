@@ -1,0 +1,180 @@
+.groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 16px;
+    margin-bottom: 8px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.create-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.create-btn:hover {
+    background-color: var(--primary-color);
+}
+
+.add-icon {
+    --lwc-colorTextIconDefault: white;
+}
+
+/* Grid Layout */
+.groups-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    /* 3 Columns */
+    gap: 24px;
+}
+
+.group-card {
+    background-color: #F6F8FB;
+    border-radius: 12px;
+    overflow: hidden;
+    /* To clip banner image corners */
+    display: flex;
+    flex-direction: column;
+    /* border: 1px solid #eee; Optional border */
+}
+
+/* Banner Section */
+.card-banner {
+    position: relative;
+    height: 140px;
+    /* Adjust height based on aspect ratio */
+    width: 100%;
+}
+
+.banner-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.badges-overlay {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.privacy-badge {
+    background-color: #F6F8FB;
+    /* Light Blue */
+    color: #0277bd;
+    /* Darker Blue */
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: auto;
+    /* Push to right if alone, or flex uses space-between */
+}
+
+/* Status Badge in Banner */
+.status-badge {
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-badge.in-review {
+    background-color: #F6F8FB;
+    color: #fbc02d;
+    /* Screenshot: 'In Review' looks yellowish white bg, dark text? 
+       Actually Screenshot 3: 'In Review' is light yellow pill. */
+}
+
+.status-badge.rejected {
+    background-color: #F6F8FB;
+    color: #c62828;
+}
+
+/* Content Section */
+.card-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.group-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.member-count {
+    font-size: 13px;
+    color: #777;
+    margin: 0;
+}
+
+/* Footer Section */
+.card-footer {
+    padding: 0 16px 20px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar-stack {
+    display: flex;
+    align-items: center;
+}
+
+.stack-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid white;
+    /* Border to separate overlapping avatars */
+    object-fit: cover;
+    margin-right: -10px;
+    /* Negative margin for overlap */
+}
+
+.count-badge {
+    background-color: #ff7043;
+    /* Orange */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.friends-text {
+    font-size: 12px;
+    color: #666;
+    margin-left: 8px;
+    /* Extra space after stack */
+}

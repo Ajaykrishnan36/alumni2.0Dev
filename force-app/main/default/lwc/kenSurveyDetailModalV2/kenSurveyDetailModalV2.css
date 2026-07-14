@@ -1,0 +1,14 @@
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,18,28,0.55);display:flex;align-items:center;justify-content:center;z-index:9000;padding:20px}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:640px;overflow:hidden}
+.modal-hero{background:linear-gradient(135deg,#3061FF,#1A358C);padding:24px 28px;color:#fff;position:relative}
+.hero-pill{display:inline-block;background:rgba(255,255,255,0.18);padding:4px 12px;border-radius:999px;font-weight:600;font-size:11px;margin-bottom:12px}
+.hero-title{font-weight:700;font-size:22px;margin:0 0 8px;color:#fff}
+.hero-desc{font-weight:500;font-size:13px;color:rgba(255,255,255,0.85);line-height:1.6;margin:0}
+.modal-close{position:absolute;top:14px;right:14px;background:rgba(255,255,255,0.18);border:0;color:#fff;width:32px;height:32px;border-radius:50%;font-size:20px;cursor:pointer}
+.meta-row{display:flex;gap:28px;padding:18px 28px;border-bottom:1px solid #E5E6E8;background:#F6F8FB;flex-wrap:wrap}
+.meta-item label{font-weight:500;font-size:11px;color:#8E9099;text-transform:uppercase}
+.meta-item p{font-weight:600;font-size:14px;color:#373A45;margin:4px 0 0}
+.modal-footer{padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.btn{height:38px;border-radius:8px;font-weight:500;font-size:13px;cursor:pointer;border:1.5px solid transparent;padding:0 18px;font-family:inherit}
+.btn--primary{background:#3061FF;color:#fff}
+.btn--ghost{background:transparent;color:#5B5E68}

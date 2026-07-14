@@ -1,0 +1,226 @@
+<template>
+    <div class="notif-root" data-root>
+        <button
+            class={triggerClass}
+            type="button"
+            aria-label="Notifications"
+            aria-haspopup="dialog"
+            onclick={toggleOpen}
+        >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M17.87 19.2267H5.87C5.10964 19.2241 4.38117 18.9209 3.84352 18.3832C3.30586 17.8456 3.00264 17.1171 3 16.3567C3.00201 15.742 3.19799 15.1436 3.56 14.6467L4.23 13.7367C5.17507 12.4659 5.67739 10.9203 5.66 9.33674C5.63723 8.08977 5.99167 6.865 6.67688 5.82291C7.36209 4.78082 8.34611 3.97002 9.5 3.49674C10.4824 3.08643 11.5512 2.92646 12.6107 3.03119C13.6701 3.13591 14.687 3.50205 15.57 4.09674C16.4241 4.67559 17.1233 5.45505 17.6062 6.36685C18.0891 7.27865 18.3411 8.29495 18.34 9.32674V9.49674C18.3154 10.975 18.7409 12.4259 19.56 13.6567L20.23 14.6567C20.5454 15.1268 20.7126 15.6807 20.71 16.2467C20.722 16.6296 20.6577 17.011 20.521 17.3688C20.3843 17.7266 20.1778 18.0537 19.9135 18.331C19.6492 18.6082 19.3325 18.8302 18.9817 18.984C18.6309 19.1378 18.253 19.2203 17.87 19.2267V19.2267ZM12.02 4.49674C11.3355 4.49808 10.6573 4.62695 10.02 4.87674C9.16454 5.24034 8.43768 5.85197 7.93324 6.6327C7.42879 7.41344 7.16991 8.32744 7.19 9.25674C7.21897 11.1866 6.61482 13.0728 5.47 14.6267L4.8 15.5467C4.62275 15.7794 4.52778 16.0643 4.53 16.3567C4.52991 16.7149 4.67013 17.0589 4.9206 17.315C5.17107 17.5711 5.51188 17.7189 5.87 17.7267H17.87C18.2333 17.7267 18.5818 17.5824 18.8387 17.3255C19.0957 17.0686 19.24 16.7201 19.24 16.3567C19.2478 16.0665 19.1676 15.7806 19.01 15.5367L18.34 14.5367C17.3457 13.0468 16.8326 11.2876 16.87 9.49674V9.32674C16.8727 8.69002 16.7489 8.05911 16.5059 7.47059C16.2628 6.88208 15.9054 6.34767 15.4542 5.89837C15.003 5.44907 14.4672 5.09382 13.8776 4.85321C13.2881 4.61261 12.6567 4.49144 12.02 4.49674V4.49674Z"
+                    fill="#585A64"
+                />
+                <path
+                    d="M11.869 21.9766C11.2214 21.9742 10.596 21.7398 10.1062 21.3161C9.61644 20.8923 9.29461 20.3072 9.19902 19.6666C9.19408 19.6301 9.19408 19.5931 9.19902 19.5566V18.5566C9.19902 18.3577 9.27804 18.167 9.41869 18.0263C9.55934 17.8857 9.75011 17.8066 9.94902 17.8066C10.1479 17.8066 10.3387 17.8857 10.4793 18.0263C10.62 18.167 10.699 18.3577 10.699 18.5566V19.4966C10.75 19.7724 10.8959 20.0216 11.1115 20.2009C11.327 20.3803 11.5986 20.4785 11.879 20.4785C12.1594 20.4785 12.431 20.3803 12.6465 20.2009C12.8621 20.0216 13.008 19.7724 13.059 19.4966V18.5866C13.059 18.3877 13.138 18.197 13.2787 18.0563C13.4193 17.9157 13.6101 17.8366 13.809 17.8366C14.0079 17.8366 14.1987 17.9157 14.3393 18.0563C14.48 18.197 14.559 18.3877 14.559 18.5866V19.5866C14.564 19.6231 14.564 19.6601 14.559 19.6966C14.4623 20.3378 14.1364 20.9221 13.6418 21.3414C13.1472 21.7606 12.5173 21.9863 11.869 21.9766Z"
+                    fill="#585A64"
+                />
+            </svg>
+            <template if:true={hasUnread}>
+                <span class="badge" aria-hidden="true">{unreadBadge}</span>
+            </template>
+        </button>
+
+        <template if:true={isOpen}>
+            <div class="panel" aria-label="Notifications panel">
+                <div class="tabs" role="tablist">
+                    <button
+                        type="button"
+                        class={notificationsTabClass}
+                        role="tab"
+                        onclick={openNotificationsTab}
+                    >
+                        Notifications
+                    </button>
+                    <button
+                        type="button"
+                        class={requestsTabClass}
+                        role="tab"
+                        onclick={openRequestsTab}
+                    >
+                        Connection Requests
+                    </button>
+                </div>
+
+                <div class="content">
+                    <template if:true={isNotificationsTab}>
+                        <template if:false={hasNotifications}>
+                            <div class="empty-state">
+                                <svg viewBox="0 0 200 200" class="empty-illu" aria-hidden="true">
+                                    <ellipse cx="100" cy="170" rx="56" ry="8" fill="#E8E9EE"/>
+                                    <path d="M100 40c-22 0-40 18-40 40v20l-12 18c-2 3 0 7 4 7h96c4 0 6-4 4-7l-12-18V80c0-22-18-40-40-40z" fill="#FFFFFF" stroke="#C9CCD4" stroke-width="3"/>
+                                    <circle cx="86" cy="92" r="2.5" fill="#9AA0AC"/>
+                                    <circle cx="114" cy="92" r="2.5" fill="#9AA0AC"/>
+                                    <path d="M88 110c4-4 20-4 24 0" stroke="#9AA0AC" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                                    <circle cx="148" cy="64" r="14" fill="#FFFFFF" stroke="#C9CCD4" stroke-width="3"/>
+                                    <circle cx="143" cy="64" r="1.6" fill="#9AA0AC"/>
+                                    <circle cx="148" cy="64" r="1.6" fill="#9AA0AC"/>
+                                    <circle cx="153" cy="64" r="1.6" fill="#9AA0AC"/>
+                                    <path d="M138 73 l-4 6 6-2" fill="#FFFFFF" stroke="#C9CCD4" stroke-width="3" stroke-linejoin="round"/>
+                                    <path d="M100 140v6" stroke="#C9CCD4" stroke-width="3" stroke-linecap="round"/>
+                                    <text x="36" y="46" fill="#C9CCD4" font-size="14">+</text>
+                                    <text x="166" y="36" fill="#C9CCD4" font-size="14">+</text>
+                                    <text x="170" y="148" fill="#C9CCD4" font-size="14">+</text>
+                                    <text x="26" y="158" fill="#C9CCD4" font-size="10">·</text>
+                                </svg>
+                                <div class="empty-text">You're all caught up! No new notifications at the moment.</div>
+                            </div>
+                        </template>
+
+                        <template if:true={hasNotifications}>
+                            <div class="section-label">Recent</div>
+                            <template for:each={notifications} for:item="n">
+                                <div
+                                    key={n.id}
+                                    class={n.rowClass}
+                                    data-id={n.id}
+                                    onclick={handleNotificationClick}
+                                >
+                                    <img src={n.imageUrl} class="row-avatar" alt="" />
+                                    <div class="row-main">
+                                        <div class="title">{n.title}</div>
+                                        <template if:true={n.subtitle}>
+                                            <div class="subtitle">{n.subtitle}</div>
+                                        </template>
+                                        <div class="time time--below">{n.time}</div>
+                                        <template if:true={n.respondedLabel}>
+                                            <div class="responded-label">{n.respondedLabel}</div>
+                                        </template>
+                                    </div>
+                                    <template if:true={n.showActions}>
+                                        <div class="actions actions--inline-stack">
+                                            <button
+                                                class="btn btn-primary"
+                                                type="button"
+                                                disabled={n.isPending}
+                                                data-id={n.id}
+                                                data-kind={n.kind}
+                                                data-source-id={n.sourceId}
+                                                onclick={handleAccept}
+                                            >
+                                                <template if:true={n.isPending}>
+                                                    <span class="btn-spinner" aria-hidden="true"></span>
+                                                </template>
+                                                <template if:false={n.isPending}>
+                                                    Accept
+                                                </template>
+                                            </button>
+                                            <button
+                                                class="btn btn-ghost"
+                                                type="button"
+                                                disabled={n.isPending}
+                                                data-id={n.id}
+                                                data-kind={n.kind}
+                                                data-source-id={n.sourceId}
+                                                onclick={handleDecline}
+                                            >
+                                                <template if:true={n.isPending}>
+                                                    <span class="btn-spinner btn-spinner--dark" aria-hidden="true"></span>
+                                                </template>
+                                                <template if:false={n.isPending}>
+                                                    Decline
+                                                </template>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                        </template>
+                    </template>
+
+                    <template if:true={isRequestsTab}>
+                        <template if:false={hasConnectionRequests}>
+                            <div class="empty-state">
+                                <svg viewBox="0 0 200 200" class="empty-illu" aria-hidden="true">
+                                    <ellipse cx="100" cy="170" rx="56" ry="8" fill="#E8E9EE"/>
+                                    <path d="M100 40c-22 0-40 18-40 40v20l-12 18c-2 3 0 7 4 7h96c4 0 6-4 4-7l-12-18V80c0-22-18-40-40-40z" fill="#FFFFFF" stroke="#C9CCD4" stroke-width="3"/>
+                                    <circle cx="86" cy="92" r="2.5" fill="#9AA0AC"/>
+                                    <circle cx="114" cy="92" r="2.5" fill="#9AA0AC"/>
+                                    <path d="M88 110c4-4 20-4 24 0" stroke="#9AA0AC" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                                </svg>
+                                <div class="empty-text">You're all caught up! No new connection requests at the moment.</div>
+                            </div>
+                        </template>
+
+                        <template for:each={groupedConnectionRequests} for:item="g">
+                            <div key={g.label}>
+                                <div class="section-label">{g.label}</div>
+                                <template for:each={g.items} for:item="r">
+                                    <div key={r.id} class="row row--request">
+                                        <div class="avatar">
+                                            <img src={r.avatarUrl} alt="" />
+                                        </div>
+                                        <div class="row-main">
+                                            <div class="title">{r.name}</div>
+                                            <div class="subtitle">{r.subtitle}</div>
+                                        </div>
+                                        <div class="actions actions--inline">
+                                            <button
+                                                class="btn btn-primary"
+                                                type="button"
+                                                disabled={r.isPending}
+                                                data-id={r.id}
+                                                data-kind={r.kind}
+                                                data-source-id={r.sourceId}
+                                                onclick={handleAccept}
+                                            >
+                                                <template if:true={r.isPending}>
+                                                    <span class="btn-spinner" aria-hidden="true"></span>
+                                                </template>
+                                                <template if:false={r.isPending}>
+                                                    Accept
+                                                </template>
+                                            </button>
+                                            <button
+                                                class="btn btn-ghost"
+                                                type="button"
+                                                disabled={r.isPending}
+                                                data-id={r.id}
+                                                data-kind={r.kind}
+                                                data-source-id={r.sourceId}
+                                                onclick={handleDecline}
+                                            >
+                                                <template if:true={r.isPending}>
+                                                    <span class="btn-spinner btn-spinner--dark" aria-hidden="true"></span>
+                                                </template>
+                                                <template if:false={r.isPending}>
+                                                    Decline
+                                                </template>
+                                            </button>
+                                        </div>
+                                        <div class="time time--request">{r.time}</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <template if:true={hasToast}>
+            <div
+                class="toast-popup"
+                role="alert"
+                onclick={handleToastClick}
+            >
+                <img src={toastImageUrl} class="toast-avatar" alt="" />
+                <div class="toast-body">
+                    <div class="toast-title">{toastTitle}</div>
+                    <template if:true={toastBody}>
+                        <div class="toast-subtitle">{toastBody}</div>
+                    </template>
+                </div>
+                <button
+                    class="toast-close"
+                    type="button"
+                    aria-label="Dismiss"
+                    onclick={handleToastClose}
+                >
+                    &times;
+                </button>
+            </div>
+        </template>
+    </div>
+</template>

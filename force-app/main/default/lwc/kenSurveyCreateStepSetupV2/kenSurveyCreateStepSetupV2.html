@@ -1,0 +1,28 @@
+<template>
+    <div class="field">
+        <label>Survey Title</label>
+        <input type="text" data-field="title" value={title} oninput={handleField}/>
+    </div>
+    <div class="field">
+        <label>Description</label>
+        <textarea data-field="description" oninput={handleField}>{description}</textarea>
+    </div>
+    <div class="grid-2">
+        <div class="field">
+            <label>Category</label>
+            <select data-field="category" value={category} onchange={handleField}>
+                <option>Engagement</option>
+                <option>Feedback</option>
+                <option>NPS</option>
+                <option>Event</option>
+            </select>
+        </div>
+        <div class="field">
+            <label>Type</label>
+            <div class="type-row">
+                <button type="button" class="type-btn" data-val="one-time" onclick={handleType}>One-time</button>
+                <button type="button" class="type-btn" data-val="recurring" onclick={handleType}>Recurring</button>
+            </div>
+        </div>
+    </div>
+</template>

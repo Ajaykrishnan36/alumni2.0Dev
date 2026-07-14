@@ -1,0 +1,299 @@
+:host {
+    display: block;
+    background: var(--portal-bg, #ffffff);
+    color: #3f4452;
+}
+
+.applications-page {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(22, 34, 51, 0.06);
+    padding: 1.45rem 1.4rem;
+    min-height: calc(100vh - 220px);
+    position: relative;
+}
+
+.applications-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
+.applications-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #3f4452;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 225px;
+    gap: 0.4rem;
+    border: 2px solid #2f5bff;
+    border-radius: 12px;
+    padding: 0.48rem 0.78rem;
+    background: #ffffff;
+    color: #2f5bff;
+    font-size: 0.9rem;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.38rem);
+    right: 0;
+    min-width: 225px;
+    border: 1px solid #e3e8f2;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 12px 20px rgba(22, 34, 51, 0.14);
+    padding: 0.9rem 1.1rem;
+    z-index: 8;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0;
+    font-size: 1rem;
+    color: #4b5563;
+}
+
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: var(--portal-trigger-height, 40px);
+    box-sizing: border-box;
+    border: var(--portal-border-width, 1px) solid var(--secondary-color, var(--portal-border-color, #F3F4F6));
+    border-radius: var(--portal-field-radius, 12px);
+    padding: 0 var(--portal-trigger-padding-x, 0.85rem);
+    background: var(--secondary-color, var(--portal-divider-color, #F3F4F6));
+    color: #2f5bff;
+    font-weight: 500;
+}
+
+.table-shell {
+    border: 1px solid #e4e8ef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 2fr 2.1fr 1.2fr 2.1fr 2fr;
+    gap: 1rem;
+    padding: 0.9rem 1.2rem;
+    align-items: center;
+}
+
+.table-header {
+    border-bottom: 1px solid #e4e8ef;
+    color: #1f3a8a;
+    font-weight: 500;
+    font-size: 0.94rem;
+}
+
+.table-body-row {
+    font-size: 0.95rem;
+    color: #6b7282;
+}
+
+.company-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+}
+
+.logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.logo-google { background: #4285f4; }
+.logo-tcs { background: #ef4444; }
+.logo-infosys { background: #3b82f6; }
+.logo-wipro { background: #6366f1; }
+.logo-zoho { background: #16a34a; }
+.logo-reddit { background: #f97316; }
+.logo-sme { background: #0ea5a3; }
+.logo-psu { background: #334155; }
+
+.stage-chip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.2rem 0.75rem;
+    font-weight: 500;
+    color: #334155;
+    line-height: 1.2;
+}
+
+.stage-blue { background: #b8c9ff; }
+.stage-green { background: #b8d9bc; }
+.stage-red { background: #efc1c1; }
+.stage-yellow { background: #eddcad; }
+
+.stage-outline {
+    border: 1px solid #4f7bff;
+    color: #2f5bff;
+    background: #ffffff;
+}
+
+.actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    border-radius: 10px;
+    padding: 0.38rem 0.95rem;
+    font-size: 0.86rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.action-outline-blue {
+    border: 1px solid #4f7bff;
+    background: #eef2ff;
+    color: #2f5bff;
+}
+
+.action-outline-red {
+    border: 1px solid #d26a6a;
+    background: #ffffff;
+    color: #b33b3b;
+}
+
+.action-fill-blue {
+    border: 1px solid #2f5bff;
+    background: #2f5bff;
+    color: #ffffff;
+}
+
+.filters-drawer {
+    position: absolute;
+    top: 5.5rem;
+    right: 1.3rem;
+    width: 500px;
+    max-width: calc(100vw - 2.8rem);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e3e8f2);
+    border-radius: var(--portal-radius, 16px);
+    background: var(--portal-surface, #ffffff);
+    box-shadow: var(--portal-popover-shadow, 0 24px 40px rgba(22, 34, 51, 0.18));
+    z-index: 10;
+    padding: 1.3rem 1.4rem 1rem;
+}
+
+.filters-header {
+    font-size: var(--portal-title-size, 1.9rem);
+    font-weight: 600;
+    color: var(--portal-text-primary, #3f4452);
+    margin-bottom: 1rem;
+}
+
+.mentor-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    border: 1px solid #cfd5e0;
+    border-radius: 10px;
+    height: 44px;
+    padding: 0 0.75rem;
+    color: #8b91a0;
+    margin-bottom: 0.9rem;
+}
+
+.filter-input {
+    width: 100%;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #cfd5e0);
+    border-radius: var(--portal-field-radius, 10px);
+    height: var(--portal-field-height, 46px);
+    padding: 0 var(--portal-field-padding-x, 0.75rem);
+    color: var(--portal-text-muted, #7a808f);
+    background: var(--portal-surface, #ffffff);
+    margin-bottom: 0.85rem;
+}
+
+.filters-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-top: 0.4rem;
+    border-top: var(--portal-border-width, 1px) solid var(--portal-divider-color, #e3e8f2);
+    padding-top: 1rem;
+}
+
+.btn-reset,
+.btn-apply {
+    border-radius: var(--portal-field-radius, 10px);
+    height: var(--portal-field-height, 46px);
+    padding: 0 var(--portal-btn-padding-x, 1.2rem);
+    box-sizing: border-box;
+    font-size: var(--portal-font-size, 0.98rem);
+}
+
+.btn-reset {
+    border: var(--portal-border-width, 1px) solid #2f5bff;
+    background: var(--portal-surface, #ffffff);
+    color: #2f5bff;
+}
+
+.btn-apply {
+    border: var(--portal-border-width, 1px) solid #2f5bff;
+    background: var(--primary-color, #2f5bff);
+    color: var(--portal-on-primary, #ffffff);
+}
+
+@media (max-width: 1100px) {
+    .table-shell {
+        overflow-x: auto;
+    }
+
+    .table-row {
+        min-width: 960px;
+    }
+}
+
+@media (max-width: 640px) {
+    .applications-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .filters-drawer {
+        left: 0.8rem;
+        right: 0.8rem;
+        width: auto;
+    }
+}
+
+.table-body{
+    overflow-y: auto;
+    height: calc(100vh - 314px);
+}

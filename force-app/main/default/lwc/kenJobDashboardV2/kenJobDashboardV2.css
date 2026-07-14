@@ -1,0 +1,68 @@
+:host {
+    --violet: #4f46e5;
+    --violet-d: #3730a3;
+    --violet-l: #eef2ff;
+    --grey: #9aa0a6;
+    --line: #ece6f2;
+    display: block;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.dash { display: flex; flex-direction: column; gap: 14px; }
+.dash__hd { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.dash__hd h2 { margin: 0; font-size: 22px; color: var(--violet-d); }
+.filter { min-width: 200px; }
+
+.muted { color: var(--grey); font-size: 14px; padding: 14px 0; }
+.muted.sm { font-size: 12px; padding: 0; }
+.err { color: #c0392b; background: #fdecea; padding: 10px 14px; border-radius: 8px; }
+
+/* tabs */
+.tabs { display: flex; gap: 6px; border-bottom: 2px solid var(--line); }
+.tab {
+    background: none; border: none; cursor: pointer;
+    padding: 10px 18px; font-size: 14px; font-weight: 600; color: var(--grey);
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+}
+.tab--on { color: var(--violet-d); border-bottom-color: var(--violet); }
+
+/* table */
+.tbl { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #fff; }
+.tbl__hd, .tbl__row {
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr 1fr 0.8fr 2.2fr;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+}
+.tbl__hd {
+    background: var(--violet-l);
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .4px; color: var(--violet-d);
+}
+.tbl__row { border-top: 1px solid var(--line); font-size: 14px; color: #222; }
+.tbl__row:hover { background: #f5f6ff; }
+
+.pill {
+    display: inline-block; font-style: normal; font-size: 12px; font-weight: 600;
+    color: var(--violet-d); background: var(--violet-l);
+    padding: 3px 10px; border-radius: 999px;
+}
+
+.c-act { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.b {
+    border-radius: 7px; padding: 7px 14px; font-size: 13px; font-weight: 600;
+    cursor: pointer; text-decoration: none; display: inline-block; border: 1px solid var(--violet);
+}
+.b--solid { background: var(--violet); color: #fff; }
+.b--solid:hover { background: var(--violet-d); }
+.b--ghost { background: #fff; color: var(--violet-d); }
+.b--ghost:hover { background: var(--violet-l); }
+
+.congrats {
+    font-weight: 700; color: #fff;
+    background: linear-gradient(135deg, var(--violet), var(--violet-d));
+    padding: 7px 14px; border-radius: 999px; font-size: 13px;
+}
+.locked { color: var(--grey); font-size: 13px; font-weight: 600; }

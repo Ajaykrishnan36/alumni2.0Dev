@@ -1,0 +1,39 @@
+<template>
+    <article class="job" onclick={handleClick}>
+        <div class="job__top">
+            <div class="job__co">
+                <span class="job__logo" style={logoStyle}>{logoLetter}</span>
+                <span>{company}</span>
+            </div>
+            <button class={bookmarkClass} onclick={handleBookmark} title="Save job">
+                <svg width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 1h12v14l-6-4-6 4V1z"></path></svg>
+            </button>
+        </div>
+        <h3 class="job__title">{title}</h3>
+        <template lwc:if={hasLocation}>
+            <div class="job__location">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>{location}</span>
+            </div>
+        </template>
+        <div class="job__tags">
+            <template for:each={tagItems} for:item="tg">
+                <span key={tg.key} class="tag">{tg.label}</span>
+            </template>
+        </div>
+        <div class="job__sal">{salary}</div>
+        <div class={matchClass}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <span>Skills match: {skillsMatch}%</span>
+        </div>
+        <div class="job__actions">
+            <template lwc:if={showApply}>
+                <button class="btn btn--primary btn--sm" onclick={handleApply} disabled={applyDisabled}>{applyLabel}</button>
+            </template>
+            <template lwc:else>
+                <span class="job__owner-note">You posted this job</span>
+            </template>
+            <button class="btn btn--ghost btn--sm" onclick={handleSave}>{saveLabel}</button>
+        </div>
+    </article>
+</template>

@@ -1,0 +1,232 @@
+.bgColor{
+    background-color: #E5E5E5;
+    padding: 24px;
+}
+
+.custom-input {
+    width: 90%;
+}
+.custom-flex-container {
+    display: flex;
+    justify-content: space-between;
+}
+.custom-flex{
+    display: flex;
+    padding-right: 20px;
+}
+.custom-flex-left{
+    padding-left: 20px; 
+}
+.custom-container{
+      border: 1px solid black;
+  border-radius: 10px;
+  margin-top: 30px;
+  padding: 20px;
+  background-color: white;
+}
+
+.custom-line-break {
+    margin-bottom: 10px;
+}
+/*Added CSS*/
+.fee-setup-container {
+    justify-content: space-between; /* Align the columns evenly */
+    align-items: center; /* Vertically align content in the center */
+}
+
+.fee-label {
+    padding: 0.5rem 1rem;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.fee-input {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.fee-checkbox {
+    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.lightning-input .slds-input {
+    height: 36px; /* Adjust the height of the input fields */
+    padding: 0.25rem 0.5rem;
+}
+
+.custom-flex-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+}
+
+.custom-flex-left {
+    flex: 1;
+}
+
+.custom-flex {
+    display: flex;
+    flex-direction: row;
+}
+
+.slds-p-around_xx-small {
+    margin: 0 0.5rem;
+}
+/*date PATH*/
+.date-path {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+}
+
+/*button {
+    padding: 0.5rem 1rem;
+    background-color: #e3e3e3;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button.active {
+    background-color: #1a73e8;
+    color: white;
+}
+
+button:hover {
+    background-color: #0052cc;
+    color: white;
+}*/
+.removeSpeaker{
+    background-color:gray;
+}
+.removeSpeaker:hover {
+    background-color:red;
+}
+/*Location Css */
+.slds-p-horizontal_large {
+    padding-right: 1.5rem;
+}
+
+.slds-p-top_medium {
+    padding-top: 1rem;
+}
+
+/**** CSS FOR FEE MODAL ****/
+.slds-modal__body {
+    background-color: #f9f9f9; /* light gray for a cleaner look */
+    padding: 1.5rem;
+    border-radius: 1rem;
+    max-width: 400px;
+    margin: auto;
+    /*box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* soft shadow */
+}
+
+.slds-modal__container {
+    max-width: 50rem;
+    max-height: 350px;
+    border-radius: 1rem;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); /* stronger shadow for the main container */
+    padding: 1rem;
+}
+.slds-button{
+    display: flex;
+    align-items: end;
+    color:#333;
+}
+.slds-modal__header h2 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 1rem;
+    text-align: center; /* Center the heading */
+}
+.loaction-radio-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px; /* Adds spacing between radio options */
+}
+.location-radio-field{
+    align-items: center;
+}
+.location-radio-field label {
+    font-size: 1rem;
+    gap: 5px;
+}
+.location-radio-field input[type="radio"] {
+    margin-right: 0.75rem;
+    margin-top: 3px;
+    gap: 5px;
+    /*accent-color: #0070d2;  Customize radio button color */
+}
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Adds spacing between radio options */
+}
+
+.radio-field {
+    display: flex;
+    gap:5px;
+    align-items: center;
+    padding: 0.75rem;
+    background-color:rgb(34 120 193 / 65%);;
+    border: 2px solid transparent;
+    border-radius: 0.5rem;
+    transition: background-color 0.3s, border-color 0.3s;
+    cursor: pointer;
+}
+
+.radio-field:hover {
+    border-color: #0070d2; /* blue border on hover */
+}
+
+.radio-field input[type="radio"] {
+    margin-right: 0.75rem;
+    margin-top: 3px;
+    gap: 5px;
+    accent-color: #0070d2; /* Customize radio button color */
+}
+
+.radio-field label {
+    font-size: 1rem;
+    color: #333;
+    gap: 5px;
+}
+
+.radio-field.selected {
+    background-color: #e3f2fd; /* Light blue background when selected */
+    border-color: #0070d2;
+}
+
+
+.event-card {
+    --slds-c-card-color-background: #f3f3f3;
+    --slds-c-card-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --slds-c-card-heading-font-weight: 600;
+    --slds-c-card-heading-font-size: 1.25rem;
+    --slds-c-card-radius-border: 8px;
+    margin-bottom: 1rem;
+}
+
+.card-content {
+    border-top: 1px solid #e0e0e0;
+    background-color: #f9f9f9;
+}
+
+.field-label {
+    color: #666;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.field-value {
+    color: #0a2240;
+    font-size: 1rem;
+    font-weight: 500;
+}

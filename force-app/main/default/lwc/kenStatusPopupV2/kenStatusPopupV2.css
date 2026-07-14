@@ -1,0 +1,63 @@
+/* Alumni 2.0 — Reusable Success Toast — Figma component 4001:31533 */
+
+:host {
+    --a2-success: #10B981;
+    --a2-success-100: #C1DCC3;
+    --a2-white: #FFFFFF;
+    --a2-blacks-400: #373A45;
+    --a2-font-title: "General Sans", "Inter", system-ui, sans-serif;
+    --a2-radius-md: 12px;
+
+    display: block;
+    font-family: var(--a2-font-title);
+    color: var(--a2-blacks-400);
+}
+
+.overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1100;
+}
+
+.toast {
+    position: relative;
+    min-width: 320px;
+    max-width: min(516px, calc(100vw - 48px));
+    padding: 32px 40px;
+    background: var(--a2-white);
+    border-radius: var(--a2-radius-md);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    box-sizing: border-box;
+}
+
+.toast__close {
+    position: absolute; top: 12px; right: 12px;
+    background: none; border: 0; cursor: pointer;
+    padding: 6px; display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    transition: background 0.15s;
+}
+.toast__close:hover { background: rgba(0, 0, 0, 0.05); }
+
+.toast__badge { width: 80px; height: 80px; }
+.toast__badge svg { width: 100%; height: 100%; display: block; }
+
+.toast__header {
+    margin: 0;
+    font-weight: 600; font-size: 18px; line-height: 140%;
+    color: var(--a2-blacks-400);
+    text-align: center;
+}
+
+.toast__content {
+    margin: 0;
+    font-weight: 500; font-size: 14px; line-height: 150%;
+    color: var(--a2-blacks-400);
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .toast { padding: 24px 20px; min-width: 0; width: 100%; }
+}

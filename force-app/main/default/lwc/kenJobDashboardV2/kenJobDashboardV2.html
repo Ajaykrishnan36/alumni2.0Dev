@@ -1,0 +1,73 @@
+<template>
+    <section class="dash">
+        <header class="dash__hd">
+            <h2>My Applications</h2>
+            <div class="filter">
+                <lightning-combobox label="Placement Cycle" variant="label-hidden"
+                    value={cycle} options={cycleOptions} onchange={handleCycle}></lightning-combobox>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class={activeTabCls} onclick={selectActive}>Active ({activeCount})</button>
+            <button class={closedTabCls} onclick={selectClosed}>Past / Closed ({closedCount})</button>
+        </div>
+
+        <template lwc:if={errorMsg}>
+            <div class="err">{errorMsg}</div>
+        </template>
+
+        <template lwc:if={loading}>
+            <div class="muted">Loading…</div>
+        </template>
+
+        <template lwc:elseif={isEmpty}>
+            <div class="muted">No applications in this view.</div>
+        </template>
+
+        <template lwc:else>
+            <div class="tbl">
+                <div class="tbl__hd">
+                    <span class="c-app">Application</span>
+                    <span class="c-job">Role</span>
+                    <span class="c-stage">Stage</span>
+                    <span class="c-cycle">Cycle</span>
+                    <span class="c-act">Actions</span>
+                </div>
+
+                <template for:each={rows} for:item="r">
+                    <div key={r.id} class="tbl__row">
+                        <span class="c-app">{r.name}</span>
+                        <span class="c-job">{r.jobTitle}</span>
+                        <span class="c-stage"><em class="pill">{r.currentStage}</em></span>
+                        <span class="c-cycle">{r.placementCycle}</span>
+                        <span class="c-act">
+                            <!-- Offer Extended -> Review + Accept -->
+                            <template lwc:if={r.showReviewAccept}>
+                                <button class="b b--ghost" data-id={r.id} onclick={handleReview}>Review Offer</button>
+                                <button class="b b--solid" data-id={r.id} onclick={handleAccept}>Accept Offer</button>
+                            </template>
+
+                            <!-- Offer Accepted -> congrats + download -->
+                            <template lwc:elseif={r.showCongrats}>
+                                <span class="congrats">🎉 Congratulations!</span>
+                                <template lwc:if={r.offerLetterUrl}>
+                                    <a class="b b--ghost" href={r.offerLetterUrl} target="_blank">Offer Letter</a>
+                                </template>
+                            </template>
+
+                            <!-- Locked elsewhere -->
+                            <template lwc:elseif={r.showLocked}>
+                                <span class="locked">🔒 Locked — Offer Accepted Elsewhere</span>
+                            </template>
+
+                            <template lwc:else>
+                                <span class="muted sm">—</span>
+                            </template>
+                        </span>
+                    </div>
+                </template>
+            </div>
+        </template>
+    </section>
+</template>

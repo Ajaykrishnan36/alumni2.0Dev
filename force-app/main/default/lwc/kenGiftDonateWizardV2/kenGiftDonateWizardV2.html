@@ -1,0 +1,137 @@
+<template>
+    <div class="dw-overlay" onclick={handleBackdrop}>
+        <div class="dw-modal" onclick={stop}>
+            <button type="button" class="dw-close" onclick={handleClose}>&times;</button>
+
+            <header class="dw-head">
+                <h2 class="dw-title">Donate</h2>
+                <p class="dw-sub">{campaignName}</p>
+            </header>
+
+            <!-- ===== Processing (gateway stub) ===== -->
+            <template lwc:if={processing}>
+                <div class="dw-processing">
+                    <div class="dw-spinner" aria-hidden="true"></div>
+                    <p class="dw-processing__txt">Simulating payment…</p>
+                    <p class="dw-processing__sub">Securely processing your {amountDisplay} gift.</p>
+                </div>
+            </template>
+
+            <!-- ===== Success ===== -->
+            <template lwc:elseif={done}>
+                <div class="dw-success">
+                    <div class="dw-success__check" aria-hidden="true">&#10003;</div>
+                    <h3>Thank you!</h3>
+                    <p>Your {amountDisplay} gift to {campaignName} is confirmed. A receipt is on its way to your inbox.</p>
+                    <button type="button" class="dw-btn dw-btn--primary" onclick={handleDone}>Done</button>
+                </div>
+            </template>
+
+            <template lwc:else>
+                <!-- ===== Step 1: amount ===== -->
+                <template lwc:if={isStep1}>
+                    <div class="dw-body">
+                        <p class="dw-step-label">Choose your gift</p>
+                        <template lwc:if={hasTiers}>
+                            <div class="dw-tiers">
+                                <template for:each={tierButtons} for:item="t">
+                                    <button key={t.id} type="button" class={t.cls} data-id={t.id} onclick={handleTier}>
+                                        <span class="dw-tier__amt">{t.amountDisplay}</span>
+                                        <template lwc:if={t.label}><span class="dw-tier__lbl">{t.label}</span></template>
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+                        <label class="dw-field">
+                            <span class="dw-field__lbl">Or enter a custom amount</span>
+                            <div class="dw-amount-input">
+                                <span class="dw-cur">&#8377;</span>
+                                <input type="number" min="1" step="1" value={customAmount} oninput={handleCustom} placeholder="0"/>
+                            </div>
+                        </label>
+                    </div>
+                </template>
+
+                <!-- ===== Step 2: details + optional split ===== -->
+                <template lwc:if={isStep2}>
+                    <div class="dw-body">
+                        <p class="dw-step-label">Your details</p>
+                        <div class="dw-grid2">
+                            <label class="dw-field"><span class="dw-field__lbl">First name</span>
+                                <input type="text" data-field="firstName" value={firstName} oninput={handleField} placeholder="Jane"/></label>
+                            <label class="dw-field"><span class="dw-field__lbl">Last name *</span>
+                                <input type="text" data-field="lastName" value={lastName} oninput={handleField} placeholder="Doe"/></label>
+                        </div>
+                        <label class="dw-field"><span class="dw-field__lbl">Email *</span>
+                            <input type="email" data-field="email" value={email} oninput={handleField} placeholder="jane@example.com"/></label>
+                        <label class="dw-field"><span class="dw-field__lbl">Message (optional)</span>
+                            <textarea data-field="comment" value={comment} oninput={handleField} placeholder="Add a note…"></textarea></label>
+                        <label class="dw-check"><input type="checkbox" checked={isAnonymous} onchange={handleAnon}/> <span>Make my gift anonymous</span></label>
+
+                        <template lwc:if={hasFunds}>
+                            <label class="dw-check"><input type="checkbox" checked={splitEnabled} onchange={handleSplitToggle}/> <span>Split my gift across multiple funds</span></label>
+                            <template lwc:if={splitEnabled}>
+                                <div class="dw-allocs">
+                                    <template for:each={allocationRows} for:item="a">
+                                        <div key={a.key} class="dw-alloc">
+                                            <select class="dw-alloc__fund" data-key={a.key} onchange={handleAllocFund}>
+                                                <option value="">Select fund…</option>
+                                                <template for:each={a.funds} for:item="f">
+                                                    <option key={f.id} value={f.id} selected={f.selected}>{f.name}</option>
+                                                </template>
+                                            </select>
+                                            <div class="dw-amount-input dw-amount-input--sm">
+                                                <span class="dw-cur">&#8377;</span>
+                                                <input type="number" min="0" step="1" data-key={a.key} value={a.amount} oninput={handleAllocAmount} placeholder="0"/>
+                                            </div>
+                                            <button type="button" class="dw-alloc__rm" data-key={a.key} onclick={handleAllocRemove}>&times;</button>
+                                        </div>
+                                    </template>
+                                    <button type="button" class="dw-link" onclick={addAllocation}>+ Add fund</button>
+                                    <p class="dw-alloc__hint">Splits must total {amountDisplay}.</p>
+                                </div>
+                            </template>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ===== Step 3: payment stub ===== -->
+                <template lwc:if={isStep3}>
+                    <div class="dw-body">
+                        <p class="dw-step-label">Payment &middot; {amountDisplay}</p>
+                        <div class="dw-stub-note">Test mode — no real card is charged. This step will be replaced by Stripe/Blackbaud secure fields.</div>
+                        <label class="dw-field"><span class="dw-field__lbl">Name on card</span>
+                            <input type="text" data-field="cardName" value={cardName} oninput={handleCard} placeholder="Jane Doe"/></label>
+                        <label class="dw-field"><span class="dw-field__lbl">Card number</span>
+                            <input type="text" data-field="cardNumber" value={cardNumber} oninput={handleCard} placeholder="4242 4242 4242 4242"/></label>
+                        <div class="dw-grid2">
+                            <label class="dw-field"><span class="dw-field__lbl">Expiry</span>
+                                <input type="text" data-field="cardExpiry" value={cardExpiry} oninput={handleCard} placeholder="MM/YY"/></label>
+                            <label class="dw-field"><span class="dw-field__lbl">CVC</span>
+                                <input type="text" data-field="cardCvc" value={cardCvc} oninput={handleCard} placeholder="123"/></label>
+                        </div>
+                    </div>
+                </template>
+
+                <template lwc:if={errorMsg}>
+                    <p class="dw-error">{errorMsg}</p>
+                </template>
+
+                <footer class="dw-foot">
+                    <template lwc:if={isStep1}>
+                        <button type="button" class="dw-btn dw-btn--ghost" onclick={handleClose}>Cancel</button>
+                        <button type="button" class="dw-btn dw-btn--primary" onclick={handleNext}>Continue</button>
+                    </template>
+                    <template lwc:if={isStep2}>
+                        <button type="button" class="dw-btn dw-btn--ghost" onclick={handleBack}>Back</button>
+                        <button type="button" class="dw-btn dw-btn--primary" onclick={handleNext}>Continue</button>
+                    </template>
+                    <template lwc:if={isStep3}>
+                        <button type="button" class="dw-btn dw-btn--ghost" onclick={handleBack}>Back</button>
+                        <button type="button" class="dw-btn dw-btn--primary" onclick={handleSubmit}>Donate {amountDisplay}</button>
+                    </template>
+                </footer>
+            </template>
+        </div>
+    </div>
+</template>

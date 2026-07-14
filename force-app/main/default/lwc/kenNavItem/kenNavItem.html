@@ -1,0 +1,45 @@
+<template>
+    <div class={itemClass}>
+        <div class="nav-item-main"
+             onclick={handleClick}
+             onmouseover={handleMouseEnter}
+             onmouseout={handleMouseLeave}>
+            <template if:true={hasIcon}>
+                <div class="nav-icon nav-icon-mask" style={iconMaskStyle} role="img" aria-label={label}></div>
+            </template>
+            <span class={textClass}>{label}</span>
+
+            <template if:true={showDropdown}>
+                <div class="toggle-icon-wrapper">
+                    <lightning-button-icon
+                        icon-name="utility:down"
+                        variant="bare"
+                        alternative-text="Toggle Dropdown"
+                        class="toggle-icon">
+                    </lightning-button-icon>
+                </div>
+            </template>
+        </div>
+
+        <template if:true={showTooltip}>
+            <div class="nav-tooltip" style={tooltipStyle}>
+                <span>{label}</span>
+            </div>
+        </template>
+
+        <template if:true={isSubMenuVisible}>
+            <ul class="sidenav-submenu">
+                <template for:each={item.subMenu} for:item="subMenu">
+                    <li key={subMenu.id} class="submenu-item">
+                        <c-ken-sub-nav-item
+                            item={subMenu}
+                            is-selected={subMenu.isSelected}
+                            class="full-width"
+                            onsubmenuselect={handleSubMenuSelect}>
+                        </c-ken-sub-nav-item>
+                    </li>
+                </template>
+            </ul>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>65.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Ken42 Admin · Alumni</masterLabel>
+    <description>Back-office Master Alumni Data view. 7 tabbed slices (All / Recently Joined / Registered / Old Portal / Data Issues / Leads / Referrals) with centred detail windows for regular alumni and Find-and-merge workflows for unmerged leads and referrals.</description>
+    <targets>
+        <target>lightning__AppPage</target>
+        <target>lightning__HomePage</target>
+        <target>lightning__Tab</target>
+    </targets>
+</LightningComponentBundle>

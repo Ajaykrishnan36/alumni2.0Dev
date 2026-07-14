@@ -1,0 +1,2046 @@
+.THIS .fadeInAnimation, .THIS .omniscript-container [data-omni-key=Welcome], .THIS .omniscript-container [data-omni-key=Profile], .THIS .omniscript-container [data-omni-key=Family], .THIS .omniscript-container [data-omni-key=Education], .THIS .omniscript-container [data-omni-key=Testing], .THIS .omniscript-container [data-omni-key=Activities], .THIS .omniscript-container [data-omni-key=Writing], .THIS .omniscript-container [data-omni-key=References], .THIS .omniscript-container [data-omni-key=Finished] {
+  -webkit-animation: fadein 1s;
+  -moz-animation: fadein 1s;
+  -ms-animation: fadein 1s;
+  -o-animation: fadein 1s;
+  animation: fadein 1s;
+}
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@-moz-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@-webkit-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@-ms-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@-o-keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.THIS .connectedU {
+  overflow-x: hidden !important;
+}
+.THIS .forceCommunitySection .cb-section_column {
+  padding: 0;
+}
+.THIS .forceCommunitySection .cb-section_column:only-child, .THIS .forceCommunitySection .cb-section_column:last-child, .THIS .forceCommunitySection .cb-section_column:first-child {
+  padding: 0;
+}
+.THIS .omniscript-container .omniscript-side-content, .THIS .omniscript-container .slds-accordion__summary {
+  display: none;
+}
+.THIS .omniscript-container .slds-accordion__section {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.THIS .omniscript-container .omniscript-body.slds-medium-size_3-of-4, .THIS .omniscript-container .omniscript-body.slds-medium-size--3-of-4 {
+  width: 100%;
+}
+.THIS .omniscript-container .omniscript-bodyslds-p-vertical_small {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+.THIS .omniscript-container .omniscript-body[data-stepborder=right][forceGenerated-omniScript_EDUAdmissions___ContactForm___English___lightning___false___brand___ltrgen_omniScript_EDUAdmissions___ContactForm___English___lightning___false___brand___ltrgen] {
+  border-right: none;
+}
+.THIS .omniscript-container .omniscript-body[data-stepborder=right][forceGenerated-omniScript_EDUAdmissions___GPATool___English___lightning___false___brand___ltrgen_omniScript_EDUAdmissions___GPATool___English___lightning___false___brand___ltrgen] {
+  border-right: none;
+}
+.THIS .omniscript-container .omniscript-body[data-stepborder=right][forceGenerated-omniScript_EDUAdmissions___FinancialAid___English___lightning___false___brand___ltrgen_omniScript_EDUAdmissions___FinancialAid___English___lightning___false___brand___ltrgen] {
+  border-right: none;
+}
+.THIS .omniscript-container .slds-card {
+  background: none;
+  border: none;
+  border-radius: 0;
+  border-style: none;
+  box-shadow: none;
+  color: token(colorTextDefault);
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+.THIS .omniscript-container .slds-page-header__title, .THIS .omniscript-container .vlc-separator {
+  display: none;
+}
+@media all and (max-width: 767px) {
+  .THIS .omniscript-container article.omniscript-article .omniscript-body.slds-medium-size_3-of-4, .THIS .omniscript-container article.omniscript-article .omniscript-body.slds-medium-size--3-of-4 {
+    width: 100%;
+  }
+}
+.THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-m-top_medium, .THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-m-top--medium {
+  margin-top: 15px;
+}
+.THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-p-vertical_medium, .THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-p-vertical--medium {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-progress__item.slds-is-completed .slds-progress__marker, .THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-progress__item.slds-is-active .slds-progress__marker {
+  border-color: t(colorBrand);
+}
+.THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-progress_vertical .slds-progress__item.slds-is-completed .slds-progress__marker_icon-success svg {
+  fill: var(--lwc-colorTextLink);
+}
+.THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-progress_vertical .omni-stepchart-content {
+  color: t(colorTextPlaceholder);
+}
+.THIS .omniscript-container [data-omni-key=omniscriptStepChart] .slds-progress_vertical .slds-text-title_bold {
+  color: t(colorTextLink);
+}
+.THIS .omniscript-container [data-omni-key*=prefill_step_] {
+  text-align: right;
+}
+.THIS .omniscript-container [data-omni-key*=prefill_step_] .slds-button_stretch {
+  width: fit-content;
+}
+.THIS .omniscript-container [data-omni-key*=prefill_step_] .slds-button_brand, .THIS .omniscript-container [data-omni-key*=prefill_step_] .slds-button--brand {
+  color: t(colorTextLabel);
+  text-align: right;
+  --slds-c-button-color-background: transparent;
+  --slds-c-button-color-border: none;
+  --slds-c-button-spacing-inline-start: 0;
+  --slds-c-button-spacing-inline-end: 0;
+}
+.THIS .omniscript-container [data-omni-key*=prefill_step_] .slds-button {
+  border: none;
+  border-color: transparent;
+  border-style: none;
+  box-shadow: none;
+}
+.THIS .omniscript-container [data-omni-key*=heading1_step_] .slds-rich-text-editor__output h1 {
+  font-size: 32px;
+  font-size: 2rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  line-height: 32px;
+  font-weight: 400;
+}
+.THIS .omniscript-container [data-omni-key*=heading2_step_] .slds-rich-text-editor__output h2 {
+  font-size: 20px;
+  font-size: 1.25rem;
+  color: var(--lwc-brandNavigationBackgroundColor);
+  font-family: t(fontFamilyHeading);
+  line-height: 28px;
+  font-weight: 600;
+}
+.THIS .omniscript-container [data-omni-key*=introduction_step_] .slds-rich-text-editor__output p, .THIS .omniscript-container [data-omni-key*=footer_step_] .slds-rich-text-editor__output p, .THIS .omniscript-container [data-omni-key=secondary_schools_copy] .slds-rich-text-editor__output p, .THIS .omniscript-container [data-omni-key=colleges_universities_copy] .slds-rich-text-editor__output p, .THIS .omniscript-container [data-omni-key=community_orgs_copy] .slds-rich-text-editor__output p {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextWeak);
+  font-weight: 400;
+  line-height: 24px;
+}
+.THIS .omniscript-container [data-omni-key*=section_] .slds-accordion__summary {
+  display: flex !important;
+  margin-top: 10px;
+}
+.THIS .omniscript-container [data-omni-key*=section_] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+.THIS .omniscript-container [data-omni-key*=section_] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action .slds-icon-text-default {
+  fill: var(--lwc-colorTextLink);
+}
+.THIS .omniscript-container [data-omni-key*=section_] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h3 {
+  font-size: 20px;
+  font-size: 1.25rem;
+  color: var(--lwc-brandNavigationBackgroundColor);
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_school] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=community] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=act_tests] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=sat_tests] .slds-accordion__summary {
+  display: flex !important;
+  margin-top: 10px;
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action .slds-icon-text-default, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_school] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action .slds-icon-text-default, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=community] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action .slds-icon-text-default, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=act_tests] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action .slds-icon-text-default, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=sat_tests] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action .slds-icon-text-default {
+  display: none;
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h3, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h4, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_school] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h3, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_school] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h4, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=community] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h3, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=community] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h4, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=act_tests] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h3, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=act_tests] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h4, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=sat_tests] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h3, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=sat_tests] .slds-accordion__summary .slds-accordion__summary-heading .slds-accordion__summary-action h4 {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamily);
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school] .omni-block_content, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_school] .omni-block_content, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=community] .omni-block_content, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=act_tests] .omni-block_content, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=sat_tests] .omni-block_content {
+  padding-left: 0;
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_act] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_sat] .slds-accordion__summary {
+  display: none !important;
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_act] [data-omni-key*=heading4_highscores_] h4, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_sat] [data-omni-key*=heading4_highscores_] h4 {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamily);
+  font-weight: inherit;
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_act] [data-omni-key*=heading4_highscores_] .omni-block_content, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_sat] [data-omni-key*=heading4_highscores_] .omni-block_content {
+  padding: 10px 0;
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school_graduation], .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school_grades], .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school_honors], .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_courses], .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_grades], .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_honors], .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=community], .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_act], .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_sat] {
+  border-left: 3px solid #E5E5E5;
+  margin-top: 1rem;
+  padding-left: 1.5rem;
+}
+.THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school_graduation] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school_grades] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=secondary_school_honors] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_courses] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_grades] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=college_honors] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=community] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_act] .slds-accordion__summary, .THIS .omniscript-container [data-omni-key*=section_] [data-omni-key=high_scores_sat] .slds-accordion__summary {
+  margin-top: 0;
+  padding-top: 5px;
+}
+.THIS .omniscript-container .slds-input, .THIS .omniscript-container .slds-radio_button-group, .THIS .omniscript-container .slds-radio--button-group, .THIS .omniscript-container .slds-textarea, .THIS .omniscript-container .slds-checkbox_faux {
+  border: 1px solid #C9C9C9;
+  color: #666666;
+}
+.THIS .omniscript-container .slds-radio_button + .slds-radio_button, .THIS .omniscript-container .slds-radio_button + .slds-radio--button, .THIS .omniscript-container .slds-radio--button + .slds-radio_button, .THIS .omniscript-container .slds-radio--button + .slds-radio--button {
+  border-left: 1px solid #C9C9C9;
+}
+.THIS .omniscript-container .slds-radio_button [type=radio]:checked + .slds-radio_faux, .THIS .omniscript-container .slds-radio_button [type=radio]:checked + .slds-radio--faux, .THIS .omniscript-container .slds-radio_button [type=radio]:checked ~ .slds-radio_faux, .THIS .omniscript-container .slds-radio_button [type=radio]:checked ~ .slds-radio--faux, .THIS .omniscript-container .slds-radio_button [type=radio]:checked + .slds-radio_button__label, .THIS .omniscript-container .slds-radio_button [type=radio]:checked + .slds-radio--button__label, .THIS .omniscript-container .slds-radio--button [type=radio]:checked + .slds-radio_faux, .THIS .omniscript-container .slds-radio--button [type=radio]:checked + .slds-radio--faux, .THIS .omniscript-container .slds-radio--button [type=radio]:checked ~ .slds-radio_faux, .THIS .omniscript-container .slds-radio--button [type=radio]:checked ~ .slds-radio--faux, .THIS .omniscript-container .slds-radio--button [type=radio]:checked + .slds-radio_button__label, .THIS .omniscript-container .slds-radio--button [type=radio]:checked + .slds-radio--button__label {
+  background-color: t(colorBorder);
+}
+.THIS .omniscript-container .slds-form-element__label {
+  font-size: 12px;
+  font-size: 0.75rem;
+  color: #666666;
+}
+.THIS .omniscript-container .slds-form-element__legend {
+  font-weight: 400;
+}
+.THIS .omniscript-container [data-omni-key=AlternateMailingAddress] {
+  padding-top: 10px;
+}
+.THIS .omniscript-container [data-omni-key*=InputContainer_] {
+  padding-top: 10px;
+}
+.THIS .omniscript-container [data-omni-key*=InputContainer_] .slds-accordion__summary {
+  display: none !important;
+}
+.THIS .omniscript-container [data-omni-key*=InputContainer_] .omni-block_content {
+  padding-left: 0;
+}
+.THIS .omniscript-container [data-omni-key*=InputContainer_].slds-p-right_small, .THIS .omniscript-container [data-omni-key*=InputContainer_].slds-p-right--small {
+  padding-right: 0;
+}
+.THIS .omniscript-container [data-omni-key*=InputContainer_].slds-m-bottom_xx-small, .THIS .omniscript-container [data-omni-key*=InputContainer_].slds-m-bottom--xx-small {
+  margin-bottom: 0;
+}
+.THIS .omniscript-container [data-omni-key=section_satisfaction_container] {
+  background-color: var(--lwc-brandNavigationColorText);
+  border-radius: 10px;
+  margin-top: 10px;
+  padding: 20px 10px 0;
+}
+.THIS .omniscript-container [data-omni-key=section_satisfaction_container] .slds-accordion__summary {
+  display: none !important;
+}
+.THIS .omniscript-container [data-omni-key*=cta_step_] .omni-block_content {
+  padding-left: 0;
+}
+.THIS .omniscript-container [data-omni-key*=cta_step_] [data-omni-key*=button_prev] .slds-button_brand, .THIS .omniscript-container [data-omni-key*=cta_step_] [data-omni-key*=button_prev] .slds-button--brand {
+  background-color: #F5F2F2;
+  border-color: #C9C9C9;
+  border-radius: 50px !important;
+  color: t(colorTextLink);
+  font-size: 16px;
+  font-size: 1rem;
+  margin-top: 20px !important;
+  padding: 10px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 100%;
+}
+.THIS .omniscript-container [data-omni-key*=cta_step_] [data-omni-key*=button_next] .slds-button_brand, .THIS .omniscript-container [data-omni-key*=cta_step_] [data-omni-key*=button_next] .slds-button--brand {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px !important;
+  font-size: 16px;
+  font-size: 1rem;
+  margin-top: 20px !important;
+  padding: 10px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 100%;
+}
+.THIS .omniscript-container [data-omni-key=Welcome] [data-omni-key=introduction_step_welcome] {
+  border-bottom: 1px solid #c9c9c9;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+}
+.THIS .omniscript-container [data-omni-key=Welcome] [data-omni-key=footer_step_welcome] {
+  border-top: 1px solid #c9c9c9;
+  margin-top: 20px;
+  padding-top: 20px;
+}
+.THIS .omniscript-container [data-omni-key=Welcome] [data-omni-key*=collapsible_step_welcome] {
+  background-color: var(--lwc-brandNavigationColorText);
+  border-radius: 10px;
+  color: t(colorTextLink);
+  margin-bottom: 10px;
+  padding: 20px 25px;
+}
+.THIS .omniscript-container [data-omni-key=Welcome] [data-omni-key*=collapsible_step_welcome] .slds-accordion__summary {
+  display: block;
+}
+.THIS .omniscript-container [data-omni-key=Welcome] [data-omni-key*=collapsible_step_welcome] [data-omni-key*=copy] ul {
+  margin-top: 10px;
+}
+.THIS .omniscript-container [data-omni-key=Welcome] [data-omni-key=cta_step_welcome] .slds-button {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px !important;
+  font-size: 16px;
+  font-size: 1rem;
+  margin-top: 20px !important;
+  padding: 10px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 100%;
+}
+.THIS .omniscript-container [data-omni-key=Welcome] [data-omni-key=cta_step_welcome] [data-omni-key=cta_step_welcome_button_prefill] .slds-button {
+  background-color: #F5F2F2;
+  border-color: #C9C9C9;
+  border-radius: 50px !important;
+  color: t(colorTextLink);
+  font-size: 16px;
+  font-size: 1rem;
+  margin-top: 20px !important;
+  padding: 10px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 100%;
+}
+.THIS .siteforceContentArea .comm-layout-column:not(:empty) {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+.THIS .slds-col_padded, .THIS .slds-col--padded {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+@media all and (min-width: 961px) {
+  .THIS .container {
+    max-width: 1040px;
+  }
+}
+.THIS .featureContainer .featureContainerCopy {
+  border-radius: 10px;
+  margin-left: 70px;
+  margin-top: 100px;
+  padding: 40px;
+}
+@media all and (min-width: 961px) {
+  .THIS .featureContainer .featureContainerCopy {
+    background: rgba(255, 255, 255, 0.75);
+    margin-left: 70px;
+    margin-top: 100px;
+  }
+}
+@media all and (min-width: 571px) and (max-width: 960px) {
+  .THIS .featureContainer .featureContainerCopy {
+    background: rgba(255, 255, 255, 0.75);
+    margin-left: 70px;
+    margin-top: 100px;
+  }
+}
+@media all and (max-width: 570px) {
+  .THIS .featureContainer .featureContainerCopy {
+    background: rgba(255, 255, 255, 0.85);
+    margin: 0 auto;
+    margin-top: 100px;
+    width: 90%;
+  }
+}
+.THIS .featureContainer .featureContainerCopy .slds-text-heading_medium {
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  font-weight: 400;
+  font-style: normal;
+  font-size: 36px;
+  font-size: 2.25rem;
+  margin-bottom: 20px;
+}
+.THIS .featureContainer .featureContainerCopy p {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLabel);
+  font-weight: 400;
+  line-height: 28px;
+  margin-bottom: 20px;
+}
+.THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-apply {
+  width: fit-content;
+}
+.THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-apply .slds-button_brand, .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-apply .slds-button--brand {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+@media all and (min-width: 571px) {
+  .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-apply .slds-button_brand, .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-apply .slds-button--brand {
+    margin-right: 20px;
+    padding: 5px 40px;
+  }
+}
+@media all and (max-width: 570px) {
+  .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-apply .slds-button_brand, .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-apply .slds-button--brand {
+    margin-right: 10px;
+    padding: 5px 20px;
+  }
+}
+.THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-continue .slds-button_neutral, .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-continue .slds-button--neutral {
+  background-color: t(colorBrand);
+  border-color: transparent;
+  border-radius: 50px;
+  color: #ffffff;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+@media all and (min-width: 571px) {
+  .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-continue .slds-button_neutral, .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-continue .slds-button--neutral {
+    margin-right: 20px;
+    padding: 5px 40px;
+  }
+}
+@media all and (max-width: 570px) {
+  .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-continue .slds-button_neutral, .THIS .featureContainer .featureContainerCopy .ctaButtonContainer .cta-continue .slds-button--neutral {
+    margin-right: 10px;
+    padding: 5px 20px;
+  }
+}
+.THIS .featureCardContainer {
+  position: relative;
+  margin: 0 auto;
+  margin-bottom: 60px;
+}
+@media all and (min-width: 900px) {
+  .THIS .featureCardContainer {
+    margin-top: -120px;
+    width: 864px;
+  }
+}
+@media all and (max-width: 960px) {
+  .THIS .featureCardContainer {
+    margin-top: 20px;
+    width: 90%;
+  }
+}
+.THIS .featureCardContainer .featureCard {
+  min-height: 300px;
+  box-shadow: 1px 1px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: transparent;
+  padding: 20px;
+}
+.THIS .featureCardContainer .featureCard .slds-icon_large {
+  height: 155px;
+  width: 154px;
+}
+.THIS .featureCardContainer .featureCard .feature-icon .circle-background {
+  fill: t(colorTextLabel);
+}
+.THIS .featureCardContainer .featureCard .feature-icon .circle-small, .THIS .featureCardContainer .featureCard .feature-icon .highlight {
+  fill: var(--lwc-colorBrand);
+}
+.THIS .featureCardContainer .featureCard .featureCardIcon {
+  background-color: t(colorBorder);
+  padding-top: 45px;
+}
+.THIS .featureCardContainer .featureCard .featureCardIcon .slds-icon {
+  min-width: 50px;
+  min-height: 50px;
+}
+.THIS .featureCardContainer .featureCard .circle-background {
+  fill: t(colorTextLabel);
+}
+.THIS .featureCardContainer .featureCard .circle-small, .THIS .featureCardContainer .featureCard .highlight {
+  fill: var(--lwc-colorBrand);
+}
+.THIS .featureCardContainer .featureCard .slds-text-heading_small {
+  font-size: 22px;
+  font-size: 1.375rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  font-weight: 700;
+  margin-top: 20px;
+}
+.THIS .featureCardContainer .featureCard p {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLabel);
+  font-family: t(fontFamily);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+}
+.THIS [data-region-name=sidebar] {
+  padding: 0 40px;
+}
+.THIS [data-region-name=sidebar] .ui-widget {
+  margin-bottom: 0 !important;
+}
+.THIS [data-region-name=sidebar] .applyTodayAd {
+  background-color: t(colorBorder);
+  border-radius: 10px 10px 0 0;
+  color: #ffffff;
+  padding: 50px 20px;
+  text-align: center;
+}
+.THIS [data-region-name=sidebar] .applyTodayAd h1 {
+  font-size: 44px;
+  font-size: 2.75rem;
+  font-weight: normal;
+  line-height: 50px;
+  margin-bottom: 36px;
+}
+.THIS [data-region-name=sidebar] .applyTodayAd a.slds-button_neutral, .THIS [data-region-name=sidebar] .applyTodayAd a.slds-button--neutral {
+  font-size: 16px;
+  font-size: 1rem;
+  background-color: var(--lwc-colorBrand);
+  border-color: transparent;
+  border-radius: 50px;
+  color: #ffffff;
+  letter-spacing: 0.12em;
+  padding: 20px 50px;
+  text-transform: uppercase;
+}
+.THIS [data-region-name=sidebar] .messageContainer {
+  background-color: var(--lwc-brandNavigationColorText);
+  border-radius: 0 0 10px 10px;
+  padding: 40px 30px;
+}
+.THIS [data-region-name=sidebar] .messageContainer .titleContainer h2 {
+  font-size: 28px;
+  font-size: 1.75rem;
+  color: t(colorTextLink);
+  text-transform: capitalize;
+}
+.THIS [data-region-name=sidebar] .messageContainer .titleContainer button.slds-button_neutral, .THIS [data-region-name=sidebar] .messageContainer .titleContainer button.slds-button--neutral {
+  background-color: var(--lwc-colorBrand);
+  border-color: transparent;
+  border-radius: 50px;
+  color: #ffffff;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.THIS .siteforceContentArea .comm-layout-column .ui-widget:not(:last-child), .THIS .siteforceContentArea .cb-section_column .ui-widget:not(:last-child) {
+  margin-bottom: 20px;
+}
+@media all and (max-width: 767px) {
+  .THIS .sectionTitle {
+    margin: 0 20px;
+  }
+}
+.THIS .sectionTitle h2 {
+  font-size: 28px;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+@media all and (max-width: 767px) {
+  .THIS .uiTabset {
+    margin: 0 20px;
+    margin-bottom: 60px;
+  }
+}
+.THIS .uiTabBar .uiTabset--default .tabs__nav {
+  border-bottom: none;
+}
+.THIS .uiTabBar .uiTabset--default .tabs__item {
+  text-transform: capitalize;
+}
+.THIS .uiTabset--default .tabs__nav {
+  border-bottom: none !important;
+}
+.THIS .forceCommunityTabset > .uiTabBar .uiTabItem .tabHeader {
+  text-transform: capitalize;
+}
+.THIS .uiTab .slds-tabs_default__nav, .THIS .uiTab .slds-tabs--default__nav {
+  border: none;
+  border-bottom-style: none;
+}
+
+.THIS .navmenu {
+    background-color: rgb(30, 59, 86);
+}                                                                                        
+                                                                                        
+.THIS .forceCommunityFeedPublisher {
+  box-shadow: 1px 1px 15px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding-right: 20px;
+}
+.THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__nav {
+  background-color: var(--lwc-brandNavigationColorText);
+  border: 1px solid #DDDDDD;
+  border-radius: 10px 10px 0 0;
+}
+.THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content {
+  background-color: var(--lwc-brandNavigationColorText);
+  border: 1px solid #DDDDDD;
+  border-radius: 0 0 10px 10px;
+}
+.THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content .slds-rich-text-editor {
+  border: 1px solid #dddddd;
+}
+.THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content .slds-rich-text-editor__toolbar_bottom {
+  border-top: 1px solid #dddddd;
+}
+.THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content .slds-button_icon-border-filled, .THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content .slds-button--icon-border-filled, .THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content .slds-button_icon-border, .THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content .slds-button--icon-border {
+  border: 1px solid #dddddd;
+}
+.THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content .uiInput--input .input, .THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__content .uiInput--input.input {
+  border: 1px solid var(--lwc-colorBrand);
+  padding: 15px 10px;
+}
+.THIS .forceCommunityFeedPublisher .forceCommunityFeedPublisher .oneActionsComposer .uiTabBar .uiTabItem.active a.tabHeader, .THIS .forceCommunityFeedPublisher .forceCommunityFeedPublisher .oneActionsComposer .uiTabBar .uiTabItem a.tabHeader:hover, .THIS .forceCommunityFeedPublisher .forceCommunityFeedPublisher .oneActionsComposer .uiTabBar .uiTabItem a.tabHeader:focus, .THIS .forceCommunityFeedPublisher .uiInput--textarea .textarea, .THIS .forceCommunityFeedPublisher .uiInput--textarea.textarea {
+  border-color: #DDDDDD;
+}
+.THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__item > a {
+  border-right: 1px solid #DDDDDD;
+}
+.THIS .forceCommunityFeedPublisher .uiTabset--task .tabs__item:first-child > a {
+  border-radius: 10px 0 0 0;
+}
+.THIS .forceCommunityFeedPublisher .slds-button_neutral, .THIS .forceCommunityFeedPublisher .slds-button--neutral {
+  border-color: #DDDDDD;
+}
+.THIS .forceCommunityFeedPublisher .slds-button + .slds-button {
+  border-radius: 50px;
+}
+.THIS .forceChatterFeedInner {
+  padding-right: 20px;
+}
+.THIS .forceChatterFeedInner .slds-input_faux, .THIS .forceChatterFeedInner .slds-input, .THIS .forceChatterFeedInner .slds-button_icon-border-filled, .THIS .forceChatterFeedInner .slds-button--icon-border-filled, .THIS .forceChatterFeedInner .slds-button_icon-border, .THIS .forceChatterFeedInner .slds-button--icon-border, .THIS .forceChatterFeedInner .slds-button_icon-more, .THIS .forceChatterFeedInner .slds-button--icon-more {
+  border: 1px solid #dddddd;
+}
+.THIS .forceCommunityFeedPublisher .oneActionsComposer .uiTabBar .uiTabItem.active a.tabHeader, .THIS .forceCommunityFeedPublisher .oneActionsComposer .uiTabBar .uiTabItem a.tabHeader:hover, .THIS .forceCommunityFeedPublisher .oneActionsComposer .uiTabBar .uiTabItem a.tabHeader:focus {
+  border-color: transparent;
+}
+.THIS .forceChatterFeedItem .feed__item-comments--threadedCommunity {
+  background-color: var(--lwc-brandNavigationColorText);
+}
+.THIS .slds-feed__item-comments {
+  border-top: 1px solid #dddddd;
+  border-bottom: 1px solid #dddddd;
+}
+.THIS .slds-rich-text-editor.slds-has-focus, .THIS .forceTopicPublisherTopicsWidget .cuf-addTopicsContainer.cuf-Large .cuf-addTopics:hover, .THIS .forceTopicPublisherTopicsWidget .cuf-addTopicsContainer.cuf-Large.focus .cuf-addTopics, .THIS .forceTopicPublisherTopicsWidget .forceChatterPillContainer .orderedList {
+  border-color: #DDDDDD;
+}
+.THIS .uiTab .slds-card {
+  background: none;
+  border: none;
+  border-style: none;
+  border-width: 0;
+  box-shadow: none;
+  padding-right: 0;
+  padding-left: 0;
+  padding-bottom: 0;
+}
+.THIS .uiTab .action-template .slds-button {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 30px;
+  padding-right: 30px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background-color: var(--lwc-brandNavigationBackgroundColor);
+}
+.THIS .uiTab [data-id=upcoming-tab] .slds-button {
+  border-radius: 6px;
+  padding: 12px;
+  background-color: #ffffff;
+  border: 1px solid var(--lwc-brandNavigationBackgroundColor);
+}
+.THIS .uiTab [data-recordid=REC0] .action-template {
+  text-align: center;
+}
+.THIS .uiTab [data-recordid=REC0] .action-template .slds-button {
+  background-color: transparent;
+  border-color: var(--lwc-colorTextLink);
+  color: t(colorTextLink);
+}
+.THIS .uiTab [data-id=upcoming-tab] .padColumn, .THIS .uiTab [data-id=past-tab] .padColumn {
+  display: none;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=upcoming-tab-refresh].slds-p-top_small, .THIS .uiTab [data-id=upcoming-tab] [data-id=upcoming-tab-refresh].slds-p-top--small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-tab-refresh].slds-p-top_small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-tab-refresh].slds-p-top--small, .THIS .uiTab [data-id=past-tab] [data-id=upcoming-tab-refresh].slds-p-top_small, .THIS .uiTab [data-id=past-tab] [data-id=upcoming-tab-refresh].slds-p-top--small, .THIS .uiTab [data-id=past-tab] [data-id=past-tab-refresh].slds-p-top_small, .THIS .uiTab [data-id=past-tab] [data-id=past-tab-refresh].slds-p-top--small {
+  padding-top: 0;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card {
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: 1px solid #dddddd;
+  margin: 10px 0;
+  padding: 15px;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-text-title_bold, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-text-title_bold, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-text-title_bold, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-text-title_bold {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLink);
+  margin-bottom: 0;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .card-info, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .card-info, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .card-info, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .card-info {
+  font-size: 16px;
+  font-size: 1rem;
+  color: #666666;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-border_bottom, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-border_bottom, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-border_bottom, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-border_bottom {
+  border-bottom: none;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-left_medium, .THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-left--medium, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-left_medium, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-left--medium, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-left_medium, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-left--medium, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-left_medium, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-left--medium {
+  padding-left: 0;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_x-small, .THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom--x-small, .THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small, .THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom--small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_x-small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom--x-small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom--small, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_x-small, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom--x-small, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom--small, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_x-small, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom--x-small, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom--small {
+  padding-bottom: 0;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-right_medium, .THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-right--medium, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-right_medium, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-right--medium, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-right_medium, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-right--medium, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-right_medium, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-right--medium {
+  padding-right: 0;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-top_small, .THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-top--small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-top_small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-top--small, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-top_small, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-top--small, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-top_small, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-top--small {
+  padding-top: 0;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small {
+  margin: 10px 0 0;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small .slds-grid_vertical-align-center, .THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small .slds-grid--vertical-align-center, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small .slds-grid_vertical-align-center, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small .slds-grid--vertical-align-center, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small .slds-grid_vertical-align-center, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small .slds-grid--vertical-align-center, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small .slds-grid_vertical-align-center, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small .slds-grid--vertical-align-center {
+  margin: 2px 0;
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small .slds-icon, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small .slds-icon, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small .slds-icon, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small .slds-icon {
+  fill: var(--lwc-colorBrand);
+}
+.THIS .uiTab [data-id=upcoming-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small .slds-text-title_bold, .THIS .uiTab [data-id=upcoming-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small .slds-text-title_bold, .THIS .uiTab [data-id=past-tab] [data-id=appt-card] article.slds-card .slds-p-bottom_small .slds-text-title_bold, .THIS .uiTab [data-id=past-tab] [data-id=past-scroll] article.slds-card .slds-p-bottom_small .slds-text-title_bold {
+  font-size: 14px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.THIS .fundingFutureAdContainer {
+  margin: 140px 0 80px 0;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCopyTagline {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: token(colorTextDefault);
+  font-family: t(fontFamily);
+  margin-bottom: 0px;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCopyTitle {
+  font-size: 24px;
+  font-size: 1.5rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  margin-bottom: 20px;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCopyDescription {
+  margin-bottom: 20px;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCopyDescription p, .THIS .fundingFutureAdContainer .fundingFutureAdCopyDescription.slds-text-body_regular {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextWeak);
+  line-height: 24px;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCopyCTA button.slds-button_brand {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px;
+  margin-right: 20px;
+  padding: 5px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+@media all and (min-width: 961px) {
+  .THIS .fundingFutureAdContainer .fundingFutureAd .fundingFutureAdCopy {
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .THIS .fundingFutureAdContainer .fundingFutureAd .fundingFutureAdCopy.slds-large-size_12-of-12, .THIS .fundingFutureAdContainer .fundingFutureAd .fundingFutureAdCopy.slds-large-size--12-of-12 {
+    width: 30%;
+  }
+}
+.THIS .fundingFutureAdContainer .fundingFutureAd {
+  background-color: var(--lwc-brandNavigationColorText);
+  border-radius: 50px 0 0;
+}
+@media all and (max-width: 960px) {
+  .THIS .fundingFutureAdContainer .fundingFutureAdCopy {
+    margin: 0 auto;
+    margin-top: 40px;
+    padding: 0 10%;
+    text-align: center;
+  }
+}
+@media all and (min-width: 961px) {
+  .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer.slds-large-size_12-of-12, .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer.slds-large-size--12-of-12 {
+    width: 70%;
+  }
+  .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer [data-recordid=REC0] {
+    top: -60px;
+    margin-right: 40px;
+    width: 300px;
+  }
+  .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer [data-recordid=REC1] {
+    top: 60px;
+    width: 300px;
+  }
+}
+@media all and (max-width: 960px) {
+  .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer [data-recordid=REC0] {
+    margin: 20px;
+    top: 40px;
+  }
+  .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer [data-recordid=REC1] {
+    margin: 20px;
+    top: 40px;
+  }
+  .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .action-trigger {
+    display: none;
+  }
+  .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .slds-wrap {
+    justify-content: center;
+  }
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer [data-recordid=REC0] {
+  position: relative;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer [data-recordid=REC0] .adCardImage {
+  background-image: url(/admissions/resource/admissionsCommunity/images/funding-ad-rec0.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: bottom center;
+  height: 160px;
+  border-radius: 10px 10px 0 0;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer [data-recordid=REC1] {
+  position: relative;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer [data-recordid=REC1] .adCardImage {
+  background-image: url(/admissions/resource/admissionsCommunity/images/funding-ad-rec1.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: bottom center;
+  height: 160px;
+  border-radius: 10px 10px 0 0;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards.slds-wrap {
+  align-items: center;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard {
+  min-height: 300px;
+  box-shadow: 20px 20px 40px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  border: transparent;
+  padding-bottom: 20px;
+  position: relative;
+  width: 300px;
+  z-index: 10;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .slds-image img {
+  border-radius: 10px 10px 0 0;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardDateContainer.slds-p-around_x-small, .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardDateContainer.slds-p-around--x-small, .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardCommentsContainer.slds-p-around_x-small, .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardCommentsContainer.slds-p-around--x-small {
+  padding: 0;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardContentContainer {
+  padding: 20px;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardDateIcon .slds-icon, .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardCommentsIcon .slds-icon {
+  fill: t(colorTextLink);
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardDate p, .THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardComments p {
+  color: t(colorTextPlaceholder);
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardTitle {
+  margin-top: 10px;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardTitle h3 {
+  color: t(colorTextLink);
+  font-size: 22px;
+}
+.THIS .fundingFutureAdContainer .fundingFutureAdCardsContainer .fundingFutureAdCards .fundingFutureAdCard .adCardContent p {
+  color: t(colorTextWeak);
+  font-size: 14px;
+  font-size: 0.875rem;
+  line-height: 22px;
+}
+.THIS .successStoriesContainer {
+  background-color: var(--lwc-brandNavigationColorText);
+  margin: 20px 0;
+  padding: 60px 0;
+}
+.THIS .successStoriesContainer .successStoriesTitleContainer.slds-p-around_x-small, .THIS .successStoriesContainer .successStoriesTitleContainer.slds-p-around--x-small {
+  padding: 0;
+}
+.THIS .successStoriesContainer .successStoriesTitleContainer p {
+  font-size: 16px;
+  font-size: 1rem;
+  color: var(--lwc-colorBrand);
+  font-family: t(fontFamily);
+  font-weight: 400;
+  line-height: 20px;
+}
+.THIS .successStoriesContainer .successStoriesTitleContainer .successStoriesCopyTitle h2 {
+  font-size: 50px;
+  font-size: 3.125rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  font-weight: 400;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer {
+  margin: 0 auto;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards {
+  padding: 0 20px;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard {
+  box-shadow: 0px 4px 40px rgba(13, 6, 6, 0.1);
+  border-radius: 16px;
+  margin-bottom: 20px !important;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard.slds-p-around_small, .THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard.slds-p-around--small {
+  padding: 0;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard.slds-m-around_small, .THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard.slds-m-around--small {
+  margin: 0;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard.slds-card {
+  padding-top: 0;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  border-width: 0;
+  border-style: none;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard h3 {
+  color: t(colorTextLink);
+  margin-bottom: 15px;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard p {
+  line-height: 24px;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard .author {
+  margin-top: 15px;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard .author h4 {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLink);
+  margin-bottom: 0;
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard .author p {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextWeak);
+}
+.THIS .successStoriesContainer .successStoriesCardsContainer .successStoriesCards .successStoriesCard .author .authorImage {
+  margin-right: 10px;
+  width: fit-content;
+}
+.THIS .footer_cta {
+  margin: 60px 0;
+  text-align: center;
+}
+.THIS .footer_cta p {
+  margin-bottom: 20px;
+}
+.THIS .footer_cta a.button {
+  border-color: transparent;
+  border-radius: 50px;
+  color: #ffffff;
+  display: inline-block;
+  margin: 10px 20px;
+  padding: 15px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+@media all and (min-width: 961px) {
+  .THIS .footer_cta a.button {
+    width: 240px;
+  }
+}
+@media all and (min-width: 571px) and (max-width: 960px) {
+  .THIS .footer_cta a.button {
+    width: 240px;
+  }
+}
+@media all and (max-width: 570px) {
+  .THIS .footer_cta a.button {
+    width: 80%;
+  }
+}
+.THIS .footer_cta a.button.primary {
+  background-color: t(colorBorder);
+}
+.THIS .footer_cta a.button.secondary {
+  background-color: var(--lwc-brandNavigationBackgroundColor);
+}
+.THIS .sectionContentTitle {
+  margin: 0 30px;
+}
+.THIS .sectionContentTitle p {
+  font-size: 12px;
+  font-size: 0.75rem;
+  color: var(--lwc-brandNavigationBackgroundColor);
+  font-family: t(fontFamily);
+  font-weight: 400;
+  line-height: 15px;
+}
+.THIS .sectionContentTitle h2 {
+  font-size: 24px;
+  font-size: 1.5rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamilyHeading);
+  line-height: 24px;
+  font-weight: 400;
+}
+.THIS .EDUAdmissionsApplicationList {
+  margin: 0 30px;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListTableFilter {
+  margin-bottom: 10px;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListTableFilter [role=combobox] input[readonly], .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListTableFilter input[readonly][role=combobox] {
+  border-color: #DDDDDD;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListTableFilter .EDUAdmissionsApplicationListTableFilter-CTA .slds-button_brand {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px;
+  padding: 5px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard {
+  margin-bottom: 20px !important;
+  border-radius: 10px;
+  background-color: #ffffff;
+  border: 1px solid #efefef;
+  filter: drop-shadow(5px 5px 10px rgba(0, 59, 94, 0.1));
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .slds-border_left {
+  border-left: 1px solid var(--lwc-colorBrand) !important;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .iconBackground .iconBackgroundCircle {
+  background-color: t(colorBorder) !important;
+  height: 48px;
+  width: 48px !important;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+@media all and (max-width: 570px) {
+  .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .iconBackground .slds-size_1-of-12, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .iconBackground .slds-size--1-of-12 {
+    width: 100%;
+  }
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus {
+  margin: auto;
+  padding-left: 20px;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .ProgramName h3, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .ProgramName h3, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .ProgramName h3 {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamily);
+  font-weight: 500;
+  margin-bottom: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .SeasonAcademicYearIcon, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .SeasonAcademicYearIcon, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .SeasonAcademicYearIcon {
+  margin-right: 5px;
+  width: fit-content;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .SeasonAcademicYearIcon .slds-icon, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .SeasonAcademicYearIcon .slds-icon, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .SeasonAcademicYearIcon .slds-icon {
+  fill: var(--lwc-colorBrand);
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .DueDate, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .DueDate, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .DueDate {
+  margin-right: 5px;
+  width: fit-content;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .DueDate .field-value, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .DueDate .field-value, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .DueDate .field-value {
+  color: t(colorTextLabel);
+  line-height: 22px;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .SeasonAcademicYear p, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .DueDate p, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .SeasonAcademicYear p, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .DueDate p, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .SeasonAcademicYear p, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .DueDate p {
+  color: t(colorTextLabel);
+  margin-top: 2px;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .StatusValue h3, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .StatusValue h3, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .StatusValue h3 {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamily);
+  font-weight: 500;
+  margin-bottom: 0;
+}
+@media all and (max-width: 570px) {
+  .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .slds-size_9-of-12, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsWrapper .slds-size--9-of-12, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .slds-size_9-of-12, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsProgram .slds-size--9-of-12, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .slds-size_9-of-12, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .ApplicationDetailsStatus .slds-size--9-of-12 {
+    width: 100%;
+  }
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .applicationCTA {
+  border-radius: 0 10px 10px 0;
+}
+@media all and (max-width: 570px) {
+  .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .applicationCTA .slds-size_2-of-12, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .applicationCTA .slds-size--2-of-12 {
+    width: 100%;
+  }
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .viewOnly, .THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .iconBackground {
+  background-color: var(--lwc-brandNavigationColorText);
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .viewOnly p {
+  font-size: 12px;
+  font-size: 0.75rem;
+  color: t(colorTextLabel);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .inProgress {
+  background-color: t(colorBorder);
+}
+.THIS .EDUAdmissionsApplicationList .EDUAdmissionsApplicationListDataCard .inProgress .slds-button {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: #ffffff;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.THIS .EDUAdmissionsApplicationListEmpty .NoApplicationCTAButton .slds-button {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 30px;
+  padding-right: 30px;
+  border-radius: 50px;
+  margin-bottom: 40px;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background-color: var(--lwc-brandNavigationBackgroundColor);
+}
+.THIS .EDUAdmissionsRequestInfoContainer {
+  margin: 0 30px;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoTableFilter {
+  margin-bottom: 10px;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoTableFilter [role=combobox] input[readonly], .THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoTableFilter input[readonly][role=combobox] {
+  border-color: #DDDDDD;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoTableFilter .EDUAdmissionsRequestInfoTableFilter-CTA .slds-button_brand {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px;
+  padding: 5px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard {
+  margin-bottom: 20px !important;
+  border-radius: 10px;
+  background-color: #ffffff;
+  border: 1px solid #efefef;
+  filter: drop-shadow(5px 5px 10px rgba(0, 59, 94, 0.1));
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .slds-border_left {
+  border-left: 1px solid var(--lwc-colorBrand) !important;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .ApplicationDetailsWrapper .ProgramName h3 {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamily);
+  font-weight: 700;
+  margin-bottom: 0;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .ApplicationDetailsWrapper .SeasonAcademicYearIcon {
+  margin-right: 5px;
+  width: fit-content;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .ApplicationDetailsWrapper .SeasonAcademicYearIcon .slds-icon {
+  fill: var(--lwc-colorBrand);
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .ApplicationDetailsWrapper .UpdatedDate {
+  margin-right: 5px;
+  width: fit-content;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .ApplicationDetailsWrapper .UpdatedDate .field-value {
+  color: t(colorTextLabel);
+  line-height: 22px;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .ApplicationDetailsWrapper .CaseID p, .THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .ApplicationDetailsWrapper .UpdatedDate p {
+  color: t(colorTextLabel);
+  margin-top: 2px;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .ApplicationDetailsWrapper .StatusValue h3 {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamily);
+  font-weight: 500;
+  margin-bottom: 0;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .iconBackgroundCircle {
+  background-color: t(colorBorder) !important;
+  height: 48px;
+  width: 48px !important;
+  margin-top: 10px;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .applicationCTA {
+  border-radius: 0 10px 10px 0;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .viewOnly, .THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .iconBackground, .THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .escalated {
+  background-color: var(--lwc-brandNavigationColorText);
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .viewOnly p {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextLabel);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .escalated p {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextLabel);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .inProgress {
+  background-color: t(colorBorder);
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoDataCard .inProgress .slds-button {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: #ffffff;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoEmpty {
+  margin-bottom: 60px;
+}
+.THIS .EDUAdmissionsRequestInfoContainer .EDUAdmissionsRequestInfoEmpty .NoRequestsCTAButton .slds-button {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 30px;
+  padding-right: 30px;
+  border-radius: 50px;
+  margin-top: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  background-color: var(--lwc-brandNavigationBackgroundColor);
+}
+.THIS .RightColNav .NavCol {
+  max-width: 361px;
+  margin: 0 auto;
+}
+@media all and (min-width: 1024px) {
+  .THIS .RightColNav .NavCol {
+    padding-right: 30px;
+  }
+}
+.THIS .RightColNav .CampusAppAd .CampusAppAdImage img {
+  border-radius: 10px 10px 0 0;
+}
+.THIS .RightColNav .CampusAppAd .CampusAppAdCopy {
+  background-color: var(--lwc-brandNavigationColorText);
+  border-radius: 0 0 10px 10px;
+}
+.THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTagline {
+  padding-top: 20px;
+}
+.THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTagline p {
+  font-size: 16px;
+  font-size: 1rem;
+  color: var(--lwc-brandNavigationBackgroundColor);
+  font-family: t(fontFamily);
+  font-weight: 400;
+  line-height: 20px;
+}
+.THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle h1 {
+  font-size: 36px;
+  font-size: 2.25rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamilyHeading);
+  line-height: 36px;
+  font-weight: 400;
+}
+.THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea h1, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea h2, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea h3, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea h4, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea h5, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea h6, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea ul, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea ol, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea dl, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__textarea img, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output h1, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output h2, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output h3, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output h4, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output h5, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output h6, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output ul, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output ol, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output dl, .THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdTitle .slds-rich-text-editor__output img {
+  margin-bottom: 0;
+}
+.THIS .RightColNav .CampusAppAd .CampusAppAdCopy .CampusAppAdCTA .slds-button {
+  font-size: 16px;
+  font-size: 1rem;
+  background-color: var(--lwc-brandNavigationBackgroundColor);
+  border-color: transparent;
+  border-radius: 50px;
+  color: #ffffff;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  padding: 10px 0;
+  justify-content: center;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 80%;
+}
+.THIS .RightColNav .SupportQuickLinks {
+  background-color: var(--lwc-brandNavigationColorText);
+  border-radius: 0 0 10px 10px;
+  padding: 40px 30px;
+}
+.THIS .RightColNav .SupportQuickLinks .SupportQuickLinksTitle h2 {
+  font-size: 21px;
+  font-size: 1.3125rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamilyHeading);
+  line-height: 28px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: left;
+}
+.THIS .RightColNav .SupportQuickLinks .SupportQuickLinksItem {
+  margin: 5px 0;
+}
+.THIS .RightColNav .SupportQuickLinks .SupportQuickLinksItem .slds-action_icon {
+  padding-right: 5px;
+}
+.THIS .RightColNav .SupportQuickLinks .SupportQuickLinksItem .slds-action_icon .slds-icon {
+  fill: #747474 !important;
+}
+.THIS .RightColNav .SupportQuickLinks .SupportQuickLinksCTA .slds-button {
+  font-size: 16px;
+  font-size: 1rem;
+  background-color: var(--lwc-brandNavigationBackgroundColor);
+  border-color: transparent;
+  border-radius: 50px;
+  color: #ffffff;
+  margin-top: 20px;
+  padding: 10px 0;
+  justify-content: center;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 90%;
+}
+.THIS .learnTopics {
+  padding: 0 40px;
+}
+.THIS .learnTopics h2 {
+  font-size: 32px;
+  font-size: 2rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  line-height: 32px;
+  font-weight: 400;
+}
+.THIS .learnTopics h3 {
+  font-size: 24px;
+  font-size: 1.5rem;
+  color: var(--lwc-brandNavigationBackgroundColor);
+  font-family: t(fontFamilyHeading);
+  font-weight: 600;
+}
+.THIS .learnTopics p {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextWeak);
+  line-height: 24px;
+}
+.THIS .learnTopics .slds-card {
+  border-style: none;
+  box-shadow: 1px 1px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+.THIS .learnTopics .slds-card h4 {
+  font-size: 18px;
+  font-size: 1.125rem;
+  color: t(colorTextLink);
+  font-weight: 700;
+  font-family: t(fontFamilyHeading);
+  line-height: 28px;
+  margin-bottom: 4px;
+}
+.THIS .learnTopics .slds-card p {
+  font-size: 13px;
+  font-size: 0.8125rem;
+  color: t(colorTextWeak);
+  font-weight: 400;
+  font-family: t(fontFamily);
+  line-height: 18px;
+}
+.THIS .learnTopics .appCard .cardHeader .slds-wrap {
+  justify-content: center;
+}
+.THIS .learnTopics .appCard .cardHeader .slds-wrap .slds-m-bottom_small {
+  margin-bottom: 0;
+}
+.THIS .learnTopics .appCard .cardHeader .cardImage {
+  width: 100px;
+  height: 100px;
+  background-color: t(colorBorder);
+  border-radius: 100px;
+}
+.THIS .forceCommunityBreadcrumbs {
+  margin-top: 30px;
+  padding: 0 30px;
+}
+.THIS .forceCommunityBreadcrumbs .slds-text-heading_label, .THIS .forceCommunityBreadcrumbs .slds-text-heading--label {
+  font-size: 13px;
+  font-size: 0.8125rem;
+  line-height: normal;
+  color: t(colorTextWeak);
+  background-color: var(--lwc-brandNavigationColorText);
+  padding: 5px 40px;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+.THIS .forceCommunityBreadcrumbs .slds-breadcrumb .slds-list__item > a, .THIS .forceCommunityBreadcrumbs .slds-breadcrumb .slds-breadcrumb__item > a {
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+.THIS .slds-pill, .THIS .selfServiceArticleTopicList .slds-pill {
+  font-size: 13px;
+  font-size: 0.8125rem;
+  line-height: normal;
+  color: t(colorTextWeak);
+  background-color: var(--lwc-brandNavigationColorText);
+  padding: 5px 40px;
+  border-radius: 20px;
+  text-transform: capitalize;
+  border: none;
+}
+.THIS .slds-pill a, .THIS .selfServiceArticleTopicList .slds-pill a {
+  color: t(colorTextWeak);
+}
+.THIS [data-region-name=content] .forceCommunityHeadline {
+  margin: 40px 30px 0;
+}
+.THIS [data-region-name=content] .forceCommunityHeadline .headlineTitle {
+  font-size: 32px;
+  font-size: 2rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  font-weight: 400;
+  line-height: 32px;
+  padding: 0;
+  text-align: left;
+  text-transform: capitalize;
+}
+.THIS [data-region-name=content] .forceCommunityHeadline .headlineInfo {
+  font-size: 16px;
+  font-size: 1rem;
+  line-height: 24px;
+  margin: 0;
+  margin-top: 20px;
+  text-align: left;
+}
+.THIS [data-region-name=content] .forceCommunityResultsList {
+  margin: 0 30px;
+}
+.THIS [data-region-name=content] .forceCommunityTabset {
+  margin: 0 30px 0 0;
+}
+.THIS [data-region-name=content] .uiTabset--default {
+  background-color: transparent;
+}
+.THIS [data-region-name=content] .uiTabset--default .uiTabBar .tabs__item {
+  margin-left: 0;
+  margin-right: 20px;
+}
+.THIS [data-region-name=content] .uiTabset--default .tabs__content .selfServiceBaseArticleList .article-list {
+  margin: 0;
+  margin-bottom: 40px;
+}
+.THIS [data-region-name=content] .uiTabset--default .tabs__content .selfServiceBaseArticleList .article-list .selfServiceArticleListItem {
+  background-color: transparent;
+  border-bottom: 1px solid #C9C9C9;
+}
+.THIS [data-region-name=content] .uiTabset--default .tabs__content .selfServiceBaseArticleList .article-list .selfServiceArticleListItem:nth-child(even) {
+  background-color: var(--lwc-brandNavigationColorText);
+}
+.THIS [data-region-name=content] .uiTabset--default .tabs__content .selfServiceBaseArticleList .article-list .selfServiceArticleListItem {
+  padding: 20px;
+}
+.THIS [data-region-name=content] .uiTabset--default .tabs__content .selfServiceBaseArticleList .article-list .selfServiceArticleListItem h2 {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamily);
+  font-weight: 400;
+  line-height: 18px;
+  margin-bottom: 5px;
+}
+.THIS [data-region-name=content] .uiTabset--default .tabs__content .selfServiceBaseArticleList .article-list .selfServiceArticleListItem .footer {
+  margin-top: 0;
+}
+.THIS .forceCommunityTopicMetrics.topicStats .forceChatterTopicMetricsItem .value {
+  font-size: 32px;
+  font-size: 2rem;
+  color: t(colorTextLink);
+}
+.THIS .forceCommunityTopicMetrics.topicStats .forceChatterTopicMetricsItem:first-child {
+  border-right: 1px solid #C9C9C9;
+}
+.THIS .forceCommunityTopicMetrics.topicStats .slds-text-body_small, .THIS .forceCommunityTopicMetrics.topicStats .slds-text-body--small {
+  color: #747474;
+}
+.THIS [data-region-name=featured] {
+  padding: 0 40px;
+}
+.THIS [data-region-name=featured] .ui-widget:not(:last-child) {
+  margin-bottom: 0;
+}
+.THIS .forceCommunityAskCommunity.askCommunityBtn {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px !important;
+  font-size: 16px;
+  font-size: 1rem;
+  margin-top: 20px !important;
+  padding: 10px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 100%;
+}
+.THIS .voting {
+  margin: 40px 30px;
+}
+.THIS .voting .slds-card {
+  border: 1px solid #C9C9C9;
+  filter: drop-shadow(5px 5px 10px rgba(0, 59, 94, 0.1));
+  border-radius: 10px;
+  padding-top: 20px;
+  padding-bottom: 15px;
+  padding-left: 20px;
+}
+.THIS .voting .slds-card .slds-box_x-small, .THIS .voting .slds-card .slds-box--x-small {
+  padding: 0;
+}
+.THIS .voting .slds-card .slds-m-bottom_xx-small, .THIS .voting .slds-card .slds-m-bottom--xx-small {
+  margin-bottom: 0;
+}
+.THIS .voting .slds-card .slds-m-top_xx-small, .THIS .voting .slds-card .slds-m-top--xx-small {
+  margin-top: 0;
+}
+.THIS .voting .slds-card .slds-button_icon-border-filled, .THIS .voting .slds-card .slds-button--icon-border-filled, .THIS .voting .slds-card .slds-button_icon-border, .THIS .voting .slds-card .slds-button--icon-border {
+  border-color: #b8b8b8;
+  color: #b8b8b8;
+}
+.THIS .comm-topic-trending-articles {
+  background-color: var(--lwc-brandNavigationColorText);
+  border-radius: 10px;
+  display: block;
+  padding: 20px 30px;
+  margin: 20px 0;
+}
+.THIS .comm-topic-trending-articles .cDemoConnectedU [data-region-name=sidebar] {
+  padding: 0 30px;
+  margin-top: 60px;
+}
+.THIS .comm-topic-trending-articles .slds-border_bottom, .THIS .comm-topic-trending-articles .slds-border--bottom {
+  border-bottom: none;
+}
+.THIS .comm-topic-trending-articles .slds-p-bottom_medium, .THIS .comm-topic-trending-articles .slds-p-bottom--medium {
+  padding-bottom: 10px;
+}
+.THIS .comm-topic-trending-articles .slds-p-top_medium, .THIS .comm-topic-trending-articles .slds-p-top--medium {
+  padding-top: 10px;
+}
+.THIS .comm-topic-trending-articles .slds-p-vertical_small, .THIS .comm-topic-trending-articles .slds-p-vertical--small {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.THIS .comm-topic-trending-articles ul li {
+  margin-bottom: 20px;
+}
+.THIS .comm-topic-trending-articles ul li a {
+  text-decoration: none;
+}
+.THIS .comm-topic-trending-articles ul li a .slds-text-body_small, .THIS .comm-topic-trending-articles ul li a .slds-text-body--small {
+  font-size: 14px;
+  font-size: 0.875rem;
+}
+.THIS .comm-topic-trending-articles h2 {
+  font-size: 21px;
+  font-size: 1.3125rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamilyHeading);
+  line-height: 28px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: left;
+  text-transform: capitalize;
+}
+.THIS .forceCommunityFollow .button {
+  font-size: 16px;
+  font-size: 1rem;
+  background-color: var(--lwc-brandNavigationBackgroundColor);
+  border-color: transparent;
+  border-radius: 50px !important;
+  color: #ffffff;
+  margin-bottom: 20px;
+  margin-top: 10px;
+  padding: 10px 0;
+  justify-content: center;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column .article-head {
+  margin: 0;
+  margin-top: 0;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column h1.article-head {
+  font-size: 32px;
+  font-size: 2rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  line-height: 40px;
+  font-weight: 400;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column .article-summary {
+  margin: 10px 0;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column .meta {
+  font-size: 12px;
+  font-size: 0.75rem;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column article.content .itemBody h2 {
+  font-size: 24px;
+  font-size: 1.5rem;
+  color: var(--lwc-colorBrand);
+  margin-top: 40px;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column article.content .itemBody p {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextWeak);
+  line-height: 24px;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column article.content .slds-section {
+  margin-bottom: 0;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column article.content .test-id__field-label {
+  display: none;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column article.content .slds-form-element_readonly {
+  border-bottom: none;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column article.content .section__content .slds-form_stacked > div:first-child, .THIS .selfServiceArticleLayout.zoom.article-column article.content .section__content .slds-form_stacked > div:last-child {
+  display: none;
+}
+.THIS .selfServiceArticleLayout.zoom.article-column article.content .section__content .slds-form_stacked > div:nth-child(3), .THIS .selfServiceArticleLayout.zoom.article-column article.content .section__content .slds-form_stacked > div:nth-child(4), .THIS .selfServiceArticleLayout.zoom.article-column article.content .section__content .slds-form_stacked > div:nth-child(5) {
+  display: none;
+}
+.THIS .ctaPanel {
+  margin: 40px;
+}
+.THIS .ctaPanel .contact-con {
+  margin: 0;
+}
+.THIS .ctaPanel .contact-con .cta-btn {
+  margin: 0;
+  margin-right: 20px;
+  width: fit-content;
+}
+.THIS .ctaPanel .contact-con .cta-btn .selfServiceContactSupport.communityBtn {
+  font-size: 16px;
+  font-size: 1rem;
+  border-color: transparent;
+  border-radius: 50px;
+  color: #ffffff;
+  display: inline-block;
+  margin-bottom: 20px;
+  margin-top: 10px;
+  padding: 10px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: 100%;
+}
+.THIS .ctaPanel .contact-con .cta-btn .selfServiceContactSupport.communityBtn.primary {
+  background-color: t(colorBorder);
+}
+.THIS .ctaPanel .contact-con .cta-btn .selfServiceContactSupport.communityBtn.secondary {
+  background-color: var(--lwc-brandNavigationBackgroundColor);
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formHeadline].slds-p-right_small, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formHeadline].slds-p-right--small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formHeadline].slds-p-right_small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formHeadline].slds-p-right--small {
+  padding-right: 0;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formHeadline].slds-m-bottom_xx-small, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formHeadline].slds-m-bottom--xx-small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formHeadline].slds-m-bottom_xx-small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formHeadline].slds-m-bottom--xx-small {
+  margin-bottom: 0;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formHeadline] h2, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formHeadline] h2 {
+  font-size: 32px;
+  font-size: 2rem;
+  color: t(colorTextLink);
+  font-family: t(fontFamilyHeading);
+  line-height: 32px;
+  font-weight: 400;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formHeadline] p, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formHeadline] p {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextWeak);
+  line-height: 24px;
+  margin-bottom: 20px;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-medium-size_3-of-12, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-medium-size--3-of-12, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-medium-size_3-of-12, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-medium-size--3-of-12 {
+  width: 100%;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA] .slds-p-top_xx-small, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA] .slds-p-top--xx-small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA] .slds-p-top_xx-small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA] .slds-p-top--xx-small {
+  padding-top: 0;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-p-right_small, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-p-right--small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-p-right_small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-p-right--small {
+  padding-right: 0;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-m-bottom_xx-small, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-m-bottom--xx-small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-m-bottom_xx-small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA].slds-m-bottom--xx-small {
+  margin-bottom: 0;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA] .slds-button_stretch, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA] .slds-button_stretch {
+  justify-content: right;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=SetValuesCTA] .slds-button_brand, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=SetValuesCTA] .slds-button_brand {
+  background-color: transparent;
+  border-color: transparent;
+  border-radius: 0;
+  color: t(colorTextLink);
+  padding: 0;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=TypeFields].slds-p-right_small, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=TypeFields].slds-p-right--small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=TypeFields].slds-p-right_small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=TypeFields].slds-p-right--small {
+  padding-right: 0;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=TypeFields] .omni-block_content, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=TypeFields] .omni-block_content {
+  padding-left: 0;
+  padding-right: 0;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key*=form].slds-p-right_small, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key*=form].slds-p-right--small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key*=form].slds-p-right_small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key*=form].slds-p-right--small {
+  padding-right: var(--lwc-spacingSmall, 0.75rem);
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key*=form].slds-m-bottom_xx-small, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key*=form].slds-m-bottom--xx-small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key*=form].slds-m-bottom_xx-small, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key*=form].slds-m-bottom--xx-small {
+  margin-bottom: 10px;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=inputTransferCredits], .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=inputTransferCredits] {
+  margin-top: 10px;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=inputTransferCredits] .slds-form-element__control, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=inputTransferCredits] .slds-form-element__control {
+  padding-top: 10px;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] .slds-input, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] .slds-textarea, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] .slds-input, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] .slds-textarea {
+  border: 1px solid #C9C9C9;
+  box-shadow: none;
+  padding-bottom: 4px;
+  padding-top: 4px;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] .slds-form-element__legend, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] .slds-form-element__legend {
+  color: t(colorTextLabel);
+  font-weight: 400;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] .slds-radio .slds-radio_faux, .THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] .slds-radio .slds-radio--faux, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] .slds-radio .slds-radio_faux, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] .slds-radio .slds-radio--faux {
+  border: 1px solid #C9C9C9;
+  box-shadow: none;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=formButton], .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=formButton] {
+  margin-top: 40px;
+}
+.THIS .omniscript-container [data-omni-key=Form] [data-omni-key=formBody] [data-omni-key=formButton] .slds-button_brand, .THIS .omniscript-container [data-omni-key=AdmissionTool] [data-omni-key=formBody] [data-omni-key=formButton] .slds-button_brand {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px;
+  font-size: 16px;
+  font-size: 1rem;
+  padding: 10px 100px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  width: fit-content;
+}
+.THIS .header {
+  background-color: #ffffff;
+  box-shadow: 0px 4px 45px rgba(0, 0, 0, 0.05);
+}
+.THIS .header .nav .logo {
+  margin: 10px 0;
+}
+.THIS .header .nav .logo .cQBranchBrandLogo {
+  margin-left: 20px;
+}
+.THIS .header .nav .navmenu ul.comm-drilldown-navigation__bar {
+  padding-top: 10px;
+}
+.THIS .header .nav .navmenu ul.comm-drilldown-navigation__bar .comm-drilldown-navigation__list[community_navigation-drilldownNavigationList_drilldownNavigationList] {
+  background-color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 1px 1px 15px rgba(0, 0, 0, 0.1);
+  outline: none;
+}
+.THIS .header .nav .navmenu nav {
+  /*background-color: transparent !important;*/
+}
+.THIS .header .nav .navmenu nav a, .THIS .header .nav .navmenu nav button {
+  background-color: transparent !important;
+  color: token(colorTextDefault);
+}
+.THIS .header .nav .navmenu nav .comm-drilldown-navigation__bar[community_navigation-drilldownNavigationBar_drilldownNavigationBar] a.isActive[community_navigation-drilldownNavigationBar_drilldownNavigationBar], .THIS .header .nav .navmenu nav .comm-drilldown-navigation__bar[community_navigation-drilldownNavigationBar_drilldownNavigationBar] button.isActive[community_navigation-drilldownNavigationBar_drilldownNavigationBar] {
+  border-bottom: none;
+  color: var(--lwc-colorBrand);
+}
+.THIS .header .nav .profileMenu {
+  background-color: t(colorBorder);
+}
+.THIS .header .nav .profileMenu .selfServiceUserProfileMenu .selfServiceProfileMenuTrigger .trigger-link {
+  padding: 14px 0;
+}
+.THIS .header .nav .profileMenu .profileItems {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  margin-top: 15px;
+}
+@media all and (min-width: 1025px) {
+  .THIS .header .nav .profileMenu .profileItems {
+    justify-content: left;
+  }
+}
+@media all and (max-width: 1024px) {
+  .THIS .header .nav .profileMenu .profileItems {
+    justify-content: space-evenly;
+  }
+}
+.THIS .header .nav .profileMenu .profileItems .slds-global-actions__notifications {
+  margin-top: 4px;
+}
+.THIS .header .nav .profileMenu .slds-button__icon svg {
+  fill: #ffffff;
+}
+.THIS .header .nav .profileMenu .selfServiceUserProfileMenu {
+  font-family: t(fontFamily);
+}
+.THIS .footer .links {
+  padding: 60px 0;
+  background-color: t(colorBorder);
+  color: var(--lwc-colorTextInverse);
+}
+.THIS .footer .links .container {
+  margin: 0 auto;
+}
+.THIS .footer .links .social-media {
+  max-width: 300px;
+}
+.THIS .footer .links .social-media .slds-gutters .slds-col {
+  padding-right: 0;
+  padding-left: 0;
+}
+.THIS .footer .links .social-media ul {
+  margin-bottom: 20px;
+}
+.THIS .footer .links .social-media ul li {
+  margin-right: 10px;
+}
+.THIS .footer .links .social-media p {
+  line-height: 24px;
+}
+@media all and (max-width: 767px) {
+  .THIS .footer .links .footer-links .link-cols {
+    margin-top: 40px;
+    margin-left: 15px;
+  }
+}
+.THIS .footer .links .footer-links .slds-gutters .slds-col {
+  padding-right: 0;
+  padding-left: 0;
+}
+.THIS .footer .links .footer-links h3 {
+  font-size: 18px;
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.THIS .footer .links .footer-links ul {
+  margin-bottom: 40px;
+}
+.THIS .footer .links .footer-links ul li {
+  font-size: 14px;
+  font-size: 0.875rem;
+  line-height: 28px;
+}
+.THIS .footer .legal {
+  background-color: var(--lwc-colorBrand);
+  padding: 20px;
+  text-align: center;
+}
+.THIS .footer .legal ul {
+  margin-bottom: 5px;
+  justify-content: center;
+}
+@media all and (max-width: 570px) {
+  .THIS .footer .legal ul {
+    display: list-item;
+    margin-bottom: 20px;
+  }
+}
+.THIS .footer .legal ul li {
+  margin-right: 20px;
+}
+@media all and (max-width: 570px) {
+  .THIS .footer .legal ul li {
+    margin-bottom: 5px;
+  }
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoImage] {
+  background-image: url("/admissions/resource/admissionsCommunity/images/request-info-background.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center bottom;
+  height: 620px;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] {
+  padding: 40px 60px;
+  padding-right: 60px !important;
+  text-align: left;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=RequestInfoTitle] {
+  margin-bottom: 15px !important;
+  margin-top: 10px;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=RequestInfoTitle] h2 {
+  font-size: 50px;
+  font-size: 3.125rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamilyHeading);
+  font-weight: 400;
+  line-height: 50px;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=RequestInfoTitle] h4 {
+  font-size: 21px;
+  font-size: 1.3125rem;
+  color: var(--lwc-colorBrand);
+  font-family: t(fontFamilyHeading);
+  font-weight: 700;
+  line-height: 21px;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=RequestInfoTitle] p {
+  font-size: 14px;
+  font-size: 0.875rem;
+  color: t(colorTextLabel);
+  font-family: t(fontFamily);
+  font-weight: 400;
+  line-height: 24px;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=RFISubject] {
+  margin-bottom: 5px;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=RFICategory] .slds-form-element, .THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=RFILearning] .slds-form-element {
+  margin-right: 5px;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=SubmitButton] {
+  margin-bottom: 40px;
+  margin-top: 10px;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] [data-omni-key=SubmitButton] .slds-button_brand {
+  background-color: t(colorBorder);
+  border-color: transparent;
+  border-radius: 50px;
+  padding: 5px 40px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.THIS .slds-modal__container [data-omni-key=RequestInfoForm] .slds-input, .THIS .slds-modal__container [data-omni-key=RequestInfoForm] .slds-textarea {
+  border: 1px solid #dddddd;
+}
+.THIS .slds-modal__container [data-omni-key=RFICreateApplicantSuccess] [data-omni-key=RequestSuccessLWC] {
+  margin: 0 auto;
+}
+.THIS .slds-modal__container [data-omni-key=RFICreateApplicantSuccess] [data-omni-key=RequestSuccessTitle] {
+  margin: 40px 0;
+}
+.THIS .slds-modal__container [data-omni-key=RFICreateApplicantSuccess] [data-omni-key=RequestSuccessTitle] h1 {
+  font-size: 50px;
+  font-size: 3.125rem;
+  color: t(colorTextLinkActive);
+  font-family: t(fontFamilyHeading);
+  font-weight: 400;
+  line-height: 50px;
+}
+.THIS .slds-modal__container [data-omni-key=RFICreateApplicantSuccess] [data-omni-key=RequestSuccessTitle] p {
+  font-size: 16px;
+  font-size: 1rem;
+  color: t(colorTextLabel);
+  font-family: t(fontFamily);
+  font-weight: 400;
+  line-height: 24px;
+}
+.THIS .slds-modal__container [data-omni-key=RFICreateApplicantSuccess] [data-omni-key=RequestSuccessCTA] {
+  margin: 0 auto;
+  padding-top: 20px;
+}
+.THIS .slds-modal__container .slds-page-header__title {
+  display: none;
+}
+.THIS .slds-modal__container .vlc-separator {
+  display: none;
+}
+.THIS .slds-modal__container .slds-p-vertical_small, .THIS .slds-modal__container .slds-p-vertical--small {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+.THIS .slds-modal__container .slds-p-around_medium, .THIS .slds-modal__container .slds-p-around--medium {
+  padding: 0 !important;
+}
+.THIS .slds-modal__container .omniscript-article .omniscript-body[data-stepborder=right][forceGenerated-omniScript_EDUAdmissions___RFIApplicantForm___English___lightning___false___brand___ltrgen_omniScript_EDUAdmissions___RFIApplicantForm___English___lightning___false___brand___ltrgen] {
+  border-right: 0;
+}
+.THIS .slds-modal__container .omniscript-article .slds-p-right_medium, .THIS .slds-modal__container .omniscript-article .slds-p-right--medium, .THIS .slds-modal__container .omniscript-article .slds-p-right_small, .THIS .slds-modal__container .omniscript-article .omniscript-step__body[runtime_omnistudio_omniscript-omniscriptStep_omniscriptStep] {
+  padding-right: 0;
+}
+.THIS .slds-modal__container .omniscript-article .slds-p-left_medium {
+  padding-left: 0;
+}
+.THIS .slds-modal__container .omniscript-article .slds-m-top_medium, .THIS .slds-modal__container .omniscript-article .slds-m-top--medium {
+  margin-top: 0;
+}
+.THIS .slds-modal__container .omniscript-article .slds-m-bottom_xx-small, .THIS .slds-modal__container .omniscript-article .slds-m-bottom--xx-small {
+  margin-bottom: 0;
+}
+.THIS .slds-modal__container .omniscript-article .slds-accordion__section {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+.THIS .slds-modal__container .omniscript-article .slds-accordion__summary {
+  display: none;
+}
+.THIS .slds-modal__container .omniscript-article .slds-card__body {
+  margin-bottom: 0;
+  padding-left: 0;
+}
+.THIS .slds-modal__container .omniscript-article .omni-block_content[runtime_omnistudio_omniscript-omniscriptBlock_omniscriptBlock] {
+  padding-left: 0;
+  padding-right: 0;
+}

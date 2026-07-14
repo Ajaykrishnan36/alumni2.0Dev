@@ -1,0 +1,33 @@
+<template>
+    <div class="business-card" onclick={handleCardClick}>
+        <!-- Featured Image Section -->
+        <div class="featured-image-section">
+            <img src={featuredImageUrl} alt={business.name} class="featured-image" onerror={handleImageError} />
+            <!-- Category Tag -->
+            <div class="category-tag">{business.category}</div>
+        </div>
+        <!-- Business Info Section -->
+        <div class="business-info">
+            <h3 class="business-name">{business.name}</h3>
+
+            <!-- Location -->
+            <div class="location-info">
+                <svg class="location-pin-icon" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M8 0C4.13 0 1 3.13 1 7c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S6.62 4.5 8 4.5s2.5 1.12 2.5 2.5S9.38 9.5 8 9.5z" fill="#6b7280"/>
+                </svg>
+                <span class="location-text">{business.location}</span>
+            </div>
+
+            <!-- Owner row: logo circle + owner photo pill -->
+            <div class="owner-info">
+                <div class="owner-logo-circle">
+                    <img src={logoUrl} alt={business.name} class="owner-logo-img" onerror={handleLogoError} />
+                </div>
+                <div class="owner-pill">
+                    <img src={ownerImageUrl} alt={business.ownerName} class="owner-photo" onerror={handleOwnerPhotoError} />
+                    <span class="owner-name">{business.ownerName}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>

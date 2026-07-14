@@ -1,0 +1,113 @@
+<template>
+    <div class="schedule-container">
+        <template if:true={showSpinner}>
+            <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+        </template>
+
+        <template if:true={schedules}>
+            <template for:each={groupedSchedules} for:item="group">
+                <div key={group.date} class="schedule-date-group">
+                    <div class="schedule-date-header">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2z" fill="#373A45"/>
+                        </svg>
+                        <span class="schedule-date-text">{group.date}</span>
+                    </div>
+                    <template for:each={group.schedules} for:item="item">
+                        <button type="button" key={item.id} class={item.cardClass} onclick={handleToggle} onkeydown={handleScheduleKeyDown} data-id={item.id}>
+                            <div class="schedule-item-header">
+                                <div class="schedule-item-left">
+                                    <div class="schedule-item-title">{item.title}</div>
+                                    <div class="schedule-item-meta">
+                                        <span class="schedule-time">{item.startTime} - {item.endTime}</span>
+                                        <template if:true={item.hasSpeakers}>
+                                            <span class="schedule-separator">•</span>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="meta-inline-icon"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" fill="#585A64"/></svg>
+                                            <span class="schedule-speaker">{item.speakerNames}</span>
+                                        </template>
+                                        <template if:true={item.showVenue}>
+                                            <span class="schedule-separator">•</span>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="meta-inline-icon"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#585A64"/></svg>
+                                            <span class="schedule-location">{item.venueAddress}</span>
+                                        </template>
+                                        <template if:true={item.showLink}>
+                                            <span class="schedule-separator">•</span>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" class="meta-inline-icon"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z" fill="#585A64"/></svg>
+                                            <span class="schedule-location">{item.sessionLink}</span>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div class="schedule-item-right">
+                                    <template if:true={item.price}>
+                                        <div class="schedule-price-pill">₹{item.price}</div>
+                                    </template>
+                                    <lightning-icon icon-name={item.expandedIcon} size="x-small" class="schedule-chevron"></lightning-icon>
+                                </div>
+                            </div>
+
+                            <!-- Expanded Content -->
+                            <template if:true={item.expanded}>
+                                <div class="schedule-item-expanded">
+                                    <template if:true={item.hasSpeakers}>
+                                        <div class="schedule-expanded-grid">
+                                            <!-- Speakers Section -->
+                                            <div class="schedule-speakers-section">
+                                                <template for:each={item.speakers} for:item="speaker">
+                                                    <div key={speaker.id} class="speaker-detail-item">
+                                                        <div class="speaker-image-wrapper">
+                                                            <template lwc:if={speaker.image}>
+                                                                <img src={speaker.image} alt={speaker.name} class="speaker-avatar-img" />
+                                                            </template>
+                                                            <template lwc:else>
+                                                                <img src={defaultProfileImage} alt="Profile" class="speaker-avatar-img" />
+                                                            </template>
+                                                        </div>
+                                                        <div class="speaker-details">
+                                                            <div class="speaker-details-label">Speaker Details</div>
+                                                            <div class="speaker-name">{speaker.name}</div>
+                                                            <div class="speaker-description">{speaker.description}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </div>
+
+                                            <!-- Agenda Section -->
+                                            <div class="schedule-agenda-section">
+                                                <div class="agenda-label">Agenda</div>
+                                                <div class="agenda-content">{item.agenda}</div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template if:false={item.hasSpeakers}>
+                                        <div class="schedule-agenda-only">
+                                            <div class="agenda-label">Agenda</div>
+                                            <div class="agenda-content">{item.agenda}</div>
+                                        </div>
+                                    </template>
+
+                                </div>
+                            </template>
+                        </button>
+                    </template>
+                </div>
+            </template>
+        </template>
+
+        <template if:true={showCancelConfirmation}>
+            <section class="modal">
+                <div class="modal__container" style="max-width: 600px; max-height: 228px;">
+                    <header class="modal__header">
+                        <h2 class="modal__title">By canceling, you will no longer be able to attend this session. Are
+                            you sure
+                            you want to cancel?</h2>
+                    </header>
+                    <footer class="modal__footer">
+                        <button class="btn-cancel" onclick={handleBackToSelection}>No, don't cancel</button>
+                        <button class="btn-register-modal" onclick={handleFinalCancel}>Cancel registration</button>
+                    </footer>
+                </div>
+            </section>
+            <div class="modal__backdrop"></div>
+        </template>
+    </div>
+</template>

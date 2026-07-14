@@ -1,0 +1,65 @@
+<template>
+	<template if:true={isLoading}>
+		<div class="loading-spinner">
+			<lightning-spinner alternative-text={loadingText} size="medium"></lightning-spinner>
+		</div>
+	</template>
+
+	<div class="education-step-container">
+		<div class="content-area">
+			<template if:false={hasEducation}>
+				<div class="empty-state">
+					<h2 class="empty-title">Add your Education Details</h2>
+					<p class="empty-description">Tell us about your academic background to complete your profile.</p>
+					<button type="button" class="add-details-btn" onclick={handleAdd}>
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M12 5V19M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+						<span>Add Details</span>
+					</button>
+				</div>
+			</template>
+
+			<template if:true={hasEducation}>
+				<div class="section-header">
+					<h2 class="section-title">Educational Background</h2>
+					<button type="button" class="add-more-btn" onclick={handleAdd}>
+						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M12 5V19M5 12H19" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+						<span>Add More</span>
+					</button>
+				</div>
+				<div class="education-list">
+					<template for:each={educationList} for:item="edu">
+						<c-ken-education-card
+							key={edu.id}
+							record-id={edu.id}
+							degree={edu.degree}
+							institution={edu.institution}
+							duration={edu.duration}
+							score={edu.score}
+							is-my-profile={showActions}
+							onedit={handleEdit}
+							ondelete={handleDeleteRequest}>
+						</c-ken-education-card>
+					</template>
+				</div>
+			</template>
+		</div>
+
+		<div class="form-actions">
+			<button type="button" class="skip-button" onclick={handleSkip}>Skip</button>
+			<button type="button" class="previous-button" onclick={handlePrevious}>Previous Step</button>
+			<button type="button" class="save-next-button" onclick={handleSaveAndNext} disabled={isSaveNextDisabled}>Save & Next</button>
+		</div>
+	</div>
+
+	<template if:true={showModal}>
+		<c-ken-education-information-modal
+			education-data={selectedRecord}
+			onclose={handleModalClose}
+			onsave={handleModalSave}>
+		</c-ken-education-information-modal>
+	</template>
+</template>

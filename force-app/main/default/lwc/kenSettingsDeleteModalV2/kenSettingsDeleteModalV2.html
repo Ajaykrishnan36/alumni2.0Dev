@@ -1,0 +1,13 @@
+<template lwc:render-mode="light">
+    <div class="modal-backdrop" onclick={handleBackdrop}>
+        <div class="modal" onclick={handleStop}>
+            <button type="button" class="modal__close" onclick={handleClose}>×</button>
+            <h2 class="modal__title">Delete account?</h2>
+            <p class="modal__text">This will permanently remove your alumni profile, posts, and connections. This action cannot be undone.</p>
+            <div class="actions">
+                <button class="btn btn--outline" onclick={handleClose}>Cancel</button>
+                <button class="btn btn--danger" onclick={handleConfirm}>Delete my account</button>
+            </div>
+        </div>
+    </div>
+</template>
