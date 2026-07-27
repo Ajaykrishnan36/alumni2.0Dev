@@ -28,6 +28,11 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
     @track isStep2Completed = false;
     @track isStep3Completed = false;
 
+    // Portal access gate — hides the form behind an opaque overlay until we confirm
+    // "Allow Create Groups" is on, so it never flashes before a redirect.
+    @track checkingAccess = false;
+    @track accessDenied = false;
+
     // Draft persistence
     savedGroupId = null;
     @track isSaving = false;
@@ -40,6 +45,7 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
     @track groupName = '';
     @track tagsInput = '';
     @track whoCanJoin = 'public';
+    @track category = 'Group';
     @track groupDescription = '';
     @track rules = '';
     @track hasCoverPhoto = false;
@@ -90,7 +96,14 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
 
     // ── Lifecycle ────────────────────────────────────────────────────────────
 
+    get showAccessGate() {
+        return this.checkingAccess || this.accessDenied;
+    }
+
     connectedCallback() {
+        if (!this.isBackend) {
+            this.checkingAccess = true;
+        }
         this._initializeComponent();
 
         getPrimaryColor()
@@ -104,8 +117,30 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
                 if (color?.tertiaryColor) {
                     document.documentElement.style.setProperty('--tertiary-color', color.tertiaryColor);
                 }
+                this.enforcePortalCreateAccess(color);
             })
-            .catch(() => {});
+            .catch(() => { this.enforcePortalCreateAccess(null); });
+    }
+
+    // If "Allow Create Groups" is off, a portal user reaching /create-group directly
+    // is bounced back to the Groups page. Backend/internal context is never gated.
+    enforcePortalCreateAccess(config) {
+        this.checkingAccess = false;
+        if (this.isBackend) {
+            return;
+        }
+        if (config && config.createGroups !== false) {
+            return;
+        }
+        this.accessDenied = true;
+        let base = '';
+        try {
+            const seg = (window.location.pathname || '').split('/').filter((s) => s);
+            base = seg.length ? '/' + seg[0] : '';
+        } catch (e) {
+            base = '';
+        }
+        window.location.assign(`${base}/group`);
     }
 
     async _initializeComponent() {
@@ -127,6 +162,7 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
                 this.groupName        = grp.Name || '';
                 this.tagsInput        = grp.Tags__c || '';
                 this.whoCanJoin       = (grp.Group_Type__c || 'public').toLowerCase();
+                this.category         = grp.Category__c || 'Group';
                 this.groupDescription = grp.Description__c || '';
                 this.rules            = grp.Rules__c || '';
                 if (grp.Banner_Image_URL__c) {
@@ -150,6 +186,7 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
             this.groupName        = form.groupName        || '';
             this.tagsInput        = form.tagsInput        || '';
             this.whoCanJoin       = form.whoCanJoin       || 'public';
+            this.category         = form.category         || 'Group';
             this.groupDescription = form.groupDescription || '';
             this.rules            = form.rules            || '';
         } catch (e) { /* ignore */ }
@@ -161,6 +198,7 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
                 groupName:        this.groupName,
                 tagsInput:        this.tagsInput,
                 whoCanJoin:       this.whoCanJoin,
+                category:         this.category,
                 groupDescription: this.groupDescription,
                 rules:            this.rules
             };
@@ -216,6 +254,15 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
 
     get isPublicSelected()  { return this.whoCanJoin === 'public'; }
     get isPrivateSelected() { return this.whoCanJoin === 'private'; }
+
+    // Picklist mirrors Ken_Group__c.Category__c — new values can be added there
+    // without any code change here as long as this list is kept in sync.
+    get categoryOptions() {
+        return [
+            { label: 'Group', value: 'Group' },
+            { label: 'Chapter', value: 'Chapter' }
+        ].map((opt) => ({ ...opt, selected: opt.value === this.category }));
+    }
 
     // ── Step 2: Audience ─────────────────────────────────────────────────────
 
@@ -311,6 +358,7 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
     get hasTags()             { return (this.tagsInput || '').trim().length > 0; }
     get tagsDisplay()         { return (this.tagsInput || '').trim() || '--'; }
     get whoCanJoinLabel()     { return this.whoCanJoin === 'public' ? 'Public - Anyone can join' : 'Private - Users must request to join'; }
+    get categoryLabel()       { return this.category === 'Chapter' ? 'Chapter' : 'Group'; }
     get hasGroupDescription() { return this.groupDescription && this.groupDescription.trim(); }
     get hasRules()            { return this.rules && this.rules.trim(); }
 
@@ -374,6 +422,13 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
         this._saveFormToSession();
     }
 
+    handleCategoryChange(event) {
+        this.category = event.target.value || 'Group';
+        const { category: _r, ...rest } = this.validationErrors;
+        this.validationErrors = rest;
+        this._saveFormToSession();
+    }
+
     handleGroupDescriptionChange(event) {
         this.groupDescription = event.detail.value || '';
         const { groupDescription: _r, ...rest } = this.validationErrors;
@@ -425,6 +480,10 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
         const tags = (this.tagsInput || '').trim();
         if (tags.length > LIMIT_TAGS) {
             errors.tagsInput = `Tags cannot exceed ${LIMIT_TAGS} characters.`;
+        }
+
+        if (!(this.category || '').trim()) {
+            errors.category = 'Category is required.';
         }
 
         // Description and Rules hold the editor's HTML — measure the VISIBLE
@@ -496,7 +555,7 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
                     // editor has no visible text.
                     description:  this._plainTextLen(this.groupDescription) > 0 ? this.groupDescription.trim() : null,
                     groupType:    this.whoCanJoin,
-                    category:     null,
+                    category:     this.category || 'Group',
                     bannerImageUrl: bannerUrl,
                     tags:         (this.tagsInput || '').trim() || null,
                     rules:        this._plainTextLen(this.rules) > 0 ? this.rules.trim() : null

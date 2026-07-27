@@ -106,6 +106,14 @@ export default class kenNavItem extends NavigationMixin(LightningElement) {
         evt.preventDefault();
 
         if (this.item.label === 'Logout') {
+            // sessionStorage survives a logout in the same tab (it's cleared only when the
+            // tab closes), so without this the once-per-session Last_Login__c stamp in
+            // kenNavBar never fires again on the next login in that tab.
+            try {
+                sessionStorage.removeItem('kenSessionLoginStamped');
+            } catch (e) {
+                // ignore storage failures
+            }
             window.location.href = `${basePath}/secur/logout.jsp?retUrl/login`;
             return;
         }

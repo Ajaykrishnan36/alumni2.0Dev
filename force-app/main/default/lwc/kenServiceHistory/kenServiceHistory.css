@@ -254,8 +254,8 @@
 }
 
 .feedback-submitted-btn {
-    background: #E5E7EB;
-    color: #6B7280;
+    background: #EFF6FF;
+    color: #1D4ED8;
     border: none;
     border-radius: 6px;
     padding: 0.4rem 0.9rem;
@@ -418,6 +418,12 @@
 .rating-badge-good { background: #DBEAFE; color: #1E40AF; }
 .rating-badge-very-good { background: #D1FAE5; color: #065F46; }
 .rating-badge-excellent { background: #FEF3C7; color: #B45309; }
+
+.rating-error-msg {
+    color: #B91C1C;
+    font-size: 12px;
+    margin: 4px 0 0;
+}
 
 .feedback-textarea-container { width: 100%; }
 .feedback-textarea {

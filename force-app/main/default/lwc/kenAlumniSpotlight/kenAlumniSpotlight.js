@@ -1,7 +1,7 @@
 import { LightningElement, track, wire } from 'lwc';
 import getAlumniSpotlights from '@salesforce/apex/KenAlumniSpotlightController.getAlumniSpotlights';
 
-const AUTO_ADVANCE_MS = 8000;
+const AUTO_ADVANCE_MS = 10000;
 
 export default class KenAlumniSpotlight extends LightningElement {
     @track spotlights = [];

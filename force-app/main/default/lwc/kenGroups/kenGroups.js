@@ -2,6 +2,7 @@ import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { CurrentPageReference } from 'lightning/navigation';
 import getGroupsData from '@salesforce/apex/KenGroupsController.getGroupsData';
+import { getPortalConfigs } from 'c/kenThemeConfig';
 import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
 
 const MOBILE_BREAKPOINT = 768;
@@ -15,6 +16,7 @@ export default class KenGroups extends NavigationMixin(LightningElement) {
     @track showFilterPanel = false;
     @track groupTypeFilter = 'all';
     @track ownershipFilter = 'all';
+    @track canCreateGroups = true;
 
     @track _groupId = null;
 
@@ -44,6 +46,9 @@ export default class KenGroups extends NavigationMixin(LightningElement) {
             if (!inside) this.showFilterPanel = false;
         };
         document.addEventListener('click', this._filterClickHandler);
+        getPortalConfigs()
+            .then(config => { this.canCreateGroups = config?.createGroups !== false; })
+            .catch(() => {});
         this.loadData();
     }
 

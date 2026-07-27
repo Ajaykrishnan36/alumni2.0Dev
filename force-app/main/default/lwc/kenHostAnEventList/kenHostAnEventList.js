@@ -11,6 +11,7 @@ export default class KenHostAndEventList extends NavigationMixin(LightningElemen
     currentTab = 'In review';
     isMobile = false;
     searchTerm = '';
+    canHostEvent = false;
 
     @track events = [];
     isLoading = false;
@@ -59,6 +60,7 @@ export default class KenHostAndEventList extends NavigationMixin(LightningElemen
                 document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
                 document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
                 document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
+                this.canHostEvent = color?.showHostEvent === true;
             })
             .catch(() => {});
 
@@ -79,8 +81,7 @@ export default class KenHostAndEventList extends NavigationMixin(LightningElemen
     async loadHostedEvents() {
         this.isLoading = true;
         try {
-            const constituentRoleId = localStorage.getItem('ConstituentRoleId');
-            const data = await getHostedEvents({ constituentRoleId });
+            const data = await getHostedEvents();
             this.processEventData(data);
         } catch (error) {
             console.error('Error fetching hosted events:', error);

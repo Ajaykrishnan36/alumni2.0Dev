@@ -15,8 +15,8 @@
                             <div class="card-left">
                                 <h4 class="session-title">{event.title}</h4>
                                 <div class="mentor-row">
-                                    <img src={event.mentorAvatar} alt={event.mentorName} class="mentor-avatar" />
-                                    <span class="mentor-name">{event.mentorName}</span>
+                                    <img src={event.mentorAvatar} alt={event.mentorName} class="mentor-avatar" onerror={handleAvatarError} />
+                                    <span class="mentor-name" title={event.mentorName}>{event.mentorName}</span>
                                 </div>
                                 <div class="time-row">
                                     <svg class="clock-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">

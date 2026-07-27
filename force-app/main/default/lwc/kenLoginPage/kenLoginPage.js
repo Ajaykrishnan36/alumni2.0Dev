@@ -17,6 +17,7 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
     passwordFieldType = 'password';
     iconName = 'utility:hide';
     linkedInProvider = 'LinkedIn';
+    googleProvider = '';
     linkedinLogo = linkedinLogoUrl;
     kenLogo = KenLogo;
     kenPoweredbyLogo = KenPoweredbyLogo;
@@ -74,6 +75,9 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
             if (color?.linkedInSsoProvider) {
                 this.linkedInProvider = color.linkedInSsoProvider;
             }
+            if (color?.googleSsoProvider) {
+                this.googleProvider = color.googleSsoProvider;
+            }
         }).catch(() => {
 
         });
@@ -99,7 +103,7 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
                 || description.toLowerCase().indexOf('register first') > -1;
             if (noUser) {
                 this.toastTitle = 'Account not found';
-                this.toastMessage = 'No account is linked to that LinkedIn profile. Redirecting you to registration…';
+                this.toastMessage = 'No account is linked to that profile. Redirecting you to registration…';
                 this.toastVariant = 'info';
                 this.showToast = true;
                 setTimeout(() => {
@@ -149,18 +153,22 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
         const path = window.location.pathname || '';
         const match = path.match(/^(.+?)\/s(\/|$)/);
         const siteBasePath = match ? match[1] : basePath.replace(/\/(s|login)(\/|$)/, '');
-        const startUrl = encodeURIComponent(`${siteBasePath}/`);
+        const startUrl = encodeURIComponent(`${siteBasePath}/select-role`);
         const ssoUrl = `${siteOrigin}${siteBasePath}/services/auth/sso/${provider}?startURL=${startUrl}`;
         window.location.assign(ssoUrl);
     }
 
+    get showGoogleLogin() {
+        return !!this.googleProvider;
+    }
+
     handleGoogleLogin() {
-        const provider = 'GoogleNewSSO';
+        const provider = this.googleProvider;
         const siteOrigin = window.location.origin;
         const path = window.location.pathname || '';
         const match = path.match(/^(.+?)\/s(\/|$)/);
         const siteBasePath = match ? match[1] : basePath.replace(/\/(s|login)(\/|$)/, '');
-        const startUrl = encodeURIComponent(`${siteBasePath}/`);
+        const startUrl = encodeURIComponent(`${siteBasePath}/select-role`);
         const ssoUrl = `${siteOrigin}${siteBasePath}/services/auth/sso/${provider}?startURL=${startUrl}`;
         window.location.assign(ssoUrl);
     }

@@ -85,18 +85,56 @@
 							<template if:true={linkedinUrlError}>
 								<p class="field-error">{linkedinUrlError}</p>
 							</template>
-							<div class="form-field field-country">
-								<label for="country" class="field-label">Country of Residence<span
-										class="required">*</span></label>
-								<c-ken-searchable-picklist placeholder="Select country" search-placeholder="Search country..."
-									value={country} options={countryOptions} onchange={handleCountryChange}
-									class="custom-input"></c-ken-searchable-picklist>
+							<div class="form-field field-date-of-birth">
+								<label for="dateOfBirth" class="field-label">Date of Birth</label>
+								<div class="dob-wrapper">
+									<lightning-input id="dateOfBirth" type="text" value={dateOfBirthDisplay}
+										placeholder="DD/MM/YYYY" maxlength="10" oninput={handleDobInput}
+										onblur={handleDobBlur} data-field="dateOfBirth" variant="label-hidden"
+										class="custom-input">
+									</lightning-input>
+									<input type="date" class="dob-native-picker" value={dateOfBirth} max={todayIso}
+										onchange={handleDobPicked} tabindex="-1" aria-hidden="true" />
+									<button type="button" class="dob-calendar-button" onclick={handleOpenDobPicker}
+										aria-label="Open calendar">
+										<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+											<rect x="3" y="5" width="18" height="16" rx="2" />
+											<line x1="3" y1="10" x2="21" y2="10" />
+											<line x1="8" y1="3" x2="8" y2="7" />
+											<line x1="16" y1="3" x2="16" y2="7" />
+										</svg>
+									</button>
+								</div>
+								<template if:true={dobError}>
+									<p class="field-error">{dobError}</p>
+								</template>
 							</div>
 							<div class="form-field field-state">
 								<label for="state" class="field-label">State<span class="required">*</span></label>
 								<c-ken-searchable-picklist placeholder="Select state" search-placeholder="Search state..."
 									value={state} options={stateOptions} onchange={handleStateChange} disabled={isStateDisabled}
 									class="custom-input"></c-ken-searchable-picklist>
+							</div>
+							<div class="form-field field-programme">
+								<label for="programme" class="field-label">Program Plan<span
+										class="required">*</span></label>
+								<lightning-combobox id="programme" value={programmeId} options={programmeOptions}
+									onchange={handleSelectChange} data-field="programmeId" variant="label-hidden"
+									placeholder="Select" class="custom-select">
+								</lightning-combobox>
+							</div>
+							<div class="form-field field-nationality">
+								<label for="nationality" class="field-label">Nationality</label>
+								<c-ken-searchable-picklist placeholder="Select nationality" search-placeholder="Search nationality..."
+									value={nationality} options={nationalityOptions} onchange={handleNationalityChange}
+									class="custom-input"></c-ken-searchable-picklist>
+							</div>
+							<div class="form-field field-gender">
+								<label for="gender" class="field-label">Gender</label>
+								<lightning-combobox id="gender" value={gender} options={genderOptions}
+									onchange={handleSelectChange} data-field="gender" variant="label-hidden"
+									placeholder="Select" class="custom-select">
+								</lightning-combobox>
 							</div>
 						</div>
 						<div class="form-column">
@@ -136,6 +174,13 @@
 									</svg>
 								</div>
 							</div>
+							<div class="form-field field-country">
+								<label for="country" class="field-label">Country of Residence<span
+										class="required">*</span></label>
+								<c-ken-searchable-picklist placeholder="Select country" search-placeholder="Search country..."
+									value={country} options={countryOptions} onchange={handleCountryChange}
+									class="custom-input"></c-ken-searchable-picklist>
+							</div>
 							<div class="form-field current-city-css field-current-city">
 								<label for="currentCity" class="field-label">Current City<span
 										class="required">*</span></label>
@@ -144,18 +189,6 @@
 									variant="label-hidden" placeholder="Enter city" class="custom-input">
 								</lightning-input>
 							</div>
-							<div class="form-field field-programme">
-								<label for="programme" class="field-label">Program Plan<span
-										class="required">*</span></label>
-								<lightning-combobox id="programme" value={programmeId} options={programmeOptions}
-									onchange={handleSelectChange} data-field="programmeId" variant="label-hidden"
-									placeholder="Select" class="custom-select">
-								</lightning-combobox>
-							</div>
-						</div>
-					</div>
-					<div class="form-row">
-						<div class="form-column">
 							<div class="form-field field-graduation-year">
 								<label for="graduationYear" class="field-label">Graduation year<span
 										class="required">*</span></label>
@@ -165,9 +198,20 @@
 									class="custom-select">
 								</lightning-combobox>
 							</div>
-						</div>
-						<div class="form-column">
-							<!-- Empty column for layout balance -->
+							<div class="form-field field-languages">
+								<label for="languages" class="field-label">Languages Known</label>
+								<lightning-input id="languages" type="text" value={languages}
+									oninput={handleInputChange} onchange={handleInputChange} data-field="languages"
+									variant="label-hidden" placeholder="e.g. English, Hindi, Tamil" class="custom-input">
+								</lightning-input>
+							</div>
+							<div class="form-field field-blood-group">
+								<label for="bloodGroup" class="field-label">Blood Group</label>
+								<lightning-combobox id="bloodGroup" value={bloodGroup} options={bloodGroupOptions}
+									onchange={handleSelectChange} data-field="bloodGroup" variant="label-hidden"
+									placeholder="Select" class="custom-select">
+								</lightning-combobox>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -244,11 +288,41 @@
 							</svg>
 						</div>
 					</div>
+					<div class="form-field field-date-of-birth">
+						<label for="dateOfBirthMobile" class="field-label">Date of Birth</label>
+						<div class="dob-wrapper">
+							<lightning-input id="dateOfBirthMobile" type="text" value={dateOfBirthDisplay}
+								placeholder="DD/MM/YYYY" maxlength="10" oninput={handleDobInput}
+								onblur={handleDobBlur} data-field="dateOfBirth" variant="label-hidden"
+								class="custom-input">
+							</lightning-input>
+							<input type="date" class="dob-native-picker" value={dateOfBirth} max={todayIso}
+								onchange={handleDobPicked} tabindex="-1" aria-hidden="true" />
+							<button type="button" class="dob-calendar-button" onclick={handleOpenDobPicker}
+								aria-label="Open calendar">
+								<svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+									<rect x="3" y="5" width="18" height="16" rx="2" />
+									<line x1="3" y1="10" x2="21" y2="10" />
+									<line x1="8" y1="3" x2="8" y2="7" />
+									<line x1="16" y1="3" x2="16" y2="7" />
+								</svg>
+							</button>
+						</div>
+						<template if:true={dobError}>
+							<p class="field-error">{dobError}</p>
+						</template>
+					</div>
 					<div class="form-field field-country">
 						<label for="countryMobile" class="field-label">Country of Residence<span
 								class="required">*</span></label>
 						<c-ken-searchable-picklist placeholder="Select country" search-placeholder="Search country..."
 							value={country} options={countryOptions} onchange={handleCountryChange}
+							class="custom-input"></c-ken-searchable-picklist>
+					</div>
+					<div class="form-field field-state">
+						<label for="stateMobile" class="field-label">State<span class="required">*</span></label>
+						<c-ken-searchable-picklist placeholder="Select state" search-placeholder="Search state..."
+							value={state} options={stateOptions} onchange={handleStateChange} disabled={isStateDisabled}
 							class="custom-input"></c-ken-searchable-picklist>
 					</div>
 					<div class="form-field current-city-css field-current-city">
@@ -257,13 +331,6 @@
 							onchange={handleInputChange} data-field="currentCity" variant="label-hidden"
 							placeholder="Enter city" class="custom-input">
 						</lightning-input>
-					</div>
-
-					<div class="form-field field-state">
-						<label for="stateMobile" class="field-label">State<span class="required">*</span></label>
-						<c-ken-searchable-picklist placeholder="Select state" search-placeholder="Search state..."
-							value={state} options={stateOptions} onchange={handleStateChange} disabled={isStateDisabled}
-							class="custom-input"></c-ken-searchable-picklist>
 					</div>
 					<div class="form-field field-programme">
 						<label for="programmeMobile" class="field-label">Program Plan<span class="required">*</span></label>
@@ -277,6 +344,33 @@
 								class="required">*</span></label>
 						<lightning-combobox id="graduationYearMobile" value={graduationYear} options={graduationYearOptions}
 							onchange={handleSelectChange} data-field="graduationYear" variant="label-hidden"
+							placeholder="Select" class="custom-select">
+						</lightning-combobox>
+					</div>
+					<div class="form-field field-nationality">
+						<label for="nationalityMobile" class="field-label">Nationality</label>
+						<c-ken-searchable-picklist placeholder="Select nationality" search-placeholder="Search nationality..."
+							value={nationality} options={nationalityOptions} onchange={handleNationalityChange}
+							class="custom-input"></c-ken-searchable-picklist>
+					</div>
+					<div class="form-field field-languages">
+						<label for="languagesMobile" class="field-label">Languages Known</label>
+						<lightning-input id="languagesMobile" type="text" value={languages}
+							oninput={handleInputChange} onchange={handleInputChange} data-field="languages"
+							variant="label-hidden" placeholder="e.g. English, Hindi, Tamil" class="custom-input">
+						</lightning-input>
+					</div>
+					<div class="form-field field-gender">
+						<label for="genderMobile" class="field-label">Gender</label>
+						<lightning-combobox id="genderMobile" value={gender} options={genderOptions}
+							onchange={handleSelectChange} data-field="gender" variant="label-hidden"
+							placeholder="Select" class="custom-select">
+						</lightning-combobox>
+					</div>
+					<div class="form-field field-blood-group">
+						<label for="bloodGroupMobile" class="field-label">Blood Group</label>
+						<lightning-combobox id="bloodGroupMobile" value={bloodGroup} options={bloodGroupOptions}
+							onchange={handleSelectChange} data-field="bloodGroup" variant="label-hidden"
 							placeholder="Select" class="custom-select">
 						</lightning-combobox>
 					</div>

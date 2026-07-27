@@ -8,11 +8,152 @@
             <p class="rte-charcount"><span class="rte-charcount-current">{currentLength}</span>/{maxLength} characters</p>
         </template>
         <div class="rte-toolbar">
-            <button type="button" class={boldClass} onclick={handleBold} aria-label="Bold">
+            <select class="rte-select" onmousedown={saveCurrentSelection} onchange={handleFontName} aria-label="Font" title="Font">
+                <option value="" disabled selected>Font</option>
+                <option value="Arial, Helvetica, sans-serif">Sans Serif</option>
+                <option value="Georgia, 'Times New Roman', serif">Serif</option>
+                <option value="'Courier New', monospace">Monospace</option>
+            </select>
+
+            <select class="rte-select" onmousedown={saveCurrentSelection} onchange={handleFontSize} aria-label="Font size" title="Font size">
+                <option value="" disabled selected>Size</option>
+                <option value="2">Small</option>
+                <option value="3">Normal</option>
+                <option value="5">Large</option>
+                <option value="6">Huge</option>
+            </select>
+
+            <span class="rte-sep"></span>
+
+            <button type="button" class={boldClass} onmousedown={preventBlur} onclick={handleBold} aria-label="Bold" title="Bold">
                 <span class="rte-bold">B</span>
             </button>
-            <button type="button" class={italicClass} onclick={handleItalic} aria-label="Italic">
+            <button type="button" class={italicClass} onmousedown={preventBlur} onclick={handleItalic} aria-label="Italic" title="Italic">
                 <span class="rte-italic">I</span>
+            </button>
+            <button type="button" class={underlineClass} onmousedown={preventBlur} onclick={handleUnderline} aria-label="Underline" title="Underline">
+                <span class="rte-underline">U</span>
+            </button>
+            <button type="button" class={strikeClass} onmousedown={preventBlur} onclick={handleStrike} aria-label="Strikethrough" title="Strikethrough">
+                <span class="rte-strike">S</span>
+            </button>
+
+            <span class="rte-sep"></span>
+
+            <label class="rte-btn rte-color-btn" onmousedown={saveCurrentSelection} aria-label="Text color" title="Text color">
+                <span class="rte-color-glyph">A</span>
+                <span class="rte-color-bar" style={foreBarStyle}></span>
+                <input type="color" class="rte-color-input" value={foreColor} onchange={handleForeColor} />
+            </label>
+            <label class="rte-btn rte-color-btn" onmousedown={saveCurrentSelection} aria-label="Highlight color" title="Highlight color">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M9 11l-6 6v3h3l6-6"></path>
+                    <path d="M22 12l-4.6 4.6a2 2 0 0 1-2.8 0l-3.2-3.2a2 2 0 0 1 0-2.8L16 6"></path>
+                </svg>
+                <span class="rte-color-bar" style={backBarStyle}></span>
+                <input type="color" class="rte-color-input" value={backColor} onchange={handleBackColor} />
+            </label>
+
+            <span class="rte-sep"></span>
+
+            <button type="button" class={ulClass} onmousedown={preventBlur} onclick={handleUnorderedList} aria-label="Bulleted list" title="Bulleted list">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="9" y1="6" x2="20" y2="6"></line>
+                    <line x1="9" y1="12" x2="20" y2="12"></line>
+                    <line x1="9" y1="18" x2="20" y2="18"></line>
+                    <circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"></circle>
+                    <circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"></circle>
+                </svg>
+            </button>
+            <button type="button" class={olClass} onmousedown={preventBlur} onclick={handleOrderedList} aria-label="Numbered list" title="Numbered list">
+                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="10" y1="6" x2="20" y2="6"></line>
+                        <line x1="10" y1="12" x2="20" y2="12"></line>
+                        <line x1="10" y1="18" x2="20" y2="18"></line>
+                    </g>
+                    <text x="2" y="8.5" font-size="7" fill="currentColor" font-family="sans-serif">1</text>
+                    <text x="2" y="20" font-size="7" fill="currentColor" font-family="sans-serif">2</text>
+                </svg>
+            </button>
+            <button type="button" class="rte-btn" onmousedown={preventBlur} onclick={handleOutdent} aria-label="Decrease indent" title="Decrease indent">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="7 8 3 12 7 16"></polyline>
+                    <line x1="21" y1="6" x2="11" y2="6"></line>
+                    <line x1="21" y1="12" x2="11" y2="12"></line>
+                    <line x1="21" y1="18" x2="11" y2="18"></line>
+                </svg>
+            </button>
+            <button type="button" class="rte-btn" onmousedown={preventBlur} onclick={handleIndent} aria-label="Increase indent" title="Increase indent">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="3 8 7 12 3 16"></polyline>
+                    <line x1="21" y1="6" x2="11" y2="6"></line>
+                    <line x1="21" y1="12" x2="11" y2="12"></line>
+                    <line x1="21" y1="18" x2="11" y2="18"></line>
+                </svg>
+            </button>
+
+            <span class="rte-sep"></span>
+
+            <button type="button" class={alignLeftClass} onmousedown={preventBlur} onclick={handleAlignLeft} aria-label="Align left" title="Align left">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="15" y2="12"></line>
+                    <line x1="3" y1="18" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <button type="button" class={alignCenterClass} onmousedown={preventBlur} onclick={handleAlignCenter} aria-label="Align center" title="Align center">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="6" y1="12" x2="18" y2="12"></line>
+                    <line x1="4" y1="18" x2="20" y2="18"></line>
+                </svg>
+            </button>
+            <button type="button" class={alignRightClass} onmousedown={preventBlur} onclick={handleAlignRight} aria-label="Align right" title="Align right">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="9" y1="12" x2="21" y2="12"></line>
+                    <line x1="6" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+            <button type="button" class={alignJustifyClass} onmousedown={preventBlur} onclick={handleAlignJustify} aria-label="Justify" title="Justify">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
+            <span class="rte-sep"></span>
+
+            <span class="rte-link-wrap">
+                <button type="button" class="rte-btn" onmousedown={preventBlur} onclick={handleLink} aria-label="Insert link" title="Insert link">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </button>
+                <template if:true={showLinkInput}>
+                    <div class="rte-link-popover">
+                        <input type="url" class="rte-link-input" value={linkUrl} placeholder="https://example.com"
+                            oninput={handleLinkUrlChange} onkeyup={handleLinkKeyUp} />
+                        <button type="button" class="rte-link-btn rte-link-insert" onclick={handleLinkInsert}>Insert</button>
+                        <button type="button" class="rte-link-btn rte-link-cancel" onclick={handleLinkCancel}>Cancel</button>
+                    </div>
+                </template>
+            </span>
+
+            <span class="rte-sep"></span>
+
+            <button type="button" class="rte-btn" onmousedown={preventBlur} onclick={handleClearFormat} aria-label="Clear formatting" title="Clear formatting">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 7V4h16v3"></path>
+                    <path d="M5 20h6"></path>
+                    <path d="M13 4L8 20"></path>
+                    <line x1="15" y1="15" x2="20" y2="20"></line>
+                    <line x1="20" y1="15" x2="15" y2="20"></line>
+                </svg>
             </button>
             <!-- <span class="rte-ai" onclick={handleAiClick}>
                 <svg class="rte-ai-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

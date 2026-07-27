@@ -7,33 +7,30 @@
 	<template if:false={redirectingToReset}>
 	<div class="login-page-wrapper" style={heroBgStyle}>
 		<div class="page-bg-blur"></div>
-		<div class="slds-grid slds-wrap login-grid">
-			<template if:false={isMobile}>
-				<div class="slds-col slds-size_12-of-12 slds-medium-size_12-of-12 slds-large-size_6-of-12 left-image-container">
-					<img src={carouselImage} class="left-loginImage" alt="Reset password background" />
-					<div class="image-overlay">
-						<div class="overlay-content">
-							<img src={KenLogo} class="hero-logo" alt="Institution logo" />
-							<div class="overlay-bottom">
-								<div class="overlay-text-large">Together, we empower the future</div>
-								<div class="overlay-underline"></div>
-								<div class="overlay-text-bottom">Connect • Collaborate • Give Back</div>
-							</div>
-						</div>
+		<template if:false={isMobile}>
+			<div class="hero-image-full">
+				<img src={carouselImage} class="hero-image-full-img" alt="Login background" />
+				<div class="hero-image-full-overlay">
+					<img src={KenLogo} class="hero-logo" alt="Institution logo" />
+					<div class="overlay-bottom">
+						<div class="overlay-text-large">Together, we empower the future</div>
+						<div class="overlay-underline"></div>
+						<div class="overlay-text-bottom">Connect • Collaborate • Give Back</div>
 					</div>
 				</div>
-			</template>
-			<div class="slds-col slds-size_12-of-12 slds-medium-size_12-of-12 slds-large-size_6-of-12">
-				<div class={containerClass}>
-					<template if:true={isMobile}>
-						<img src={KenLogo} class="mobile-hero-logo" alt="Institution logo" />
-					</template>
-					<template if:true={isLoginPage}>
-						<c-ken-login-page start-url={startUrl} onsignup={handleSignup}
-							onforgotpassword={handleForgotPassword} onresendverifyemail={handleResendVerificationLink}>
-						</c-ken-login-page>
-					</template>
-				</div>
+			</div>
+			<div class="hero-blur-veil"></div>
+		</template>
+		<div class="login-card-layer">
+			<div class={containerClass}>
+				<template if:true={isMobile}>
+					<img src={KenLogo} class="mobile-hero-logo" alt="Institution logo" />
+				</template>
+				<template if:true={isLoginPage}>
+					<c-ken-login-page start-url={startUrl} onsignup={handleSignup}
+						onforgotpassword={handleForgotPassword} onresendverifyemail={handleResendVerificationLink}>
+					</c-ken-login-page>
+				</template>
 			</div>
 		</div>
 	</div>

@@ -3,10 +3,12 @@
         <!-- Header -->
         <div class="header-section">
             <h2 class="section-title">Events Created</h2>
-            <button class="host-btn" onclick={handleHostEvent}>
-                <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
-                Host An Event
-            </button>
+            <template if:true={canHostEvent}>
+                <button class="host-btn" onclick={handleHostEvent}>
+                    <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                    Host An Event
+                </button>
+            </template>
         </div>
 
         <!-- Event List -->

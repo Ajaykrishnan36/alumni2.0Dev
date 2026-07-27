@@ -135,9 +135,10 @@ export default class KenRegistrationStepper extends LightningElement {
         this.currentStep = 1;
     }
 
-    handleStep2Skip() {
+    async handleStep2Skip() {
         this.currentStep = 3;
         this.prefillStep3Attempted = false;
+        await this.loadEmploymentData();
     }
 
     async handleStep2SaveAndNext() {
@@ -256,12 +257,14 @@ export default class KenRegistrationStepper extends LightningElement {
             this.employmentData = data || [];
             // If the server has nothing and we have a fresh LinkedIn preview
             // from Step 1, pre-fill the career list from it. The records get
-            // persisted when the user clicks "Save & Next" on Step 3.
+            // persisted when the user clicks "Save & Next" on Step 3 — no
+            // applied-flag here: prefilling only when the server is empty is
+            // already idempotent, and an early flag would permanently block
+            // the prefill when the user leaves Step 3 without saving.
             if (!this.employmentData.length) {
                 const fromLinkedin = this._linkedinEmploymentRows();
                 if (fromLinkedin.length) {
                     this.employmentData = fromLinkedin;
-                    try { window.sessionStorage.setItem('linkedinEmploymentApplied', '1'); } catch (e) { /* ignore */ }
                 }
             }
             const step3 = this.template.querySelector('c-ken-employment-career-info');
@@ -282,7 +285,6 @@ export default class KenRegistrationStepper extends LightningElement {
      */
     _linkedinEmploymentRows() {
         try {
-            if (window.sessionStorage.getItem('linkedinEmploymentApplied') === '1') return [];
             const raw = window.sessionStorage.getItem('linkedinImportPreview');
             if (!raw) return [];
             const profile = JSON.parse(raw);

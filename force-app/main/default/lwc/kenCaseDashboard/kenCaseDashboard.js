@@ -2,15 +2,15 @@ import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import getSummaryStats          from '@salesforce/apex/KenCaseDashboardController.getSummaryStats';
-import getCasesByStatus           from '@salesforce/apex/KenCaseDashboardController.getCasesByStatus';
-import getCasesByTargetAudience  from '@salesforce/apex/KenCaseDashboardController.getCasesByTargetAudience';
-import getTopServices             from '@salesforce/apex/KenCaseDashboardController.getTopServices';
-import getTopServiceOfferings   from '@salesforce/apex/KenCaseDashboardController.getTopServiceOfferings';
-import getCaseTrend             from '@salesforce/apex/KenCaseDashboardController.getCaseTrend';
-import getTopSubmitters         from '@salesforce/apex/KenCaseDashboardController.getTopSubmitters';
-import getFilterOptions         from '@salesforce/apex/KenCaseDashboardController.getFilterOptions';
-import getCaseList              from '@salesforce/apex/KenCaseDashboardController.getCaseList';
+import getSummaryStats        from '@salesforce/apex/KenCaseDashboardController.getSummaryStats';
+import getCasesByStatus       from '@salesforce/apex/KenCaseDashboardController.getCasesByStatus';
+import getCasesByOrigin       from '@salesforce/apex/KenCaseDashboardController.getCasesByOrigin';
+import getTopServices         from '@salesforce/apex/KenCaseDashboardController.getTopServices';
+import getTopServiceOfferings from '@salesforce/apex/KenCaseDashboardController.getTopServiceOfferings';
+import getCaseTrend           from '@salesforce/apex/KenCaseDashboardController.getCaseTrend';
+import getTopSubmitters       from '@salesforce/apex/KenCaseDashboardController.getTopSubmitters';
+import getFilterOptions       from '@salesforce/apex/KenCaseDashboardController.getFilterOptions';
+import getCaseList            from '@salesforce/apex/KenCaseDashboardController.getCaseList';
 
 const DEFAULT_STATS = { total: 0, openCases: 0, closedCases: 0, cancelled: 0 };
 
@@ -23,6 +23,7 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
     // ── Filters ───────────────────────────────────────────────────────────────
     @track filterYear   = 'All';
     @track filterStatus = 'All';
+    @track filterOrigin = 'All';
 
     // ── Refresh state ─────────────────────────────────────────────────────────
     @track isRefreshing = false;
@@ -37,20 +38,21 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
     // ── Filter options ────────────────────────────────────────────────────────
     @track yearOptions   = [];
     @track statusOptions = [];
+    @track originOptions = [];
 
     // ── Loading flags ─────────────────────────────────────────────────────────
-    @track loadingStats                = true;
-    @track loadingByStatus             = true;
-    @track loadingByTargetAudience    = true;
-    @track loadingTrend                = true;
-    @track loadingTopServices          = true;
-    @track loadingTopOfferings         = true;
-    @track loadingTopSubmitters        = true;
+    @track loadingStats       = true;
+    @track loadingByStatus    = true;
+    @track loadingByOrigin    = true;
+    @track loadingTrend       = true;
+    @track loadingTopServices = true;
+    @track loadingTopOfferings = true;
+    @track loadingTopSubmitters = true;
 
     // ── Wire result stores ────────────────────────────────────────────────────
     _wStats;
     _wByStatus;
-    _wByTargetAudience;
+    _wByOrigin;
     _wTrend;
     _wTopServices;
     _wTopOfferings;
@@ -58,13 +60,13 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
     _wFilterOptions;
 
     // ── Raw data from wires ───────────────────────────────────────────────────
-    _rawStats                = null;
-    _rawByStatus             = [];
-    _rawByTargetAudience    = [];
-    _rawTrend                = [];
-    _rawTopServices          = [];
-    _rawTopOfferings         = [];
-    _rawTopSubmitters        = [];
+    _rawStats        = null;
+    _rawByStatus     = [];
+    _rawByOrigin     = [];
+    _rawTrend        = [];
+    _rawTopServices  = [];
+    _rawTopOfferings = [];
+    _rawTopSubmitters = [];
 
     // ── Wire: filter options ──────────────────────────────────────────────────
     @wire(getFilterOptions)
@@ -73,12 +75,13 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
         if (result.data) {
             const d = result.data;
             this.statusOptions = (d.statuses || []).map(s => ({ label: s, value: s }));
+            this.originOptions = (d.origins  || []).map(o => ({ label: o, value: o }));
             this.yearOptions   = (d.years    || []).map(y => ({ label: y, value: y }));
         }
     }
 
     // ── Wire: summary stats ───────────────────────────────────────────────────
-    @wire(getSummaryStats, { year: '$filterYear', status: '$filterStatus' })
+    @wire(getSummaryStats, { year: '$filterYear', status: '$filterStatus', origin: '$filterOrigin' })
     wStats(result) {
         this._wStats = result;
         this.loadingStats = false;
@@ -86,23 +89,23 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
     }
 
     // ── Wire: cases by status ─────────────────────────────────────────────────
-    @wire(getCasesByStatus, { year: '$filterYear' })
+    @wire(getCasesByStatus, { year: '$filterYear', origin: '$filterOrigin' })
     wByStatus(result) {
         this._wByStatus = result;
         this.loadingByStatus = false;
         if (result.data) this._rawByStatus = result.data;
     }
 
-    // ── Wire: cases by service category (Cases by Portal) ────────────────────
-    @wire(getCasesByTargetAudience, { year: '$filterYear', status: '$filterStatus' })
-    wByTargetAudience(result) {
-        this._wByTargetAudience = result;
-        this.loadingByTargetAudience = false;
-        if (result.data) this._rawByTargetAudience = result.data;
+    // ── Wire: cases by origin ─────────────────────────────────────────────────
+    @wire(getCasesByOrigin, { year: '$filterYear', status: '$filterStatus' })
+    wByOrigin(result) {
+        this._wByOrigin = result;
+        this.loadingByOrigin = false;
+        if (result.data) this._rawByOrigin = result.data;
     }
 
     // ── Wire: case trend ──────────────────────────────────────────────────────
-    @wire(getCaseTrend, { year: '$filterYear', status: '$filterStatus' })
+    @wire(getCaseTrend, { year: '$filterYear', status: '$filterStatus', origin: '$filterOrigin' })
     wTrend(result) {
         this._wTrend = result;
         this.loadingTrend = false;
@@ -110,7 +113,7 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
     }
 
     // ── Wire: top services ────────────────────────────────────────────────────
-    @wire(getTopServices, { year: '$filterYear', status: '$filterStatus' })
+    @wire(getTopServices, { year: '$filterYear', status: '$filterStatus', origin: '$filterOrigin' })
     wTopServices(result) {
         this._wTopServices = result;
         this.loadingTopServices = false;
@@ -118,7 +121,7 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
     }
 
     // ── Wire: top service offerings ───────────────────────────────────────────
-    @wire(getTopServiceOfferings, { year: '$filterYear', status: '$filterStatus' })
+    @wire(getTopServiceOfferings, { year: '$filterYear', status: '$filterStatus', origin: '$filterOrigin' })
     wTopOfferings(result) {
         this._wTopOfferings = result;
         this.loadingTopOfferings = false;
@@ -126,7 +129,7 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
     }
 
     // ── Wire: top submitters ──────────────────────────────────────────────────
-    @wire(getTopSubmitters, { year: '$filterYear', status: '$filterStatus' })
+    @wire(getTopSubmitters, { year: '$filterYear', status: '$filterStatus', origin: '$filterOrigin' })
     wTopSubmitters(result) {
         this._wTopSubmitters = result;
         this.loadingTopSubmitters = false;
@@ -138,12 +141,12 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
         return this._rawStats || DEFAULT_STATS;
     }
 
-    get casesByStatusData()           { return toChartData(this._rawByStatus); }
-    get casesByTargetAudienceData()  { return toChartData(this._rawByTargetAudience); }
-    get caseTrendData()               { return toChartData(this._rawTrend); }
-    get topServicesData()            { return toChartData(this._rawTopServices); }
-    get topOfferingsData()           { return toChartData(this._rawTopOfferings); }
-    get topSubmittersData()          { return toChartData(this._rawTopSubmitters); }
+    get casesByStatusData()  { return toChartData(this._rawByStatus); }
+    get casesByOriginData()  { return toChartData(this._rawByOrigin); }
+    get caseTrendData()      { return toChartData(this._rawTrend); }
+    get topServicesData()    { return toChartData(this._rawTopServices); }
+    get topOfferingsData()   { return toChartData(this._rawTopOfferings); }
+    get topSubmittersData()  { return toChartData(this._rawTopSubmitters); }
 
     // ── Filter handlers ───────────────────────────────────────────────────────
     handleFilterChange(event) {
@@ -151,11 +154,13 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
         const value = event.target.value;
         if (field === 'filterYear')   this.filterYear   = value;
         if (field === 'filterStatus') this.filterStatus = value;
+        if (field === 'filterOrigin') this.filterOrigin = value;
     }
 
     clearFilters() {
         this.filterYear   = 'All';
         this.filterStatus = 'All';
+        this.filterOrigin = 'All';
         this.template.querySelectorAll('.filter-select').forEach(sel => { sel.value = 'All'; });
     }
 
@@ -177,7 +182,7 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
             this._wFilterOptions,
             this._wStats,
             this._wByStatus,
-            this._wByTargetAudience,
+            this._wByOrigin,
             this._wTrend,
             this._wTopServices,
             this._wTopOfferings,
@@ -226,12 +231,12 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
         if (!dimension || !value) return;
 
         const titleMap = {
-            status:          `Cases — Status: ${value}`,
-            targetAudience: `Cases — Audience: ${value}`,
-            service:         `Cases — Service: ${value}`,
-            offering:        `Cases — Offering: ${value}`,
-            submitter:       `Cases — Submitter: ${value}`,
-            trend:           `Cases — Month: ${value}`
+            status:    `Cases — Status: ${value}`,
+            origin:    `Cases — Origin: ${value}`,
+            service:   `Cases — Service: ${value}`,
+            offering:  `Cases — Offering: ${value}`,
+            submitter: `Cases — Submitter: ${value}`,
+            trend:     `Cases — Month: ${value}`
         };
         const title = titleMap[dimension] || `Cases — ${value}`;
 
@@ -254,7 +259,8 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
             dimension:      dimension,
             dimensionValue: dimensionValue,
             year:           this.filterYear,
-            status:         this.filterStatus
+            status:         this.filterStatus,
+            origin:         this.filterOrigin
         })
         .then(result => {
             this.modalCases   = result || [];
@@ -267,14 +273,5 @@ export default class KenCaseDashboard extends NavigationMixin(LightningElement) 
         this.modalOpen    = false;
         this.modalCases   = [];
         this.modalLoading = false;
-    }
-
-    // ── CSV export (shared handler for all chart cards) ───────────────────────
-    handleAllCasesExportCsv() {
-        this.openCaseModal('All Cases — CSV Export', 'all', '');
-    }
-
-    handleStatusExportCsv() {
-        this.openCaseModal('All Cases — CSV Export', 'all', '');
     }
 }

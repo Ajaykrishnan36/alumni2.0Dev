@@ -155,6 +155,7 @@
 
 /* ===== KPI tiles ===== */
 .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 22px; }
+.kpi-grid-3 { grid-template-columns: repeat(3, 1fr); }
 .kpi {
     background: #FFFFFF; border: 1px solid var(--slate-200); border-radius: var(--radius-lg);
     padding: 28px; position: relative; overflow: hidden;
@@ -235,6 +236,8 @@
 .funnel-lbl { font-size: 9.5px; letter-spacing: .18em; text-transform: uppercase; margin-top: 9px; font-weight: 700; color: var(--slate-500); }
 .funnel-arrow { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: var(--slate-300); }
 .funnel-arrow::before { content: ""; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); margin-left: -2px; }
+.funnel-lifecycle { flex-wrap: wrap; row-gap: 12px; }
+.funnel-lifecycle .funnel-step { flex: 1 1 110px; min-width: 96px; }
 
 /* ===== Main 2-col grid ===== */
 .main-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; }

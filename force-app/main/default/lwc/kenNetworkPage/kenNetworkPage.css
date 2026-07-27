@@ -12,7 +12,7 @@
     gap: var(--portal-gap-x, 1rem);
     margin: 0 auto;
     height: 100%;
-    overflow: hidden;
+    overflow: auto !important;
 }
 
 /* Main Content */
@@ -24,10 +24,10 @@
     box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
     display: flex;
     flex-direction: column;
-    height: 100%;
     overflow-y: auto;
     min-height: 0;
     box-sizing: border-box;
+    height: 100%;
 }
 
 /* Tabs and Search Filter Row */
@@ -35,9 +35,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 24px;
+    gap: 14px;
     margin-bottom: 24px;
     flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
 .tabs-wrapper {
@@ -49,9 +50,10 @@
     display: flex;
     gap: 16px;
     align-items: center;
-    flex: 1;
     justify-content: flex-end;
 }
+
+
 
 .filter-buttons {
     display: flex;
@@ -62,18 +64,20 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    padding: 10px 16px;
-    background-color: #f3f4f6;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #374151;
+    height: var(--portal-trigger-height, 40px);
+    box-sizing: border-box;
+    padding: 0 var(--portal-trigger-padding-x, 16px);
+    background-color: var(--secondary-color, var(--portal-divider-color, #f3f4f6));
+    border: var(--portal-border-width, 1px) solid var(--secondary-color, var(--portal-border-color, #f3f4f6));
+    border-radius: var(--portal-field-radius, 8px);
+    font-size: var(--portal-font-size, 14px);
+    color: var(--portal-text-primary, #374151);
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
 .filter-btn:hover {
-    background-color: #e5e7eb;
+    background-color: var(--secondary-color, var(--portal-surface-hover, #e5e7eb));
 }
 
 .filter-count-badge {
@@ -84,7 +88,7 @@
     height: 18px;
     padding: 0 5px;
     background: var(--primary-color, #ffffff);
-    color: #fff;
+    color: var(--portal-on-primary, #fff);
     font-size: 0.7rem;
     font-weight: 700;
     border-radius: 999px;
@@ -127,9 +131,10 @@
     background-color: #f3f4f6;
 }
 
-.filter-icon,
-.dropdown-icon {
-    --slds-c-icon-color-foreground-default: #374151;
+.filter-icon {
+    width: var(--portal-icon-size, 16px);
+    height: var(--portal-icon-size, 16px);
+    flex-shrink: 0;
 }
 .sort-arrow {
     flex-shrink: 0;
@@ -144,7 +149,8 @@
 /* Alumni Grid */
 .alumni-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    /* grid-template-columns: repeat(4, 1fr); */
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
     gap: 20px;
     overflow-y: visible;
     flex: 0 0 auto;
@@ -230,7 +236,8 @@
     display: flex;
     flex-direction: column;
     min-height: 0;
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .widget-title {
@@ -692,16 +699,16 @@
 }
 
 .filters-popup {
-    background-color: #ffffff;
-    border-radius: 12px;
-    padding: 20px;
-    width: 400px;
+    background-color: var(--portal-surface, #ffffff);
+    border-radius: var(--portal-radius, 12px);
+    padding: var(--portal-popover-padding, 20px);
+    width: var(--portal-filters-popup-width, 400px);
     max-width: 90vw;
-    max-height: 500px;
+    max-height: var(--portal-filters-popup-max-height, 500px);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--portal-popover-shadow, 0 4px 12px rgba(0, 0, 0, 0.15));
     position: fixed;
 }
 
@@ -712,10 +719,11 @@
 }
 
 .filters-title {
-    font-size: 18px;
+    font-size: var(--portal-title-size, 18px);
     font-weight: 600;
-    color: #111827;
+    color: var(--portal-text-primary, #111827);
     margin: 0 0 16px 0;
+    flex-shrink: 0;
 }
 
 .toggle-section {
@@ -723,6 +731,7 @@
     align-items: center;
     gap: 12px;
     margin-bottom: 16px;
+    flex-shrink: 0;
 }
 
 .toggle-label {
@@ -746,7 +755,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #d1d5db;
+    background-color: var(--portal-border-color, #d1d5db);
     transition: 0.3s;
     border-radius: 24px;
 }
@@ -758,7 +767,7 @@
     width: 18px;
     left: 3px;
     bottom: 3px;
-    background-color: white;
+    background-color: var(--portal-surface, white);
     transition: 0.3s;
     border-radius: 50%;
 }
@@ -772,14 +781,14 @@
 }
 
 .toggle-text {
-    font-size: 14px;
-    color: #6b7280;
+    font-size: var(--portal-font-size, 14px);
+    color: var(--portal-text-muted, #6b7280);
 }
 
 .filters-content {
     display: flex;
     flex-direction: column;
-    gap: 8px !important;
+    gap: var(--portal-field-gap, 8px) !important;
     margin-bottom: 16px;
 }
 
@@ -789,6 +798,15 @@
 
 .filter-field {
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--portal-label-gap, 4px);
+}
+
+.filter-label {
+    font-size: var(--portal-label-size, 0.78rem);
+    font-weight: 500;
+    color: var(--portal-text-muted, #374151);
 }
 
 .filter-field c-ken-searchable-select {
@@ -866,73 +884,73 @@
 .filter-field lightning-combobox input.slds-input,
 .filter-field lightning-combobox .slds-combobox__form-element,
 .filter-field lightning-combobox .slds-combobox {
-    border: 1px solid #e5e7eb !important;
-    border-radius: 8px !important;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e5e7eb) !important;
+    border-radius: var(--portal-field-radius, 8px) !important;
     padding: 10px 40px 10px 12px !important;
-    font-size: 14px !important;
-    color: #111827 !important;
-    background-color: #ffffff !important;
-    background: #ffffff !important;
-    --slds-c-input-color-background: #ffffff !important;
-    --slds-c-input-color-background-default: #ffffff !important;
-    min-height: 48px !important;
-    height: 48px !important;
+    font-size: var(--portal-font-size, 14px) !important;
+    color: var(--portal-text-primary, #111827) !important;
+    background-color: var(--portal-surface, #ffffff) !important;
+    background: var(--portal-surface, #ffffff) !important;
+    --slds-c-input-color-background: var(--portal-surface, #ffffff) !important;
+    --slds-c-input-color-background-default: var(--portal-surface, #ffffff) !important;
+    min-height: var(--portal-field-height, 48px) !important;
+    height: var(--portal-field-height, 48px) !important;
     box-shadow: none !important;
 }
 
 .filter-field lightning-combobox .slds-input_faux {
-    min-height: 48px !important;
-    height: 48px !important;
-    line-height: 28px !important;
+    min-height: var(--portal-field-height, 48px) !important;
+    height: var(--portal-field-height, 48px) !important;
+    line-height: 24px !important;
     padding: 10px 40px 10px 12px !important;
     display: flex !important;
     align-items: center !important;
 }
 
 .filter-field lightning-combobox .slds-combobox__input {
-    min-height: 48px !important;
-    height: 48px !important;
-    line-height: 28px !important;
+    min-height: var(--portal-field-height, 48px) !important;
+    height: var(--portal-field-height, 48px) !important;
+    line-height: 24px !important;
     display: flex !important;
     align-items: center !important;
 }
 
 .filter-field lightning-combobox .slds-combobox__input-entity-icon-container {
-    height: 48px !important;
+    height: var(--portal-field-height, 48px) !important;
     display: flex !important;
     align-items: center !important;
 }
 
 .filter-field lightning-combobox .slds-input-has-icon_right .slds-input__icon {
-    height: 48px !important;
+    height: var(--portal-field-height, 48px) !important;
     display: flex !important;
     align-items: center !important;
 }
 
 .filter-field lightning-combobox .slds-combobox__form-element {
-    background-color: #ffffff !important;
-    background: #ffffff !important;
-    --slds-c-input-color-background: #ffffff !important;
-    --slds-c-input-color-background-default: #ffffff !important;
+    background-color: var(--portal-surface, #ffffff) !important;
+    background: var(--portal-surface, #ffffff) !important;
+    --slds-c-input-color-background: var(--portal-surface, #ffffff) !important;
+    --slds-c-input-color-background-default: var(--portal-surface, #ffffff) !important;
 }
 
 .filter-field lightning-combobox .slds-combobox__input::placeholder,
 .filter-field lightning-combobox input.slds-input::placeholder {
-    color: #9ca3af !important;
+    color: var(--portal-text-muted, #9ca3af) !important;
     opacity: 1 !important;
 }
 
 .filter-field lightning-combobox .slds-combobox__input:focus,
 .filter-field lightning-combobox input.slds-input:focus {
     border-color: var(--primary-color) !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    box-shadow: var(--portal-focus-ring, 0 0 0 3px rgba(37, 99, 235, 0.1)) !important;
     outline: none !important;
 }
 
 .filter-field lightning-combobox .slds-combobox__input-entity-icon,
 .filter-field lightning-combobox .slds-icon-utility-down,
 .filter-field lightning-combobox lightning-icon {
-    --slds-c-icon-color-foreground-default: #6b7280 !important;
+    --slds-c-icon-color-foreground-default: var(--portal-text-muted, #6b7280) !important;
 }
 
 .filter-field lightning-combobox .slds-combobox__input-entity-icon {
@@ -941,14 +959,14 @@
 
 .filter-field lightning-combobox .slds-combobox__form-element .slds-input-has-icon_right .slds-input__icon {
     right: 12px;
-    color: #6b7280;
+    color: var(--portal-text-muted, #6b7280);
 }
 
 .filters-actions {
     display: flex;
     gap: 12px;
     justify-content: flex-end;
-    border-top: 1px solid #e5e7eb;
+    border-top: var(--portal-border-width, 1px) solid var(--portal-divider-color, #e5e7eb);
     padding-top: 16px;
     margin-top: 16px;
     flex-shrink: 0;
@@ -1005,30 +1023,34 @@
 }
 
 .reset-filters-btn {
-    padding: 10px 20px;
-    background-color: #ffffff;
-    border: 1px solid var(--primary-color);
-    border-radius: 8px;
-    font-size: 14px;
+    padding: 0 var(--portal-btn-padding-x, 20px);
+    height: var(--portal-field-height, 44px);
+    box-sizing: border-box;
+    background-color: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #D1D5DB);
+    border-radius: var(--portal-field-radius, 8px);
+    font-size: var(--portal-font-size, 14px);
     font-weight: 500;
-    color: #374151;
+    color: var(--portal-text-primary, #374151);
     cursor: pointer;
     transition: background-color 0.2s;
     min-width: 120px;
 }
 
 .reset-filters-btn:hover {
-    background-color: #F6F8FB;
+    background-color: var(--portal-surface-hover, #F6F8FB);
 }
 
 .apply-filters-btn {
-    padding: 10px 20px;
+    padding: 0 var(--portal-btn-padding-x, 20px);
+    height: var(--portal-field-height, 44px);
+    box-sizing: border-box;
     background-color: var(--primary-color);
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--portal-field-radius, 8px);
+    font-size: var(--portal-font-size, 14px);
     font-weight: 500;
-    color: #ffffff;
+    color: var(--portal-on-primary, #ffffff);
     cursor: pointer;
     transition: background-color 0.2s;
     min-width: 120px;
@@ -1037,25 +1059,32 @@
 .apply-filters-btn:hover {
     background-color: var(--primary-color);
 }
+
 .map-view-btn svg {
     flex-shrink: 0;
 }
 
 .map-modal-overlay {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+    align-items: stretch;
+    justify-content: stretch;
+    padding: 0;
 }
 
 .map-modal {
     position: relative;
-    width: min(1140px, 96vw);
-    max-height: 92vh;
-    border-radius: 14px;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
     overflow: hidden;
     background: #ffffff;
-    box-shadow: 0 24px 60px rgba(16, 24, 40, 0.3);
+    box-shadow: none;
+    /* c-ken-alumni-map's inner card reads these design tokens through the
+       shadow boundary — zeroing them here keeps the flush full-page look
+       scoped to this modal instead of changing the shared component. */
+    --portal-radius: 0px;
+    --portal-border-width: 0px;
+    --portal-shadow: none;
 }
 
 .map-modal-close {
@@ -1077,14 +1106,4 @@
 
 .map-modal-close:hover {
     background: #f3f4f6;
-}
-
-@media (max-width: 640px) {
-    .map-modal-overlay {
-        padding: 10px;
-    }
-
-    .map-modal {
-        width: 100%;
-    }
 }

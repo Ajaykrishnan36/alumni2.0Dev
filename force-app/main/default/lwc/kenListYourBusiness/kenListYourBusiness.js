@@ -3,6 +3,7 @@ import listYourBusinessImage from '@salesforce/resourceUrl/Listyourbusiness';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 export default class KenListYourBusiness extends LightningElement {
     listYourBusinessImageUrl = listYourBusinessImage;
+    canCreateBusiness = false;
 
     handleClick() {
         // Dispatch event to navigate to business listing page
@@ -20,7 +21,8 @@ export default class KenListYourBusiness extends LightningElement {
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
-            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);  
+            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
+            this.canCreateBusiness = color?.createBusiness !== false;
         }).catch(() => {
             console.log('Error getting primary color');
         });

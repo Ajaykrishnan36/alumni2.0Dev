@@ -11,7 +11,6 @@ export default class KenAlbumCard extends LightningElement {
     }
 
     renderedCallback() {
-        // Attach error handler to profile image after render
         const profileImage = this.template.querySelector('[data-profile-image="true"]');
         if (profileImage && !profileImage.hasAttribute('data-error-handler-attached')) {
             profileImage.addEventListener('error', this.boundHandleProfileImageError);
@@ -32,7 +31,6 @@ export default class KenAlbumCard extends LightningElement {
 
     disconnectedCallback() {
         document.removeEventListener('click', this.boundHandleClickOutside);
-        // Remove error handler from profile image
         const profileImage = this.template.querySelector('[data-profile-image="true"]');
         if (profileImage) {
             profileImage.removeEventListener('error', this.boundHandleProfileImageError);

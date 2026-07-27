@@ -164,9 +164,9 @@
 }
 
 .feedback-submitted-btn {
-    background-color: var(--surface-soft);
-    border: 1px solid #E2E8F0;
-    color: var(--brand-primary);
+    background-color: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    color: #1D4ED8;
     padding: 0.6rem 1rem;
     border-radius: 8px;
     font-size: 13px;
@@ -720,6 +720,12 @@
 .rating-badge-excellent {
     background-color: #E8F5E9;
     color: #2E7D32;
+}
+
+.rating-error-msg {
+    color: #B91C1C;
+    font-size: 12px;
+    margin: 4px 0 0;
 }
 
 .feedback-textarea-container {

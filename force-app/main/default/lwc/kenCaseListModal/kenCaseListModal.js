@@ -4,16 +4,12 @@ import getDownloadUrl from '@salesforce/apex/KenExportCsvController.getDownloadU
 const PAGE_SIZE = 20;
 
 const STATUS_CLASS_MAP = {
-    'New':                 'status-badge status-progress',
-    'In Progress':         'status-badge status-pending',
-    'Waiting for Student': 'status-badge status-review',
-    'Response Received':   'status-badge status-review',
-    'On Hold':             'status-badge status-pending',
-    'Escalated':           'status-badge status-rejected',
-    'Closed':              'status-badge status-approved',
-    'Resolved':            'status-badge status-approved',
-    'Canceled':            'status-badge status-cancelled',
-    'Merged':              'status-badge status-cancelled'
+    'New':       'status-badge status-progress',
+    'Working':   'status-badge status-pending',
+    'In Review': 'status-badge status-review',
+    'Closed':    'status-badge status-approved',
+    'Canceled':  'status-badge status-cancelled',
+    'Rejected':  'status-badge status-rejected'
 };
 
 export default class KenCaseListModal extends LightningElement {

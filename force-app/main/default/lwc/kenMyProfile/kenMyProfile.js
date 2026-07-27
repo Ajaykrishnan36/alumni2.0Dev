@@ -1,9 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import { loadScript } from 'lightning/platformResourceLoader';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
-import QRCODE_LIB from '@salesforce/resourceUrl/qrcode';
 
 import getMyProfile from '@salesforce/apex/KenMyProfileController.getMyProfile';
 import getPersonalDetails from '@salesforce/apex/KenSettingsController.getPersonalDetails';
@@ -14,8 +12,6 @@ import saveExperienceRecord from '@salesforce/apex/KenMyProfileController.saveEx
 import archiveExperienceRecord from '@salesforce/apex/KenMyProfileController.archiveExperience';
 import saveAchievementRecord from '@salesforce/apex/KenMyProfileController.saveAchievement';
 import archiveAchievementRecord from '@salesforce/apex/KenMyProfileController.archiveAchievement';
-import createContentVersionApex from '@salesforce/apex/KenCreateContentVersion.createContentVersion';
-import saveIdCardUrlApex from '@salesforce/apex/KenMyProfileController.saveIdCardUrl';
 
 const KEN_HEADER_CHAT_OPEN_KEY = 'ken_header_open_chat';
 
@@ -34,7 +30,6 @@ const EMPTY_PROFILE = {
     willingToHelp: true,
     about: '',
     registrationNumber: null,
-    idCardUrl: null,
     education: [],
     experience: [],
     achievements: []
@@ -67,9 +62,6 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
         }
     ];
 
-    @track showIdCardModal = false;
-    @track isIdCardDownloading = false;
-    _qrLibLoaded = false;
     @track showAboutModal = false;
     @track showExperienceModal = false;
     @track showEducationModal = false;
@@ -281,26 +273,6 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
         return Array.isArray(this.profileData?.achievements) && this.profileData.achievements.length > 0;
     }
 
-    get idCardNumber() {
-        return this.profileData?.registrationNumber || 'KEN000000';
-    }
-
-    get idCardDegreeLine() {
-        const list = this.profileData?.education;
-        if (list && list.length) {
-            const d = (list[0].degree || '').trim();
-            return d.length > 18 ? `${d.slice(0, 18)}...` : d;
-        }
-        return this.profileData?.batch || 'Alumni ID card';
-    }
-
-    get idCardYear() {
-        const list = this.profileData?.education;
-        if (list && list.length && list[0].endYear) {
-            return list[0].endYear;
-        }
-        return '2016';
-    }
     handleMessage() {
         this.showChatbox = true;
     }
@@ -343,171 +315,6 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
             const chatBody = this.template.querySelector('.chatbox-body');
             if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
         }, 0);
-    }
-
-    async handleViewIdCard() {
-        this.showIdCardModal = true;
-        if (!this._qrLibLoaded) {
-            try {
-                await loadScript(this, QRCODE_LIB);
-                this._qrLibLoaded = true;
-            } catch (e) {
-                // QR library failed to load; canvas will remain blank
-            }
-        }
-        // Defer so the canvas element is rendered before we draw
-        // eslint-disable-next-line @lwc/lwc/no-async-operation
-        setTimeout(() => this._renderQrCode(), 50);
-    }
-
-    closeIdCardModal() {
-        this.showIdCardModal = false;
-    }
-
-    _renderQrCode() {
-        const canvas = this.template.querySelector('.qr-canvas');
-        if (!canvas || !window.qrcode) return;
-
-        const qrData = this.idCardNumber;
-        // qrcode-generator API: qrcode(typeNumber, errorCorrectionLevel)
-        const qr = window.qrcode(0, 'M');
-        qr.addData(qrData);
-        qr.make();
-
-        const moduleCount = qr.getModuleCount();
-        const cellSize = Math.floor(100 / moduleCount);
-        canvas.width  = moduleCount * cellSize;
-        canvas.height = moduleCount * cellSize;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#000000';
-        for (let row = 0; row < moduleCount; row++) {
-            for (let col = 0; col < moduleCount; col++) {
-                if (qr.isDark(row, col)) {
-                    ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-                }
-            }
-        }
-    }
-
-    async handleDownloadIdCard() {
-        if (this.isIdCardDownloading) return;
-        this.isIdCardDownloading = true;
-        try {
-            const cardCanvas = await this._drawIdCardToCanvas();
-            const dataUrl   = cardCanvas.toDataURL('image/png');
-            const base64    = dataUrl.replace(/^data:image\/png;base64,/, '');
-            const fileName  = `ID_Card_${this.idCardNumber}.png`;
-
-            const downloadUrl = await createContentVersionApex({ title: fileName, base64String: base64 });
-
-            if (downloadUrl) {
-                await saveIdCardUrlApex({ url: downloadUrl });
-                this.profileData = { ...this.profileData, idCardUrl: downloadUrl };
-
-                // Trigger browser download
-                const link = document.createElement('a');
-                link.href     = downloadUrl;
-                link.download = fileName;
-                link.target   = '_blank';
-                link.click();
-            }
-        } catch (err) {
-            this.dispatchEvent(new ShowToastEvent({
-                title: 'Error',
-                message: err.body?.message || 'Failed to download ID card.',
-                variant: 'error'
-            }));
-        } finally {
-            this.isIdCardDownloading = false;
-        }
-    }
-
-    _drawIdCardToCanvas() {
-        return new Promise((resolve) => {
-            const W = 600, H = 350;
-            const canvas = document.createElement('canvas');
-            canvas.width  = W;
-            canvas.height = H;
-            const ctx = canvas.getContext('2d');
-
-            // Background gradient
-            const grad = ctx.createLinearGradient(0, 0, W, 0);
-            grad.addColorStop(0, '#1e3a8a');
-            grad.addColorStop(1, '#3b82f6');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.roundRect(0, 0, W, H, 16);
-            ctx.fill();
-
-            // Name
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 22px Inter, Arial, sans-serif';
-            ctx.fillText(this.profileData?.name || '', 40, 80);
-
-            // ID number
-            ctx.font = '14px Inter, Arial, sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.85)';
-            ctx.fillText(this.idCardNumber, 40, 110);
-
-            // Degree line
-            ctx.fillText(this.idCardDegreeLine, 40, 135);
-
-            // Year badge background
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
-            ctx.beginPath();
-            ctx.roundRect(W - 130, 40, 90, 36, 8);
-            ctx.fill();
-
-            // Year text
-            ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 16px Inter, Arial, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(this.idCardYear, W - 85, 64);
-            ctx.textAlign = 'left';
-
-            // QR code (copy from in-modal canvas)
-            const qrCanvas = this.template.querySelector('.qr-canvas');
-            if (qrCanvas && qrCanvas.width > 0) {
-                // White background behind QR
-                ctx.fillStyle = '#ffffff';
-                ctx.beginPath();
-                ctx.roundRect(32, 158, 116, 116, 8);
-                ctx.fill();
-                ctx.drawImage(qrCanvas, 40, 166, 100, 100);
-            }
-
-            // Profile image (async load)
-            const imgSrc = this.profileData?.profileImage;
-            const drawProfileImg = (imgEl) => {
-                const r  = 52;
-                const cx = W - 100, cy = 160;
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.clip();
-                ctx.drawImage(imgEl, cx - r, cy - r, r * 2, r * 2);
-                ctx.restore();
-                // Circle border
-                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(cx, cy, r, 0, Math.PI * 2);
-                ctx.stroke();
-                resolve(canvas);
-            };
-
-            if (imgSrc) {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload  = () => drawProfileImg(img);
-                img.onerror = () => resolve(canvas); // skip image on error
-                img.src = imgSrc;
-            } else {
-                resolve(canvas);
-            }
-        });
     }
 
     openAboutEdit() {

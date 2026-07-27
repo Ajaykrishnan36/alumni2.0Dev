@@ -9,6 +9,7 @@ import getMealOptedCounts from '@salesforce/apex/KenPortalEventController.getMea
 import getEventParticipants from '@salesforce/apex/KenPortalEventController.getEventParticipants';
 import deleteHostedEvent from '@salesforce/apex/KenPortalEventController.deleteHostedEvent';
 import getEventUpdatesData from '@salesforce/apex/KenPortalEventController.getEventUpdatesData';
+import getActiveRoleId from '@salesforce/apex/KenConstituentRoleService.getActiveRoleId';
 import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
@@ -148,18 +149,6 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
                 optedLabel: showOpted ? `${count} Opted` : ''
             };
         });
-    }
-
-    get hasExpectations() {
-        return this.event?.expectations && this.event.expectations.includes('\n');
-    }
-
-    get expectationsList() {
-        if (!this.event?.expectations) return [];
-        return this.event.expectations
-            .split(/\r?\n/)
-            .filter(line => line.trim())
-            .map((text, idx) => ({ id: idx, text: text.trim() }));
     }
 
     get toastClasses() {
@@ -314,6 +303,21 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
         });
     }
 
+    /**
+     * Event_Broucher__c stores an absolute public ContentDistribution download
+     * URL, so it opens directly with no base-path prefixing. The guard keeps a
+     * non-URL value (KenCreateContentVersion stores its error message in the
+     * same field when the upload fails) from navigating to a blank page.
+     */
+    handleDownloadBrochure() {
+        const url = this.event && this.event.brochureUrl;
+        if (!url || !/^https?:\/\//i.test(String(url).trim())) {
+            this.showToastMessage('Download Brochure', 'No brochure is available for this event.', 'info');
+            return;
+        }
+        window.open(String(url).trim(), '_blank', 'noopener,noreferrer');
+    }
+
     handleJoinEvent() {
         const reg = (this.schedules || []).find(s => s.isRegistered && (s.sessionLink || s.Session_Link__c));
         const link = reg ? (reg.sessionLink || reg.Session_Link__c) : null;
@@ -325,7 +329,9 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
     }
 
     connectedCallback() {
-        this.constituentRoleId = localStorage.getItem('ConstituentRoleId');
+        getActiveRoleId()
+            .then(roleId => { this.constituentRoleId = roleId; })
+            .catch(() => { this.constituentRoleId = null; });
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
@@ -386,7 +392,7 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
         }
     }
 
-    @wire(getRegisteredSessions, { EventId: '$recordId', constituentRoleId: '$constituentRoleId' })
+    @wire(getRegisteredSessions, { EventId: '$recordId' })
     wiredRegisteredSessions(response) {
         this.wiredRegisteredSessionsData = response;
         const { error, data } = response;
@@ -398,7 +404,7 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
         }
     }
 
-    @wire(getEventSchedules, { eventId: '$recordId', constituentRoleId: '$constituentRoleId' })
+    @wire(getEventSchedules, { eventId: '$recordId' })
     wiredEventSchedules(response) {
         this.wiredEventSchedulesResult = response;
         const { error, data } = response;
@@ -775,7 +781,7 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
 
     async handleFinalCancel() {
         try {
-            await CancelSessionRegistration({ sessionIds: [this.selectedSessionId], constituentRoleId: this.constituentRoleId });
+            await CancelSessionRegistration({ sessionIds: [this.selectedSessionId] });
             await this.refreshSchedules();
             this.selectedSessionId = null;
             this.showCancelConfirmation = false;

@@ -250,23 +250,6 @@
     color: var(--primary-color);
 }
 
-/* View ID Card */
-.btn-view-id-card {
-    background-color: var(--primary-color);
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    padding: 0.5rem 1.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
-    margin-right: 0.5rem;
-}
-.btn-view-id-card:hover {
-    opacity: 0.92;
-}
-
 /* Edit Pen Icon Styling */
 .ken-edit-icon-btn {
     display: inline-flex;

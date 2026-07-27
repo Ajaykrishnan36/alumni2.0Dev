@@ -208,8 +208,6 @@ export default class KenResourceGallery extends LightningElement {
     }
 
     filterFiles() {
-        // applyFilters() now recomputes the search term too, so it is the
-        // single source of truth for the files list.
         this.applyFilters();
     }
 
@@ -363,20 +361,13 @@ export default class KenResourceGallery extends LightningElement {
         this.showFiltersPopup = false;
     }
 
-    // Re-runs the filter computation immediately so picking a value filters
-    // live instead of waiting for the Apply button (mirrors kenGroups /
-    // kenMentorshipConnections' _applyDraftLive pattern).
     _applyFiltersLive() {
         this.applyFilters();
     }
 
     applyFilters() {
-        // Always recompute from the full source list so filters are
-        // non-destructive and can be safely re-run on every keystroke/pick,
-        // not just once from the Apply button.
         let filtered = [...this.files];
 
-        // Apply search filter
         if (this.searchTerm) {
             filtered = filtered.filter(file =>
                 file.title.toLowerCase().includes(this.searchTerm) ||

@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import LandingLogo from '@salesforce/resourceUrl/landingLogo';
+import KenLoginLogo from '@salesforce/resourceUrl/LoginKen';
 import Casual1 from '@salesforce/resourceUrl/casual1';
 import Casual2 from '@salesforce/resourceUrl/casual2';
 import Casual3 from '@salesforce/resourceUrl/casual3';
@@ -34,7 +34,7 @@ import Marcellus_Regular_Font from '@salesforce/resourceUrl/marcellusfont';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import getEngagementOptions from '@salesforce/apex/KenEngagementPreferenceController.getOptions';
 export default class KenLandingPage extends NavigationMixin(LightningElement) {
-    landingLogo = LandingLogo;
+    landingLogo = KenLoginLogo;
     @track institutionName = '';
     @track preferences = [];
     event1 = Event1;
@@ -65,7 +65,14 @@ export default class KenLandingPage extends NavigationMixin(LightningElement) {
     
     @track currentSlide = 0;
     @track isMenuOpen = false;
-    
+    @track showMapModal = false;
+    mapModalHeight = 520;
+    @track headerOffsetPx = 90;
+
+    get mapModalOverlayStyle() {
+        return `top: ${this.headerOffsetPx}px;`;
+    }
+
     carouselImages = [Casual1, Casual2, Casual3];
     
     connectedCallback() {  // use effect -> in react 
@@ -308,10 +315,71 @@ export default class KenLandingPage extends NavigationMixin(LightningElement) {
         this.isMenuOpen = false;
     }
 
+    handleCloseMap() {
+        this.showMapModal = false;
+        const container = this.template.querySelector('.landing-page');
+        if (container) {
+            container.style.overflow = '';
+        }
+        document.body.style.overflow = '';
+    }
+
+    handleMapGuestAction(event) {
+        const action = event.detail && event.detail.action;
+        this.handleCloseMap();
+        if (action === 'register') {
+            this.handleJoin();
+        } else {
+            this.handleLogin();
+        }
+    }
+
+    stopMapModalClick(event) {
+        event.stopPropagation();
+    }
+
     handleNavClick(event) {
         event.preventDefault();
         const target = event.currentTarget.dataset.target;
+        // Now that the header stays visible (and clickable) above the
+        // full-page map instead of being covered by it, clicking any OTHER
+        // header link while the map is open needs to close it first — none
+        // of the branches below used to check for this, so the map stayed
+        // open (covering the page) no matter what else got clicked.
+        if (this.showMapModal && target !== 'map') {
+            this.handleCloseMap();
+        }
         if (target === 'always' || target === 'join') {
+            return;
+        }
+        if (target === 'map') {
+            this.closeMenu();
+            // Unlike the network/admin map views (which take over the whole
+            // viewport), the landing page's real site header must stay
+            // visible above the map — so the overlay starts below it instead
+            // of at inset:0. .landing-page is the actual scroll container
+            // here (not window/body — see its own overflow:scroll), so it
+            // has to be reset to the top first: the header sits at the very
+            // start of that container's normal flow (position:relative, not
+            // sticky), so if the page was scrolled down when Map was
+            // clicked, the header would otherwise be out of view with
+            // nothing behind the gap this leaves at the overlay's top.
+            const container = this.template.querySelector('.landing-page');
+            if (container) {
+                container.scrollTop = 0;
+            } else {
+                window.scrollTo(0, 0);
+            }
+            const headerEl = this.template.querySelector('.landing-header');
+            const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 90;
+            this.headerOffsetPx = headerHeight;
+            this.mapModalHeight = Math.max(420, window.innerHeight - headerHeight);
+            this.showMapModal = true;
+            if (container) {
+                container.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = 'hidden';
+            }
             return;
         }
         // For mobile: close menu first, then scroll after DOM updates

@@ -316,8 +316,6 @@
     border: none;
 }
 
-/* Real title element reuses the page-level .section-title class (see .html);
-   scoped here so it gets flex-shrink without touching the shared .section-title rule. */
 .filters-panel > .section-title {
     flex-shrink: 0;
 }

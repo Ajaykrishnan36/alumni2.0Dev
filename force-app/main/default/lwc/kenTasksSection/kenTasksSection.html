@@ -35,7 +35,7 @@
                         </div>
                         <template if:true={task.showAssignee}>
                             <div class="task-assignee-row">
-                                <img src={task.assigneeAvatar} alt={task.assigneeName} class="task-assignee-avatar" />
+                                <img src={task.assigneeAvatar} alt={task.assigneeName} class="task-assignee-avatar" onerror={handleAvatarError} />
                                 <span class="task-assignee-name">{task.assigneeName}</span>
                             </div>
                         </template>

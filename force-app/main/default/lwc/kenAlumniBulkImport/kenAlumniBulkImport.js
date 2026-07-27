@@ -2,8 +2,8 @@ import { LightningElement } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import LightningConfirm from "lightning/confirm";
 import { getPortalConfigs } from "c/kenThemeConfig";
-import getBatchStatus from "@salesforce/apex/KenAlumniBulkImportController.getBatchStatus";
-import getLatestImportJob from "@salesforce/apex/KenAlumniBulkImportController.getLatestImportJob";
+import getSessionStatus from "@salesforce/apex/KenAlumniBulkImportController.getSessionStatus";
+import getLatestImportSession from "@salesforce/apex/KenAlumniBulkImportController.getLatestImportSession";
 import getImportErrors from "@salesforce/apex/KenAlumniBulkImportController.getImportErrors";
 import createImportSession from "@salesforce/apex/KenAlumniBulkImportController.createImportSession";
 import saveImportChunk from "@salesforce/apex/KenAlumniBulkImportController.saveImportChunk";
@@ -25,6 +25,7 @@ export default class KenAlumniBulkImport extends LightningElement {
     "Phone",
     "Program",
     "Status",
+    "Year of Enrollment",
     "Year of Graduation",
     "Current Company",
     "Current Location",
@@ -32,6 +33,9 @@ export default class KenAlumniBulkImport extends LightningElement {
     "Specialization",
     // --- Personal & contact (Person Account) ---
     "Date of Birth",
+    "Nationality",
+    "Gender",
+    "Blood Group",
     "LinkedIn URL",
     "Languages Known",
     "Address Street",
@@ -74,7 +78,7 @@ export default class KenAlumniBulkImport extends LightningElement {
   selectedDataSource = "Historic Import";
 
   parsedHeaders = [];
-  jobId;
+  sessionKey;
   jobStatus = "";
   totalRecords = 0;
   jobProcessed = 0;
@@ -105,6 +109,7 @@ export default class KenAlumniBulkImport extends LightningElement {
     Phone: ["Phone", "Mobile", "Contact Number", "Phone Number"],
     Program: ["Program", "Programme", "Course", "Program Plan", "Program Name"],
     Status: ["Status", "Registration Status", "Constituent Status", "Registration Stage"],
+    "Year of Enrollment": ["Year of Enrollment", "Enrollment Year", "Intake", "Intake Year", "Year of Joining", "Joining Year", "Admission Year"],
     "Year of Graduation": ["Year of Graduation", "Graduation Year", "Batch", "Passing Year"],
     "Current Company": ["Current Company", "Company", "Employer"],
     "Current Location": ["Current Location", "Location", "City"],
@@ -112,6 +117,9 @@ export default class KenAlumniBulkImport extends LightningElement {
     Specialization: ["Specialization", "Specialisation", "Major"],
     // --- Personal & contact ---
     "Date of Birth": ["Date of Birth", "DOB", "Birth Date", "Birthdate"],
+    Nationality: ["Nationality", "Citizenship"],
+    Gender: ["Gender", "Gender Identity", "Sex"],
+    "Blood Group": ["Blood Group", "Blood Type", "Bloodgroup"],
     "LinkedIn URL": ["LinkedIn URL", "LinkedIn", "Linkedin Profile", "LinkedIn Profile URL", "Linkedin Url"],
     "Languages Known": ["Languages Known", "Languages", "Known Languages"],
     "Address Street": ["Address Street", "Street", "Address Line 1", "Address"],
@@ -166,21 +174,21 @@ export default class KenAlumniBulkImport extends LightningElement {
   // --------------------------------------------------------------------
   async resumeActiveJob() {
     const saved = this.loadState();
-    if (saved && saved.jobId) {
-      this.jobId = saved.jobId;
+    if (saved && saved.sessionKey) {
+      this.sessionKey = saved.sessionKey;
       this.totalRecords = saved.totalRecords || 0;
       this.rows = Array.isArray(saved.rows) ? saved.rows : [];
       this.selectedDataSource = saved.dataSource || this.selectedDataSource;
       this.isImporting = true;
       this.jobStatus = "Reconnecting...";
-      this.refreshJob(this.jobId);
+      this.refreshSession();
       return;
     }
-    // No local record — ask the server if a job is still running for this user.
+    // No local record — ask the server if a session is still running for this user.
     try {
-      const info = await getLatestImportJob();
-      if (info && info.jobId && info.isRunning) {
-        this.jobId = info.jobId;
+      const info = await getLatestImportSession();
+      if (info && info.sessionKey && info.isRunning) {
+        this.sessionKey = info.sessionKey;
         this.totalRecords = info.total || 0;
         this.isImporting = true;
         this.applyStatus(info);
@@ -191,8 +199,8 @@ export default class KenAlumniBulkImport extends LightningElement {
     }
   }
 
-  refreshJob(jobId) {
-    getBatchStatus({ jobId })
+  refreshSession() {
+    getSessionStatus({ sessionKey: this.sessionKey })
       .then((info) => {
         if (!info) {
           this.clearState();
@@ -220,18 +228,21 @@ export default class KenAlumniBulkImport extends LightningElement {
   }
 
   persistState() {
+    const base = {
+      sessionKey: this.sessionKey,
+      totalRecords: this.totalRecords,
+      dataSource: this.selectedDataSource,
+    };
     try {
-      window.localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          jobId: this.jobId,
-          totalRecords: this.totalRecords,
-          dataSource: this.selectedDataSource,
-          rows: this.rows,
-        }),
-      );
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...base, rows: this.rows }));
     } catch (error) {
-      // localStorage may be unavailable — progress simply won't survive reload.
+      // Very large files exceed the localStorage quota — keep the session key
+      // so progress survives reload, even if the failed-row export loses row data.
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(base));
+      } catch (ignored) {
+        // localStorage unavailable — progress simply won't survive reload.
+      }
     }
   }
 
@@ -276,7 +287,7 @@ export default class KenAlumniBulkImport extends LightningElement {
   }
 
   get showStatus() {
-    return this.isImporting || !!this.jobId;
+    return this.isImporting || !!this.sessionKey;
   }
 
   get failedCount() {
@@ -521,7 +532,7 @@ export default class KenAlumniBulkImport extends LightningElement {
     this.unmatchedErrors = [];
     this.jobCompleted = false;
     this.processedSuccess = 0;
-    this.jobId = null;
+    this.sessionKey = null;
     this.jobProcessed = 0;
     this.jobTotal = 0;
     this.jobErrors = 0;
@@ -543,12 +554,13 @@ export default class KenAlumniBulkImport extends LightningElement {
         this.jobStatus = `Uploading ${index + 1}/${rowChunks.length}`;
       }
 
-      const jobId = await startChunkedImport({
+      await startChunkedImport({
         sessionKey,
         dataSource: this.selectedDataSource,
+        totalRows: this.totalRecords,
       });
 
-      this.jobId = jobId;
+      this.sessionKey = sessionKey;
       this.jobStatus = "Queued";
       this.persistState();
       this.startPolling();
@@ -572,7 +584,7 @@ export default class KenAlumniBulkImport extends LightningElement {
   startPolling() {
     window.clearInterval(this.pollHandle);
     this.pollHandle = window.setInterval(() => {
-      getBatchStatus({ jobId: this.jobId })
+      getSessionStatus({ sessionKey: this.sessionKey })
         .then((info) => {
           if (!info) return;
           this.applyStatus(info);
@@ -587,7 +599,7 @@ export default class KenAlumniBulkImport extends LightningElement {
   }
 
   handleJobComplete() {
-    getImportErrors({ jobId: this.jobId })
+    getImportErrors({ sessionKey: this.sessionKey })
       .then((errors) => {
         const messages = errors || [];
         const rowIndexes = new Set();
@@ -652,12 +664,16 @@ export default class KenAlumniBulkImport extends LightningElement {
       Phone: "9876543210",
       Program: "",
       Status: "Registered",
+      "Year of Enrollment": "2014",
       "Year of Graduation": "2018",
       "Current Company": "Acme Corp",
       "Current Location": "Bangalore",
       Industry: "Technology",
       Specialization: "",
       "Date of Birth": "1996-04-12",
+      Nationality: "Indian",
+      Gender: "",
+      "Blood Group": "O+",
       "LinkedIn URL": "https://www.linkedin.com/in/asha-rao",
       "Languages Known": "English, Hindi, Kannada",
       "Address Street": "12 MG Road",
@@ -836,7 +852,7 @@ export default class KenAlumniBulkImport extends LightningElement {
   // State reset
   // --------------------------------------------------------------------
   resetStatusState() {
-    this.jobId = null;
+    this.sessionKey = null;
     this.jobStatus = "";
     this.jobProcessed = 0;
     this.jobTotal = 0;

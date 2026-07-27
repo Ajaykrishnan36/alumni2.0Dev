@@ -174,10 +174,6 @@ export default class KenProfileHeader extends LightningElement {
         this.dispatchEvent(new CustomEvent('openchat', { bubbles: true, composed: true }));
     }
 
-    handleViewIdCard() {
-        this.dispatchEvent(new CustomEvent('viewidcard', { bubbles: true, composed: true }));
-    }
-
     handleEditProfile() {
         this.dispatchEvent(new CustomEvent('editprofile', { bubbles: true, composed: true }));
     }

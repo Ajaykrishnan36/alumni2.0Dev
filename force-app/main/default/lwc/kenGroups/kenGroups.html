@@ -144,6 +144,7 @@
                     ongroupclick={handleSidebarGroupClick}>
                 </c-ken-groups-joined>
                 <c-ken-groups-created
+                    lwc:if={canCreateGroups}
                     groups={createdGroupsList}
                     oncreate={handleCreateGroup}
                     onviewallcreated={handleViewAllCreated}

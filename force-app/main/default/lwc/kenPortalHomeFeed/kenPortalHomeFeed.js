@@ -1,31 +1,14 @@
 import { LightningElement, track } from 'lwc';
 import SofiaProfilePhoto from '@salesforce/resourceUrl/SofiaProfilePhoto';
+import EMPTY_STATE from '@salesforce/resourceUrl/MentorshipEmptyState';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import getAlumniSpotlights from '@salesforce/apex/KenAlumniSpotlightController.getAlumniSpotlights';
+import getHomeData from '@salesforce/apex/KenPortalHomeController.getHomeData';
 
 const SPOTLIGHT_TRUNCATE_LEN = 80;
+const SPOTLIGHT_AUTO_ADVANCE_MS = 10000;
 const META_TRUNCATE_LEN = 50;
 const CONTENT_TRUNCATE_LEN = 120;
-
-const FEED_ITEMS_JSON = [
-    {
-        id: 1,
-        title: 'Symposium Mania',
-        icon: SofiaProfilePhoto,
-        tag: 'News',
-        content: 'The symposium has been postponed due to unforeseen circumstances. The dates will be announced later.',
-        date: '24-06-2024 | 25 minutes ago',
-        hashtags: []
-    },
-    {
-        id: 2,
-        title: 'Creative thinking',
-        icon: SofiaProfilePhoto,
-        tag: 'Social Media',
-        content: 'Embrace the power of creative thinking! 🚀 In a world filled with possibilities, unlocking creativity is the key to innovative solutions and breakthroughs. Whether in business, arts, or everyday challenges, nurturing a creative mindset is the spark that transforms ideas into reality.',
-        date: '24-06-2024 | 1 hour ago',
-        hashtags: ['CreativeThinking', 'InnovationMindset']
-    }
-];
 
 function processFeedItem(item) {
     const date = item.date || '';
@@ -47,6 +30,16 @@ function processFeedItem(item) {
     };
 }
 
+function toYouTubeEmbed(url) {
+    if (!url) return null;
+    const watch = url.match(/[?&]v=([A-Za-z0-9_-]{6,})/);
+    if (watch) return `https://www.youtube.com/embed/${watch[1]}`;
+    const short = url.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/);
+    if (short) return `https://www.youtube.com/embed/${short[1]}`;
+    if (url.includes('youtube.com/embed/')) return url;
+    return null;
+}
+
 const MOBILE_MAX_WIDTH = 768;
 
 export default class KenPortalHomeFeed extends LightningElement {
@@ -54,12 +47,55 @@ export default class KenPortalHomeFeed extends LightningElement {
     @track mobileFeedShowAll = false;
     @track isMobile = false;
 
-    spotlightDescription = 'Ruby House has achieved an incredible milestone by winning the sports competition for the third consecutive year, showcasing their unparalleled talent, teamwork, and dedication.';
+    @track spotlight = null;
+    @track spotlightEmbedUrl = null;
+    @track feedItems = [];
+    @track feedLoaded = false;
 
-    @track feedItems = FEED_ITEMS_JSON.map(processFeedItem);
+    spotlights = [];
+    spotlightIndex = 0;
+    _spotlightTimer = null;
+    emptyImage = EMPTY_STATE;
 
     _mediaQuery;
     _boundMobileChange;
+
+    get hasSpotlight() {
+        return !!this.spotlight;
+    }
+
+    get hasMultipleSpotlights() {
+        return this.spotlights.length > 1;
+    }
+
+    get spotlightCounter() {
+        return `${this.spotlightIndex + 1} / ${this.spotlights.length}`;
+    }
+
+    get showFeedEmpty() {
+        return this.feedLoaded && this.feedItems.length === 0;
+    }
+
+    get spotlightHeadline() {
+        return this.spotlight ? (this.spotlight.title || this.spotlight.name) : '';
+    }
+
+    get spotlightIsVideo() {
+        return !!this.spotlightEmbedUrl;
+    }
+
+    get spotlightImageUrl() {
+        return this.spotlight ? this.spotlight.contentLink : null;
+    }
+
+    get spotlightDescription() {
+        const raw = this.spotlight ? (this.spotlight.description || '') : '';
+        return raw.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    }
+
+    get hasFeedItems() {
+        return this.feedItems.length > 0;
+    }
 
     get displayFeedItems() {
         if (!this.isMobile || this.mobileFeedShowAll) {
@@ -73,7 +109,7 @@ export default class KenPortalHomeFeed extends LightningElement {
     }
 
     get showSpotlightSection() {
-        return !this.isMobile || this.mobileFeedShowAll;
+        return this.hasSpotlight && (!this.isMobile || this.mobileFeedShowAll);
     }
 
     get spotlightShowToggle() {
@@ -145,11 +181,86 @@ export default class KenPortalHomeFeed extends LightningElement {
         }).catch(() => {
             console.log('Error getting primary color');
         });
+
+        this.loadSpotlight();
+        this.loadFeed();
+    }
+
+    async loadSpotlight() {
+        try {
+            const rows = await getAlumniSpotlights();
+            this.spotlights = rows || [];
+            this.spotlightIndex = 0;
+            this._applySpotlight();
+            this._startSpotlightTimer();
+        } catch (e) {
+            this.spotlights = [];
+            this.spotlight = null;
+        }
+    }
+
+    _startSpotlightTimer() {
+        this._stopSpotlightTimer();
+        if (this.spotlights.length < 2) return;
+        // eslint-disable-next-line @lwc/lwc/no-async-operation
+        this._spotlightTimer = setInterval(() => {
+            this.spotlightIndex = (this.spotlightIndex + 1) % this.spotlights.length;
+            this._applySpotlight();
+        }, SPOTLIGHT_AUTO_ADVANCE_MS);
+    }
+
+    _stopSpotlightTimer() {
+        if (this._spotlightTimer) {
+            clearInterval(this._spotlightTimer);
+            this._spotlightTimer = null;
+        }
+    }
+
+    _applySpotlight() {
+        const row = this.spotlights[this.spotlightIndex] || null;
+        this.spotlight = row;
+        this.spotlightEmbedUrl = row ? toYouTubeEmbed(row.contentLink) : null;
+        this.spotlightExpanded = false;
+    }
+
+    handleSpotlightPrev() {
+        if (!this.hasMultipleSpotlights) return;
+        this.spotlightIndex = (this.spotlightIndex - 1 + this.spotlights.length) % this.spotlights.length;
+        this._applySpotlight();
+        this._startSpotlightTimer();
+    }
+
+    handleSpotlightNext() {
+        if (!this.hasMultipleSpotlights) return;
+        this.spotlightIndex = (this.spotlightIndex + 1) % this.spotlights.length;
+        this._applySpotlight();
+        this._startSpotlightTimer();
+    }
+
+    async loadFeed() {
+        try {
+            const data = await getHomeData();
+            const posts = (data && data.feed) || [];
+            this.feedItems = posts.map((p) => processFeedItem({
+                id: p.id,
+                title: p.authorName || 'Alumni',
+                icon: p.authorPhotoUrl || SofiaProfilePhoto,
+                tag: p.groupName || '',
+                content: p.body || '',
+                date: p.dateLabel || '',
+                hashtags: []
+            }));
+        } catch (e) {
+            this.feedItems = [];
+        } finally {
+            this.feedLoaded = true;
+        }
     }
 
     disconnectedCallback() {
         if (this._mediaQuery && this._boundMobileChange) {
             this._mediaQuery.removeEventListener('change', this._boundMobileChange);
         }
+        this._stopSpotlightTimer();
     }
 }

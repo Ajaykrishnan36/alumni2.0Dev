@@ -126,9 +126,7 @@ export default class KenSurveysList extends NavigationMixin(LightningElement) {
 
     async loadSurveys() {
         try {
-            // Fetch all accessible surveys; you can swap to getMySurveys() if only personal surveys are needed.
-            const value = localStorage.getItem('ConstituentRoleId');
-            const result = await getMySurveys({ constituentRoleId: value });
+            const result = await getMySurveys();
             // eslint-disable-next-line no-console
             console.log('surveysList loadSurveys raw result', JSON.parse(JSON.stringify(result)));
             const mapped = (result || []).map((survey) => this.mapSurveyToCard(survey));

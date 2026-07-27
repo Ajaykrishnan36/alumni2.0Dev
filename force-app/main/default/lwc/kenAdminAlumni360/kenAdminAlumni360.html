@@ -15,6 +15,13 @@
 
         <!-- ===== Refresh strip ===== -->
         <div class="refresh-strip">
+            <button type="button" class="refresh-btn" onclick={handleOpenEmail}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="20" height="16" rx="2"/>
+                    <path d="m22 7-10 6L2 7"/>
+                </svg>
+                Send Email
+            </button>
             <button type="button" class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 12a9 9 0 1 1-3.4-7"/>
@@ -27,7 +34,12 @@
 
         <!-- ===== Hero banner ===== -->
         <section class="hero">
-            <div class="pic">{data.header.initials}</div>
+            <div class="pic">
+                <template lwc:if={data.header.photoUrl}>
+                    <img class="pic-img" src={data.header.photoUrl} alt="Profile" />
+                </template>
+                <template lwc:else>{data.header.initials}</template>
+            </div>
             <div class="body">
                 <div class="meta-row">
                     <template lwc:if={data.header.role}>
@@ -62,9 +74,6 @@
                     </template>
                     <template lwc:if={data.header.status}>
                         <div><div class="k">STATUS</div><div class="v">{data.header.status}</div></div>
-                    </template>
-                    <template lwc:if={data.header.stage}>
-                        <div><div class="k">STAGE</div><div class="v">{data.header.stage}</div></div>
                     </template>
                     <template lwc:if={data.header.legacyId}>
                         <div><div class="k">LEGACY ID</div><div class="v">{data.header.legacyId}</div></div>
@@ -130,8 +139,6 @@
                     <div class={cEngagement} data-tab="engagement" onclick={handleTab}>Engagement</div>
                     <div class={cHistory}    data-tab="history"    onclick={handleTab}>Update History</div>
                     <div class={cActivity}   data-tab="activity"   onclick={handleTab}>Activity</div>
-                </nav>
-                <nav class="subtabs">
                     <div class={cSupport}    data-tab="support"    onclick={handleTab}>Support</div>
                 </nav>
 
@@ -272,8 +279,8 @@
                                     <tr><th>INSTITUTE</th><th>DEGREE</th><th>GRADE</th><th>YEAR</th></tr>
                                 </thead>
                                 <tbody>
-                                    <template for:each={data.academic.education} for:item="e">
-                                        <tr key={e.institute}>
+                                    <template for:each={educationView} for:item="e">
+                                        <tr key={e.key}>
                                             <td>{e.institute}</td>
                                             <td>{e.degree}</td>
                                             <td>{e.gradeLabel}</td>
@@ -331,7 +338,8 @@
                                     <lightning-input class="a360-emp-input" type="date" label="End Date" value={r.endDate} data-rowkey={r.key} data-field="endDate" onchange={handleEmpChange}></lightning-input>
                                     <lightning-input class="a360-emp-input" type="checkbox" label="Currently employed" checked={r.current} data-rowkey={r.key} data-field="current" onchange={handleEmpChange}></lightning-input>
                                     <div class="a360-emp-desc">
-                                        <lightning-textarea class="a360-emp-input" label="Description" value={r.description} data-rowkey={r.key} data-field="description" onchange={handleEmpChange}></lightning-textarea>
+                                        <label class="a360-emp-desc-label">Description</label>
+                                        <c-ken-rich-text-editor value={r.description} data-rowkey={r.key} data-field="description" onchange={handleEmpChange}></c-ken-rich-text-editor>
                                     </div>
                                 </div>
                             </div>
@@ -344,8 +352,8 @@
                     <template lwc:else>
                         <template lwc:if={data.career.employmentHistory.length}>
                             <div class="section-label">EMPLOYMENT HISTORY</div>
-                            <template for:each={data.career.employmentHistory} for:item="job">
-                                <div key={job.period} class="car">
+                            <template for:each={employmentView} for:item="job">
+                                <div key={job.key} class="car">
                                     <div class="marker"></div>
                                     <div class="r">
                                         <div class="h">
@@ -358,7 +366,9 @@
                                         </div>
                                         <div class="car-sub">{job.location} · Source: {job.source}</div>
                                         <template lwc:if={job.description}>
-                                            <div class="desc">{job.description}</div>
+                                            <lightning-formatted-rich-text
+                                                class="desc"
+                                                value={job.description}></lightning-formatted-rich-text>
                                         </template>
                                     </div>
                                 </div>
@@ -484,19 +494,35 @@
                     </div>
                     <div class="detail-card">
                         <div class="dc-title">Contact Information</div>
-                        <div class="dc-grid">
-                            <template lwc:if={isEditingContact}>
-                                <div><div class="dc-field-label">Email Address</div>
-                                    <lightning-input class="a360-edit-input" type="email" value={contactEditEmail} data-key="email" onchange={handleEditChange} variant="label-hidden"></lightning-input></div>
-                                <div><div class="dc-field-label">Phone Number</div>
-                                    <lightning-input class="a360-edit-input" type="tel" value={contactEditPhone} data-key="phone" onchange={handleEditChange} variant="label-hidden"></lightning-input></div>
-                                <div style="grid-column:1/-1"><div class="dc-field-label">LinkedIn Profile</div>
-                                    <lightning-input class="a360-edit-input" type="text" value={contactEditLinkedin} data-key="linkedin" onchange={handleEditChange} variant="label-hidden"></lightning-input></div>
-                            </template>
-                            <template lwc:else>
-                                <div><div class="dc-field-label">Email Address</div><div class="dc-field-value">{detailEmail}</div></div>
-                                <div><div class="dc-field-label">Phone Number</div><div class="dc-field-value">{detailPhone}</div></div>
-                                <div style="grid-column:1/-1"><div class="dc-field-label">LinkedIn Profile</div><div class="dc-field-value link">{detailLinkedin}</div></div>
+                        <div class="kv-block">
+                            <template for:each={contactTabRows} for:item="row">
+                                <div key={row.key} class="kv k2">
+                                    <div class="l">{row.label}</div>
+                                    <template lwc:if={row.editableNow}>
+                                        <template lwc:if={row.isAddress}>
+                                            <div class="a360-addr-grid">
+                                                <lightning-input class="a360-edit-input" type="text" label="Street" value={addrStreet} data-key="street" onchange={handleEditChange}></lightning-input>
+                                                <lightning-input class="a360-edit-input" type="text" label="City" value={addrCity} data-key="city" onchange={handleEditChange}></lightning-input>
+                                                <lightning-input class="a360-edit-input" type="text" label="State" value={addrState} data-key="state" onchange={handleEditChange}></lightning-input>
+                                                <lightning-input class="a360-edit-input" type="text" label="Postal Code" value={addrPostal} data-key="postalCode" onchange={handleEditChange}></lightning-input>
+                                                <lightning-input class="a360-edit-input" type="text" label="Country" value={addrCountry} data-key="country" onchange={handleEditChange}></lightning-input>
+                                            </div>
+                                        </template>
+                                        <template lwc:elseif={row.isSelect}>
+                                            <lightning-combobox class="a360-edit-input" value={row.editValue} options={row.options}
+                                                data-key={row.fieldKey} onchange={handleEditChange} variant="label-hidden" placeholder="—">
+                                            </lightning-combobox>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-input class="a360-edit-input" type={row.type} value={row.editValue}
+                                                data-key={row.fieldKey} onchange={handleEditChange} variant="label-hidden">
+                                            </lightning-input>
+                                        </template>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="v">{row.value}</div>
+                                    </template>
+                                </div>
                             </template>
                         </div>
                     </div>
@@ -513,10 +539,7 @@
                 <div class="tabpane">
                     <div class="detail-card">
                         <div class="dc-title">Portal Lifecycle</div>
-                        <div class="kv-row"><span class="k">Invited Date</span><span class="v">—</span></div>
-                        <div class="kv-row"><span class="k">Link Opened</span><span class="v">—</span></div>
                         <div class="kv-row"><span class="k">Registered Date</span><span class="v">{detailRegDate}</span></div>
-                        <div class="kv-row"><span class="k">Questionnaire Status</span><span class="v">—</span></div>
                         <div class="kv-row"><span class="k">Last Login</span><span class="v">{detailLastLogin}</span></div>
                     </div>
                 </div>
@@ -644,5 +667,25 @@
             </aside>
         </section>
     </main>
+
+    <template lwc:if={showEmailModal}>
+        <div class="email-overlay" onclick={handleCloseEmail}>
+            <div class="email-modal" onclick={handleEmailModalClick}>
+                <div class="email-title">Send Email</div>
+                <div class="email-to">To: <b>{emailTo}</b></div>
+                <input type="text" class="email-subject" placeholder="Subject" value={emailSubject}
+                    oninput={handleEmailSubjectChange} />
+                <textarea class="email-body" placeholder="Write your message…"
+                    oninput={handleEmailBodyChange}></textarea>
+                <div class="email-actions">
+                    <button type="button" class="a360-btn ghost" onclick={handleCloseEmail} disabled={emailSending}>Cancel</button>
+                    <button type="button" class="a360-btn primary" onclick={handleSendEmail} disabled={emailSending}>
+                        <template lwc:if={emailSending}>Sending…</template>
+                        <template lwc:else>Send</template>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
     </template>
 </template>

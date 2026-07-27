@@ -12,7 +12,6 @@ export default class KenRegistrationSummary extends NavigationMixin(LightningEle
     @api get recordId() { return this._recordId; }
     set recordId(val) { this._recordId = val; }
 
-    constituentRoleId;
     @track summary;
     wiredSummaryResult;
 
@@ -30,11 +29,6 @@ export default class KenRegistrationSummary extends NavigationMixin(LightningEle
     }
 
     connectedCallback() {
-        try {
-            this.constituentRoleId = localStorage.getItem('ConstituentRoleId') || localStorage.getItem('constituentRoleId');
-        } catch (e) {
-            this.constituentRoleId = null;
-        }
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
@@ -73,7 +67,7 @@ export default class KenRegistrationSummary extends NavigationMixin(LightningEle
         });
     }
 
-    @wire(getRegistrationSummary, { eventId: '$_recordId', constituentRoleId: '$constituentRoleId' })
+    @wire(getRegistrationSummary, { eventId: '$_recordId' })
     wiredSummary(result) {
         this.wiredSummaryResult = result;
         if (result.data) {
@@ -226,7 +220,7 @@ export default class KenRegistrationSummary extends NavigationMixin(LightningEle
             this._toast('Info', 'Please select at least one session to cancel.', 'info');
             return;
         }
-        cancelRegistrations({ sessionIds: [...this.selectedCancelIds], constituentRoleId: this.constituentRoleId })
+        cancelRegistrations({ sessionIds: [...this.selectedCancelIds] })
             .then(() => {
                 this.showCancelSelect = false;
                 this._toast('Success', 'Registration cancelled.', 'success');

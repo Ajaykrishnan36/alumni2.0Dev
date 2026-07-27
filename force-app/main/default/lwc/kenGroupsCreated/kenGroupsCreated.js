@@ -5,9 +5,14 @@ import SurveyEmptyImage from '@salesforce/resourceUrl/SurveyEmptyImage';
 export default class KenGroupsCreated extends LightningElement {
     @api groups = [];
     SurveyEmptyImageUrl = SurveyEmptyImage;
+    canCreateGroups = false;
 
     get hasGroups() {
         return this.groups && this.groups.length > 0;
+    }
+
+    get showHeaderCreate() {
+        return this.hasGroups && this.canCreateGroups;
     }
 
     get groupCount() {
@@ -34,7 +39,8 @@ export default class KenGroupsCreated extends LightningElement {
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
-            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);  
+            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
+            this.canCreateGroups = color?.createGroups !== false;
         }).catch(() => {
             console.log('Error getting primary color');
         });

@@ -704,10 +704,6 @@
     overflow-y: auto;
 }
 
-.id-card-modal {
-    width: 450px;
-}
-
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -764,94 +760,6 @@
     border-radius: 6px;
     font-weight: 500;
     cursor: pointer;
-}
-
-.id-card-container {
-    padding: 10px;
-}
-
-.id-card {
-    background-color: var(--primary-color);
-    border-radius: 16px;
-    padding: 24px;
-    width: 400px;
-    height: 224px;
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-    color: white;
-}
-
-.id-card-left {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.id-name {
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.id-number {
-    font-size: 16px;
-    font-weight: 400;
-    margin: 0;
-    opacity: 0.9;
-}
-
-.id-label {
-    font-size: 14px;
-    font-weight: 500;
-    margin-top: auto;
-    margin-bottom: 12px;
-}
-
-.qr-code-placeholder {
-    width: 72px;
-    height: 72px;
-    background-color: white;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.qr-code-placeholder lightning-icon {
-    --lwc-colorTextIconDefault: black;
-}
-
-.id-card-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-
-.id-year-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    color: white;
-    margin-bottom: 12px;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    position: absolute;
-    right: 20px;
-    top: 24px;
-    background: transparent;
-    font-size: 16px;
-}
-
-.id-profile-img {
-    width: 100px;
-    height: 120px;
-    border-radius: 8px;
-    object-fit: cover;
-    border: 2px solid rgba(255, 255, 255, 0.5);
-    margin-top: auto;
 }
 
 /* Payments tab */

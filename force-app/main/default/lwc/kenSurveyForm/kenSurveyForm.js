@@ -124,8 +124,7 @@ export default class KenSurveyForm extends NavigationMixin(LightningElement) {
 
     async loadSurvey() {
         try {
-            const value = localStorage.getItem('ConstituentRoleId');
-            const allSurveys = await getSurveys({ constituentRoleId: value });
+            const allSurveys = await getSurveys();
             const surveyData = allSurveys.find(survey => survey.id === this.surveyId);
             if (surveyData) {
                 this.survey = this.transformSurveyData(surveyData);
@@ -186,8 +185,18 @@ export default class KenSurveyForm extends NavigationMixin(LightningElement) {
 
     mapQuestionType(questionType) {
         switch (questionType) {
+            // No dedicated picklist values exist for Single Select vs.
+            // Checkbox — Single Select (pick exactly one) is saved as
+            // 'Dropdown', Checkbox (multi-select) is saved as 'Multiple
+            // Choice'. See KenSurveyController.mapQuestionType for the save
+            // side of this same mapping.
             case 'Multiple Choice': return 'checkbox';
             case 'Dropdown': return 'radio';
+            // Yes/No is mutually exclusive (pick one), so it needs the radio
+            // path — the 'checkbox' path renders a multi-select loop over
+            // question.options, which is always empty for Yes/No questions
+            // (MCQ_Options__c is never populated for this type), leaving the
+            // question with no visible input at all.
             case 'Yes/No': return 'radio';
             case 'Rating':
             case 'Linear Scale': return 'rating';

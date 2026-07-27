@@ -94,8 +94,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             type: 'multiple',
             required: false,
             options: [
-                { id: 'opt-1', text: 'Option 1', letter: 'a' },
-                { id: 'opt-2', text: 'Option 2', letter: 'b' }
+                { id: 'opt-1', text: '', letter: 'a' },
+                { id: 'opt-2', text: '', letter: 'b' }
             ],
             hasOptions: true
         }
@@ -663,7 +663,7 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
 
     get surveyTypeOptions() {
         return [
-            { label: 'Multiple choice', value: 'multiple' },
+            { label: 'Single Select', value: 'multiple' },
             { label: 'Checkbox', value: 'checkbox' },
             { label: 'Linear scale', value: 'linear' },
             { label: 'Short answer', value: 'text' }
@@ -1004,8 +1004,9 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
     /**
      * Gate the Host-an-Event page for PORTAL users only.
      * In internal/backend Lightning, @salesforce/community/basePath is empty, so
-     * admins are never blocked. For portal users, if Show_Host_Event__c is not
-     * enabled for the org, deny access and redirect to the Events page so a user
+     * admins are never blocked. For portal users, if Allow Create Events
+     * (Alumni_Module_Settings__c) is not enabled for the org, deny access and
+     * redirect to the Events page so a user
      * cannot reach /host-event directly while the Host Event card is hidden.
      */
     /**
@@ -1061,6 +1062,17 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
         console.log('❌ Removed document click listener');
 
         window.removeEventListener('resize', this.handleWindowResize);
+
+        // The Experience Cloud SPA router doesn't always tear down and recreate this
+        // component when navigating away and back to the host_event__c route (e.g.
+        // Save as Draft or completing an event, then starting a new one) — connectedCallback's
+        // own reset gate can be skipped if the same instance is reused. Reset here too so a
+        // reused instance never shows the previous event's data on the next "Host Event" entry.
+        try {
+            this.resetForm();
+        } catch (e) {
+            console.error('Error resetting form on disconnect:', e);
+        }
     }
 
     showToast(title, message, variant) {
@@ -1602,8 +1614,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             let sessionIndex = 0;
             for (const session of row.sessions || []) {
                 if (session.uniqueId === this.activeFeedbackSessionId) {
-                    const startStr = this.formatTimeDisplay(session.startTime);
-                    const endStr = this.formatTimeDisplay(session.endTime);
+                    const startStr = this.formatTimeForDisplay(session.startTime);
+                    const endStr = this.formatTimeForDisplay(session.endTime);
                     const displayTime = (startStr && endStr) ? `${startStr} – ${endStr}` : (startStr || endStr || '');
                     return {
                         session,
@@ -1725,13 +1737,23 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
         });
     }
 
+    /**
+     * Formats milliseconds-from-midnight (the shape an @AuraEnabled Apex Time
+     * field arrives as) for display. Anything non-numeric is rejected rather
+     * than rendered as "12:NaN AM" — pass "HH:mm" strings to
+     * formatTimeForDisplay instead.
+     */
     formatTimeDisplay(milliseconds) {
-        if (!milliseconds) return '';
+        if (milliseconds === null || milliseconds === undefined || milliseconds === '') return '';
+        if (typeof milliseconds === 'string') return this.formatTimeForDisplay(milliseconds);
+        if (typeof milliseconds !== 'number' || isNaN(milliseconds)) return '';
+
         const date = new Date(0);
         date.setMilliseconds(milliseconds);
 
         let hours = date.getUTCHours();
         const minutes = date.getUTCMinutes();
+        if (isNaN(hours) || isNaN(minutes)) return '';
 
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12 || 12;
@@ -2027,17 +2049,30 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
         console.log('Window resized, dropdowns closed');
     }
 
+    getPlainText(value) {
+        if (value === undefined || value === null) {
+            return '';
+        }
+        const str = String(value);
+        if (str.indexOf('<') === -1) {
+            return str;
+        }
+        const tmp = document.createElement('div');
+        tmp.innerHTML = str;
+        return tmp.textContent || tmp.innerText || '';
+    }
+
     // Step 1: Event Setup Handlers - Child Component Event Handlers
     handleStep1DataChange(event) {
         if (!event || !event.detail) {
             return;
         }
-        const { field, value } = event.detail;
-        
+        const { field, value, html } = event.detail;
+
         if (!field) {
             return;
         }
-        
+
         switch (field) {
             case 'title':
                 this.eventData.title = value;
@@ -2048,16 +2083,16 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
                 this.validateField('maxParticipants', value);
                 break;
             case 'description':
-                this.eventData.description = value;
-                this.validateField('description', value);
+                this.eventData.description = html !== undefined ? html : value;
+                this.validateField('description', this.eventData.description);
                 break;
             case 'expectations':
-                this.eventData.expectations = value;
-                this.validateField('expectations', value);
+                this.eventData.expectations = html !== undefined ? html : value;
+                this.validateField('expectations', this.eventData.expectations);
                 break;
             case 'agenda':
-                this.eventData.agenda = value;
-                this.validateField('agenda', value);
+                this.eventData.agenda = html !== undefined ? html : value;
+                this.validateField('agenda', this.eventData.agenda);
                 break;
             case 'canBringGuests':
                 this.eventData.canBringGuests = value;
@@ -2993,36 +3028,41 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
                     }
                 }
                 break;
-            case 'description':
-                if (!value || !value.trim()) {
+            case 'description': {
+                const plain = this.getPlainText(value).trim();
+                if (!plain) {
                     this.validationErrors.description = 'This field is required';
-                } else if (value.trim().length < 10) {
+                } else if (plain.length < 10) {
                     this.validationErrors.description = 'Description must be at least 10 characters';
-                } else if (value.trim().length > 1000) {
+                } else if (plain.length > 1000) {
                     this.validationErrors.description = 'Maximum 1000 characters allowed';
                 } else {
                     this.validationErrors.description = '';
                 }
                 break;
-            case 'expectations':
-                if (!value || !value.trim()) {
+            }
+            case 'expectations': {
+                const plain = this.getPlainText(value).trim();
+                if (!plain) {
                     this.validationErrors.expectations = 'This field is required';
-                } else if (value.trim().length < 10) {
+                } else if (plain.length < 10) {
                     this.validationErrors.expectations = 'This field must be at least 10 characters';
-                } else if (value.trim().length > 1000) {
+                } else if (plain.length > 1000) {
                     this.validationErrors.expectations = 'Maximum 1000 characters allowed';
                 } else {
                     this.validationErrors.expectations = '';
                 }
                 break;
-            case 'agenda':
-                // Agenda is optional (see validateStep1) — empty is valid; only cap the length.
-                if (value && value.trim().length > 1000) {
+            }
+            case 'agenda': {
+                const plain = this.getPlainText(value).trim();
+                if (plain.length > 1000) {
                     this.validationErrors.agenda = 'Maximum 1000 characters allowed';
                 } else {
                     this.validationErrors.agenda = '';
                 }
                 break;
+            }
             case 'sessionTitle':
                 if (!value || !value.trim()) {
                     this.validationErrors.sessionTitle = 'This field is required';
@@ -4052,13 +4092,23 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
         }
     }
 
+    /**
+     * Formats an "HH:mm" string for display. Also accepts the raw
+     * milliseconds-from-midnight a Salesforce Time field arrives as, so a
+     * caller holding either shape renders correctly instead of "12:NaN AM".
+     */
     formatTimeForDisplay(timeString) {
-        if (!timeString) return '';
-        const [hours, minutes] = timeString.split(':');
-        const hour = parseInt(hours);
+        if (timeString === null || timeString === undefined || timeString === '') return '';
+        if (typeof timeString === 'number') return this.formatTimeDisplay(timeString);
+
+        const parts = String(timeString).split(':');
+        const hour = parseInt(parts[0], 10);
+        const minutes = parseInt(parts[1], 10);
+        if (isNaN(hour) || isNaN(minutes)) return '';
+
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const displayHour = hour % 12 || 12;
-        return `${displayHour}:${minutes} ${ampm}`;
+        return `${displayHour}:${String(minutes).padStart(2, '0')} ${ampm}`;
     }
 
     handleSessionAgendaChange(event) {
@@ -4766,8 +4816,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
 
     defaultOptionsForType(questionId) {
         return [
-            { id: `${questionId}-opt-1`, text: 'Option 1', letter: 'a' },
-            { id: `${questionId}-opt-2`, text: 'Option 2', letter: 'b' }
+            { id: `${questionId}-opt-1`, text: '', letter: 'a' },
+            { id: `${questionId}-opt-2`, text: '', letter: 'b' }
         ];
     }
 
@@ -4827,8 +4877,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             if (q.id !== questionId) return q;
             const needsOptions = value === 'multiple' || value === 'checkbox';
             const options = needsOptions ? (q.options && q.options.length ? q.options : [
-                { id: `${questionId}-opt-1`, text: 'Option 1', letter: 'a' },
-                { id: `${questionId}-opt-2`, text: 'Option 2', letter: 'b' }
+                { id: `${questionId}-opt-1`, text: '', letter: 'a' },
+                { id: `${questionId}-opt-2`, text: '', letter: 'b' }
             ]) : [];
             const isLinear = value === 'linear';
             return {
@@ -4921,8 +4971,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
         const nextNumber = this.surveyQuestions.length + 1;
         const questionId = `q-${Date.now()}`;
         const options = [
-            { id: `${questionId}-opt-1`, text: 'Option 1', letter: 'a' },
-            { id: `${questionId}-opt-2`, text: 'Option 2', letter: 'b' }
+            { id: `${questionId}-opt-1`, text: '', letter: 'a' },
+            { id: `${questionId}-opt-2`, text: '', letter: 'b' }
         ];
         this.surveyQuestions = [
             ...this.surveyQuestions,
@@ -5204,6 +5254,7 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             } catch (error) {
                 console.error('Error saving draft, but continuing anyway:', error);
             }
+            sessionStorage.removeItem('currentEventId');
             this.showToast('Success', 'Draft saved', 'success');
         } catch (error) {
             console.error('Error in handleSaveAsDraft:', error);
@@ -5254,12 +5305,17 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             sessionStorage.removeItem('currentEventId');
             this.showToast('Success', 'Event process completed', 'success');
             setTimeout(() => {
+                // Reset right before navigating away so a reused component instance
+                // (portal SPA nav, or the admin "New" record action) never carries this
+                // event's data into the next "Host Event"/"New" entry.
+                this.resetForm();
                 this.navigateToHome();
             }, 3000);
         } catch (error) {
             console.error('Error in handleSubmitTriggeringFeedback, but proceeding anyway:', error);
             this.isStep7Completed = true;
             sessionStorage.removeItem('currentEventId');
+            this.resetForm();
         } finally {
             this.showSpinner = false;
         }

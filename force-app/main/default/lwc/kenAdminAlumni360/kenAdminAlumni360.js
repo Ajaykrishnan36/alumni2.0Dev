@@ -8,6 +8,7 @@ import getAcademicEditData from '@salesforce/apex/KenAdminAlumni360Controller.ge
 import getCareerEditData from '@salesforce/apex/KenAdminAlumni360Controller.getCareerEditData';
 import saveEducationRows from '@salesforce/apex/KenAdminAlumni360Controller.saveEducationRows';
 import saveEmploymentRows from '@salesforce/apex/KenAdminAlumni360Controller.saveEmploymentRows';
+import sendEmailToAlumni from '@salesforce/apex/KenAdminAlumni360Controller.sendEmailToAlumni';
 import getPortalConfigs from '@salesforce/apex/KenThemeConfigController.getPortalConfigs';
 // The tabs Contact/Portal/Requests/Update History/Activity used to live on the
 // removed Overview modal. Their data sources still live on KenAdminAlumniController.
@@ -67,7 +68,10 @@ export default class KenAdminAlumni360 extends LightningElement {
         'Email (personal)': { key: 'email',       type: 'email' },
         'Email (alumni)':   { key: 'email',       type: 'email' },
         'LinkedIn':         { key: 'linkedin',    type: 'text' },
+        'Twitter':          { key: 'twitter',     type: 'text' },
         'Date of birth':    { key: 'dob',         type: 'date' },
+        'Gender':           { key: 'gender',      type: 'select', optionsKey: 'genderOptions' },
+        'Blood group':      { key: 'bloodGroup',  type: 'select', optionsKey: 'bloodGroupOptions' },
         'Nationality':      { key: 'nationality', type: 'select', optionsKey: 'nationalityOptions' },
         'Languages':        { key: 'languages',   type: 'text' },
         'Address':          { key: 'address',     type: 'text', address: true }
@@ -202,15 +206,72 @@ export default class KenAdminAlumni360 extends LightningElement {
     get isHistory()    { return this.activeTab === 'history'; }
     get isActivity()   { return this.activeTab === 'activity'; }
 
+    /* ---- Send Email modal ---- */
+    @track showEmailModal = false;
+    @track emailSubject = '';
+    @track emailSending = false;
+    _emailBody = '';
+
+    get emailTo() {
+        return this.detailEmail || '—';
+    }
+
+    handleOpenEmail() {
+        this.emailSubject = '';
+        this._emailBody = '';
+        this.showEmailModal = true;
+    }
+
+    handleCloseEmail() {
+        if (this.emailSending) return;
+        this.showEmailModal = false;
+    }
+
+    handleEmailModalClick(event) {
+        event.stopPropagation();
+    }
+
+    handleEmailSubjectChange(event) {
+        this.emailSubject = event.target.value || '';
+    }
+
+    handleEmailBodyChange(event) {
+        this._emailBody = event.target.value || '';
+    }
+
+    async handleSendEmail() {
+        const subject = (this.emailSubject || '').trim();
+        const body = (this._emailBody || '').trim();
+        if (!subject || !body) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Missing details', message: 'Enter a subject and a message.', variant: 'warning'
+            }));
+            return;
+        }
+        this.emailSending = true;
+        try {
+            await sendEmailToAlumni({ recordId: this.recordId, subjectText: subject, bodyText: body });
+            this.showEmailModal = false;
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Email sent', message: `Sent to ${this.emailTo}.`, variant: 'success'
+            }));
+        } catch (e) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Could not send', message: e?.body?.message || 'Unexpected error.', variant: 'error'
+            }));
+        } finally {
+            this.emailSending = false;
+        }
+    }
+
     /* ---- Active-class helpers ---- */
     tabClass(id)    { return 'tab'    + (this.activeTab === id ? ' active' : ''); }
-    subTabClass(id) { return 'subtab' + (this.activeTab === id ? ' active' : ''); }
 
     get cOverview()   { return this.tabClass('overview'); }
     get cAcademic()   { return this.tabClass('academic'); }
     get cCareer()     { return this.tabClass('career'); }
     get cEngagement() { return this.tabClass('engagement'); }
-    get cSupport()    { return this.subTabClass('support'); }
+    get cSupport()    { return this.tabClass('support'); }
     get cContact()    { return this.tabClass('contact'); }
     get cPortal()     { return this.tabClass('portal'); }
     get cRequests()   { return this.tabClass('requests'); }
@@ -298,6 +359,19 @@ export default class KenAdminAlumni360 extends LightningElement {
         return !!(this.data && this.data.academic && (!this.data.academic.education || this.data.academic.education.length === 0));
     }
 
+    // Keying the view table on the institute name collided whenever an alumnus
+    // had two rows from the same institute, which left LWC reusing the wrong
+    // <tr>. Attach a positional key instead.
+    get educationView() {
+        const rows = (this.data && this.data.academic && this.data.academic.education) || [];
+        return rows.map((e, i) => ({ ...e, key: `edu-${i}` }));
+    }
+
+    get employmentView() {
+        const rows = (this.data && this.data.career && this.data.career.employmentHistory) || [];
+        return rows.map((job, i) => ({ ...job, key: `job-${i}` }));
+    }
+
     /* ============================================================
        Inline edit — per-tab edit / save (SF-standard style)
        ============================================================ */
@@ -320,10 +394,11 @@ export default class KenAdminAlumni360 extends LightningElement {
         return rows.map((row, i) => this._decorate(row, i, this.CONTACT_FIELDS, this.isEditingOverview, false));
     }
 
-    // Contact tab — explicit fields (email/phone/linkedin) bound to edit model.
-    get contactEditEmail()    { return this.edit.email || ''; }
-    get contactEditPhone()    { return this.edit.phone || ''; }
-    get contactEditLinkedin() { return this.edit.linkedin || ''; }
+    // Contact tab — same personal & contact rows as Overview, editable in place.
+    get contactTabRows() {
+        const rows = (this.data && this.data.overview && this.data.overview.personalContact) || [];
+        return rows.map((row, i) => this._decorate(row, i, this.CONTACT_FIELDS, this.isEditingContact));
+    }
 
     _decorate(row, i, map, editing) {
         const cfg = map[row.label];

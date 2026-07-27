@@ -107,6 +107,10 @@
     color: #111827;
     margin: 0;
     flex: auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .alumni-linkedin-link {
@@ -246,6 +250,7 @@
     margin: 0 0 2px 0;
     line-height: 1.25;
     min-height: 30px;
+    white-space: normal;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;

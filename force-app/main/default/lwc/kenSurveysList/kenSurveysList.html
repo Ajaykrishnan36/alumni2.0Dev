@@ -148,7 +148,6 @@
             </template>
         </div>
 
-        <!-- Filters Popup -->
         <template if:true={showFiltersPopup}>
             <div class="filters-overlay" onclick={handleFiltersOverlayClick}></div>
             <div class="filters-popup" onclick={handleFiltersPopupClick} style={computedPopupStyle}>
@@ -157,15 +156,13 @@
                 </div>
                 <div class="filters-content">
                     <div class="filter-field">
-                        <lightning-combobox
-                            label=""
+                        <c-ken-searchable-select
                             placeholder="Status"
                             options={statusOptions}
                             value={selectedStatus}
                             onchange={handleStatusChange}
-                            variant="label-hidden"
                             class="filter-combobox">
-                        </lightning-combobox>
+                        </c-ken-searchable-select>
                     </div>
                 </div>
                 <div class="filters-actions">

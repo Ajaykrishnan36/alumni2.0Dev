@@ -11,21 +11,39 @@
             <!-- In the Spotlight Section -->
             <template if:true={showSpotlightSection}>
             <div class="spotlight-card">
-                <p class="spotlight-title">In the Spotlight</p>
-                <div class="video-container">
-                    <iframe 
-                        width="100%" 
-                        height="315" 
-                        src="https://www.youtube.com/embed/SqXPk7gn5Qc?si=gwstwCNrR6XUbJ64" 
-                        title="YouTube video player" 
-                        style="border: none;"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        referrerpolicy="strict-origin-when-cross-origin" 
-                        allowfullscreen>
-                    </iframe>
+                <div class="spotlight-header">
+                    <p class="spotlight-title">In the Spotlight</p>
+                    <template if:true={hasMultipleSpotlights}>
+                        <div class="spotlight-nav">
+                            <button type="button" class="spotlight-nav-btn" onclick={handleSpotlightPrev} aria-label="Previous spotlight">‹</button>
+                            <span class="spotlight-counter">{spotlightCounter}</span>
+                            <button type="button" class="spotlight-nav-btn" onclick={handleSpotlightNext} aria-label="Next spotlight">›</button>
+                        </div>
+                    </template>
                 </div>
+                <template if:true={spotlightIsVideo}>
+                    <div class="video-container">
+                        <iframe
+                            width="100%"
+                            height="315"
+                            src={spotlightEmbedUrl}
+                            title="Spotlight video"
+                            style="border: none;"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            referrerpolicy="strict-origin-when-cross-origin"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </template>
+                <template if:false={spotlightIsVideo}>
+                    <template if:true={spotlightImageUrl}>
+                        <div class="video-container">
+                            <img src={spotlightImageUrl} alt="Spotlight" style="width:100%; border-radius:8px;" />
+                        </div>
+                    </template>
+                </template>
                 <div class="spotlight-content">
-                    <p class="spotlight-headline">Ruby house- trifecta</p>
+                    <p class="spotlight-headline">{spotlightHeadline}</p>
                     <p class="spotlight-description">{spotlightDisplayText}</p>
                     <template if:true={spotlightShowToggle}>
                         <div class="expand-toggle-mobile">
@@ -78,6 +96,14 @@
                             </template>
                         </div>
                     </div>
+                </div>
+            </template>
+
+            <template if:true={showFeedEmpty}>
+                <div class="feed-empty">
+                    <img src={emptyImage} alt="" class="feed-empty-img" />
+                    <p class="feed-empty-title">No posts yet</p>
+                    <p class="feed-empty-text">Posts from the groups you join will show up here.</p>
                 </div>
             </template>
         </div>

@@ -192,10 +192,12 @@
                         <li><span>Email</span> is required and is the unique key — rows with a blank or invalid email are skipped.</li>
                         <li>If an alumni with the same email already exists, the record is <span>updated, not duplicated</span>, and flagged as a possible duplicate.</li>
                         <li><span>Registration Number</span> distinguishes multiple programs for the same person.</li>
-                        <li><span>Program</span> is matched to a program record — give the program name (or its record Id). If no program with that name exists, the row is skipped.</li>
+                        <li><span>Program</span> accepts a program record Id or a program name. A name that matches a program record is stored as that record's Id; any other value is kept as plain text.</li>
                         <li><span>Status</span> sets the alumni's registration stage — one of Unregistered, Verified, Registered, or Initial Login Done.</li>
+                        <li><span>Year of Enrollment</span> is a 4-digit year and must be earlier than the Year of Graduation.</li>
                         <li><span>Specialization</span> must match an existing picklist value; an unknown value skips the row.</li>
-                        <li><span>Personal &amp; contact</span> columns (Date of Birth, LinkedIn URL, Languages Known, Address) populate the alumni's profile and the Alumni 360 Overview.</li>
+                        <li><span>Nationality, Gender and Blood Group</span> must match an existing picklist value where the org defines one; an unknown value skips the row.</li>
+                        <li><span>Personal &amp; contact</span> columns (Date of Birth, Nationality, Gender, Blood Group, LinkedIn URL, Languages Known, Address) populate the alumni's profile and the Alumni 360 Overview.</li>
                         <li><span>Current Company / Designation / Location</span> create the alumnus's current job in their career history (Alumni 360 Career tab).</li>
                         <li><span>Education</span> uses separate columns per level — <span>10th, 12th, Bachelors, Masters</span>. Fill in only the levels you have; each becomes one education record on Alumni 360 &gt; Academic Record.</li>
                         <li><span>Grade Type</span> columns must be one of: <span>Percentage, CGPA, GPA, Letter Grade</span>.</li>

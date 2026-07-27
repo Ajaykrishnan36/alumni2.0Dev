@@ -20,10 +20,12 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
     phoneInput = ''; // national value for UI
     regNumber = '';
     gradYear = '';
+    yearOfEnrollment = '';
     @track institutionName = '';
     @track programPlan = '';
     @track instituteOptions = [];
-    @track programOptions = [];
+    // Programs keyed by institute name — drives the dependent program picker.
+    @track programsByInstitute = {};
     @track fromGradYear = 1980;
     @track defaultDialCountry = 'none';
     @track optionsLoaded = false;
@@ -106,6 +108,20 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
         return options;
     }
 
+    // Program picker is dependent on the institute: it only offers the programs
+    // that institute (Learning Program Plan provider) actually runs, and stays
+    // disabled until an institute is chosen.
+    get programOptions() {
+        if (!this.institutionName) return [];
+        return this.programsByInstitute[this.institutionName] || [];
+    }
+    get isProgramDisabled() {
+        return !this.institutionName;
+    }
+    get programPlaceholder() {
+        return this.institutionName ? 'Select' : 'Select an institute first';
+    }
+
     connectedCallback() {
         try {
             const params = new URL(window.location.href).searchParams;
@@ -124,9 +140,9 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
         });
         this.restoreFormData();
         getRegistrationOptions()
-            .then(({ institutes, programs, fromGradYear, defaultDialCountry }) => {
+            .then(({ institutes, programsByInstitute, fromGradYear, defaultDialCountry }) => {
                 this.instituteOptions = institutes || [];
-                this.programOptions   = programs   || [];
+                this.programsByInstitute = programsByInstitute || {};
                 if (fromGradYear) {
                     this.fromGradYear = fromGradYear;
                 }
@@ -158,6 +174,9 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
                 this.phoneInput = data.phoneInput || data.phone || '';
                 this.regNumber = data.regNumber || '';
                 this.gradYear = data.gradYear || '';
+                this.yearOfEnrollment = data.yearOfEnrollment || '';
+                this.institutionName = data.institutionName || '';
+                this.programPlan = data.programPlan || '';
             }
         } catch (e) {
             // ignore session read errors
@@ -172,7 +191,10 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
             phone: this.phone,
             phoneInput: this.phoneInput,
             regNumber: this.regNumber,
-            gradYear: this.gradYear
+            gradYear: this.gradYear,
+            yearOfEnrollment: this.yearOfEnrollment,
+            institutionName: this.institutionName,
+            programPlan: this.programPlan
         };
         try {
             window.sessionStorage.setItem('registerFormData', JSON.stringify(payload));
@@ -221,10 +243,13 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
         const id = event.currentTarget.dataset.id;
         const value = event.detail ? event.detail.value : '';
         this[id] = value;
-        this.persistFormData();
-        if (id === 'gradYear') {
-            this.validateField('gradYear', value);
+        // Institute drives the program list — clear any now-invalid program pick
+        // so a stale selection from a different institute can't linger.
+        if (id === 'institutionName') {
+            this.programPlan = '';
         }
+        this.persistFormData();
+        this.validateField(id, value);
     }
 
     handleEnterKey(event) {
@@ -291,7 +316,9 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
             inputField.reportValidity();
         } else if (!isValid) {
             const friendly = field === 'gradYear' ? 'Please select your year of graduation.'
+                : field === 'yearOfEnrollment' ? 'Please select your year of enrollment.'
                 : field === 'programPlan' ? 'Please select your program.'
+                : field === 'institutionName' ? 'Please select your institute.'
                 : message;
             this.showErrorToast('Missing information', friendly);
         }
@@ -313,9 +340,40 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
         const phoneComponent = this.template.querySelector('c-ken-custom-phone-input');
         const isPhoneValid = phoneComponent ? phoneComponent.validate() : false;
         const isGradYearValid = this.validateField('gradYear', this.gradYear);
+        const isEnrollValid = this.validateField('yearOfEnrollment', this.yearOfEnrollment);
         const isProgramValid = this.validateField('programPlan', this.programPlan);
+        const isInstituteValid = this.validateField('institutionName', this.institutionName);
 
-        if (!isFirstNameValid || !isLastNameValid || !isEmailValid || !isPhoneValid || !isGradYearValid || !isProgramValid) {
+        if (!isFirstNameValid || !isLastNameValid || !isEmailValid || !isPhoneValid || !isGradYearValid || !isEnrollValid || !isProgramValid || !isInstituteValid) {
+            // Each validateField()/phoneComponent.validate() call above already ran
+            // reportValidity(), which for a real lightning-input delegates to the
+            // native input's reportValidity() — that auto-scrolls its field into
+            // view. With several invalid fields, each call scrolls somewhere new
+            // while the form is still reflowing from the previous field's error
+            // message, so the page ends up wherever the *last* call happened to
+            // land rather than at the first error — it looks like the page
+            // randomly "jumps down". Explicitly scroll to the first invalid
+            // field last, so it deterministically wins over those native scrolls.
+            const firstInvalidField = !isFirstNameValid ? 'firstName'
+                : !isLastNameValid ? 'lastName'
+                : !isEmailValid ? 'email'
+                : !isGradYearValid ? 'gradYear'
+                : !isEnrollValid ? 'yearOfEnrollment'
+                : !isProgramValid ? 'programPlan'
+                : !isInstituteValid ? 'institutionName'
+                : null;
+            const elToScroll = firstInvalidField
+                ? this.template.querySelector(`[data-id="${firstInvalidField}"]`)
+                : this.template.querySelector('c-ken-custom-phone-input');
+            if (elToScroll && typeof elToScroll.scrollIntoView === 'function') {
+                elToScroll.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+
+        if (this.yearOfEnrollment && this.gradYear
+            && parseInt(this.yearOfEnrollment, 10) >= parseInt(this.gradYear, 10)) {
+            this.showErrorToast('Invalid years', 'Year of enrollment must be earlier than the year of graduation.');
             return;
         }
 
@@ -511,6 +569,7 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
             phone: this.phone || '',
             regNumber: this.regNumber || '',
             gradYear: this.gradYear || '',
+            yearOfEnrollment: this.yearOfEnrollment || '',
             institutionName: this.institutionName || '',
             programPlan: this.programPlan || '',
             referalCode: this.referalCode || ''

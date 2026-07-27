@@ -25,6 +25,12 @@
                 default="false"
                 label="Hide header"
                 description="Hide the title and summary row above the map"/>
+            <property name="context"
+                type="String"
+                default="portal"
+                label="Context"
+                datasource="guest,portal,admin"
+                description="guest = login/register prompt in the sidebar; portal = opens the network detail; admin = opens Alumni 360"/>
         </targetConfig>
     </targetConfigs>
 </LightningComponentBundle>

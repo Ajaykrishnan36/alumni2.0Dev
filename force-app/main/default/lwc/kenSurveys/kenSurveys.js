@@ -92,10 +92,9 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
 
     async loadSurveys() {
         try {
-            const value = localStorage.getItem('ConstituentRoleId');
             const [allSurveys, mySurveys] = await Promise.all([
-                getSurveys({ constituentRoleId: value }),
-                getMySurveys({ constituentRoleId: value })
+                getSurveys(),
+                getMySurveys()
             ]);
             this.rawSurveys = (allSurveys || []).map((survey) => this.transformSurvey(survey));
             this.applyFiltersAndSort();
@@ -208,11 +207,11 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
     mapQuestionType(questionType) {
         switch (questionType) {
             case 'Multiple Choice':
-                return 'checkbox';
+                return 'radio';
             case 'Dropdown':
                 return 'radio';
             case 'Yes/No':
-                return 'radio';
+                return 'checkbox';
             case 'Rating':
             case 'Linear Scale':
                 return 'rating';
@@ -224,10 +223,6 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
     }
 
     buildOptions(questionType, mcqOptions) {
-        if (questionType === 'Yes/No') {
-            return ['Yes', 'No'];
-        }
-
         if (!mcqOptions) {
             return [];
         }
@@ -470,10 +465,6 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
         event.stopPropagation();
     }
 
-    // Mirrors the staged/draft (selected*) filter values onto the applied*
-    // values that filterSurveys() actually reads, then re-runs the
-    // synchronous in-memory filter/sort. Called from every field handler so
-    // filters apply live, and from the Apply button handler.
     _applyDraftLive() {
         this.appliedStatus = this.selectedStatus;
         this.appliedDateRange = this.selectedDateRange;
@@ -515,8 +506,6 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
     }
 
     handleApplyFilters() {
-        // Filtering is already live from the field handlers; Apply just
-        // syncs once more (in case of any drift) and closes the popup.
         this._applyDraftLive();
         this.showFiltersPopup = false;
     }

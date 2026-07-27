@@ -8,7 +8,9 @@
                 </template>
             </div>
             <div class="hosted-actions">
-                <button class="host-btn" onclick={handleHostEvent}>Host an Event</button>
+                <template if:true={canHostEvent}>
+                    <button class="host-btn" onclick={handleHostEvent}>Host an Event</button>
+                </template>
                 <div class="search-box">
                     <lightning-icon icon-name="utility:search" size="x-small" class="search-icon"></lightning-icon>
                     <input type="text" class="search-input" placeholder="Search" value={searchTerm} oninput={handleSearch} />

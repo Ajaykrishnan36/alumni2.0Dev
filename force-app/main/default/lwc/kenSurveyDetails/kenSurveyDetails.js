@@ -91,10 +91,9 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
 
         this.isLoading = true;
         try {
-            const value = localStorage.getItem('ConstituentRoleId');
             const [editResult, surveysResult] = await Promise.all([
                 getSurveyForEdit({ surveyId: this.surveyId }),
-                getMySurveys({ constituentRoleId: value })
+                getMySurveys()
             ]);
 
             let responseCount = 0;

@@ -20,6 +20,12 @@
     box-sizing: border-box;
 }
 
+/* No Create-Campaign CTA below — reclaim its reserved space so the panel
+   stretches to fill the column instead of leaving a blank gap. */
+.my-campaigns-panel.cta-hidden {
+    height: calc(100vh - 146.5px - 24px);
+}
+
 .widget-title {
     font-size: 18px;
     font-weight: 600;

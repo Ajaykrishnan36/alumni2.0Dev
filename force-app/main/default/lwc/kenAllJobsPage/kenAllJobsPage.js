@@ -428,10 +428,6 @@ export default class AllJobsPage extends LightningElement {
         this.filtersOpen = false;
     }
 
-    // Mirrors the draft filter state (filters/companyTypeSelection/showMentors) into the
-    // applied state that filteredJobs reads, so picking a value filters live instead of
-    // waiting for the Apply button. filteredJobs is a plain getter over an in-memory array,
-    // so reassigning these fields is enough to trigger recomputation on next render.
     _applyDraftLive() {
         this.appliedFilters = { ...this.filters };
         this.appliedCompanyTypeSelection = { ...this.companyTypeSelection };

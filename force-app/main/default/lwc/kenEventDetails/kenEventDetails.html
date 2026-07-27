@@ -67,7 +67,7 @@
                         <div class="slds-grid slds-wrap">
                             <div class="slds-col slds-size_1-of-1 slds-medium-size_7-of-12 about-left-col">
                                 <h2 class="tab-section-heading">About the Event</h2>
-                                <p class="about-description">{event.description}</p>
+                                <lightning-formatted-rich-text class="about-description" value={event.description}></lightning-formatted-rich-text>
 
                                 <!-- Get Event Support -->
                                 <div class="get-help-row">
@@ -100,19 +100,7 @@
 
                             <div class="slds-col slds-size_1-of-1 slds-medium-size_5-of-12 about-right-col about-right-col-bg">
                                 <h2 class="tab-section-heading">What to Expect</h2>
-                                <template if:true={hasExpectations}>
-                                    <template for:each={expectationsList} for:item="exp">
-                                        <div key={exp.id} class="expectation-item-new">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="#3061FF"/>
-                                            </svg>
-                                            <span>{exp.text}</span>
-                                        </div>
-                                    </template>
-                                </template>
-                                <template if:false={hasExpectations}>
-                                    <p class="about-description">{event.expectations}</p>
-                                </template>
+                                <lightning-formatted-rich-text class="about-description" value={event.expectations}></lightning-formatted-rich-text>
                             </div>
                         </div>
                     </div>

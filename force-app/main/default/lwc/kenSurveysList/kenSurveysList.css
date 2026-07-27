@@ -370,15 +370,22 @@
 .filters-popup {
     position: fixed;
     background-color: var(--portal-surface, #ffffff);
-    border-radius: var(--portal-radius, 8px);
-    padding: var(--portal-popover-padding, 24px);
+    border-radius: var(--portal-radius, 12px);
+    padding: var(--portal-popover-padding, 20px 20px 16px);
     width: var(--portal-filters-popup-width, 400px);
     max-width: 90vw;
-    max-height: var(--portal-filters-popup-max-height, 550px);
+    /* Matches kenAllEvents' popup: same max-height cap, plus a minimum so a
+       popup with only 1 field doesn't collapse to a much shorter box —
+       Network/Events only look "full height" because they have enough
+       fields to reach it naturally. */
+    min-height: 420px;
+    max-height: var(--portal-filters-popup-max-height, 500px);
     overflow: hidden;
-    box-shadow: var(--portal-popover-shadow, 0 4px 12px rgba(0, 0, 0, 0.15));
+    box-shadow: var(--portal-popover-shadow, 0 16px 40px rgba(16, 24, 40, 0.18));
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #E5E7EB);
     display: flex;
     flex-direction: column;
+    gap: 16px;
     z-index: 1000;
     pointer-events: auto;
 }

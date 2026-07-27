@@ -13,34 +13,27 @@
         </div>
 
         <!-- KPI tiles -->
-        <div class="kpi-grid">
-            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-total" onclick={handleKpiClick} role="button" tabindex="0">
-                <div class="kpi-head">Total Alumni
-                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+        <div class="kpi-grid kpi-grid-3">
+            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-unverified" onclick={handleKpiClick} role="button" tabindex="0">
+                <div class="kpi-head">Unverified Leads
+                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M19 8v6M22 11h-6"></path></svg></div>
                 </div>
-                <div class="kpi-value">{totalAlumniDisplay}</div>
-                <div class="kpi-sub">rows in the master database</div>
-            </div>
-            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-verified" onclick={handleKpiClick} role="button" tabindex="0">
-                <div class="kpi-head">Institution Verified
-                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
-                </div>
-                <div class="kpi-value">{institutionVerifiedDisplay}</div>
-                <div class="kpi-sub">confirmed against institute records</div>
+                <div class="kpi-value">{unverifiedLeadsDisplay}</div>
+                <div class="kpi-sub">captured but not yet verified</div>
             </div>
             <div class="kpi kpi-clickable" data-dashboardfilter="kpi-registered" onclick={handleKpiClick} role="button" tabindex="0">
-                <div class="kpi-head">Portal Registered
+                <div class="kpi-head">Registered Alumni
                     <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="m17 11 2 2 4-4"></path></svg></div>
                 </div>
-                <div class="kpi-value">{portalRegisteredDisplay}</div>
-                <div class="kpi-sub">claimed and signed in at least once</div>
+                <div class="kpi-value">{registeredAlumniDisplay}</div>
+                <div class="kpi-sub">claimed a portal account</div>
             </div>
-            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-pending" onclick={handleKpiClick} role="button" tabindex="0">
-                <div class="kpi-head">Pending Activation
-                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg></div>
+            <div class="kpi kpi-clickable" data-dashboardfilter="kpi-active" onclick={handleKpiClick} role="button" tabindex="0">
+                <div class="kpi-head">Active Alumni
+                    <div class="kpi-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2 4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
                 </div>
-                <div class="kpi-value">{pendingActivationDisplay}</div>
-                <div class="kpi-sub">invited but not yet registered</div>
+                <div class="kpi-value">{activeAlumniDisplay}</div>
+                <div class="kpi-sub">completed onboarding and active</div>
             </div>
         </div>
 
@@ -50,45 +43,13 @@
             <!-- LEFT COLUMN -->
             <div>
 
-                <!-- Funnel 01 -->
+                <!-- Lead Lifecycle Funnel -->
                 <div class="card">
-                    <div class="card-head"><div class="card-title">{uploadTitle}</div></div>
-                    <template lwc:if={isLoadingUpload}>Loading…</template>
+                    <div class="card-head"><div class="card-title">{lifecycleTitle}</div></div>
+                    <template lwc:if={isLoadingLifecycle}>Loading…</template>
                     <template lwc:else>
-                        <div class="funnel funnel-orange">
-                            <template for:each={uploadFunnel.steps} for:item="step">
-                                <div key={step.key} style="display:contents">
-                                    <template lwc:if={step.showArrow}><div class="funnel-arrow"></div></template>
-                                    <div class="funnel-step funnel-step-clickable" data-dashboardfilter={step.dashboardFilter} onclick={handleFunnelStepClick} role="button" tabindex="0"><div class="funnel-num">{step.value}</div><div class="funnel-lbl">{step.label}</div></div>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Funnel 02 -->
-                <div class="card">
-                    <div class="card-head"><div class="card-title">{transitionTitle}</div></div>
-                    <template lwc:if={isLoadingTransition}>Loading…</template>
-                    <template lwc:else>
-                        <div class="funnel funnel-blue">
-                            <template for:each={transitionFunnel.steps} for:item="step">
-                                <div key={step.key} style="display:contents">
-                                    <template lwc:if={step.showArrow}><div class="funnel-arrow"></div></template>
-                                    <div class="funnel-step funnel-step-clickable" data-dashboardfilter={step.dashboardFilter} onclick={handleFunnelStepClick} role="button" tabindex="0"><div class="funnel-num">{step.value}</div><div class="funnel-lbl">{step.label}</div></div>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Funnel 03 -->
-                <div class="card">
-                    <div class="card-head"><div class="card-title">{leadsTitle}</div></div>
-                    <template lwc:if={isLoadingLeads}>Loading…</template>
-                    <template lwc:else>
-                        <div class="funnel funnel-green">
-                            <template for:each={leadsFunnel.steps} for:item="step">
+                        <div class="funnel funnel-blue funnel-lifecycle">
+                            <template for:each={lifecycleFunnel.steps} for:item="step">
                                 <div key={step.key} style="display:contents">
                                     <template lwc:if={step.showArrow}><div class="funnel-arrow"></div></template>
                                     <div class="funnel-step funnel-step-clickable" data-dashboardfilter={step.dashboardFilter} onclick={handleFunnelStepClick} role="button" tabindex="0"><div class="funnel-num">{step.value}</div><div class="funnel-lbl">{step.label}</div></div>

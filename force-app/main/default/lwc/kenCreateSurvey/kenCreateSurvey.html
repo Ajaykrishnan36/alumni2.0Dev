@@ -1,4 +1,14 @@
 <template>
+    <template if:true={showAccessGate}>
+        <div class="ken-access-gate" style="position:fixed;inset:0;background:#ffffff;z-index:99999;display:flex;align-items:center;justify-content:center;">
+            <template if:true={accessDenied}>
+                <div style="text-align:center;font-family:'General Sans',sans-serif;max-width:360px;padding:24px;">
+                    <h2 style="font-size:20px;font-weight:600;color:#1f2333;margin:0 0 8px;">Access denied</h2>
+                    <p style="font-size:14px;color:#6b7280;margin:0;">Creating surveys is currently turned off. Taking you back&hellip;</p>
+                </div>
+            </template>
+        </div>
+    </template>
     <div class={rootClass}>
         <div class={containerClass}>
             <!-- Component Fixed Header with Stepper Component -->
@@ -149,6 +159,7 @@
                                                     checked={question.required}
                                                     onchange={handleRequiredToggle}
                                                     data-question-id={question.id}
+                                                    variant="label-hidden"
                                                     class="toggle-input"
                                                     message-toggle-active=""
                                                     message-toggle-inactive="">
@@ -240,7 +251,7 @@
                                             </template>
                                             <template if:true={question.hasInsufficientOptions}>
                                                 <div class="option-error-message">
-                                                    Multiple Choice and Checkbox questions must have at least 2 options.
+                                                    Single Select and Checkbox questions must have at least 2 options.
                                                 </div>
                                             </template>
                                             <button 

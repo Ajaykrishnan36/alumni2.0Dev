@@ -1,4 +1,14 @@
 <template>
+    <template if:true={showAccessGate}>
+        <div class="ken-access-gate" style="position:fixed;inset:0;background:#ffffff;z-index:99999;display:flex;align-items:center;justify-content:center;">
+            <template if:true={accessDenied}>
+                <div style="text-align:center;font-family:'General Sans',sans-serif;max-width:360px;padding:24px;">
+                    <h2 style="font-size:20px;font-weight:600;color:#1f2333;margin:0 0 8px;">Access denied</h2>
+                    <p style="font-size:14px;color:#6b7280;margin:0;">Creating campaigns is currently turned off. Taking you back&hellip;</p>
+                </div>
+            </template>
+        </div>
+    </template>
     <div class="create-campaign-page">
         <div class="component-container">
             <!-- Header with Stepper -->

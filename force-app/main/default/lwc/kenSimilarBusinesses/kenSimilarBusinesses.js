@@ -4,7 +4,6 @@ import defaultBusinessImage from '@salesforce/resourceUrl/AlumniAlt';
 import getSimilarBusinesses from '@salesforce/apex/KenBusinessController.getSimilarBusinesses';
 
 export default class KenSimilarBusinesses extends NavigationMixin(LightningElement) {
-    _roleId = localStorage.getItem('ConstituentRoleId');
     @track similarBusinesses = [];
     _businessId;
     _category;
@@ -31,7 +30,7 @@ export default class KenSimilarBusinesses extends NavigationMixin(LightningEleme
         if (!this._businessId || !this._category) {
             return;
         }
-        getSimilarBusinesses({ businessId: this._businessId, category: this._category, constituentRoleId: this._roleId })
+        getSimilarBusinesses({ businessId: this._businessId, category: this._category })
             .then((data) => {
                 this.similarBusinesses = (data || []).map((b) => ({
                     ...b,

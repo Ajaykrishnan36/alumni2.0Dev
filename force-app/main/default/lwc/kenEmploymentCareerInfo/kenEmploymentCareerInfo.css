@@ -1,6 +1,5 @@
 .employment-container {
     width: 100%;
-    min-height: 400px;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -9,31 +8,16 @@
 .form-container {
     background-color: white;
     border-radius: 12px;
-    padding: 1rem 10rem;
-    margin-bottom: 2rem;
-    flex: 1;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
+    padding: 1.5rem 2.5rem;
+    margin-bottom: 0;
     box-sizing: border-box;
-    min-height: 0;
-    max-height: calc(100vh - 473px);
-}
-
-@media screen and (max-width: 1280px) and (max-height: 600px) {
-.form-container {
-    max-height: calc(100vh - 420px);
-}
-.employment-container{
-    min-height: 0;
-}
+    flex: 1;
 }
 
 .empty-state {
     text-align: center;
     padding: 4rem 0;
     box-sizing: border-box;
-    height: calc(100vh - 550px);
 }
 
 .empty-title {
@@ -122,13 +106,13 @@
 }
 
 .career-items {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: min-content;
+    align-content: start;
+    gap: 1rem;
     margin-bottom: 2rem;
-    overflow-y: auto;
     padding-right: 0.5rem;
-    height: calc(100vh - 600px);
 }
 
 .career-items::-webkit-scrollbar {
@@ -146,103 +130,119 @@
 }
 
 .career-item {
+    position: relative;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 1.25rem 1.5rem;
-    background-color: white;
-    border-radius: 8px;
-    border: 1px solid #e9ecef;
-    margin-bottom: 1rem;
-    transition: box-shadow 0.2s ease;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    padding: 16px;
+    background-color: var(--portal-surface-hover, #F9FAFB);
+    border-radius: var(--portal-radius, 12px);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .career-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--portal-popover-shadow, 0 16px 40px rgba(16, 24, 40, 0.18));
+    transform: translateY(-2px);
 }
 
 .career-content {
-    flex: 1;
+    min-width: 0;
+    padding-right: 72px;
 }
 
 .career-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #373A45;
-    margin: 0 0 0.5rem 0;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--portal-text-primary, #1F2937);
+    margin: 0 0 4px 0;
     font-family: 'GeneralSansCustom', sans-serif;
 }
 
 .career-company {
-    font-size: 1rem;
-    color: #373A45;
-    margin: 0 0 0.5rem 0;
-    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--portal-text-primary, #1F2937);
+    margin: 0 0 6px 0;
+    font-weight: 600;
     font-family: 'GeneralSansCustom', sans-serif;
 }
 
 .career-location {
-    font-size: 0.875rem;
-    color: var(--primary-color);
+    font-size: 0.8125rem;
+    color: var(--portal-text-muted, #4B5563);
     margin: 0 0 0.75rem 0;
     font-family: 'GeneralSansCustom', sans-serif;
 }
 
 .career-description {
-    font-size: 0.875rem;
-    color: #6c757d;
+    font-size: 0.8125rem;
+    color: var(--portal-text-muted, #4B5563);
     line-height: 1.5;
     margin: 0;
     font-family: 'GeneralSansCustom', sans-serif;
 }
 
 .career-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
     display: flex;
-    gap: 0.75rem;
-    margin-left: 1.5rem;
-    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
 }
 
-.edit-button,
-.delete-button {
+.icon-btn-plain {
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.5rem;
-    color: #6c757d;
-    display: flex;
+    color: var(--portal-text-muted, #4B5563);
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
 }
 
-.edit-button:hover {
-    background-color: #f0f7ff;
-    color: var(--primary-color);
+.icon-btn-plain lightning-icon {
+    --sds-c-icon-color-foreground-default: var(--portal-text-muted, #4B5563);
 }
 
-.delete-button:hover {
-    background-color: #fff5f5;
-    color: #dc3545;
+.icon-btn-plain:hover {
+    color: var(--portal-text-primary, #1F2937);
+    background: rgba(0, 0, 0, 0.05);
 }
 
-.edit-button svg,
-.delete-button svg {
-    width: 18px;
-    height: 18px;
+.ken-edit-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ken-edit-icon-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .form-actions {
     display: flex;
     justify-content: flex-end;
     gap: 1rem;
-    padding-top: 1.5rem;
-    padding-right: 1.5rem;
-    border-top: 1px solid #e9ecef;
-    margin-top: auto;
+    padding: 1rem 2.5rem;
+    border-top: 1px solid var(--portal-divider-color, #F3F4F6);
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 20;
+    background: var(--portal-surface, #ffffff);
 }
 
 .skip-button {
@@ -365,12 +365,6 @@
 @media only screen and (min-width: 601px) and (max-width: 1024px) {
     .form-container {
         padding: 1rem 2rem;
-        flex: 1;
-        min-height: 50vh;
-    }
-    .career-items {
-        height: auto;
-        max-height: 50vh;
     }
 }
 
@@ -378,52 +372,22 @@
 @media only screen and (max-width: 600px) {
     .form-container {
         padding: 1rem;
-        flex: auto;
-        height: calc(100vh - 377px);
-        overflow-y: auto;
-        margin-bottom: 2rem;
+        margin-bottom: 0;
     }
-    
+
     .career-items {
-        height: auto;;
+        grid-template-columns: 1fr;
         margin-bottom: 1rem;
-    }
-    
-    .employment-container {
-        display: block;
-        min-height: auto;
-    }
-    
-    .career-items {
-        height: auto;
-        max-height: none;
-        overflow-y: visible;
         padding-right: 0;
     }
-    
-    .career-item {
-        flex-direction: column;
-        gap: 1rem;
+
+    .employment-container {
+        display: block;
     }
-    
-    .career-actions {
-        margin-left: 0;
-        justify-content: flex-end;
-        width: 100%;
-    }
-    
+
     .form-actions {
-        position: relative;
-        bottom: auto;
-        left: auto;
-        width: 100%;
-        background-color: transparent;
-        padding: 1rem;
-        box-shadow: none;
-        z-index: auto;
         justify-content: space-between;
         gap: 0.5rem;
-        margin-top: 1rem;
     }
     
     .skip-button, .previous-button, .save-next-button {

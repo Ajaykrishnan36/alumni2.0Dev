@@ -2,26 +2,22 @@
     background-color: var(--portal-surface, white);
     border-radius: var(--portal-radius, 12px);
     padding: 1.5rem;
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     display: grid;
     grid-template-columns: 320px 1fr;
     gap: 3rem;
     overflow: visible;
     border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
     box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
-    min-height: 0;
-    align-items: stretch;
-}
-
-.calendar-schedule-container>* {
-    min-height: 0;
+    align-items: start;
+    box-sizing: border-box;
 }
 
 .calendar-section {
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    overflow: visible;
+    flex-shrink: 0;
     background-color: #fbfbfb;
     /* light gray from image */
     border: 1px solid #e1e4e8;
@@ -140,7 +136,6 @@
     flex-direction: column;
     overflow: visible;
     min-height: 0;
-    height: 100%;
 }
 
 /* Title row (Scheduled calls + date picker): visible only on mobile */
@@ -228,29 +223,11 @@
 
 
 .schedule-timeline {
-    flex: 1 1 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding-right: 0.5rem;
+    flex: 0 0 auto;
+    overflow: visible;
     padding-bottom: 1rem;
-    min-height: 0;
     position: relative;
-    -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
-}
-
-.schedule-timeline::-webkit-scrollbar {
-    width: 6px;
-}
-
-.schedule-timeline::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.schedule-timeline::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 10px;
 }
 
 /* Schedule cards – single normal bg for all */

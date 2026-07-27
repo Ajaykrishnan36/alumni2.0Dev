@@ -5,7 +5,6 @@ import getAllBusinesses from "@salesforce/apex/KenBusinessController.getAllBusin
 import getMyBusinesses from "@salesforce/apex/KenBusinessController.getMyBusinesses";
 import createBusiness from "@salesforce/apex/KenBusinessController.createBusiness";
 export default class KenBusinessDirectory extends NavigationMixin(LightningElement) {
-    _roleId = localStorage.getItem('ConstituentRoleId');
   @track searchTerm = "";
   @track showFiltersPopup = false;
   @track selectedLocation = "";
@@ -208,7 +207,7 @@ export default class KenBusinessDirectory extends NavigationMixin(LightningEleme
     };
 
     const form = this.template.querySelector("c-ken-business-listing-form");
-    createBusiness({ req, constituentRoleId: this._roleId })
+    createBusiness({ req })
       .then(() => this.refreshLists())
       .then(() => {
         if (form) {
@@ -232,14 +231,14 @@ export default class KenBusinessDirectory extends NavigationMixin(LightningEleme
 
   refreshLists() {
     return Promise.all([
-      getAllBusinesses({ constituentRoleId: this._roleId })
+      getAllBusinesses()
         .then((data) => {
           this.businesses = data || [];
         })
         .catch(() => {
           this.businesses = [];
         }),
-      getMyBusinesses({ constituentRoleId: this._roleId })
+      getMyBusinesses()
         .then((data) => {
           this.myBusinesses = data || [];
         })

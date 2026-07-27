@@ -249,8 +249,10 @@
 
 .task-footer {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    row-gap: 0.35rem;
     font-size: 0.75rem;
     color: #5D6370;
     font-family: 'GeneralSansCustom', sans-serif;
@@ -260,6 +262,7 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
+    white-space: nowrap;
 }
 
 .mentorship-preference-btn-wrapper {
@@ -390,6 +393,7 @@
 }
 
 .task-end-date {
+    white-space: nowrap;
     color: #5D6370;
 }
 

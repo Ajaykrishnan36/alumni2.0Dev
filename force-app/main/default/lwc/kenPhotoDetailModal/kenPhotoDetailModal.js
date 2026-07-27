@@ -13,9 +13,6 @@ export default class KenPhotoDetailModal extends LightningElement {
     }
 
     connectedCallback() {
-        // handleKeyDown itself checks showModal, so it's safe to attach unconditionally —
-        // showModal is a reactive prop that can flip to true long after this component
-        // first mounts, and connectedCallback only ever runs once.
         document.addEventListener('keydown', this.boundHandleKeyDown);
     }
 

@@ -1,4 +1,14 @@
 <template>
+    <template if:true={showAccessGate}>
+        <div class="ken-access-gate" style="position:fixed;inset:0;background:#ffffff;z-index:99999;display:flex;align-items:center;justify-content:center;">
+            <template if:true={accessDenied}>
+                <div style="text-align:center;font-family:'General Sans',sans-serif;max-width:360px;padding:24px;">
+                    <h2 style="font-size:20px;font-weight:600;color:#1f2333;margin:0 0 8px;">Access denied</h2>
+                    <p style="font-size:14px;color:#6b7280;margin:0;">Creating groups is currently turned off. Taking you back&hellip;</p>
+                </div>
+            </template>
+        </div>
+    </template>
     <div class="create-group-page">
         <!-- Spinner overlay -->
         <template if:true={showSpinner}>
@@ -114,18 +124,31 @@
                             </div>
                         </div>
 
-                        <!-- Who can join this group? -->
-                        <div class="form-field">
-                            <label class="field-label">Who can join this group?<span class="required-asterisk">*</span></label>
-                            <div class="radio-group">
-                                <label class="radio-option">
-                                    <input type="radio" name="whoCanJoin" value="public" checked={isPublicSelected} onchange={handleWhoCanJoinChange} />
-                                    <span>Public - Anyone can join</span>
-                                </label>
-                                <label class="radio-option">
-                                    <input type="radio" name="whoCanJoin" value="private" checked={isPrivateSelected} onchange={handleWhoCanJoinChange} />
-                                    <span>Private - Users must request to join</span>
-                                </label>
+                        <!-- Who can join this group? & Category row -->
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label class="field-label">Who can join this group?<span class="required-asterisk">*</span></label>
+                                <div class="radio-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="whoCanJoin" value="public" checked={isPublicSelected} onchange={handleWhoCanJoinChange} />
+                                        <span>Public - Anyone can join</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="whoCanJoin" value="private" checked={isPrivateSelected} onchange={handleWhoCanJoinChange} />
+                                        <span>Private - Users must request to join</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-field">
+                                <label class="field-label">Category<span class="required-asterisk">*</span></label>
+                                <select class="form-input" onchange={handleCategoryChange}>
+                                    <template for:each={categoryOptions} for:item="opt">
+                                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                                    </template>
+                                </select>
+                                <div class="field-footer">
+                                    <div class="error-message" if:true={validationErrors.category}>{validationErrors.category}</div>
+                                </div>
                             </div>
                         </div>
 
@@ -190,6 +213,10 @@
                                         <div class="summary-field">
                                             <label class="summary-field-label">Who can join this group?*</label>
                                             <div class="summary-field-value">{whoCanJoinLabel}</div>
+                                        </div>
+                                        <div class="summary-field">
+                                            <label class="summary-field-label">Category</label>
+                                            <div class="summary-field-value">{categoryLabel}</div>
                                         </div>
                                         <div class="summary-field">
                                             <label class="summary-field-label">Group Description (Optional)</label>

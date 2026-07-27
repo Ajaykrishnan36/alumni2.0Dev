@@ -4,6 +4,7 @@ import AlumniAlt from '@salesforce/resourceUrl/AlumniAlt';
 import MENTORSHIP_EMPTY_STATE from '@salesforce/resourceUrl/MentorshipEmptyState';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import getNetworkData from '@salesforce/apex/KenNetworkController.getNetworkData';
+import getAllAlumniForFilterOptions from '@salesforce/apex/KenNetworkController.getAllAlumniForFilterOptions';
 import respondToConnectionRequests from '@salesforce/apex/KenNetworkController.respondToConnectionRequests';
 import getReferralLink from '@salesforce/apex/KenReferralService.getReferralLink';
 
@@ -11,10 +12,15 @@ const FILTER_FIELDS = [
     'company',
     'industry',
     'jobFunction',
+    'employmentType',
+    'gender',
     'programLastAttended',
-    'specialisation',
     'graduationYear',
-    'currentCity'
+    'currentCity',
+    'institute',
+    'program',
+    'intake',
+    'country'
 ];
 const ONLINE_WINDOW_MS = 5 * 60 * 1000;
 
@@ -23,6 +29,10 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
     @track searchTerm = '';
     @track allAlumni = [];
     @track connectedAlumni = [];
+    // Every eligible alumnus in the org (unscoped by tab or by the current
+    // viewer's own connections/self-exclusion) — used only to build filter
+    // dropdown options, never rendered as cards.
+    @track allAlumniForFilterOptions = [];
     @track filteredAlumni = [];
     @track onlineUsers = [];
     @track connectionRequests = [];
@@ -47,19 +57,33 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
         company: '',
         industry: '',
         jobFunction: '',
+        employmentType: '',
+        gender: '',
         programLastAttended: '',
-        specialisation: '',
         graduationYear: '',
-        currentCity: ''
+        currentCity: '',
+        institute: '',
+        program: '',
+        intake: '',
+        country: '',
+        // Checkbox multi-select — array-valued, unlike every field above, so
+        // it's kept out of FILTER_FIELDS and handled by its own methods.
+        language: []
     };
     @track filterOptions = {
         company: [],
         industry: [],
         jobFunction: [],
+        employmentType: [],
+        gender: [],
         programLastAttended: [],
-        specialisation: [],
         graduationYear: [],
-        currentCity: []
+        currentCity: [],
+        institute: [],
+        program: [],
+        intake: [],
+        country: [],
+        language: []
     };
 
     _mobileQuery = null;
@@ -86,7 +110,8 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
             const v = (this.selectedFilters?.[field] || '').trim();
             return !!v;
         });
-        return hasSearch || hasFilters || this.showMentorsNearMe === true;
+        const hasLanguageFilter = (this.selectedFilters?.language || []).length > 0;
+        return hasSearch || hasFilters || hasLanguageFilter || this.showMentorsNearMe === true;
     }
 
     get isNoResults() {
@@ -110,6 +135,16 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
         return this.activeTab === 'missing' ? this.connectedAlumni : this.allAlumni;
     }
 
+    // Every eligible alumnus in the org — used to build filter dropdown
+    // options so a value (e.g. a rare Skill) is always choosable even if the
+    // only person who has it happens to be excluded from the current viewer's
+    // visible lists (self-exclusion, or already an accepted connection on
+    // "All Alumni"). The actual filtered results still stay scoped to
+    // alumniSource.
+    get allKnownAlumni() {
+        return this.allAlumniForFilterOptions || [];
+    }
+
     get companyOptions() {
         return this.filterOptions.company || [];
     }
@@ -122,12 +157,24 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
         return this.filterOptions.jobFunction || [];
     }
 
-    get programLastAttendedOptions() {
-        return this.filterOptions.programLastAttended || [];
+    get employmentTypeOptions() {
+        return this.filterOptions.employmentType || [];
     }
 
-    get specialisationOptions() {
-        return this.filterOptions.specialisation || [];
+    get genderOptions() {
+        return this.filterOptions.gender || [];
+    }
+
+    get languageOptions() {
+        return this.filterOptions.language || [];
+    }
+
+    get selectedLanguages() {
+        return this.selectedFilters.language || [];
+    }
+
+    get programLastAttendedOptions() {
+        return this.filterOptions.programLastAttended || [];
     }
 
     get graduationYearOptions() {
@@ -138,9 +185,26 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
         return this.filterOptions.currentCity || [];
     }
 
+    get instituteOptions() {
+        return this.filterOptions.institute || [];
+    }
+
+    get programOptions() {
+        return this.filterOptions.program || [];
+    }
+
+    get intakeOptions() {
+        return this.filterOptions.intake || [];
+    }
+
+    get countryOptions() {
+        return this.filterOptions.country || [];
+    }
+
     connectedCallback() {
         this.initializeFallbackData();
         this.loadNetworkData();
+        this.loadFilterOptionsData();
         this._updateMobile();
         this._mobileQuery = window.matchMedia('(max-width: 767px)');
         this._boundUpdateMobile = this._updateMobile.bind(this);
@@ -182,6 +246,20 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
         this.onlineUsers = [];
         this.connectionRequests = [];
         this.filterAlumni();
+    }
+
+    loadFilterOptionsData() {
+        getAllAlumniForFilterOptions()
+            .then((result) => {
+                const rows = Array.isArray(result) ? result : [];
+                this.allAlumniForFilterOptions = rows.map((row) => this.normalizeAlumniRow(row));
+                this.rebuildFilterOptions(true);
+            })
+            .catch((error) => {
+                // eslint-disable-next-line no-console
+                console.error('KenNetworkPage.loadFilterOptionsData failed', error);
+                this.allAlumniForFilterOptions = [];
+            });
     }
 
     loadNetworkData() {
@@ -235,6 +313,13 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
             // that used to leave every card's education row empty.
             batch: this.toFilterValue(row?.batch),
             graduationYear,
+            institute: this.toFilterValue(row?.institute),
+            program: this.toFilterValue(row?.program),
+            intake: this.toFilterValue(row?.intake),
+            employmentType: this.toFilterValue(row?.employmentType),
+            gender: this.toFilterValue(row?.gender),
+            languages: this.toLanguageList(row?.language),
+            country: this.toFilterValue(row?.country),
             education: this.buildEducationLine(programLastAttended, graduationYear),
             profileImage: row?.profileImage || AlumniAlt,
             lastActive,
@@ -299,7 +384,9 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
     }
 
     get activeFilterCount() {
-        return FILTER_FIELDS.filter((f) => this.toFilterValue(this.selectedFilters[f])).length;
+        const scalarCount = FILTER_FIELDS.filter((f) => this.toFilterValue(this.selectedFilters[f])).length;
+        const languageCount = (this.selectedFilters.language || []).length > 0 ? 1 : 0;
+        return scalarCount + languageCount;
     }
 
     filterAlumni() {
@@ -357,15 +444,27 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
 
     applySelectedFilters(rows) {
         const activeFields = FILTER_FIELDS.filter((field) => this.toFilterValue(this.selectedFilters[field]));
-        if (!activeFields.length) {
-            return rows;
+        let filtered = rows;
+        if (activeFields.length) {
+            filtered = filtered.filter((alumni) =>
+                activeFields.every((field) =>
+                    this.toFilterValue(alumni[field]).toLowerCase() === this.toFilterValue(this.selectedFilters[field]).toLowerCase()
+                )
+            );
         }
 
-        return rows.filter((alumni) =>
-            activeFields.every((field) =>
-                this.toFilterValue(alumni[field]).toLowerCase() === this.toFilterValue(this.selectedFilters[field]).toLowerCase()
-            )
-        );
+        // Language is multi-select (OR within the selection — knowing ANY of
+        // the picked languages counts), unlike every field above which is an
+        // exact single-value match ANDed together.
+        const selectedLanguages = (this.selectedFilters.language || []).map((v) => v.toLowerCase());
+        if (selectedLanguages.length) {
+            filtered = filtered.filter((alumni) => {
+                const alumniLanguages = (alumni.languages || []).map((v) => v.toLowerCase());
+                return selectedLanguages.some((lang) => alumniLanguages.includes(lang));
+            });
+        }
+
+        return filtered;
     }
 
     rebuildFilterOptions(pruneInvalid = true) {
@@ -373,14 +472,16 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
         FILTER_FIELDS.forEach((field) => {
             buckets[field] = new Set();
         });
+        const languageBucket = new Set();
 
-        (this.alumniSource || []).forEach((alumni) => {
+        this.allKnownAlumni.forEach((alumni) => {
             FILTER_FIELDS.forEach((field) => {
                 const value = this.toFilterValue(alumni[field]);
                 if (value) {
                     buckets[field].add(value);
                 }
             });
+            (alumni.languages || []).forEach((lang) => languageBucket.add(lang));
         });
 
         const nextOptions = {};
@@ -389,6 +490,9 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
                 .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
                 .map((value) => ({ label: value, value }));
         });
+        nextOptions.language = Array.from(languageBucket)
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+            .map((value) => ({ label: value, value }));
 
         this.filterOptions = nextOptions;
         if (pruneInvalid) {
@@ -413,6 +517,13 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
             }
         });
 
+        const validLanguages = new Set((optionsByField.language || []).map((opt) => opt.value));
+        const prunedLanguages = (nextSelected.language || []).filter((v) => validLanguages.has(v));
+        if (prunedLanguages.length !== (nextSelected.language || []).length) {
+            nextSelected.language = prunedLanguages;
+            hasChanges = true;
+        }
+
         if (hasChanges) {
             this.selectedFilters = nextSelected;
         }
@@ -427,6 +538,7 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
             ...this.selectedFilters,
             [field]: event.detail.value || ''
         };
+        this.filterAlumni();
     }
 
     get sortIconClass() {
@@ -498,7 +610,9 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
     }
 
     handleMapViewOpen() {
-        this.mapModalHeight = Math.max(420, Math.min(720, window.innerHeight - 200));
+        // Full-page modal now — only the map's own header (~80px) eats into
+        // the viewport, not the card margins the old capped 720px assumed.
+        this.mapModalHeight = Math.max(420, window.innerHeight - 90);
         this.showMapModal = true;
     }
 
@@ -510,9 +624,23 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
         event.stopPropagation();
     }
 
+    handleMapProfileSelect(event) {
+        const personId = event.detail && event.detail.personId;
+        if (!personId) {
+            return;
+        }
+        this.handleMapModalClose();
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'network__c' },
+            state: { profileId: personId }
+        });
+    }
+
     handleToggleClick(event) {
         event.preventDefault();
         this.showMentorsNearMe = !this.showMentorsNearMe;
+        this.filterAlumni();
     }
 
     handleResetFilters() {
@@ -521,11 +649,26 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
             company: '',
             industry: '',
             jobFunction: '',
+            employmentType: '',
+            gender: '',
             programLastAttended: '',
-            specialisation: '',
             graduationYear: '',
-            currentCity: ''
+            currentCity: '',
+            institute: '',
+            program: '',
+            intake: '',
+            country: '',
+            language: []
         };
+        this.filterAlumni();
+    }
+
+    // Separate from handleFilterValueChange since kenMultiSelectPicklist
+    // dispatches detail.value as an array, not the single string every other
+    // filter's handler assumes.
+    handleLanguageFilterChange(event) {
+        const value = (event.detail && event.detail.value) || [];
+        this.selectedFilters = { ...this.selectedFilters, language: value };
         this.filterAlumni();
     }
 
@@ -634,6 +777,36 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
             return '';
         }
         return String(value).trim();
+    }
+
+    // Languages_Known__c is free text ("English, Hindi, Tamil"), not a
+    // picklist, so a person can have several — this splits + normalizes each
+    // one (title case, so "tamil"/"Tamil"/"TAMIL" all match) instead of the
+    // single-scalar toFilterValue() every other field uses. Same casing
+    // convention as KenAdminAlumniController.normalizeLanguageLabel(), for a
+    // consistent list between the admin and portal filters.
+    toLanguageList(value) {
+        if (!value) {
+            return [];
+        }
+        const seen = new Set();
+        const out = [];
+        String(value)
+            .split(',')
+            .map((part) => part.trim())
+            .filter((part) => part.length > 0)
+            .forEach((part) => {
+                const normalized = part
+                    .toLowerCase()
+                    .split(/\s+/)
+                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(' ');
+                if (!seen.has(normalized)) {
+                    seen.add(normalized);
+                    out.push(normalized);
+                }
+            });
+        return out;
     }
 
     // Same shape as kenAlumniDetailView.educationLine so list cards read like

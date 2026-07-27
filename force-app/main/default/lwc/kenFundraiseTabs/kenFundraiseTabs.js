@@ -11,6 +11,7 @@ const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 export default class KenFundraiseTabs extends NavigationMixin(LightningElement) {
     tabs          = TAB_OPTIONS;
     statusOptions = STATUS_OPTIONS;
+    canCreateFundraise = false;
 
     @track _campaigns   = [];
     @track isLoading    = true;
@@ -29,9 +30,7 @@ export default class KenFundraiseTabs extends NavigationMixin(LightningElement) 
         if (data) this._categoryOptions = data;
     }
 
-    _roleId = localStorage.getItem('ConstituentRoleId');
-
-    @wire(getMyCampaigns, { constituentRoleId: '$_roleId' })
+    @wire(getMyCampaigns)
     wiredCampaigns({ data, error }) {
         this.isLoading = false;
         if (data) {
@@ -202,6 +201,7 @@ export default class KenFundraiseTabs extends NavigationMixin(LightningElement) 
                 if (color?.primaryColor)   document.documentElement.style.setProperty('--primary-color',   color.primaryColor);
                 if (color?.secondaryColor) document.documentElement.style.setProperty('--secondary-color', color.secondaryColor);
                 if (color?.tertiaryColor)  document.documentElement.style.setProperty('--tertiary-color',  color.tertiaryColor);
+                this.canCreateFundraise = color?.createFundraise !== false;
             })
             .catch(() => {});
     }

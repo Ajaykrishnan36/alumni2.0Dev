@@ -1,5 +1,5 @@
 <template>
-    <div class="create-campaign-card" onclick={handleClick}>
+    <div class="create-campaign-card" if:true={canCreateFundraise} onclick={handleClick}>
         <div class="card-header">
             <div class="header-content">
                 <h3 class="card-title">Create New Campaign</h3>

@@ -1,18 +1,12 @@
 <template>
     <div class="photo-gallery-container">
-        <!-- Content Card - Hide when album detail is shown -->
-        <template if:false={showAlbumDetail}>
         <div class="content-card">
-            <!-- Title and Controls Row -->
             <div class="title-controls-row">
-            <!-- Page Title Section -->
             <div class="title-section">
                 <h1 class="page-title">All albums</h1>
             </div>
 
-            <!-- Controls Section -->
             <div class="controls-section">
-            <!-- Search Bar -->
             <div class="search-container">
                 <lightning-icon
                     icon-name="utility:search"
@@ -29,7 +23,6 @@
                 />
             </div>
 
-            <!-- Sort Button -->
             <div class="sort-container">
                 <div class="sort-dropdown-wrapper">
                     <button class="sort-button" type="button" onclick={handleSortButtonClick}>
@@ -72,18 +65,18 @@
                 </div>
             </div>
 
-            <!-- Action Button -->
-            <lightning-button
-                variant="brand"
-                label="Create Album"
-                icon-name="utility:add"
-                onclick={handleCreateAlbum}
-                class="create-album-button"
-            ></lightning-button>
+            <template if:true={canCreateAlbum}>
+                <lightning-button
+                    variant="brand"
+                    label="Create Album"
+                    icon-name="utility:add"
+                    onclick={handleCreateAlbum}
+                    class="create-album-button"
+                ></lightning-button>
+            </template>
             </div>
             </div>
 
-            <!-- Albums Content -->
             <div class="album-grid">
                 <template for:each={filteredAlbums} for:item="album">
                     <div key={album.id} class="album-grid-item">
@@ -102,26 +95,13 @@
                 </div>
             </template>
         </div>
-        </template>
 
-        <!-- Album Detail View - Outside content card -->
-        <template if:true={showAlbumDetail}>
-            <c-ken-album-detail-view
-                album={selectedAlbum}
-                onback={handleBackFromAlbum}
-                onphotosadded={handleAlbumPhotosAdded}
-                onphotodeleted={handleAlbumPhotoDeleted}
-            ></c-ken-album-detail-view>
-        </template>
-
-        <!-- Create Album Modal -->
         <c-ken-create-album-modal
             show-modal={showCreateAlbumModal}
             onclose={handleCloseCreateAlbumModal}
             oncreate={handleAlbumCreate}
         ></c-ken-create-album-modal>
 
-        <!-- Edit Album Link Modal -->
         <c-ken-edit-album-link-modal
             album={editLinkAlbum}
             show-modal={showEditLinkModal}

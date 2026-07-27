@@ -1,6 +1,7 @@
 import { LightningElement, api } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
 
 export default class KenTasksSection extends NavigationMixin(LightningElement) {
     @api tasks = [];
@@ -18,6 +19,13 @@ export default class KenTasksSection extends NavigationMixin(LightningElement) {
     normalizeText(value) {
         if (value === null || value === undefined) return '';
         return String(value);
+    }
+
+    handleAvatarError(event) {
+        const img = event && event.target;
+        if (!img || img.dataset.fallbackApplied === 'true') return;
+        img.dataset.fallbackApplied = 'true';
+        img.src = defaultProfileImage;
     }
 
     getDescriptionPreview(fullText, maxChars) {
@@ -38,7 +46,7 @@ export default class KenTasksSection extends NavigationMixin(LightningElement) {
             priorityClass: this.getPriorityClass(task.priority),
             endDateLabel: this.formatDateLabel(task.endDate),
             assigneeName: task.assigneeName || task.assignee || '',
-            assigneeAvatar: task.assigneeAvatar || task.assigneeImage || '',
+            assigneeAvatar: task.assigneeAvatar || task.assigneeImage || defaultProfileImage,
             showAssignee: !!(task.assigneeName || task.assignee),
             isMenuOpen: this.openTaskMenuId === String(task.id),
             isDescriptionExpanded: this.expandedDescriptionTaskIds.has(String(task.id)),

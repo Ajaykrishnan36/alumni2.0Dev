@@ -1,45 +1,57 @@
 .education-card {
-    background-color: #F6F8FB;
+    position: relative;
+    background-color: var(--portal-surface-hover, #F9FAFB);
     border-radius: var(--portal-radius, 12px);
-    padding: 18px 20px;
+    padding: 16px;
     border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
     box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
     font-family: 'GeneralSansCustom', -apple-system, BlinkMacSystemFont, sans-serif;
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.education-card:hover {
+    box-shadow: var(--portal-popover-shadow, 0 16px 40px rgba(16, 24, 40, 0.18));
+    transform: translateY(-2px);
 }
 
 .education-content {
-    flex: 1;
     min-width: 0;
+    padding-right: 72px;
 }
 
 .card-actions {
+    position: absolute;
+    top: 12px;
+    right: 12px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
+    gap: 6px;
 }
 
 .icon-btn-plain {
     background: none;
     border: none;
     cursor: pointer;
-    color: #6b7280;
+    color: var(--portal-text-muted, #4B5563);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
 }
 
 .icon-btn-plain lightning-icon {
-    --sds-c-icon-color-foreground-default: #6b7280;
+    --sds-c-icon-color-foreground-default: var(--portal-text-muted, #4B5563);
 }
 
 .icon-btn-plain:hover {
-    color: #374151;
+    color: var(--portal-text-primary, #1F2937);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .ken-edit-icon-btn {
@@ -48,15 +60,15 @@
     justify-content: center;
     width: 32px;
     height: 32px;
-    background: var(--secoundry-color, #f3f4f6);
-    border: 1px solid var(--primary-color);
+    background: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
     border-radius: 8px;
     cursor: pointer;
     flex-shrink: 0;
 }
 
 .ken-edit-icon-btn:hover {
-    filter: brightness(0.95);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 .education-logo {
@@ -78,20 +90,20 @@
 .degree {
     font-size: 0.95rem;
     font-weight: 500;
-    color: #373A45;
+    color: var(--portal-text-primary, #1F2937);
     margin: 0 0 4px 0;
 }
 
 .institution {
     font-size: 0.875rem;
-    color: #374151;
+    color: var(--portal-text-primary, #1F2937);
     font-weight: 600;
     margin: 0 0 6px 0;
 }
 
 .meta {
     font-size: 0.8125rem;
-    color: #6b7280;
+    color: var(--portal-text-muted, #4B5563);
     margin: 0;
 }
 

@@ -45,9 +45,7 @@ export default class KenFundraiseViewPage extends NavigationMixin(LightningEleme
         }
     }
 
-    _roleId = localStorage.getItem('ConstituentRoleId');
-
-    @wire(getCampaignById, { campaignId: '$_campaignId', constituentRoleId: '$_roleId' })
+    @wire(getCampaignById, { campaignId: '$_campaignId' })
     wiredCampaign(result) {
         this._wiredCampaignResult = result;
         if (result.data) {
@@ -276,7 +274,7 @@ export default class KenFundraiseViewPage extends NavigationMixin(LightningEleme
         this._isDeleting = true;
         this._deleteError = null;
         try {
-            await deleteCampaign({ campaignId: this.campaign.id, constituentRoleId: this._roleId });
+            await deleteCampaign({ campaignId: this.campaign.id });
             this._showDeleteModal = false;
             this.campaign = { ...this.campaign, campaignStatus: 'Deletion Requested' };
             this._showDeleteSuccessPopup = true;
@@ -414,7 +412,7 @@ export default class KenFundraiseViewPage extends NavigationMixin(LightningEleme
         this._isClosing = true;
         this._closeError = null;
         try {
-            await closeCampaign({ campaignId: this.campaign.id, constituentRoleId: this._roleId });
+            await closeCampaign({ campaignId: this.campaign.id });
             this._showCloseModal = false;
             this.campaign = { ...this.campaign, campaignStatus: 'Completed' };
         } catch (e) {

@@ -187,26 +187,22 @@
                         </lightning-input>
                     </div>
                     <div class="filter-field">
-                        <lightning-combobox
-                            label=""
+                        <c-ken-searchable-select
                             placeholder="Status"
                             options={statusOptions}
                             value={selectedStatus}
                             onchange={handleStatusChange}
-                            variant="label-hidden"
                             class="filter-combobox">
-                        </lightning-combobox>
+                        </c-ken-searchable-select>
                     </div>
                     <div class="filter-field">
-                        <lightning-combobox
-                            label=""
+                        <c-ken-searchable-select
                             placeholder="Choose Survey/Feedback"
                             options={surveyFeedbackOptions}
                             value={selectedSurveyFeedback}
                             onchange={handleSurveyFeedbackChange}
-                            variant="label-hidden"
                             class="filter-combobox">
-                        </lightning-combobox>
+                        </c-ken-searchable-select>
                     </div>
                 </div>
                 <div class="filters-actions">

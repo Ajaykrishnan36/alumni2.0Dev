@@ -22,7 +22,7 @@
             </template>
         </div>
         <div class="alumni-name-row">
-            <h3 class="alumni-name">{name}</h3>
+            <h3 class="alumni-name" title={name}>{name}</h3>
             <template if:true={linkedinUrl}>
                 <a href={linkedinUrl} target="_blank" rel="noopener noreferrer" class="alumni-linkedin-link" aria-label="LinkedIn profile" onclick={handleLinkedinClick}>
                     <svg width="20" height="20" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">

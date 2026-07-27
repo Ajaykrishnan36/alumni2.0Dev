@@ -41,7 +41,7 @@ const DRAFT_STORAGE_KEY = 'createSurveyDraft';
 const SURVEY_ID_STORAGE_KEY = 'createSurveySurveyId';
 const ALLOWED_QUESTION_TYPES = ['multiple', 'checkbox', 'linear', 'short'];
 const QUESTION_TYPE_LABELS = {
-    multiple: 'Multiple Choice',
+    multiple: 'Single Select',
     checkbox: 'Checkbox',
     linear: 'Linear Scale',
     short: 'Short Answer'
@@ -82,6 +82,10 @@ export default class KenCreateSurvey extends NavigationMixin(LightningElement) {
     // True when the LWC is hosted outside of Experience Cloud (System Admin / Lightning app).
     // basePath is the empty string in internal contexts, '/<siteUrlPath>' on a community page.
     isAdminContext = IS_ADMIN_CONTEXT;
+    // Portal access gate — hides the form behind an opaque overlay until we confirm
+    // "Allow Create Survey" is on, so it never flashes before a redirect.
+    @track checkingAccess = false;
+    @track accessDenied = false;
     // recordId comes from the Aura action-override wrapper (editSurveyForm.cmp). When present
     // we treat the LWC as in edit mode for that survey and load existing data from Apex.
     _recordId;
@@ -462,16 +466,25 @@ export default class KenCreateSurvey extends NavigationMixin(LightningElement) {
         this.persistDraft();
     }
 
+    get showAccessGate() {
+        return this.checkingAccess || this.accessDenied;
+    }
+
     connectedCallback() {
+        if (!IS_ADMIN_CONTEXT) {
+            this.checkingAccess = true;
+        }
         // Theme colors — portal pulls these from KenThemeConfigController. In admin
         // context the same call returns the org's defaults; failures are non-fatal.
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
             document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
+            this.enforcePortalCreateAccess(color);
         }).catch(() => {
             // eslint-disable-next-line no-console
             console.log('Error getting primary color');
+            this.enforcePortalCreateAccess(null);
         });
 
         // Close dropdown when clicking outside
@@ -610,6 +623,22 @@ export default class KenCreateSurvey extends NavigationMixin(LightningElement) {
             showLinearScale: false, showShortAnswer: false,
             nextOptionNumber: 1, hasInsufficientOptions: false, cannotDeleteOption: false
         }];
+    }
+
+    // Portal URL guard: if "Allow Create Survey" is off, a portal user reaching
+    // /create-survey directly is bounced back to the Surveys page. Admin/internal
+    // context is never gated.
+    enforcePortalCreateAccess(config) {
+        this.checkingAccess = false;
+        if (IS_ADMIN_CONTEXT) {
+            return;
+        }
+        if (config && config.createSurvey !== false) {
+            return;
+        }
+        this.accessDenied = true;
+        const base = (basePath || '').replace(/\/+$/, '');
+        window.location.assign(`${base}/survey`);
     }
 
     renderedCallback() {
@@ -781,7 +810,7 @@ export default class KenCreateSurvey extends NavigationMixin(LightningElement) {
                 (!q.options || q.options.length < 2)
             );
             if (hasInsufficientOptions) {
-                this.showError('Error', 'Multiple Choice and Checkbox questions must have at least 2 options.');
+                this.showError('Error', 'Single Select and Checkbox questions must have at least 2 options.');
                 return;
             }
             this.isStep3Completed = true;
@@ -1057,7 +1086,7 @@ export default class KenCreateSurvey extends NavigationMixin(LightningElement) {
         
         // Prevent deletion if it would leave less than 2 options
         if (question && question.options && question.options.length <= 2) {
-            this.showError('Cannot delete option', 'Multiple Choice and Checkbox questions must have at least 2 options.');
+            this.showError('Cannot delete option', 'Single Select and Checkbox questions must have at least 2 options.');
             return;
         }
         
@@ -1347,7 +1376,7 @@ export default class KenCreateSurvey extends NavigationMixin(LightningElement) {
             (!q.options || q.options.length < 2)
         );
         if (hasInsufficientOptions) {
-            return 'Multiple Choice and Checkbox questions must have at least 2 options.';
+            return 'Single Select and Checkbox questions must have at least 2 options.';
         }
         return '';
     }

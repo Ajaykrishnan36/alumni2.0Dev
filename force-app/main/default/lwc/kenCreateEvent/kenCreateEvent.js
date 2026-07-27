@@ -244,8 +244,7 @@ if (!file) {
     try {
       // backend flow: keep portal flag false
       this.eventfields.isPortal = false;
-      const constituentRoleId = localStorage.getItem('ConstituentRoleId');
-      await updateEvent({ eventData: JSON.stringify(this.eventfields), constituentRoleId })
+      await updateEvent({ eventData: JSON.stringify(this.eventfields) })
 
       this[NavigationMixin.Navigate]({
         attributes: {
@@ -277,8 +276,7 @@ if (!file) {
     try {
       // backend flow: keep portal flag false
       this.eventfields.isPortal = false;
-      const constituentRoleId = localStorage.getItem('ConstituentRoleId');
-      await updateEvent({ eventData: JSON.stringify(this.eventfields), constituentRoleId })
+      await updateEvent({ eventData: JSON.stringify(this.eventfields) })
 
       this.showToast('Success', 'Event Data saved successfully', 'success');
 

@@ -174,6 +174,16 @@ export default class KenScheduleSetup extends LightningElement {
         }));
     }
 
+    handleTimeInputClick(event) {
+        if (typeof event.target.showPicker === 'function') {
+            try {
+                event.target.showPicker();
+            } catch (e) {
+                // showPicker() can throw (e.g. not triggered by user activation); fall back to default browser behavior
+            }
+        }
+    }
+
     handleSessionAgendaChange(event) {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'agendaChange', value: event.target.value },

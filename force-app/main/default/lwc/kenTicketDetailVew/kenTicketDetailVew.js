@@ -3,6 +3,7 @@ import { CurrentPageReference } from 'lightning/navigation';
 import getCaseDetail from '@salesforce/apex/KenServiceSupportController.getCaseDetail';
 import closeCase from '@salesforce/apex/KenServiceSupportController.closeCase';
 import addCaseComment from '@salesforce/apex/KenServiceSupportController.addCaseComment';
+import submitCaseFeedback from '@salesforce/apex/KenServiceSupportController.submitCaseFeedback';
 import getColors from '@salesforce/apex/KenSnSColorController.getColors';
 import getGatePassesForCase from '@salesforce/apex/KenGatePassController.getGatePassesForCase';
 import getApprovalHistory from '@salesforce/apex/KenServiceSupportController.getApprovalHistory';
@@ -57,6 +58,7 @@ export default class KenTicketDetailVew extends LightningElement {
     @track selectedRating = 0;
     @track feedbackText = '';
     @track hasSubmittedFeedback = false;
+    @track showRatingError = false;
     @track approvalHistory = [];
 
     @wire(CurrentPageReference)
@@ -581,6 +583,7 @@ export default class KenTicketDetailVew extends LightningElement {
     handleStarClick(event) {
         const rating = parseInt(event.currentTarget.dataset.rating, 10);
         this.selectedRating = rating;
+        this.showRatingError = false;
     }
 
     handleFeedbackTextChange(event) {
@@ -591,12 +594,18 @@ export default class KenTicketDetailVew extends LightningElement {
         this.showFeedbackModal = false;
         this.selectedRating = 0;
         this.feedbackText = '';
+        this.showRatingError = false;
     }
 
     handleSubmitFeedback() {
-        if (!this.caseId || this.selectedRating < 1) {
+        if (!this.caseId) {
             return;
         }
+        if (this.selectedRating < 1) {
+            this.showRatingError = true;
+            return;
+        }
+        this.showRatingError = false;
         const rating = String(this.selectedRating);
         const feedback = this.feedbackText;
         submitCaseFeedback({ caseId: this.caseId, rating, feedback })

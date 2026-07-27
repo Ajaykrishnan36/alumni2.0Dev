@@ -1,19 +1,26 @@
 .stepper-container {
-    max-width: 90%;
+    max-width: 1238px;
     margin: 20px auto;
-    border-radius: 12px;
+    border-radius: var(--portal-radius, 12px);
     padding: 0px;
-    background-color: white;
-    min-height: calc(100vh - 158px);
+    background-color: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    height: calc(100vh - 128px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 .header-banner {
     position: relative;
     width: 100%;
-    height: 130px;
-    border-radius: 12px 12px 0px 0px;
+    height: 110px;
+    border-radius: var(--portal-radius, 12px) var(--portal-radius, 12px) 0px 0px;
     overflow: hidden;
     margin-bottom: 1rem;
+    flex-shrink: 0;
 }
 
 .header-image {
@@ -37,7 +44,7 @@
 
 .banner-text {
     color: white;
-    font-size: 2rem;
+    font-size: 1.6rem;
     font-weight: 600;
     text-align: center;
     margin: 0;
@@ -48,9 +55,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 1rem;
-    padding: 0 2rem;
+    padding: 0.75rem 2rem;
     gap: 3rem;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--portal-surface, #ffffff);
+    border-bottom: 1px solid var(--portal-divider-color, #F3F4F6);
 }
 
 .step-item {
@@ -104,7 +116,13 @@
 }
 
 .step-content-wrapper {
-    min-height: 400px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.step-content-wrapper > * {
+    flex: 1;
 }
 
 .top-dialog,
@@ -169,7 +187,9 @@
 @media only screen and (min-width: 601px) and (max-width: 1024px) {
     .stepper-container {
         width: 95%;
+        max-width: 95%;
         margin: 20px auto;
+        height: auto;
         min-height: auto;
     }
     .banner-text {
@@ -193,7 +213,8 @@
         max-width: 100%;
         margin: 0;
         border-radius: 0;
-        min-height: auto; 
+        height: auto;
+        min-height: auto;
         box-sizing: border-box; /* Critical for preventing width overflow with padding/borders */
         overflow: hidden; /* Prevent child content from spilling out */
     }

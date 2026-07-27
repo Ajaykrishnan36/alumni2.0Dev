@@ -21,7 +21,6 @@ export default class KenBusinessDetailView extends NavigationMixin(
   LightningElement
 ) {
   @api business;
-  _roleId = localStorage.getItem('ConstituentRoleId');
   _isStandaloneMode = false;
 
   // Only apply the full-viewport height/scroll treatment when this component
@@ -136,7 +135,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
     // is placed standalone on business_detail__c, not embedded inside
     // kenBusinessDirectory) — used by handleBack() to decide how to navigate.
     this._isStandaloneMode = true;
-    getBusinessById({ businessId, constituentRoleId: this._roleId })
+    getBusinessById({ businessId })
       .then((data) => {
         if (data) this.businessData = { ...data };
         else this.loadDefaultBusinessData();
@@ -443,8 +442,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
     expressInterest({
       businessId: this.businessData.id,
       subject: this.subject,
-      message: this.message,
-      constituentRoleId: this._roleId
+      message: this.message
     })
       .then(() => {
         this.dispatchEvent(
@@ -528,7 +526,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
 
   handleConfirmDelete() {
     const name = this.businessData.name;
-    deleteBusiness({ businessId: this.businessData.id, constituentRoleId: this._roleId })
+    deleteBusiness({ businessId: this.businessData.id })
       .then(() => {
         this.showDeleteModal = false;
         this.businessData = { ...this.businessData, status: 'Deletion Requested' };
@@ -590,8 +588,8 @@ export default class KenBusinessDetailView extends NavigationMixin(
   }
 
   handleConfirmDeactivate() {
-    setBusinessActive({ businessId: this.businessData.id, isActive: false, constituentRoleId: this._roleId })
-      .then(() => getBusinessById({ businessId: this.businessData.id, constituentRoleId: this._roleId }))
+    setBusinessActive({ businessId: this.businessData.id, isActive: false })
+      .then(() => getBusinessById({ businessId: this.businessData.id }))
       .then((data) => {
         if (data) this.businessData = { ...data };
         this.showDeactivateModal = false;
@@ -621,8 +619,8 @@ export default class KenBusinessDetailView extends NavigationMixin(
   }
 
   handleConfirmReactivate() {
-    setBusinessActive({ businessId: this.businessData.id, isActive: true, constituentRoleId: this._roleId })
-      .then(() => getBusinessById({ businessId: this.businessData.id, constituentRoleId: this._roleId }))
+    setBusinessActive({ businessId: this.businessData.id, isActive: true })
+      .then(() => getBusinessById({ businessId: this.businessData.id }))
       .then((data) => {
         if (data) this.businessData = { ...data };
         this.showReactivateModal = false;
@@ -652,8 +650,8 @@ export default class KenBusinessDetailView extends NavigationMixin(
   }
 
   handleConfirmRemoveFeature() {
-    removeFeature({ businessId: this.businessData.id, constituentRoleId: this._roleId })
-      .then(() => getBusinessById({ businessId: this.businessData.id, constituentRoleId: this._roleId }))
+    removeFeature({ businessId: this.businessData.id })
+      .then(() => getBusinessById({ businessId: this.businessData.id }))
       .then((data) => {
         if (data) this.businessData = { ...data };
         this.showRemoveFeatureModal = false;
@@ -679,7 +677,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
     if (!businessId) {
       return;
     }
-    getBusinessById({ businessId, constituentRoleId: this._roleId })
+    getBusinessById({ businessId })
       .then((data) => {
         if (data) {
           this.businessData = { ...data };
@@ -787,10 +785,9 @@ export default class KenBusinessDetailView extends NavigationMixin(
       subject: this.featureSubject,
       message: this.featureMessage,
       featuredFrom: this.featureDateFrom,
-      featuredTo: this.featureDateTo,
-      constituentRoleId: this._roleId
+      featuredTo: this.featureDateTo
     })
-      .then(() => getBusinessById({ businessId: this.businessData.id, constituentRoleId: this._roleId }))
+      .then(() => getBusinessById({ businessId: this.businessData.id }))
       .then((data) => {
         if (data) this.businessData = { ...data };
         this.showFeatureModal = false;
@@ -873,8 +870,8 @@ export default class KenBusinessDetailView extends NavigationMixin(
       req.requestFeature = payload.requestFeature === true;
       req.featuredFrom = payload.featuredFrom;
       req.featuredTo = payload.featuredTo;
-      updateBusiness({ req, constituentRoleId: this._roleId })
-        .then(() => getBusinessById({ businessId: this.businessData?.id, constituentRoleId: this._roleId }))
+      updateBusiness({ req })
+        .then(() => getBusinessById({ businessId: this.businessData?.id }))
         .then((data) => {
           if (data) this.businessData = { ...data };
           this.dispatchEvent(
@@ -896,7 +893,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
     } else {
       // List Your Business -> create a brand new business (no id)
       const segmentationId = payload.audienceSegmentationId || null;
-      createBusiness({ req, constituentRoleId: this._roleId })
+      createBusiness({ req })
         .then((newBusinessId) => {
           if (segmentationId && newBusinessId) {
             return linkSegmentationToParent({

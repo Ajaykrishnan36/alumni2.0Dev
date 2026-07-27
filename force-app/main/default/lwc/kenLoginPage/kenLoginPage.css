@@ -250,9 +250,14 @@
 
 .sso-buttons-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 12px;
   margin-top: 12px;
+}
+
+.sso-buttons-container .google-button {
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .google-button {

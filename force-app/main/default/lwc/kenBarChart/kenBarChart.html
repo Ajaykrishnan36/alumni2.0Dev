@@ -1,15 +1,8 @@
 <template>
     <div class="chart-card">
         <div class="card-header">
-            <div class="card-header-row">
-                <div>
-                    <h3 class="card-title">{title}</h3>
-                    <p class="card-desc">{description}</p>
-                </div>
-                <template if:true={showExport}>
-                    <button class="chart-export-btn" onclick={handleExport} title="Download all cases as CSV">&#x2193; Download CSV</button>
-                </template>
-            </div>
+            <h3 class="card-title">{title}</h3>
+            <p class="card-desc">{description}</p>
         </div>
         <template if:true={isLoading}>
             <div class="loading-state"><div class="spinner"></div></div>

@@ -347,10 +347,6 @@ export default class KenAllApplicationsPage extends LightningElement {
         this.isFiltersOpen = false;
     }
 
-    // Mirrors draftFilters/draftShowMentors into the applied state that visibleApplications
-    // reads, so picking a value filters live instead of waiting for the Apply button.
-    // visibleApplications is a plain getter over the in-memory APPLICATIONS array, so
-    // reassigning these fields is enough to trigger recomputation on next render.
     _applyDraftLive() {
         this.appliedFilters = { ...this.draftFilters };
         this.appliedShowMentors = this.draftShowMentors;

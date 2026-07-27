@@ -168,6 +168,20 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    position: relative;
+}
+
+/* Force a fixed trigger height so selecting a value (which SLDS renders
+   slightly taller than the placeholder state) never resizes the field. */
+.date-field-wrapper .custom-select {
+    height: 44px;
+    box-sizing: border-box;
+}
+
+.date-field-wrapper .custom-select .slds-combobox__input {
+    height: 44px !important;
+    box-sizing: border-box !important;
+    line-height: 1.5 !important;
 }
 
 .custom-input,

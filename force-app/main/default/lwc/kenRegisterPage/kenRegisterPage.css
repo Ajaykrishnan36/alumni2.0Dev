@@ -39,17 +39,19 @@
 
 /* Card container — frosted glass card that lets the hero-based gradient show through */
 .section-width {
-    width: 470px;
+    width: 560px;
     max-width: 92vw;
+    min-height: min(760px, 82vh);
     /* NOTE: no backdrop-filter here — it creates a containing block that breaks
        the fixed-positioned picklist/phone dropdowns. The page-bg-blur behind
        already gives the frosted look through this translucent card. */
     background: rgba(255, 255, 255, 0.75);
-    padding: 24px 28px;
+    padding: 28px 24px;
     border-radius: 24px;
     box-shadow: 0 18px 50px rgba(15, 23, 42, 0.14);
     display: flex;
     flex-direction: column;
+    justify-content: center;
     /* Ensure dropdowns are not clipped - allow overflow for dropdowns */
     overflow: visible;
     position: relative;
@@ -74,6 +76,12 @@
     grid-column: 1 / -1;
 }
 
+/* Force a field onto a fresh row's first column, leaving the previous row's
+   right cell empty (Select Programme sits alone above the two year fields). */
+.form-field.row-start {
+    grid-column-start: 1;
+}
+
 /* Grid gap owns the spacing, so zero out the inner components' own margins */
 .form-grid .register-searchable,
 .form-grid .phone-input-component {
@@ -91,15 +99,15 @@
 }
 
 .please-note {
-    font-size: 12px;
+    font-size: 10px;
     line-height: 1.4;
-    color: #6b7280;
+    color: #7B7B7B;
     margin: 0;
     font-family: 'General Sans', sans-serif !important;
 }
 
 .please-note strong {
-    color: #4b5563;
+    color: #7B7B7B;
     font-weight: 600;
 }
 
@@ -894,6 +902,7 @@ lightning-button.studentportal-BlueButtonLogin button.slds-button_neutral {
 @media (max-width: 768px) {
     .section-width {
         width: 100%;
+        min-height: auto;
         padding: 1.5rem;
     }
 

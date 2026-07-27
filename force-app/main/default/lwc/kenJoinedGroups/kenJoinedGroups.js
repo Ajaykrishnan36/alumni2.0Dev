@@ -92,9 +92,6 @@ export default class KenJoinedGroups extends LightningElement {
         this._applyDraftLive();
     }
 
-    // Mirrors filterDraft into the applied* fields used by the filteredGroups
-    // getter, so picking a value filters live instead of waiting for the
-    // Apply button (matches kenGroups / kenMentorshipConnections).
     _applyDraftLive() {
         this.appliedStatus    = this.filterStatus;
         this.appliedType      = this.filterType;

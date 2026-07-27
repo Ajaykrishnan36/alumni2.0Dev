@@ -21,6 +21,64 @@
                     </div>
                 </div>
             </template>
+
+            <!-- Guest (landing page): centered login prompt over the map -->
+            <div class="map-guest-overlay" lwc:if={showGuestPrompt} onclick={closeSidebar}>
+                <div class="map-guest-card" onclick={stopPropagation}>
+                    <button class="map-guest-close" onclick={closeSidebar} aria-label="Close" type="button">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                    </button>
+                    <p class="map-guest-title">You need to be logged in to see the results</p>
+                    <button class="map-guest-cta" type="button" onclick={handleGuestLogin}>Sign In / Sign Up</button>
+                </div>
+            </div>
+
+            <!-- Portal / admin: right-side list of people at the clicked location -->
+            <div class="map-sidebar" lwc:if={showPeopleSidebar}>
+                <div class="sidebar-header">
+                    <div class="sidebar-heading">
+                        <p class="sidebar-title">{sidebarTitle}</p>
+                        <p class="sidebar-count">{sidebarCountLabel}</p>
+                    </div>
+                    <button class="sidebar-close" onclick={closeSidebar} aria-label="Close" type="button">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="sidebar-body">
+                    <template lwc:if={sidebarLoading}>
+                        <div class="sidebar-status">
+                            <lightning-spinner alternative-text="Loading people" size="small"></lightning-spinner>
+                        </div>
+                    </template>
+                    <template lwc:if={sidebarError}>
+                        <p class="sidebar-status sidebar-error-text">{sidebarError}</p>
+                    </template>
+                    <template lwc:if={hasPeople}>
+                        <ul class="people-list">
+                            <template for:each={sidebarPeople} for:item="p">
+                                <li key={p.personId} class="person-row" data-person-id={p.personId}
+                                    data-role-id={p.constituentRoleId} data-name={p.name}
+                                    onclick={handleProfileClick}>
+                                    <span class="person-avatar">
+                                        <template lwc:if={p.hasImage}>
+                                            <img src={p.profileImage} alt={p.name} class="person-avatar-img"
+                                                data-person-id={p.personId} onerror={handleAvatarError} />
+                                        </template>
+                                        <template lwc:else>{p.initials}</template>
+                                    </span>
+                                    <span class="person-info">
+                                        <span class="person-name">{p.name}</span>
+                                        <span class="person-subtitle" lwc:if={p.subtitle}>{p.subtitle}</span>
+                                    </span>
+                                </li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template lwc:if={showEmptyState}>
+                        <p class="sidebar-status">No alumni found for this location.</p>
+                    </template>
+                </div>
+            </div>
         </div>
     </div>
 </template>

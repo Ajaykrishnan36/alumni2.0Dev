@@ -2,7 +2,7 @@ import { LightningElement, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getPortalConfigs from '@salesforce/apex/KenThemeConfigController.getPortalConfigs';
 import getDashboardMetrics from '@salesforce/apex/KenAlumniAdminDashboardController.getDashboardMetrics';
-import getFunnelData from '@salesforce/apex/KenAlumniAdminDashboardController.getFunnelData';
+import getLifecycleFunnel from '@salesforce/apex/KenAlumniAdminDashboardController.getLifecycleFunnel';
 import getSourceDistribution from '@salesforce/apex/KenAlumniAdminDashboardController.getSourceDistribution';
 import getDataHealthBreakdown from '@salesforce/apex/KenAlumniAdminDashboardController.getDataHealthBreakdown';
 import getOnboardingTrend from '@salesforce/apex/KenAlumniAdminDashboardController.getOnboardingTrend';
@@ -19,9 +19,7 @@ const FALLBACK_PALETTE = ['#1E3A8A', '#14B8A6', '#4F46E5', '#3B82F6', '#06B6D4',
 
 export default class KenAdminDashboard extends NavigationMixin(LightningElement) {
     metrics;
-    uploadFunnel;
-    transitionFunnel;
-    leadsFunnel;
+    lifecycleFunnel;
     sourceSlices;
     healthBars;
     trendPoints;
@@ -84,19 +82,9 @@ export default class KenAdminDashboard extends NavigationMixin(LightningElement)
         if (data) this.metrics = data;
     }
 
-    @wire(getFunnelData, { funnelKey: 'upload' })
-    wiredUploadFunnel({ data }) {
-        if (data) this.uploadFunnel = this.decorateFunnel(data);
-    }
-
-    @wire(getFunnelData, { funnelKey: 'transition' })
-    wiredTransitionFunnel({ data }) {
-        if (data) this.transitionFunnel = this.decorateFunnel(data);
-    }
-
-    @wire(getFunnelData, { funnelKey: 'leads' })
-    wiredLeadsFunnel({ data }) {
-        if (data) this.leadsFunnel = this.decorateFunnel(data);
+    @wire(getLifecycleFunnel)
+    wiredLifecycleFunnel({ data }) {
+        if (data) this.lifecycleFunnel = this.decorateFunnel(data);
     }
 
     @wire(getSourceDistribution)
@@ -244,9 +232,7 @@ export default class KenAdminDashboard extends NavigationMixin(LightningElement)
 
     decorateFunnel(f) {
         const FILTER_KEYS = {
-            upload:     ['upload-uploaded', 'upload-available', 'upload-registered', 'upload-active'],
-            transition: ['transition-cohort', 'transition-invited', 'transition-registered', 'transition-active'],
-            leads:      ['leads-leads', 'leads-verified', 'leads-registered', 'leads-active']
+            lifecycle: ['life-leads', 'life-verified', 'life-registered', 'life-onboarding', 'life-active']
         };
         const keys = FILTER_KEYS[f.funnelKey] || [];
         return {
@@ -375,17 +361,12 @@ export default class KenAdminDashboard extends NavigationMixin(LightningElement)
        ============================================================ */
     get hasMetrics() { return !!this.metrics; }
     get isLoadingMetrics() { return !this.metrics; }
-    get totalAlumniDisplay() { return this.hasMetrics ? this.formatNumber(this.metrics.totalAlumni) : '—'; }
-    get institutionVerifiedDisplay() { return this.hasMetrics ? this.formatNumber(this.metrics.institutionVerified) : '—'; }
-    get portalRegisteredDisplay() { return this.hasMetrics ? this.formatNumber(this.metrics.portalRegistered) : '—'; }
-    get pendingActivationDisplay() { return this.hasMetrics ? this.formatNumber(this.metrics.pendingActivation) : '—'; }
+    get unverifiedLeadsDisplay() { return this.hasMetrics ? this.formatNumber(this.metrics.unverifiedLeads) : '—'; }
+    get registeredAlumniDisplay() { return this.hasMetrics ? this.formatNumber(this.metrics.registeredAlumni) : '—'; }
+    get activeAlumniDisplay() { return this.hasMetrics ? this.formatNumber(this.metrics.activeAlumni) : '—'; }
 
-    get isLoadingUpload() { return !this.uploadFunnel; }
-    get isLoadingTransition() { return !this.transitionFunnel; }
-    get isLoadingLeads() { return !this.leadsFunnel; }
-    get uploadTitle() { return this.uploadFunnel ? `Funnel 01 · ${this.uploadFunnel.title}` : 'Funnel 01'; }
-    get transitionTitle() { return this.transitionFunnel ? `Funnel 02 · ${this.transitionFunnel.title}` : 'Funnel 02'; }
-    get leadsTitle() { return this.leadsFunnel ? `Funnel 03 · ${this.leadsFunnel.title}` : 'Funnel 03'; }
+    get isLoadingLifecycle() { return !this.lifecycleFunnel; }
+    get lifecycleTitle() { return this.lifecycleFunnel ? this.lifecycleFunnel.title : 'Lead Lifecycle'; }
 
     get isLoadingSource() { return !this.sourceSlices; }
     get hasSource() { return this.sourceSlices && this.sourceSlices.length > 0; }

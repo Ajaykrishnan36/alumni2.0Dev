@@ -1,9 +1,9 @@
 <template>
-    <div class="groups-created-container">
+    <div class="groups-created-container" lwc:if={canCreateGroups}>
 
         <div class="card-header">
             <h3 class="card-title">Created Groups <span if:true={hasGroups}>({groupCount})</span></h3>
-            <template if:true={hasGroups}>
+            <template if:true={showHeaderCreate}>
                 <button class="btn-create" onclick={handleCreate}>Create Group</button>
             </template>
         </div>
@@ -32,7 +32,9 @@
                     <img src={SurveyEmptyImageUrl} alt="No groups created" class="empty-img" />
                     <p class="empty-text">You haven&#39;t created a group yet</p>
                 </div>
-                <button class="btn-create-main" onclick={handleCreate}>Create Group</button>
+                <template if:true={canCreateGroups}>
+                    <button class="btn-create-main" onclick={handleCreate}>Create Group</button>
+                </template>
             </div>
         </template>
 

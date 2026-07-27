@@ -27,6 +27,7 @@ export default class KenServiceHistory extends NavigationMixin(LightningElement)
     @track feedbackText = '';
     @track submittedFeedbackCases = new Set();
     @track searchTerm = '';
+    @track showRatingError = false;
 
     @api activeTab = TAB_SERVICE;
     @api recordLimit;
@@ -493,6 +494,7 @@ export default class KenServiceHistory extends NavigationMixin(LightningElement)
     handleStarClick(event) {
         const rating = parseInt(event.currentTarget.dataset.rating, 10);
         this.selectedRating = rating;
+        this.showRatingError = false;
     }
 
     handleFeedbackTextChange(event) {
@@ -506,6 +508,7 @@ export default class KenServiceHistory extends NavigationMixin(LightningElement)
         this.currentFeedbackTitle = null;
         this.selectedRating = 0;
         this.feedbackText = '';
+        this.showRatingError = false;
     }
 
     handleSubmitFeedback() {
@@ -513,8 +516,10 @@ export default class KenServiceHistory extends NavigationMixin(LightningElement)
             return;
         }
         if (!this.selectedRating || this.selectedRating < 1) {
+            this.showRatingError = true;
             return;
         }
+        this.showRatingError = false;
 
         const caseId = this.currentFeedbackCaseId;
         const rating = String(this.selectedRating); // picklist expects string value
@@ -539,7 +544,7 @@ export default class KenServiceHistory extends NavigationMixin(LightningElement)
                     this.showSuccessDialog = false;
                 }, 3000);
 
-
+                this.loadHistory();
             })
             .catch(error => {
                 console.error('Feedback submit error:', error);

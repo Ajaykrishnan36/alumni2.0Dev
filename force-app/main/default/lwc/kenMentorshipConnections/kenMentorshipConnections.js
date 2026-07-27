@@ -372,8 +372,6 @@ export default class KenMentorshipConnections extends LightningElement {
         }
     }
 
-    // Mirrors filterDraft into appliedFilters and re-filters immediately,
-    // so picking a value filters live instead of waiting for the Apply button.
     _applyDraftLive() {
         const draft = this.filterDraft;
         const applied = { showMentorsNearMe: draft.showMentorsNearMe };

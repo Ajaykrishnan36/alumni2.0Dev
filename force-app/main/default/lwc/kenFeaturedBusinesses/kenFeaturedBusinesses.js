@@ -3,12 +3,11 @@ import getFeaturedBusinesses from "@salesforce/apex/KenBusinessController.getFea
 import defaultBusinessImage from "@salesforce/resourceUrl/AlumniAlt";
 
 export default class KenFeaturedBusinesses extends LightningElement {
-    _roleId = localStorage.getItem('ConstituentRoleId');
   @track featured = [];
   @track activeIndex = 0;
 
   connectedCallback() {
-    getFeaturedBusinesses({ constituentRoleId: this._roleId })
+    getFeaturedBusinesses()
       .then((data) => {
         this.featured = (data || []).map((b) => ({
           ...b,

@@ -55,8 +55,7 @@ export default class KenHostEvent extends NavigationMixin(LightningElement) {
 
     async loadHostedEvents() {
         try {
-            const constituentRoleId = localStorage.getItem('ConstituentRoleId');
-            const data = await getHostedEvents({ constituentRoleId });
+            const data = await getHostedEvents();
             this.processEventData(data);
         } catch (error) {
             console.error('Error fetching hosted events:', error);

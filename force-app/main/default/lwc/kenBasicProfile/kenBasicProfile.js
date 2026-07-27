@@ -3,6 +3,9 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import saveBasicProfile from '@salesforce/apex/KenPortalOnbordingController.saveBasicProfile';
 import getBasicProfile from '@salesforce/apex/KenPortalOnbordingController.getBasicProfile';
 import getLearningProgramOptions from '@salesforce/apex/KenPortalOnbordingController.getLearningProgramOptions';
+import getNationalityOptions from '@salesforce/apex/KenPortalOnbordingController.getNationalityOptions';
+import getGenderOptions from '@salesforce/apex/KenPortalOnbordingController.getGenderOptions';
+import getBloodGroupOptions from '@salesforce/apex/KenPortalOnbordingController.getBloodGroupOptions';
 import basePath from '@salesforce/community/basePath';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import fetchProfilePreview from '@salesforce/apex/KenLinkedInController.fetchProfilePreview';
@@ -33,6 +36,13 @@ export default class KenBasicProfile extends LightningElement {
     @track graduationYear = '';
     @track programme = '';
     @track programmeId = '';
+    @track dateOfBirth = '';
+    @track dateOfBirthDisplay = '';
+    @track dobError = '';
+    @track nationality = '';
+    @track languages = '';
+    @track gender = '';
+    @track bloodGroup = '';
     @track agreeToTerms = false;
 
     @track profileImageUrl = '';
@@ -55,6 +65,9 @@ export default class KenBasicProfile extends LightningElement {
 
     @track graduationYearOptions = GRADUATION_YEARS_JSON;
     @track programmeOptions = [];
+    @track nationalityOptions = [];
+    @track genderOptions = [];
+    @track bloodGroupOptions = [];
 
     // Country / State picklists are driven by the GeoData static resource.
     // The stored values stay as plain text (the country/state NAME).
@@ -114,6 +127,7 @@ export default class KenBasicProfile extends LightningElement {
         }
 
         this.loadProgrammes();
+        this.loadNationalities();
         this.loadGeoData();
         this.prefillProfile();
 
@@ -191,6 +205,7 @@ export default class KenBasicProfile extends LightningElement {
         // Other fields (digits allowed unless you want them blocked too)
         this.linkedinUrl = this.collapseSpacesAndTrim(this.linkedinUrl);
         this.twitterUrl = this.collapseSpacesAndTrim(this.twitterUrl);
+        this.languages = this.collapseSpacesAndTrim(this.languages);
 
         // Phone
         this.phoneE164 = this.collapseSpacesAndTrim(this.phoneE164);
@@ -218,7 +233,8 @@ export default class KenBasicProfile extends LightningElement {
             'twitterUrl',
             'country',
             'state',
-            'currentCity'
+            'currentCity',
+            'languages'
         ]);
 
         if (field === 'email') {
@@ -296,6 +312,10 @@ export default class KenBasicProfile extends LightningElement {
 
     handleStateChange(event) {
         this.state = event.detail.value || '';
+    }
+
+    handleNationalityChange(event) {
+        this.nationality = event.detail.value || '';
     }
 
     handleCheckboxChange(event) {
@@ -448,6 +468,106 @@ export default class KenBasicProfile extends LightningElement {
         return this.isImportingFromLinkedin ? 'Importing...' : 'Import from LinkedIn';
     }
 
+    get todayIso() {
+        return new Date().toISOString().slice(0, 10);
+    }
+
+    /**
+     * Date of birth is shown as DD/MM/YYYY text with a calendar button beside it.
+     * `lightning-input type="date"` cannot be used directly because it always renders
+     * a month-name medium format ("Jul 2, 2003") taken from the running user's locale,
+     * with no way to force a numeric day-first format. `dateOfBirth` stays in ISO
+     * (yyyy-mm-dd) because that is what the Apex payload expects.
+     */
+    handleDobInput(event) {
+        const digits = (event.target.value || '').replace(/\D/g, '').slice(0, 8);
+
+        let masked = digits;
+        if (digits.length > 4) {
+            masked = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+        } else if (digits.length > 2) {
+            masked = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        }
+
+        if (masked !== event.target.value) {
+            event.target.value = masked;
+        }
+
+        this.dateOfBirthDisplay = masked;
+        this.dateOfBirth = this.ddMmYyyyToIso(masked);
+        this.dobError = masked.length === 10 && !this.dateOfBirth
+            ? 'Please enter a valid date in DD/MM/YYYY format.'
+            : '';
+    }
+
+    handleDobBlur() {
+        if (this.dateOfBirthDisplay && !this.dateOfBirth) {
+            this.dobError = 'Please enter a valid date in DD/MM/YYYY format.';
+            return;
+        }
+        if (this.dateOfBirth && this.dateOfBirth > this.todayIso) {
+            this.dobError = 'Date of birth cannot be in the future.';
+            return;
+        }
+        this.dobError = '';
+    }
+
+    /** Opens the browser's native calendar for the picker sitting next to the button. */
+    handleOpenDobPicker(event) {
+        const wrapper = event.currentTarget.closest('.dob-wrapper');
+        const native = wrapper && wrapper.querySelector('input.dob-native-picker');
+        if (!native) {
+            return;
+        }
+
+        if (typeof native.showPicker === 'function') {
+            native.showPicker();
+            return;
+        }
+
+        native.focus();
+        native.click();
+    }
+
+    /** Calendar selection arrives as ISO and drives the visible DD/MM/YYYY text. */
+    handleDobPicked(event) {
+        this.setDateOfBirth(event.target.value || '');
+    }
+
+    /** Converts a stored yyyy-mm-dd value into the DD/MM/YYYY the field displays. */
+    isoToDdMmYyyy(iso) {
+        const parts = String(iso || '').slice(0, 10).split('-');
+        return parts.length === 3 && parts[0] && parts[1] && parts[2]
+            ? `${parts[2]}/${parts[1]}/${parts[0]}`
+            : '';
+    }
+
+    /** Returns yyyy-mm-dd for a complete, real DD/MM/YYYY date, otherwise ''. */
+    ddMmYyyyToIso(text) {
+        const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((text || '').trim());
+        if (!match) {
+            return '';
+        }
+
+        const day = Number(match[1]);
+        const month = Number(match[2]);
+        const year = Number(match[3]);
+        const parsed = new Date(year, month - 1, day);
+
+        const isRealDate = parsed.getFullYear() === year
+            && parsed.getMonth() === month - 1
+            && parsed.getDate() === day;
+
+        return isRealDate ? `${match[3]}-${match[2]}-${match[1]}` : '';
+    }
+
+    /** Keeps the visible DD/MM/YYYY text in step with an ISO value. */
+    setDateOfBirth(iso) {
+        this.dateOfBirth = iso || '';
+        this.dateOfBirthDisplay = this.isoToDdMmYyyy(this.dateOfBirth);
+        this.dobError = '';
+    }
+
     // =========================================================
     // ✅ IMAGE UPLOAD + CROP
     // =========================================================
@@ -598,6 +718,18 @@ export default class KenBasicProfile extends LightningElement {
             return false;
         }
 
+        if (this.dateOfBirthDisplay && !this.dateOfBirth) {
+            this.dobError = 'Please enter a valid date in DD/MM/YYYY format.';
+            this.errorMessage = 'Please enter your date of birth in DD/MM/YYYY format.';
+            return false;
+        }
+
+        if (this.dateOfBirth && this.dateOfBirth > this.todayIso) {
+            this.dobError = 'Date of birth cannot be in the future.';
+            this.errorMessage = 'Date of birth cannot be in the future.';
+            return false;
+        }
+
         this.errorMessage = '';
         return true;
     }
@@ -621,6 +753,11 @@ export default class KenBasicProfile extends LightningElement {
             graduationYear: this.graduationYear || '',
             programme: this.programme || '',
             programmeId: this.programmeId || '',
+            dateOfBirth: this.dateOfBirth || null,
+            nationality: this.nationality || '',
+            languages: this.languages || '',
+            gender: this.gender || '',
+            bloodGroup: this.bloodGroup || '',
             agreeToTerms: Boolean(this.agreeToTerms),
             profileImageUrl: profileImageUrl || ''
         };
@@ -728,6 +865,11 @@ export default class KenBasicProfile extends LightningElement {
         this.graduationYear = data.graduationYear || '';
         this.buildGraduationYearOptions(this.graduationYear);
 
+        this.setDateOfBirth(data.dateOfBirth || this.dateOfBirth || '');
+        this.nationality = data.nationality || this.nationality || '';
+        this.languages = data.languages || this.languages || '';
+        this.gender = data.gender || this.gender || '';
+        this.bloodGroup = data.bloodGroup || this.bloodGroup || '';
 
         if (data.programme || data.programmeId) {
             this.programme = data.programme || '';
@@ -761,6 +903,11 @@ export default class KenBasicProfile extends LightningElement {
             this.graduationYear = data.graduationYear || '';
             this.programme = data.programme || '';
             this.programmeId = data.programmeId || '';
+            this.setDateOfBirth(data.dateOfBirth || this.dateOfBirth || '');
+            this.nationality = data.nationality || this.nationality || '';
+            this.languages = data.languages || this.languages || '';
+            this.gender = data.gender || this.gender || '';
+            this.bloodGroup = data.bloodGroup || this.bloodGroup || '';
             this.agreeToTerms = data.agreeToTerms !== undefined ? data.agreeToTerms : this.agreeToTerms;
             this.profileImageUrl = data.profileImageUrl || '';
             this.previewImageUrl = '';
@@ -797,6 +944,27 @@ export default class KenBasicProfile extends LightningElement {
             // eslint-disable-next-line no-console
             console.error('Error loading programmes', error);
             this.programmeOptions = [];
+        }
+    }
+
+    async loadNationalities() {
+        try {
+            const options = await getNationalityOptions();
+            this.nationalityOptions = options || [];
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Error loading nationalities', error);
+            this.nationalityOptions = [];
+        }
+        try {
+            this.genderOptions = (await getGenderOptions()) || [];
+        } catch (error) {
+            this.genderOptions = [];
+        }
+        try {
+            this.bloodGroupOptions = (await getBloodGroupOptions()) || [];
+        } catch (error) {
+            this.bloodGroupOptions = [];
         }
     }
     buildGraduationYearOptions(returnedYear) {

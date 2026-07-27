@@ -28,9 +28,6 @@ export default class KenPhotoUploadPage extends LightningElement {
     }
 
     handleChooseFileClick(event) {
-        // The "Choose File" button sits inside the clickable drag-drop area, which has
-        // its own onclick calling this same file picker — without stopping propagation
-        // here, the click bubbles up and opens the OS file dialog a second time.
         event.stopPropagation();
         this.handleUploadClick();
     }
@@ -40,7 +37,6 @@ export default class KenPhotoUploadPage extends LightningElement {
         if (files.length > 0) {
             this.processFiles(files);
         }
-        // Reset input to allow selecting same file again
         event.target.value = '';
     }
 
@@ -53,7 +49,6 @@ export default class KenPhotoUploadPage extends LightningElement {
     }
 
     validateFile(file) {
-        // Validate file size (16 MB = 16 * 1024 * 1024 bytes)
         const maxSize = 16 * 1024 * 1024;
         if (file.size > maxSize) {
             this.showError(`${file.name}: File size exceeds 16 MB limit`);
@@ -130,9 +125,6 @@ export default class KenPhotoUploadPage extends LightningElement {
             return;
         }
 
-        // The parent owns the actual upload + navigation: it closes this page only once
-        // the upload genuinely succeeds, so the user never sees a premature "done" state
-        // that makes it look like the upload silently failed and needs retrying.
         this.dispatchEvent(
             new CustomEvent('post', {
                 detail: { images: this.uploadedImages }

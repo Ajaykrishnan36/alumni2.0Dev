@@ -27,16 +27,10 @@ export default class KenRegisterEventModal extends LightningElement {
     // When the org has Disable_Event_Fee__c enabled, all fee/payment UI is hidden.
     @track feeDisabled = false;
 
-    constituentRoleId = null;
     pageSize = 5;
     _participantIdCounter = 1;
 
     connectedCallback() {
-        try {
-            this.constituentRoleId = localStorage.getItem('constituentRoleId') || sessionStorage.getItem('constituentRoleId');
-        } catch (e) {
-            this.constituentRoleId = null;
-        }
         this._loadCurrentUser();
         this._loadGroups();
 
@@ -49,24 +43,7 @@ export default class KenRegisterEventModal extends LightningElement {
     get showFees() { return !this.feeDisabled; }
 
     _loadCurrentUser() {
-        if (!this.constituentRoleId) {
-            this.participants = [{
-                id: 'myself_0',
-                name: 'Me',
-                email: '',
-                phone: '',
-                type: 'myself',
-                typeLabel: 'Myself',
-                typeClass: 'type-badge type-myself',
-                meals: false,
-                dietaryPref: '',
-                selected: true,
-                canDelete: false,
-                dietaryOptions: this._buildDietaryOptions('')
-            }];
-            return;
-        }
-        getCurrentParticipantDetails({ constituentRoleId: this.constituentRoleId })
+        getCurrentParticipantDetails()
             .then(details => {
                 this.participants = [{
                     id: 'myself_0',
@@ -126,7 +103,7 @@ export default class KenRegisterEventModal extends LightningElement {
         }));
     }
 
-    @wire(getEventSchedules, { eventId: '$eventId', constituentRoleId: '$constituentRoleId' })
+    @wire(getEventSchedules, { eventId: '$eventId' })
     wiredSchedules({ data, error }) {
         if (data) {
             this._processSchedules(data);
@@ -585,7 +562,6 @@ export default class KenRegisterEventModal extends LightningElement {
 
         saveRegistrations({
             eventId: this.eventId,
-            constituentRoleId: this.constituentRoleId,
             sessionIds: [...this.selectedSessionIds],
             participants: JSON.stringify(participantData)
         })

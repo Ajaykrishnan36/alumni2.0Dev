@@ -1,6 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 export default class KenMyProfileBusinesses extends LightningElement {
+    canCreateBusiness = false;
     @track businesses = [
         {
             id: 1,
@@ -60,7 +61,8 @@ export default class KenMyProfileBusinesses extends LightningElement {
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
-            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);  
+            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
+            this.canCreateBusiness = color?.createBusiness !== false;
         }).catch(() => {
             console.log('Error getting primary color');
         });

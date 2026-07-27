@@ -56,8 +56,7 @@ export default class KenRegisteredEventsList extends NavigationMixin(LightningEl
 
     async fetchEvents() {
         try {
-            const constituentRoleId = localStorage.getItem('ConstituentRoleId');
-            const data = await getRegisteredEvents({ constituentRoleId });
+            const data = await getRegisteredEvents();
 
             if (!data) {
                 this.processedEvents = [];

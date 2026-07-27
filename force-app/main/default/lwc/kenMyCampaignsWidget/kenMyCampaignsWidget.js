@@ -1,6 +1,7 @@
 import { LightningElement, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
 import getMyCampaigns from '@salesforce/apex/KenFundraiseController.getMyCampaigns';
+import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 
@@ -18,17 +19,30 @@ export default class KenMyCampaignsWidget extends NavigationMixin(LightningEleme
     @track campaigns = [];
     @track isLoading = true;
     @track error = null;
+    // When Create Campaign is disabled the CTA card below this widget is hidden,
+    // so the widget stretches down to fill the space it would have left blank.
+    @track canCreateFundraise = false;
 
     _rawData = [];
+
+    connectedCallback() {
+        getPrimaryColor()
+            .then((color) => {
+                this.canCreateFundraise = color?.createFundraise !== false;
+            })
+            .catch(() => {});
+    }
+
+    get panelClass() {
+        return this.canCreateFundraise ? 'my-campaigns-panel' : 'my-campaigns-panel cta-hidden';
+    }
 
     _statusOrder(status) {
         const order = { 'Ongoing': 0, 'Upcoming': 1, 'In Review': 2, 'Rejected': 3, 'Completed': 4 };
         return order[status] ?? 5;
     }
 
-    _roleId = localStorage.getItem('ConstituentRoleId');
-
-    @wire(getMyCampaigns, { constituentRoleId: '$_roleId' })
+    @wire(getMyCampaigns)
     wiredCampaigns({ data, error }) {
         this.isLoading = false;
         if (data) {

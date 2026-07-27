@@ -9,6 +9,13 @@ export default class KenMentorshipScheduleList extends LightningElement {
     @api scheduleEvents = [];
     @track showScheduleModal = false;
 
+    handleAvatarError(event) {
+        const img = event && event.target;
+        if (!img || img.dataset.fallbackApplied === 'true') return;
+        img.dataset.fallbackApplied = 'true';
+        img.src = AlumniAlt;
+    }
+
     connectedCallback() {
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);

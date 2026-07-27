@@ -1,11 +1,8 @@
 :host { display: block; }
 .chart-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,.08); height: 100%; display: flex; flex-direction: column; position: relative; }
 .card-header { margin-bottom: 14px; }
-.card-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .card-title { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #1e293b; }
 .card-desc { margin: 0; font-size: 12px; color: #64748b; line-height: 1.4; }
-.chart-export-btn { flex-shrink: 0; background: #fff; border: 1px solid #e2e8f0; color: #475569; font-size: 11px; font-weight: 500; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-family: inherit; white-space: nowrap; }
-.chart-export-btn:hover { border-color: #5b3bff; color: #5b3bff; }
 .chart-body { display: flex; gap: 16px; align-items: center; flex: 1; }
 .svg-wrap { flex-shrink: 0; width: 120px; height: 120px; }
 .donut-svg { width: 100%; height: 100%; }

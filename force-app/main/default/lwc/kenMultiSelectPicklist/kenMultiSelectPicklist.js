@@ -32,9 +32,18 @@ export default class KenMultiSelectPicklist extends LightningElement {
     _instanceId = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
     connectedCallback() {
-        // Close dropdown on outside click.
+        // Close dropdown on outside click. Registered on the CAPTURE phase
+        // (the `true` 3rd arg) rather than bubble — this component is used
+        // inside popups/modals that call e.stopPropagation() on their own
+        // container click handler (so an inner click doesn't also close the
+        // whole popup via its backdrop). stopPropagation() during bubble
+        // only blocks listeners later in the bubble chain; it can't stop a
+        // capture-phase listener on document, which always runs first,
+        // before the event even reaches the click target. Without capture,
+        // clicking anywhere inside such a popup other than this dropdown
+        // would never reach this listener, so it'd never close.
         this._boundDocClick = this.handleDocumentClick.bind(this);
-        document.addEventListener('click', this._boundDocClick);
+        document.addEventListener('click', this._boundDocClick, true);
         this._boundGlobalOpen = this.handleGlobalOpen.bind(this);
         window.addEventListener('ms-open', this._boundGlobalOpen);
         getPrimaryColor().then(color => {
@@ -47,7 +56,7 @@ export default class KenMultiSelectPicklist extends LightningElement {
     }
 
     disconnectedCallback() {
-        document.removeEventListener('click', this._boundDocClick);
+        document.removeEventListener('click', this._boundDocClick, true);
         window.removeEventListener('ms-open', this._boundGlobalOpen);
     }
 
@@ -92,6 +101,43 @@ export default class KenMultiSelectPicklist extends LightningElement {
 
     get isServerSearch() {
         return String(this.searchMode || '').toLowerCase() === 'server';
+    }
+
+    get showSelectAll() {
+        return Array.isArray(this.options) && this.options.length > 0;
+    }
+
+    /**
+     * "All" always operates on whatever is currently visible (filteredOptions),
+     * not the full options set — for a picklist with an active local text
+     * filter, or a server-search field where options are only ever the
+     * current search results, "All" should mean "everything shown right now."
+     */
+    get isAllSelected() {
+        const visible = this.filteredOptions;
+        if (!visible.length) {
+            return false;
+        }
+        const selectedSet = new Set(this.value || []);
+        return visible.every((o) => selectedSet.has(o.value));
+    }
+
+    handleSelectAllClick(event) {
+        event.stopPropagation();
+        if (this.disabled) {
+            return;
+        }
+        const visibleValues = this.filteredOptions.map((o) => o.value);
+        if (this.isAllSelected) {
+            // Only deselect what's currently visible — selections made during
+            // an earlier/different search stay untouched, same as manual picks.
+            const visibleSet = new Set(visibleValues);
+            this.dispatchChange((this.value || []).filter((v) => !visibleSet.has(v)));
+        } else {
+            const next = new Set(this.value || []);
+            visibleValues.forEach((v) => next.add(v));
+            this.dispatchChange(Array.from(next));
+        }
     }
 
     toggleOpen(event) {

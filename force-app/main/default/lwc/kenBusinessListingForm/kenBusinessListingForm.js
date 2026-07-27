@@ -202,7 +202,6 @@ const COUNTRY_JSON = [
 ];
 
 export default class KenBusinessListingForm extends NavigationMixin(LightningElement) {
-    _roleId = localStorage.getItem('ConstituentRoleId');
   @api business; // when provided, form works in edit mode
   // When true, this component is placed standalone on create_business__c
   // (no kenBusinessDirectory parent listening for submit/cancel/closeform),
@@ -494,7 +493,24 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
     }
   }
 
+  // Portal access gate — hides the form behind an opaque overlay until we confirm
+  // "Allow Create Business" is on, so it never flashes before a redirect.
+  @track checkingAccess = false;
+  @track accessDenied = false;
+
+  get showAccessGate() {
+    return this.checkingAccess || this.accessDenied;
+  }
+
   async connectedCallback() {
+    try {
+      const p = (typeof window !== "undefined" && window.location && window.location.pathname) ? window.location.pathname : "";
+      if (p && p.indexOf("/lightning/") === -1) {
+        this.checkingAccess = true;
+      }
+    } catch (e) {
+      // ignore
+    }
     getPrimaryColor()
       .then((color) => {
         document.documentElement.style.setProperty(
@@ -509,8 +525,9 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
           "--tertiary-color",
           color?.tertiaryColor
         );
+        this.enforcePortalCreateAccess(color);
       })
-      .catch(() => {});
+      .catch(() => { this.enforcePortalCreateAccess(null); });
 
     document.addEventListener("click", this._handleClickOutside);
     this.initializeFromBusiness();
@@ -686,6 +703,33 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
     }
   }
 
+  // If "Allow Create Business" is off, a portal user reaching /create-business
+  // directly is bounced back to the Business Directory. Internal/admin is never gated.
+  enforcePortalCreateAccess(config) {
+    this.checkingAccess = false;
+    let base = null;
+    try {
+      const path =
+        typeof window !== "undefined" && window.location && window.location.pathname
+          ? window.location.pathname
+          : "";
+      if (path && path.indexOf("/lightning/") === -1) {
+        const seg = path.split("/").filter((s) => s);
+        base = seg.length ? "/" + seg[0] : "";
+      }
+    } catch (e) {
+      base = null;
+    }
+    if (base === null) {
+      return;
+    }
+    if (config && config.createBusiness !== false) {
+      return;
+    }
+    this.accessDenied = true;
+    window.location.assign(`${base}/business`);
+  }
+
   disconnectedCallback() {
     document.removeEventListener("click", this._handleClickOutside);
     if (this.intlTelInputInstance) {
@@ -838,7 +882,7 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
           logoName: submissionData.logoName,
           logoBase64: submissionData.logoBase64
         };
-        await createBusiness({ req, constituentRoleId: this._roleId });
+        await createBusiness({ req });
         this.confirmSaved();
         return;
       }

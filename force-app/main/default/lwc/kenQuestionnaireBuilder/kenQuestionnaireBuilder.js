@@ -1,7 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 
 const DEFAULT_QUESTION_TYPES = [
-    { label: 'Multiple choice', value: 'Multiple Choice' },
+    { label: 'Single Select', value: 'Multiple Choice' },
     { label: 'Checkbox', value: 'Yes/No' },
     { label: 'Linear scale', value: 'linear' },
     { label: 'Short answer', value: 'Short Answer' }

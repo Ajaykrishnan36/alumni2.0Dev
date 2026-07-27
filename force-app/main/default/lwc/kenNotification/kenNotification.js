@@ -75,6 +75,10 @@ export default class KenNotification extends NavigationMixin(LightningElement) {
     @track _unreadCount = 0;
     @track _connectionRequests = [];
     @track _pendingIds = {};
+    // rowId -> 'accept' | 'reject', set optimistically on click so the row shows
+    // "Accepted"/"Declined" immediately instead of being removed — removing it
+    // outright could flicker back if a background fetchFeed() lands mid-flight.
+    @track _resolvedActions = {};
     @track toast = null;
 
     _boundOnWindowClick;
@@ -315,6 +319,10 @@ export default class KenNotification extends NavigationMixin(LightningElement) {
             }
         }
         const hasInlineAction = !!(actionKind && extractedId);
+        const resolvedAction = this._resolvedActions[id];
+        const respondedLabel = resolvedAction === 'accept' ? 'Accepted'
+            : resolvedAction === 'reject' ? 'Declined'
+            : null;
         return {
             id,
             kind: hasInlineAction ? actionKind : 'notification',
@@ -326,7 +334,8 @@ export default class KenNotification extends NavigationMixin(LightningElement) {
             time: this.timeAgo(n.createdDate),
             unread: !n.isRead,
             imageUrl: n.imageUrl || defaultAvatar,
-            showActions: hasInlineAction,
+            showActions: hasInlineAction && !resolvedAction,
+            respondedLabel,
             targetUrl: n.targetUrl,
             createdDate: n.createdDate,
             rowClass: 'row row--notif' + (n.isRead ? '' : ' row--unread'),
@@ -484,27 +493,50 @@ export default class KenNotification extends NavigationMixin(LightningElement) {
                     (this.connectionRequests || []).find((r) => r.id === rowId);
         const notificationId = row ? row.notificationId : null;
 
+        // Snapshot so we can restore the pending connection request if the
+        // Apex call turns out to fail.
+        const previousConnectionRequests = this._connectionRequests;
+
         this._pendingIds = { ...this._pendingIds, [rowId]: true };
+
+        // Show "Accepted"/"Declined" on the row right away, before the server
+        // round-trip. This is deliberately NOT a removal from _notifications —
+        // removing the row outright meant a background fetchFeed() landing
+        // moments later (from the heartbeat, or this same flow) could overwrite
+        // it with server data and make the row flicker back with active
+        // buttons. Labeling the row instead means even a full refresh is safe:
+        // once the server confirms the notification is read, decorateNotification
+        // hides the buttons anyway — this label is just the instant version of
+        // that same outcome.
+        this._resolvedActions = { ...this._resolvedActions, [rowId]: action };
+
+        // The Connection Requests tab is pending-only by design, so that row
+        // can safely disappear immediately rather than needing a label.
+        if (kind === 'network_connection') {
+            this._connectionRequests = (this._connectionRequests || []).filter(
+                (r) => r.id !== sourceId
+            );
+        }
+
         try {
             if (kind === 'network_connection') {
                 await respondToConnectionRequests({ requestIds: [sourceId], action });
-                this._connectionRequests = (this._connectionRequests || []).filter(
-                    (r) => r.id !== sourceId
-                );
             } else if (kind === 'mentorship_request') {
                 await respondToMentorshipRequest({ mentorshipId: sourceId, action });
             } else if (kind === 'mentorship_call_request') {
                 await respondToCallRequest({ callRequestId: sourceId, action });
             }
-            // Drop the notification row immediately so the user sees it clear.
             if (notificationId) {
-                this._notifications = (this._notifications || []).filter(
-                    (n) => n.id !== notificationId
-                );
                 try { await markAsRead({ notificationIds: [notificationId] }); } catch (e) { /* swallow */ }
             }
             await this.fetchFeed();
         } catch (e) {
+            // The request didn't actually go through — undo the optimistic
+            // label and restore the pending connection request row.
+            const nextResolved = { ...this._resolvedActions };
+            delete nextResolved[rowId];
+            this._resolvedActions = nextResolved;
+            this._connectionRequests = previousConnectionRequests;
             // eslint-disable-next-line no-console
             console.error('Action dispatch failed', e);
         } finally {

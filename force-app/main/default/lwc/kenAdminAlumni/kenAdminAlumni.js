@@ -5,6 +5,7 @@ import getPortalConfigs from '@salesforce/apex/KenThemeConfigController.getPorta
 import getAlumniRecords from '@salesforce/apex/KenAdminAlumniController.getAlumniRecords';
 import getAlumniDetail from '@salesforce/apex/KenAdminAlumniController.getAlumniDetail';
 import getMergeCandidates from '@salesforce/apex/KenAdminAlumniController.getMergeCandidates';
+import getMergeSuggestions from '@salesforce/apex/KenAdminAlumniController.getMergeSuggestions';
 import getContactIssue from '@salesforce/apex/KenAdminAlumniController.getContactIssue';
 import getActivityTimeline from '@salesforce/apex/KenAdminAlumniController.getActivityTimeline';
 import getFieldUpdateHistory from '@salesforce/apex/KenAdminAlumniController.getFieldUpdateHistory';
@@ -15,22 +16,57 @@ import getIssueChipCounts from '@salesforce/apex/KenAdminAlumniController.getIss
 import convertLeads from '@salesforce/apex/KenAdminAlumniController.convertLeads';
 import rejectLead from '@salesforce/apex/KenAdminAlumniController.rejectLead';
 import mergeLeadIntoMaster from '@salesforce/apex/KenAdminAlumniController.mergeLeadIntoMaster';
+import getMergeFieldComparison from '@salesforce/apex/KenAdminAlumniController.getMergeFieldComparison';
+import getMergeFieldComparisonMulti from '@salesforce/apex/KenAdminAlumniController.getMergeFieldComparisonMulti';
+import mergeCandidatesIntoOne from '@salesforce/apex/KenAdminAlumniController.mergeCandidatesIntoOne';
 import getFilterOptions from '@salesforce/apex/KenAdminAlumniController.getFilterOptions';
+import getAssignableOwners from '@salesforce/apex/KenAdminAlumniController.getAssignableOwners';
+import changeLeadOwner from '@salesforce/apex/KenAdminAlumniController.changeLeadOwner';
+import logCommunication from '@salesforce/apex/KenAdminAlumniController.logCommunication';
+import getCommunicationLog from '@salesforce/apex/KenAdminAlumniController.getCommunicationLog';
 
 const PAGE_SIZE = 25;
+
+// Keep in sync with the data-tab values on the .alumni-tabs row in the HTML.
+const MASTER_TAB_KEYS = new Set([
+    'all', 'recent', 'registered', 'unregistered', 'oldportal', 'issues', 'leads', 'referrals'
+]);
+const MASTER_TAB_URL_PARAM = 'masterTab';
 
 const EMPTY_FILTERS = {
     // Legacy keys kept so any other consumer of `selectedFilters` keeps working.
     program: '', graduationYear: '', source: '',
     company: '', industry: '', location: '', country: '',
     // New Master-records filter set
-    institute: '', role: '', domain: '', intake: '', skill: '', status: '', preference: ''
+    institute: '', role: '', domain: '', intake: '', skill: '', status: '', preference: '', employmentType: '', gender: '',
+    // Checkbox multi-select — array-valued, unlike every other key above.
+    language: []
 };
 
 export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     @track activeTab = 'all';
     @track activeModal = null;
     @track activeInnerTab = 'overview';
+    // Lead / Referral workspace canvas tab — which pane the right side shows.
+    // Defaults to 'merge' since reaching a master record is the goal state.
+    @track activeLeadTab = 'merge';
+
+    // Communication composer state (logs a Task/Activity per the agreed model).
+    @track commChannel = 'email';
+    @track commSubject = '';
+    @track commBody = '';
+    @track isLoggingComm = false;
+    @track commLogRaw = [];
+
+    // Owner reassignment state.
+    @track ownerSearchTerm = '';
+    @track ownerOptions = [];
+    @track ownerOptionsLoading = false;
+    @track selectedNewOwnerId = '';
+    @track ownerReason = '';
+    @track isReassigning = false;
+    _ownerSearchDebounce;
+    _ownerSearchSeq = 0;
     @track activeIssueChip = 'all';
     @track personName = '';
     @track personInitials = '';
@@ -41,6 +77,8 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     @track portalStatusOpen = false;
 
     @track showFiltersPopup = false;
+    @track showMapModal = false;
+    mapModalHeight = 560;
     @track selectedFilters = { ...EMPTY_FILTERS };
     @track appliedFiltersJson = '';
     @track filterOptionsRaw = {};
@@ -48,7 +86,10 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     @track selectedAlumniId = null;
     @track showAlumni360 = false;
 
+    // mergeSearchTerm mirrors the input and is written on every keystroke;
+    // mergeAppliedTerm is the debounced copy the wire reacts to.
     @track mergeSearchTerm = '';
+    @track mergeAppliedTerm = '';
     @track mergeGradYear = '';
     @track capturedGradYear = '';
     @track capturedRegNumber = '';
@@ -60,6 +101,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     @track capturedIsNewRole = false;
 
     _searchDebounce;
+    _mergeSearchDebounce;
 
     @track alumniList;
     @track alumniListLoading = true;
@@ -69,6 +111,29 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     @track mergeCandidatesLoading = false;
     @track isRejecting = false;
     @track isMerging = false;
+    @track selectedCandidateIds = [];
+
+    // Merge review step — shown after a candidate is picked, before the merge
+    // actually runs. Lets the admin see (and, per field, override) what the
+    // master record will look like post-merge instead of it happening silently.
+    @track mergeReviewActive = false;
+    @track mergeReviewLoading = false;
+    @track mergeReviewMasterName = '';
+    @track mergeReviewRows = [];
+    _mergeReviewMasterRoleId = null;
+
+    // N-way review — shown when 2+ candidates are checked at once. The admin
+    // resolves each field across all N candidates, then picks exactly ONE of
+    // them via mergeMultiTargetId as the surviving record those resolved
+    // values actually get written to — the other candidates are left
+    // untouched (reconciling those is still a separate, open question).
+    @track mergeMultiReviewActive = false;
+    @track mergeMultiReviewLoading = false;
+    @track mergeMultiReviewMasterNames = [];
+    @track mergeMultiReviewRows = [];
+    @track mergeMultiTargetId = '';
+    @track isMergingMulti = false;
+    _mergeMultiReviewMasterRoleIds = [];
 
     @track contactIssue;
     @track issueEmailValue = '';
@@ -141,18 +206,31 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     }
 
     @wire(getFilterOptions, { tabKey: '$activeTab', dashboardFilter: '$activeDashboardFilter' })
-    wiredFilterOptions({ data }) {
-        if (data) this.filterOptionsRaw = data;
+    wiredFilterOptions({ data, error }) {
+        if (data) {
+            this.filterOptionsRaw = data;
+        } else if (error) {
+            this.filterOptionsRaw = {};
+            // eslint-disable-next-line no-console
+            console.error('Filter options failed to load', error);
+        }
     }
 
     @wire(getActivityTimeline, { alumniId: '$detailWireId' })
-    wiredTimeline({ data }) {
-        if (data) this.timelineRowsRaw = data;
+    wiredTimeline(result) {
+        this._wiredTimelineResult = result;
+        if (result.data) this.timelineRowsRaw = result.data;
     }
 
     @wire(getFieldUpdateHistory, { alumniId: '$detailWireId' })
     wiredHistory({ data }) {
         if (data) this.historyRowsRaw = data;
+    }
+
+    @wire(getCommunicationLog, { alumniId: '$detailWireId' })
+    wiredCommLog(result) {
+        this._wiredCommLogResult = result;
+        if (result.data) this.commLogRaw = result.data;
     }
 
     @wire(getContactIssue, { alumniId: '$issueWireId' })
@@ -165,7 +243,9 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     }
 
     @wire(getAlumniDetail, { alumniId: '$detailWireId' })
-    wiredDetail({ data, error }) {
+    wiredDetail(result) {
+        this._wiredDetailResult = result;
+        const { data, error } = result;
         if (data) {
             this.alumniDetail = data;
             this.alumniDetailLoading = false;
@@ -185,7 +265,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         } else if (error) {
             this.mergeCandidates = [];
             this.mergeCandidatesLoading = false;
-        } else if (this.mergeSearchTerm) {
+        } else if (this.mergeAppliedTerm) {
             this.mergeCandidatesLoading = true;
         }
     }
@@ -194,7 +274,14 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     // the Apex call entirely. Returning null still invokes Apex with alumniId=null,
     // which throws "List has no rows for assignment to SObject" server-side.
     get detailWireId() {
-        return (this.activeModal === 'alumni' && this.selectedAlumniId) ? this.selectedAlumniId : undefined;
+        // Fires getAlumniDetail / getActivityTimeline / getFieldUpdateHistory for
+        // the alumni modal AND the lead/referral workspace — leads are
+        // ConstituentRole rows, so the same detail resolver fills the rail and
+        // the activity/history panes with no extra Apex.
+        const wants = this.activeModal === 'alumni'
+            || this.activeModal === 'lead'
+            || this.activeModal === 'referral';
+        return (wants && this.selectedAlumniId) ? this.selectedAlumniId : undefined;
     }
 
     get issueWireId() {
@@ -202,7 +289,11 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     }
 
     get mergeWireSearch() {
-        return (this.activeModal === 'lead' || this.activeModal === 'referral') ? this.mergeSearchTerm : undefined;
+        // Must return undefined (not '') to skip the wire when there's no term —
+        // otherwise it fires with an empty search, and the empty result silently
+        // overwrites the auto-loaded suggestions in mergeCandidates.
+        if (this.activeModal !== 'lead' && this.activeModal !== 'referral') return undefined;
+        return this.mergeAppliedTerm || undefined;
     }
 
     get mergeWireYear() {
@@ -282,8 +373,18 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             key: 'tl-' + i + '-' + (t.occurredAt || ''),
             title: t.title,
             actor: t.actor || 'System',
-            dateLabel: this._formatDate(t.occurredAt)
+            dateLabel: this._formatDate(t.occurredAt),
+            nodeClass: 'ltl-ev ' + this._timelineTier(t.kind),
+            body: t.body,
+            hasBody: !!t.body
         }));
+    }
+    // Maps the server-side event kind to a coloured node tier.
+    _timelineTier(kind) {
+        if (kind === 'communication') return 'rose';
+        if (kind === 'owner' || kind === 'match') return 'violet';
+        if (kind === 'status') return 'brand';
+        return 'plain';
     }
     get hasTimelineRows() { return this.timelineRows.length > 0; }
 
@@ -393,11 +494,283 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         return (this.mergeCandidates || []).map(c => ({
             ...c,
             detail: 'Batch \'' + (c.batch || '—') + ' · ' + (c.registrationNumber || '—') + ' · ' + (c.source || '—')
+                + (c.matchedOn ? ' · Matched by ' + c.matchedOn : ''),
+            selected: this.selectedCandidateIds.includes(c.alumniId)
         }));
     }
     get hasMergeRows() { return !this.mergeCandidatesLoading && this.mergeRows.length > 0; }
     get isMergeEmpty() { return !this.mergeCandidatesLoading && this.mergeRows.length === 0; }
     get isMergeLoading() { return this.mergeCandidatesLoading; }
+    get hasSelectedCandidates() { return this.selectedCandidateIds.length > 0; }
+    get isCompareDisabled() { return !this.hasSelectedCandidates; }
+    // The lead/referral unmerged modal is normally narrow (720px) — widen it
+    // only while the N-way compare is showing, since its column count grows
+    // with however many candidates are checked.
+    get unmergedModalClass() {
+        return this.mergeMultiReviewActive ? 'modal modal-wide' : 'modal modal-narrow';
+    }
+
+    /* ---- Lead / Referral workspace (Phase 1 shell) ---- */
+    // The workspace is always the wide shell so the split rail + canvas (and the
+    // N-way compare) have room; only the legacy new-role card stays narrow.
+    get leadModalClass() {
+        return this.isNewRoleLead ? 'modal modal-narrow' : 'modal modal-wide lead-modal';
+    }
+
+    get isLeadTabMerge()    { return this.activeLeadTab === 'merge'; }
+    get isLeadTabActivity() { return this.activeLeadTab === 'activity'; }
+    get isLeadTabHistory()  { return this.activeLeadTab === 'history'; }
+    ltClass(id) { return 't' + (this.activeLeadTab === id ? ' active' : ''); }
+    get ltMerge()    { return this.ltClass('merge'); }
+    get ltActivity() { return this.ltClass('activity'); }
+    get ltHistory()  { return this.ltClass('history'); }
+    get timelineCount() { return this.timelineRows.length; }
+
+    // Rail view-model — reuses the shared detail getters (getAlumniDetail),
+    // falling back to the row-captured values while the detail wire loads.
+    get railName()    { return this.detailName || this.personName; }
+    get railInitials(){ return this.personInitials || this._initials(this.railName); }
+    get railSubLine() {
+        const parts = [];
+        if (this.detailProgram) parts.push(this.detailProgram);
+        if (this.detailBatch)   parts.push("'" + this.detailBatch);
+        const top = parts.join(' ');
+        return [top, this.detailLocation].filter(x => x).join(' · ');
+    }
+    get railEmail()   { return this.detailEmail; }
+    get railPhone()   { return this.detailPhone; }
+    get railLinkedin(){ return this.detailLinkedin; }
+    get railStatusLabel() { return this.detail.approvalStatus || 'Unregistered'; }
+    get railCreated() { return this.detailRegistrationDate; }
+    // Lead-form captured fields (from getAlumniDetail → leadDetailOf).
+    get railInstitute()        { return this.detail.institute || '—'; }
+    get railProgram()          { return this.detail.program || '—'; }
+    get railYearOfEnrollment() { return this.detail.yearOfEnrollment || '—'; }
+
+    handleLeadTab(e) {
+        const lt = e.currentTarget.dataset.lt || 'merge';
+        this.activeLeadTab = lt;
+        // The Change Owner tab needs its picker populated on first open.
+        if (lt === 'owner' && (!this.ownerOptions || this.ownerOptions.length === 0)) {
+            this.selectedNewOwnerId = '';
+            this.ownerReason = '';
+            this.ownerSearchTerm = '';
+            this._loadOwners('');
+        }
+    }
+    handleShowMergeTab() {
+        this.activeLeadTab = 'merge';
+    }
+
+    /* ---- Communication (logs a Task/Activity) ---- */
+    get isLeadTabComm()  { return this.activeLeadTab === 'comm'; }
+    get isLeadTabOwner() { return this.activeLeadTab === 'owner'; }
+    get ltComm() { return this.ltClass('comm'); }
+    get ltOwner() { return this.ltClass('owner'); }
+    get commCount() { return this.commLogRows.length; }
+
+    _chanClass(id) { return 'comm-channel' + (this.commChannel === id ? ' on' : ''); }
+    get chanEmail() { return this._chanClass('email'); }
+    get chanSms()   { return this._chanClass('sms'); }
+    get chanCall()  { return this._chanClass('call'); }
+    get chanNote()  { return this._chanClass('note'); }
+
+    get commSubjectLabel() { return this.commChannel === 'email' ? 'Subject' : 'Summary'; }
+    get commBodyLabel() {
+        if (this.commChannel === 'call') return 'Call notes';
+        if (this.commChannel === 'note') return 'Note';
+        return 'Message';
+    }
+    get commChannelLabel() {
+        const m = { email: 'email', sms: 'SMS', call: 'call', note: 'note' };
+        return m[this.commChannel] || 'note';
+    }
+    get commLogButtonLabel() { return 'Log ' + this.commChannelLabel; }
+    get isCommDisabled() { return !this.commBody || !this.commBody.trim() || this.isLoggingComm; }
+
+    get commLogRows() {
+        return (this.commLogRaw || []).map((c, i) => ({
+            key: 'cm-' + i + '-' + (c.occurredAt || ''),
+            channel: c.channel,
+            title: c.title || c.channel,
+            body: c.body,
+            hasBody: !!c.body,
+            status: c.status,
+            actor: c.actor || 'System',
+            dateLabel: this._formatDate(c.occurredAt),
+            iconClass: 'ci ' + this._commIcon(c.channel)
+        }));
+    }
+    get hasCommLog() { return this.commLogRows.length > 0; }
+    _commIcon(channel) {
+        const c = (channel || '').toLowerCase();
+        if (c === 'email') return 'mail';
+        if (c === 'sms')  return 'sms';
+        if (c === 'call') return 'call';
+        return 'note';
+    }
+
+    handleOpenComm() { this.activeLeadTab = 'comm'; }
+    handleCommChannel(e) { this.commChannel = e.currentTarget.dataset.ch || 'email'; }
+    handleCommSubjectInput(e) { this.commSubject = e.target.value; }
+    handleCommBodyInput(e) { this.commBody = e.target.value; }
+    handleLogComm() {
+        if (this.isCommDisabled || !this.selectedAlumniId) return;
+        this.isLoggingComm = true;
+        logCommunication({
+            alumniId: this.selectedAlumniId,
+            channel: this.commChannel,
+            subject: this.commSubject,
+            body: this.commBody,
+            outcome: ''
+        })
+            .then((res) => {
+                this.isLoggingComm = false;
+                if (res && res.success) {
+                    this.commSubject = '';
+                    this.commBody = '';
+                    this.showConvertSuccess(res.message || 'Logged to activity.');
+                    if (this._wiredCommLogResult)  refreshApex(this._wiredCommLogResult);
+                    if (this._wiredTimelineResult) refreshApex(this._wiredTimelineResult);
+                } else if (res) {
+                    this.showConvertSuccess(res.message || 'Could not log.');
+                }
+            })
+            .catch((err) => {
+                this.isLoggingComm = false;
+                this.showConvertSuccess((err && err.body && err.body.message) || 'Could not log.');
+            });
+    }
+
+    /* ---- Owner & change ---- */
+    get ownerName()     { return this.detail.ownerName || 'Unassigned'; }
+    get ownerTypeLabel(){ return this.detail.ownerType || ''; }
+    get ownerInitials() { return this.detail.ownerInitials || '—'; }
+    get ownerIsQueue()  { return this.detail.ownerType === 'Queue'; }
+    get isReassignDisabled() { return !this.selectedNewOwnerId || this.isReassigning; }
+    get ownerOptionRows() {
+        return (this.ownerOptions || []).map((o) => ({
+            ...o,
+            itemClass: 'owner-opt' + (o.id === this.selectedNewOwnerId ? ' on' : ''),
+            showCheck: o.id === this.selectedNewOwnerId,
+            avatarClass: 'avatar-circle' + (o.ownerType === 'Queue' ? ' owner-queue' : '')
+        }));
+    }
+    get hasOwnerOptions() { return this.ownerOptions.length > 0; }
+
+    handleOpenOwner() {
+        this.activeLeadTab = 'owner';
+        this.selectedNewOwnerId = '';
+        this.ownerReason = '';
+        this.ownerSearchTerm = '';
+        this._loadOwners('');
+    }
+    // The input is bound to ownerSearchTerm, so the tracked value must be
+    // updated synchronously on every keystroke. Assigning it only inside the
+    // debounce (or not at all) lets any re-render triggered by the in-flight
+    // Apex call push the stale value back into the DOM and eat the characters
+    // the user just typed.
+    handleOwnerSearch(e) {
+        const value = e.target.value || '';
+        this.ownerSearchTerm = value;
+        if (this._ownerSearchDebounce) clearTimeout(this._ownerSearchDebounce);
+        this._ownerSearchDebounce = setTimeout(() => this._loadOwners(value), 300);
+    }
+    handleSelectNewOwner(e) {
+        this.selectedNewOwnerId = e.currentTarget.dataset.id || '';
+    }
+    handleOwnerReasonInput(e) { this.ownerReason = e.target.value; }
+    // Overlapping searches resolve in whatever order the server answers, so a
+    // slow response for an earlier term would otherwise replace the results for
+    // the term the user actually finished typing. Only the newest request wins.
+    _loadOwners(term) {
+        const seq = ++this._ownerSearchSeq;
+        this.ownerOptionsLoading = true;
+        getAssignableOwners({ searchTerm: term })
+            .then((data) => {
+                if (seq !== this._ownerSearchSeq) return;
+                this.ownerOptions = data || [];
+                this.ownerOptionsLoading = false;
+            })
+            .catch(() => {
+                if (seq !== this._ownerSearchSeq) return;
+                this.ownerOptions = [];
+                this.ownerOptionsLoading = false;
+            });
+    }
+    handleReassign() {
+        if (this.isReassignDisabled || !this.selectedAlumniId) return;
+        this.isReassigning = true;
+        changeLeadOwner({
+            alumniId: this.selectedAlumniId,
+            newOwnerId: this.selectedNewOwnerId,
+            reason: this.ownerReason
+        })
+            .then((res) => {
+                this.isReassigning = false;
+                if (res && res.success) {
+                    this.selectedNewOwnerId = '';
+                    this.ownerReason = '';
+                    this.showConvertSuccess(res.message || 'Owner changed.');
+                    if (this._wiredDetailResult)   refreshApex(this._wiredDetailResult);
+                    if (this._wiredTimelineResult) refreshApex(this._wiredTimelineResult);
+                    if (this._wiredListResult)     refreshApex(this._wiredListResult);
+                    this.activeLeadTab = 'activity';
+                } else if (res) {
+                    this.showConvertSuccess(res.message || 'Could not change owner.');
+                }
+            })
+            .catch((err) => {
+                this.isReassigning = false;
+                this.showConvertSuccess((err && err.body && err.body.message) || 'Could not change owner.');
+            });
+    }
+
+    // Verify a single lead from the workspace — reuses the existing convertLeads
+    // Apex (same path the multi-select "Convert Selected" button uses).
+    handleVerifyLead() {
+        if (!this.selectedAlumniId || this.isConverting) return;
+        this.isConverting = true;
+        convertLeads({ alumniIds: [this.selectedAlumniId] })
+            .then((res) => {
+                const converted = (res && typeof res.converted === 'number') ? res.converted : 1;
+                this.isConverting = false;
+                this.showConvertSuccess(
+                    converted === 1 ? '1 lead marked as Verified.' : `${converted} leads marked as Verified.`
+                );
+                if (this._wiredListResult)   refreshApex(this._wiredListResult);
+                if (this._wiredCountsResult) refreshApex(this._wiredCountsResult);
+                this.handleClose();
+            })
+            .catch(() => { this.isConverting = false; });
+    }
+    // The eyebrow/name/source + Captured Fields block is only useful before
+    // comparing — once the N-way table is open it's redundant (the lead's own
+    // data already shows as the "New Lead" column) and just eats space that
+    // could go to the comparison itself.
+    get showCapturedHeader() {
+        return !this.mergeMultiReviewActive;
+    }
+    get compareButtonLabel() {
+        return this.selectedCandidateIds.length > 1
+            ? 'Compare ' + this.selectedCandidateIds.length + ' selected'
+            : 'Compare';
+    }
+    get isAllCandidatesSelected() {
+        return this.mergeRows.length > 0 && this.selectedCandidateIds.length === this.mergeRows.length;
+    }
+
+    handleToggleCandidate(e) {
+        const id = e.currentTarget.dataset.id;
+        if (e.target.checked) {
+            if (!this.selectedCandidateIds.includes(id)) this.selectedCandidateIds = [...this.selectedCandidateIds, id];
+        } else {
+            this.selectedCandidateIds = this.selectedCandidateIds.filter((x) => x !== id);
+        }
+    }
+    handleToggleSelectAllCandidates(e) {
+        this.selectedCandidateIds = e.target.checked ? this.mergeRows.map((r) => r.alumniId) : [];
+    }
 
     /* ---- Computed flags for tab visibility ---- */
     get isAll()          { return this.activeTab === 'all'; }
@@ -432,6 +805,10 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     get showLeadModal()     { return this.activeModal === 'lead'; }
     get showReferralModal() { return this.activeModal === 'referral'; }
     get showIssuesModal()   { return this.activeModal === 'issues'; }
+    // Leads and Referrals share ONE workspace — both surface a Lead Id, so the
+    // same rail/tabs/merge flow serves both; only the eyebrow label differs.
+    get showWorkspaceModal() { return this.activeModal === 'lead' || this.activeModal === 'referral'; }
+    get recordKindLabel()    { return this.activeModal === 'referral' ? 'Referral' : 'Lead'; }
     get overlayClass()      { return 'modal-overlay' + (this.activeModal ? ' show' : ''); }
 
     get issue()              { return this.contactIssue || {}; }
@@ -506,6 +883,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         if (!this.showPortalDropdown && this.activePortalStatus) {
             this.activePortalStatus = '';
         }
+        this._syncTabToUrl(this.activeTab);
     }
 
     handleLeadCheckboxClick(e) {
@@ -589,11 +967,264 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             .catch(() => { this.isConverting = false; });
     }
 
-    handleMergeCandidate(e) {
-        const masterRoleId = e.currentTarget.dataset.id;
-        if (!masterRoleId || !this.selectedAlumniId || this.isMerging) return;
+    // Single shared entry point for the candidate list's one "Compare" button.
+    // One candidate checked reuses the existing, tested review-and-merge flow.
+    // Two or more open a read-only side-by-side view instead — there's no
+    // commit action for reconciling multiple existing masters yet.
+    handleCompareSelected() {
+        const ids = [...this.selectedCandidateIds];
+        if (!ids.length || !this.selectedAlumniId) return;
+        if (ids.length === 1) {
+            this._openSingleReview(ids[0]);
+        } else {
+            this._openMultiReview(ids);
+        }
+    }
+
+    // "Compare" (single candidate) opens the review screen so the admin can see
+    // (and, per field, override) what the master record will look like
+    // post-merge before anything is written — nothing is saved until
+    // handleConfirmMerge fires.
+    _openSingleReview(masterRoleId) {
+        if (this.mergeReviewLoading) return;
+        const candidate = (this.mergeCandidates || []).find((c) => c.alumniId === masterRoleId);
+        this._mergeReviewMasterRoleId = masterRoleId;
+        this.mergeReviewMasterName = candidate ? candidate.name : '';
+        this.mergeReviewLoading = true;
+        this.mergeReviewActive = true;
+        getMergeFieldComparison({ leadId: this.selectedAlumniId, masterRoleId })
+            .then((rows) => {
+                this.mergeReviewRows = (rows || []).map((r) => this._toReviewRow(r));
+                this.mergeReviewLoading = false;
+            })
+            .catch(() => {
+                this.mergeReviewLoading = false;
+                this.mergeReviewRows = [];
+            });
+    }
+
+    // "Compare" (2+ candidates) — side by side against the incoming lead, per
+    // field. Which candidate actually gets written to is chosen afterward via
+    // the "Merge into" picker (handleMultiTargetChange); the ones not picked
+    // are left untouched.
+    _openMultiReview(masterRoleIds) {
+        if (this.mergeMultiReviewLoading) return;
+        this._mergeMultiReviewMasterRoleIds = masterRoleIds;
+        this.mergeMultiReviewMasterNames = masterRoleIds.map((id) => {
+            const c = (this.mergeCandidates || []).find((cand) => cand.alumniId === id);
+            return { key: id, name: c ? c.name : id };
+        });
+        this.mergeMultiReviewLoading = true;
+        this.mergeMultiReviewActive = true;
+        getMergeFieldComparisonMulti({ leadId: this.selectedAlumniId, masterRoleIds })
+            .then((rows) => {
+                // Referred By is left out of this view specifically — with several
+                // candidates in play at once it's rarely meaningful to reconcile
+                // and mostly just adds noise.
+                this.mergeMultiReviewRows = (rows || [])
+                    .filter((r) => r.fieldKey !== 'Referred_By__c')
+                    .map((r) => this._toMultiReviewRow(r));
+                this.mergeMultiReviewLoading = false;
+            })
+            .catch(() => {
+                this.mergeMultiReviewLoading = false;
+                this.mergeMultiReviewRows = [];
+            });
+    }
+
+    // Every column (incoming + one per selected candidate) is a selectable pill,
+    // same mechanic as the single-candidate review's existing/incoming pills —
+    // exactly one selected per row, always clickable even when blank, since
+    // explicitly picking a blank value to clear a field is a valid choice.
+    // raw (alongside the display value) is what actually gets sent to
+    // mergeCandidatesIntoOne — the Id for lookup fields, plain text otherwise.
+    _toMultiReviewRow(r) {
+        const incomingValue = r.incomingValue || '—';
+        const existingValues = (r.existingValues || []).map((v) => v || '—');
+        const existingRaws = r.existingRaws || [];
+        const sources = [
+            { key: 'incoming', value: incomingValue, raw: r.incomingRaw },
+            ...existingValues.map((value, idx) => ({ key: 'existing-' + idx, value, raw: existingRaws[idx] }))
+        ];
+        // Default mirrors the single-candidate rule's spirit: the first existing
+        // column with a real value wins; only fall back to incoming if every
+        // existing column is blank.
+        const firstNonBlankExisting = sources.slice(1).find((s) => s.value !== '—');
+        const selectedKey = firstNonBlankExisting ? firstNonBlankExisting.key : 'incoming';
+        return {
+            fieldKey: r.fieldKey,
+            label: r.label,
+            selectedKey,
+            sources: sources.map((s) => this._multiSource(s.key, s.value, s.raw, s.key === selectedKey)),
+            mergedValue: sources.find((s) => s.key === selectedKey).value
+        };
+    }
+    _multiSource(key, value, raw, isSelected) {
+        return { key, value, raw, pillClass: 'multi-compare-col side-pill' + (isSelected ? ' selected' : '') };
+    }
+
+    handlePickMultiSide(e) {
+        const fieldKey = e.currentTarget.dataset.field;
+        const sourceKey = e.currentTarget.dataset.source;
+        this.mergeMultiReviewRows = this.mergeMultiReviewRows.map((row) => {
+            if (row.fieldKey !== fieldKey) return row;
+            const picked = row.sources.find((s) => s.key === sourceKey);
+            return {
+                ...row,
+                selectedKey: sourceKey,
+                mergedValue: picked ? picked.value : row.mergedValue,
+                sources: row.sources.map((s) => this._multiSource(s.key, s.value, s.raw, s.key === sourceKey))
+            };
+        });
+    }
+
+    handleBackFromMultiReview() {
+        this.mergeMultiReviewActive = false;
+        this.mergeMultiReviewRows = [];
+        this.mergeMultiReviewMasterNames = [];
+        this._mergeMultiReviewMasterRoleIds = [];
+        this.mergeMultiTargetId = '';
+    }
+
+    // "Merge into" starts empty on purpose — the compare screen exists
+    // precisely because it isn't obvious yet which of the N candidates should
+    // survive, so nothing is pre-picked for the admin.
+    handleMultiTargetChange(e) {
+        this.mergeMultiTargetId = e.target.value;
+    }
+    get multiTargetOptions() {
+        // <select> in LWC markup can't bind `value` directly — each <option>
+        // has to be told whether it's selected instead.
+        return this.mergeMultiReviewMasterNames.map((m) => ({ ...m, isSelected: m.key === this.mergeMultiTargetId }));
+    }
+    get isNoMultiTargetSelected() {
+        return !this.mergeMultiTargetId;
+    }
+    get isMultiMergeDisabled() {
+        return !this.mergeMultiTargetId || this.isMergingMulti;
+    }
+    get multiMergeButtonTitle() {
+        return this.mergeMultiTargetId ? '' : 'Please choose a candidate to merge into';
+    }
+
+    handleConfirmMultiMerge() {
+        if (!this.mergeMultiTargetId || !this.selectedAlumniId || this.isMergingMulti) return;
+        const fieldChoices = {};
+        this.mergeMultiReviewRows.forEach((row) => {
+            const picked = row.sources.find((s) => s.key === row.selectedKey);
+            fieldChoices[row.fieldKey] = picked ? picked.raw : '';
+        });
+        const otherCandidateIds = this._mergeMultiReviewMasterRoleIds.filter((id) => id !== this.mergeMultiTargetId);
+        this.isMergingMulti = true;
+        mergeCandidatesIntoOne({
+            leadId: this.selectedAlumniId,
+            targetMasterRoleId: this.mergeMultiTargetId,
+            fieldChoicesJson: JSON.stringify(fieldChoices),
+            otherCandidateIds
+        })
+            .then((res) => {
+                this.isMergingMulti = false;
+                const msg = res && res.message ? res.message : '';
+                if (res && res.success) {
+                    this.showConvertSuccess(msg || 'Lead merged into the selected candidate.');
+                    if (this._wiredListResult)   refreshApex(this._wiredListResult);
+                    if (this._wiredCountsResult) refreshApex(this._wiredCountsResult);
+                    this.handleClose();
+                } else if (msg) {
+                    this.showConvertSuccess(msg);
+                }
+            })
+            .catch((err) => {
+                this.isMergingMulti = false;
+                this.showConvertSuccess((err && err.body && err.body.message) || 'Merge failed.');
+            });
+    }
+
+    // Builds the display view-model for one comparison row: which side is
+    // selected (defaults to the same side the backend's gap-fill rule would
+    // pick), and whether that selection differs from the default — that's the
+    // "this was changed" highlight in the UI.
+    _toReviewRow(r) {
+        // When neither side has a value, leave selectedSide as 'none' too — forcing
+        // it to 'existing' made an empty field look "selected" (blue pill) while
+        // simultaneously tripping the changed-row highlight (selected != default).
+        // Pills stay clickable even when a side is blank — explicitly picking a
+        // blank value (to clear a field on merge) is a valid, deliberate choice.
+        const selectedSide = r.defaultSide;
+        const existingValue = r.existingValue || '—';
+        const incomingValue = r.incomingValue || '—';
+        return {
+            fieldKey: r.fieldKey,
+            label: r.label,
+            existingValue,
+            incomingValue,
+            existingRaw: r.existingRaw,
+            incomingRaw: r.incomingRaw,
+            defaultSide: r.defaultSide,
+            selectedSide,
+            mergedValue: this._mergedValueFor(existingValue, incomingValue, selectedSide),
+            rowClass: this._reviewRowClass(selectedSide, r.defaultSide),
+            existingPillClass: this._reviewPillClass(selectedSide === 'existing'),
+            incomingPillClass: this._reviewPillClass(selectedSide === 'incoming')
+        };
+    }
+    _mergedValueFor(existingValue, incomingValue, side) {
+        return side === 'incoming' ? incomingValue : existingValue;
+    }
+    _reviewRowClass(selectedSide, defaultSide) {
+        return 'compare-row' + (selectedSide !== defaultSide ? ' changed' : '');
+    }
+    _reviewPillClass(isSelected) {
+        return 'side-pill' + (isSelected ? ' selected' : '');
+    }
+    _rowWithSide(row, side) {
+        return {
+            ...row,
+            selectedSide: side,
+            mergedValue: this._mergedValueFor(row.existingValue, row.incomingValue, side),
+            rowClass: this._reviewRowClass(side, row.defaultSide),
+            existingPillClass: this._reviewPillClass(side === 'existing'),
+            incomingPillClass: this._reviewPillClass(side === 'incoming')
+        };
+    }
+
+    handlePickSide(e) {
+        const fieldKey = e.currentTarget.dataset.field;
+        const side = e.currentTarget.dataset.side;
+        this.mergeReviewRows = this.mergeReviewRows.map((row) =>
+            row.fieldKey === fieldKey ? this._rowWithSide(row, side) : row
+        );
+    }
+
+    // Bulk actions — flip every field to one side at once instead of clicking
+    // each pill individually.
+    handleUseAllExisting() {
+        this.mergeReviewRows = this.mergeReviewRows.map((row) =>
+            this._rowWithSide(row, 'existing')
+        );
+    }
+    handleUseAllIncoming() {
+        this.mergeReviewRows = this.mergeReviewRows.map((row) =>
+            this._rowWithSide(row, 'incoming')
+        );
+    }
+
+    handleBackToMergeCandidates() {
+        this.mergeReviewActive = false;
+        this.mergeReviewRows = [];
+        this._mergeReviewMasterRoleId = null;
+    }
+
+    handleConfirmMerge() {
+        if (!this._mergeReviewMasterRoleId || !this.selectedAlumniId || this.isMerging) return;
+        const fieldChoices = {};
+        this.mergeReviewRows.forEach((row) => { fieldChoices[row.fieldKey] = row.selectedSide; });
         this.isMerging = true;
-        mergeLeadIntoMaster({ leadId: this.selectedAlumniId, masterRoleId })
+        mergeLeadIntoMaster({
+            leadId: this.selectedAlumniId,
+            masterRoleId: this._mergeReviewMasterRoleId,
+            fieldChoicesJson: JSON.stringify(fieldChoices)
+        })
             .then((res) => {
                 this.isMerging = false;
                 const msg = res && res.message ? res.message : '';
@@ -696,33 +1327,33 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     get graduationYearOptions() { return this._pairOptions(this.filterOptionsRaw.graduationYearPairs, this.filterOptionsRaw.graduationYears); }
     get sourceOptions()         { return this._pairOptions(this.filterOptionsRaw.sourcePairs,         this.filterOptionsRaw.sources); }
     get companyOptions()        { return this._pairOptions(this.filterOptionsRaw.companyPairs,        this.filterOptionsRaw.companies); }
-    get industryOptions()       { return this._pairOptions(this.filterOptionsRaw.industryPairs,       this.filterOptionsRaw.industries); }
     get locationOptions()       { return this._pairOptions(this.filterOptionsRaw.locationPairs,       this.filterOptionsRaw.locations); }
     get countryOptions()        { return this._pairOptions(this.filterOptionsRaw.countryPairs,        this.filterOptionsRaw.countries); }
     // New Master-records filter set
     get instituteOptions()      { return this._pairOptions(this.filterOptionsRaw.institutePairs,     this.filterOptionsRaw.institutes); }
     get roleOptions()           { return this._pairOptions(this.filterOptionsRaw.rolePairs,          this.filterOptionsRaw.roles); }
-    get domainOptions()         { return this._pairOptions(this.filterOptionsRaw.domainPairs,        this.filterOptionsRaw.domains); }
     get intakeOptions()         { return this._pairOptions(this.filterOptionsRaw.intakePairs,        this.filterOptionsRaw.intakes); }
-    get skillOptions()          { return this._pairOptions(this.filterOptionsRaw.skillPairs,         this.filterOptionsRaw.skills); }
     get statusOptions()         { return this._pairOptions(this.filterOptionsRaw.statusPairs,        this.filterOptionsRaw.statuses); }
     get preferenceOptions()     { return this._pairOptions(this.filterOptionsRaw.preferencePairs,    this.filterOptionsRaw.preferences); }
+    get employmentTypeOptions() { return this._pairOptions(this.filterOptionsRaw.employmentTypePairs, this.filterOptionsRaw.employmentTypes); }
+    get genderFilterOptions()   { return this._pairOptions(this.filterOptionsRaw.genderPairs,         this.filterOptionsRaw.genders); }
+    get languageOptions()       { return this._pairOptions(this.filterOptionsRaw.languagePairs,       null); }
 
     get filterProgram()        { return this.selectedFilters.program; }
     get filterGraduationYear() { return this.selectedFilters.graduationYear; }
     get filterSource()         { return this.selectedFilters.source; }
     get filterCompany()        { return this.selectedFilters.company; }
-    get filterIndustry()       { return this.selectedFilters.industry; }
     get filterLocation()       { return this.selectedFilters.location; }
     get filterCountry()        { return this.selectedFilters.country; }
     // New Master-records filter set
     get filterInstitute()      { return this.selectedFilters.institute; }
     get filterRole()           { return this.selectedFilters.role; }
-    get filterDomain()         { return this.selectedFilters.domain; }
     get filterIntake()         { return this.selectedFilters.intake; }
-    get filterSkill()          { return this.selectedFilters.skill; }
     get filterStatus()         { return this.selectedFilters.status; }
     get filterPreference()     { return this.selectedFilters.preference; }
+    get filterEmploymentType() { return this.selectedFilters.employmentType; }
+    get filterGender()         { return this.selectedFilters.gender; }
+    get filterLanguage()       { return this.selectedFilters.language; }
 
     // Badge count for each filter — the option's alumni count surfaces as a
     // small dot next to the dropdown once a value is picked.
@@ -737,14 +1368,13 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     get graduationYearCount() { return this._countFor(this.filterOptionsRaw.graduationYearPairs, this.selectedFilters.graduationYear); }
     get companyCount()        { return this._countFor(this.filterOptionsRaw.companyPairs,        this.selectedFilters.company); }
     get roleCount()           { return this._countFor(this.filterOptionsRaw.rolePairs,           this.selectedFilters.role); }
-    get domainCount()         { return this._countFor(this.filterOptionsRaw.domainPairs,         this.selectedFilters.domain); }
-    get industryCount()       { return this._countFor(this.filterOptionsRaw.industryPairs,       this.selectedFilters.industry); }
-    get skillCount()          { return this._countFor(this.filterOptionsRaw.skillPairs,          this.selectedFilters.skill); }
     get locationCount()       { return this._countFor(this.filterOptionsRaw.locationPairs,       this.selectedFilters.location); }
     get countryCount()        { return this._countFor(this.filterOptionsRaw.countryPairs,        this.selectedFilters.country); }
     get sourceCount()         { return this._countFor(this.filterOptionsRaw.sourcePairs,         this.selectedFilters.source); }
     get statusCount()         { return this._countFor(this.filterOptionsRaw.statusPairs,         this.selectedFilters.status); }
     get preferenceCount()     { return this._countFor(this.filterOptionsRaw.preferencePairs,     this.selectedFilters.preference); }
+    get employmentTypeCount() { return this._countFor(this.filterOptionsRaw.employmentTypePairs, this.selectedFilters.employmentType); }
+    get genderCount()         { return this._countFor(this.filterOptionsRaw.genderPairs,         this.selectedFilters.gender); }
 
     get activeFilterCount() {
         if (!this.appliedFiltersJson) return 0;
@@ -758,6 +1388,34 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
 
     handleFiltersClick() {
         this.showFiltersPopup = true;
+    }
+    handleMapViewOpen() {
+        // Full-page modal — only the map's own header (~80px) eats into the
+        // viewport, same calc as the network/landing page map views.
+        this.mapModalHeight = Math.max(420, window.innerHeight - 90);
+        this.showMapModal = true;
+    }
+    handleMapModalClose() {
+        this.showMapModal = false;
+    }
+    handleMapProfileSelect(event) {
+        const detail = event.detail || {};
+        // The Alumni 360 resolves cleanest from the ConstituentRole; fall back to
+        // the Person Account Id.
+        const alumniId = detail.constituentRoleId || detail.personId;
+        if (!alumniId) {
+            return;
+        }
+        this.personName = detail.name || '';
+        this.personInitials = this._initials(detail.name || '');
+        this.selectedAlumniId = alumniId;
+        this.activeInnerTab = 'overview';
+        this.activeModal = null;
+        this.showMapModal = false;
+        this.showAlumni360 = true;
+    }
+    handleMapModalClick(e) {
+        e.stopPropagation();
     }
     handleFiltersOverlayClick(e) {
         if (e.target.classList.contains('filters-overlay')) this.showFiltersPopup = false;
@@ -773,7 +1431,11 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     handleApplyFilters() {
         const active = {};
         Object.keys(this.selectedFilters).forEach(k => {
-            if (this.selectedFilters[k]) active[k] = this.selectedFilters[k];
+            const v = this.selectedFilters[k];
+            // Array-valued filters (language) are truthy even when empty ([] is
+            // truthy in JS) — check .length so an empty selection isn't sent.
+            const isSet = Array.isArray(v) ? v.length > 0 : Boolean(v);
+            if (isSet) active[k] = v;
         });
         this.appliedFiltersJson = Object.keys(active).length ? JSON.stringify(active) : '';
         this.currentPage = 1;
@@ -799,7 +1461,6 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         const alumniId = row.dataset.alumniId || null;
         const gradYear = row.dataset.batch || '';
         const regNum = row.dataset.reg || '';
-        const email = row.dataset.email || '';
         const source = row.dataset.source || '';
         this.personName = name;
         this.personInitials = this._initials(name);
@@ -820,12 +1481,13 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             this.issuePhoneError = null;
             this.contactIssue = null;
         } else {
-            // Seed the merge search with the most precise identifier the lead has
-            // (registration number, then email, then name) so the candidate that
-            // produced the "Exact Match" badge actually surfaces — the badge keys
-            // off reg/email, not the name.
-            this.mergeSearchTerm = regNum || email || name;
+            // Suggestions are computed server-side from the lead's own captured
+            // fields (reg number, name, email, phone) — see _loadMergeSuggestions
+            // — so the search box no longer needs to be auto-seeded with a guess.
+            this.mergeSearchTerm = '';
+            this.mergeAppliedTerm = '';
             this.mergeGradYear = gradYear;
+            this.selectedCandidateIds = [];
             this.capturedGradYear = gradYear || '—';
             this.capturedRegNumber = regNum;
             this.capturedSource = source;
@@ -834,8 +1496,23 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             this.capturedExistingAccountId = row.dataset.existingAccount || '';
             this.capturedExistingAccountName = row.dataset.existingAccountName || '';
             this.capturedIsNewRole = row.dataset.isNewRole === 'true';
+            if (!this.capturedIsNewRole) this._loadMergeSuggestions(alumniId);
         }
         this.activeModal = kind;
+    }
+
+    _loadMergeSuggestions(leadId) {
+        if (!leadId) return;
+        this.mergeCandidatesLoading = true;
+        getMergeSuggestions({ leadId })
+            .then((data) => {
+                this.mergeCandidates = data || [];
+                this.mergeCandidatesLoading = false;
+            })
+            .catch(() => {
+                this.mergeCandidates = [];
+                this.mergeCandidatesLoading = false;
+            });
     }
 
     handleIssueEmailInput(e) {
@@ -895,11 +1572,18 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         this.activeModal = null;
         this.showAlumni360 = true;
     }
+    // Keeps its own debounce timer: sharing _searchDebounce with the background
+    // list search meant typing in one box cancelled the other's pending update.
     handleMergeSearch(e) {
         const value = e.target.value || '';
-        if (this._searchDebounce) clearTimeout(this._searchDebounce);
-        this._searchDebounce = setTimeout(() => {
-            this.mergeSearchTerm = value;
+        this.mergeSearchTerm = value;
+        if (this._mergeSearchDebounce) clearTimeout(this._mergeSearchDebounce);
+        this._mergeSearchDebounce = setTimeout(() => {
+            this.mergeAppliedTerm = value;
+            // Clearing the box back out doesn't revert to suggestions on its own
+            // (the wire just skips and leaves the last search results in place) —
+            // reload them explicitly so the list doesn't look stuck.
+            if (!value.trim() && this.selectedAlumniId) this._loadMergeSuggestions(this.selectedAlumniId);
         }, 300);
     }
     handleView360() {
@@ -918,8 +1602,19 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         this.selectedAlumniId = null;
         this.alumniDetail = null;
         this.mergeSearchTerm = '';
+        this.mergeAppliedTerm = '';
         this.mergeGradYear = '';
         this.mergeCandidates = [];
+        this.selectedCandidateIds = [];
+        this.mergeReviewActive = false;
+        this.mergeReviewRows = [];
+        this._mergeReviewMasterRoleId = null;
+        this.mergeMultiReviewActive = false;
+        this.mergeMultiReviewRows = [];
+        this.mergeMultiReviewMasterNames = [];
+        this._mergeMultiReviewMasterRoleIds = [];
+        this.mergeMultiTargetId = '';
+        this.isMergingMulti = false;
         this.contactIssue = null;
         this.issueEmailValue = '';
         this.issuePhoneValue = '';
@@ -929,6 +1624,15 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         this._userEditedPhone = false;
         this.timelineRowsRaw = [];
         this.historyRowsRaw = [];
+        this.activeLeadTab = 'merge';
+        this.commChannel = 'email';
+        this.commSubject = '';
+        this.commBody = '';
+        this.commLogRaw = [];
+        this.ownerSearchTerm = '';
+        this.ownerOptions = [];
+        this.selectedNewOwnerId = '';
+        this.ownerReason = '';
     }
     handleOverlayClick(e) {
         if (e.target.classList.contains('modal-overlay')) this.handleClose();
@@ -945,9 +1649,78 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             if (d.portalStatus !== undefined) this.activePortalStatus = d.portalStatus || '';
             if (d.dashboardFilter !== undefined) this.activeDashboardFilter = d.dashboardFilter || '';
             this.currentPage = 1;
+            if (d.tabKey) this._syncTabToUrl(this.activeTab);
         };
         window.addEventListener('kendash:navigate', this._navListener);
+        // Order matters: restore whatever tab was in the URL first (covers a plain
+        // refresh), then let a fresh dashboard-KPI click override it — that intent
+        // is a one-shot, just-happened signal and should always win over a
+        // possibly-stale URL from before.
+        this._applyUrlTab();
         this._applyDashboardNavIntent();
+        // The very first time this component mounts in a session (the click that
+        // opened Master Records happens before the listener below even exists to
+        // catch it), nothing has written the URL yet — sync it once here so the
+        // address bar always reflects whatever tab we actually landed on, even
+        // on that first entry, not just on later clicks/resets.
+        this._syncTabToUrl(this.activeTab);
+        this._bindMasterRecordsTabReset();
+    }
+
+    // "Master Records" is a native flexipage:tab on the Home page, and the
+    // platform keeps this component mounted for the whole session once its tab
+    // has been opened once — clicking away to Dashboard/etc. and back never
+    // re-runs connectedCallback. Without this, whatever sub-tab was last open
+    // (e.g. "Registered Alumni") would just stay showing instead of resetting.
+    // kenAdminDashboard.js's _navigateToMasterRecords already forces
+    // tabKey: 'all' for its own KPI-tile entry point (via the kendash:navigate
+    // listener above) — this does the same for a direct click on the native
+    // pill itself, so both entry points land on the same default.
+    _bindMasterRecordsTabReset() {
+        try {
+            const anchors = document.querySelectorAll('a[role="tab"], [role="tab"]');
+            for (const a of anchors) {
+                const label = (a.title || a.getAttribute('aria-label') || a.textContent || '').trim();
+                if (label === 'Master Records') {
+                    this._masterRecordsTabAnchor = a;
+                    this._masterRecordsTabClickBound = this._handleMasterRecordsTabClick.bind(this);
+                    a.addEventListener('click', this._masterRecordsTabClickBound);
+                    break;
+                }
+            }
+        } catch (e) { /* cross-shadow may block */ }
+    }
+
+    _handleMasterRecordsTabClick() {
+        this.activeTab = 'all';
+        this.currentPage = 1;
+        this.selectedLeadIds = [];
+        this._syncTabToUrl(this.activeTab);
+    }
+
+    // Reads ?masterTab=<key> so refreshing the page (or sharing/bookmarking the
+    // URL) lands back on the same Master Records tab instead of resetting to
+    // "All Master Records". Validated against MASTER_TAB_KEYS so a hand-edited
+    // or stale param can't push activeTab into an unrecognized value.
+    _applyUrlTab() {
+        try {
+            const params = new URLSearchParams(window.location.search || '');
+            const tabFromUrl = params.get(MASTER_TAB_URL_PARAM);
+            if (tabFromUrl && MASTER_TAB_KEYS.has(tabFromUrl)) {
+                this.activeTab = tabFromUrl;
+            }
+        } catch (e) { /* ignore */ }
+    }
+
+    // Mirrors the active tab into the URL (replacing, not pushing, history so
+    // clicking through tabs doesn't fill up the back button) so a page refresh
+    // can restore it via _applyUrlTab.
+    _syncTabToUrl(tab) {
+        try {
+            const url = new URL(window.location.href);
+            url.searchParams.set(MASTER_TAB_URL_PARAM, tab);
+            window.history.replaceState(window.history.state, '', url.toString());
+        } catch (e) { /* ignore */ }
     }
 
     _applyDashboardNavIntent() {
@@ -962,6 +1735,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             if (intent.portalStatus !== undefined) this.activePortalStatus = intent.portalStatus;
             if (intent.dashboardFilter !== undefined) this.activeDashboardFilter = intent.dashboardFilter || '';
             this.currentPage = 1;
+            if (intent.tabKey) this._syncTabToUrl(this.activeTab);
         } catch (e) { /* ignore */ }
     }
 
@@ -982,8 +1756,19 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             'leads-active':          'Leads & Referrals · Active',
             'kpi-total':             'Total Alumni',
             'kpi-verified':          'Institution Verified',
-            'kpi-registered':        'Portal Registered',
-            'kpi-pending':           'Pending Activation'
+            'kpi-registered':        'Registered Alumni',
+            'kpi-pending':           'Pending Activation',
+            'kpi-unverified':        'Unverified Leads',
+            'kpi-active':            'Active Alumni',
+            'life-lead':                  'Lead Lifecycle · Lead',
+            'life-unverified':            'Lead Lifecycle · Unverified',
+            'life-leads':                 'Lead Lifecycle · Leads',
+            'life-verified':              'Lead Lifecycle · Verified',
+            'life-registered':            'Lead Lifecycle · Registered',
+            'life-onboarding-pending':    'Lead Lifecycle · Onboarding Pending',
+            'life-onboarding-inprogress': 'Lead Lifecycle · Onboarding In Progress',
+            'life-onboarding':            'Lead Lifecycle · Onboarding',
+            'life-active':                'Lead Lifecycle · Active'
         };
         return m[this.activeDashboardFilter] || this.activeDashboardFilter;
     }
@@ -994,6 +1779,9 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     disconnectedCallback() {
         if (this._escBound) document.removeEventListener('keydown', this._escBound);
         if (this._navListener) window.removeEventListener('kendash:navigate', this._navListener);
+        if (this._masterRecordsTabAnchor && this._masterRecordsTabClickBound) {
+            this._masterRecordsTabAnchor.removeEventListener('click', this._masterRecordsTabClickBound);
+        }
     }
 
     /* ---- Helpers ---- */

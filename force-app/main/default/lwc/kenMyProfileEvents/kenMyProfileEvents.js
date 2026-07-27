@@ -1,6 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 export default class KenMyProfileEvents extends LightningElement {
+    canHostEvent = false;
     @track events = [
         {
             id: 1,
@@ -70,7 +71,8 @@ export default class KenMyProfileEvents extends LightningElement {
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
-            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);  
+            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
+            this.canHostEvent = color?.showHostEvent === true;
         }).catch(() => {
             console.log('Error getting primary color');
         });

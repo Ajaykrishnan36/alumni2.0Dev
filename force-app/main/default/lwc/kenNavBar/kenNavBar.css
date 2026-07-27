@@ -69,12 +69,46 @@
     display: block;
 }
 
+.profile-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin: 0 0 6px 0;
+}
+
 .profile-name {
     font-size: 18px;
     font-weight: 700;
     color: #111827;
-    margin: 0 0 6px 0;
+    margin: 0;
     text-align: center;
+    line-height: 1.2;
+}
+
+.role-switch-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #111827;
+    opacity: 0.8;
+    cursor: pointer;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+.role-switch-btn svg {
+    display: block;
+}
+
+.role-switch-btn:hover {
+    opacity: 1;
 }
 
 .profile-batch {
@@ -86,6 +120,10 @@
 
 /* Desktop dark recolour of the profile text */
 .sidebar:not(.embedded-mode) .profile-name {
+    color: #ffffff;
+}
+
+.sidebar:not(.embedded-mode) .role-switch-btn {
     color: #ffffff;
 }
 

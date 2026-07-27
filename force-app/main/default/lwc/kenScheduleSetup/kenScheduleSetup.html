@@ -149,7 +149,7 @@
                                 <div class="time-input-wrapper-figma">
                                     <input type="time" id="editStartTimeFigma" class="time-input-figma"
                                         placeholder="hh:mm" value={currentSession.startTime}
-                                        onchange={handleStartTimeChange} />                                </div>
+                                        onchange={handleStartTimeChange} onclick={handleTimeInputClick} />                                </div>
                                 <div class="error-message" if:true={validationErrors.sessionStartTime}>
                                     <svg class="error-icon" viewBox="0 0 24 24" fill="none">
                                         <path
@@ -164,7 +164,7 @@
                                 <div class="time-input-wrapper-figma">
                                     <input type="time" id="editEndTimeFigma" class="time-input-figma"
                                         placeholder="hh:mm" value={currentSession.endTime}
-                                        onchange={handleEndTimeChange} />                                </div>
+                                        onchange={handleEndTimeChange} onclick={handleTimeInputClick} />                                </div>
                                 <div class="error-message" if:true={validationErrors.sessionEndTime}>
                                     <svg class="error-icon" viewBox="0 0 24 24" fill="none">
                                         <path

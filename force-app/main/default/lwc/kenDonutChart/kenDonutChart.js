@@ -40,7 +40,6 @@ export default class KenDonutChart extends LightningElement {
     @api isLoading   = false;
     @api dimension   = '';
     @api chartType   = 'donut'; // 'donut' | 'funnel'
-    @api showExport  = false;
 
     @track _tooltip = null;
 
@@ -141,10 +140,6 @@ export default class KenDonutChart extends LightningElement {
     get legendItems() { return this.isFunnel ? this.funnelItems : this.slices; }
 
     // ── Click handlers ──────────────────────────────────────────────────────────
-    handleExport() {
-        this.dispatchEvent(new CustomEvent('exportcsv'));
-    }
-
     handleSliceClick(event) {
         const idx   = parseInt(event.currentTarget.dataset.idx, 10);
         const items = this.isFunnel ? this.funnelItems : this.slices;

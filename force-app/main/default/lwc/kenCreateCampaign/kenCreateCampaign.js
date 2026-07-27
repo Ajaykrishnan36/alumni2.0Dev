@@ -9,6 +9,10 @@ import getFundraiseCategories     from '@salesforce/apex/KenFundraiseController.
 import getLinkedSegmentation      from '@salesforce/apex/KenAudienceJunctionController.getLinkedSegmentation';
 
 export default class KenCreateCampaign extends NavigationMixin(LightningElement) {
+    // Portal access gate — the form stays hidden behind an opaque overlay until we
+    // confirm "Allow Create Fundraise" is on, so it never flashes before a redirect.
+    @track checkingAccess = false;
+    @track accessDenied = false;
     @track currentStep = 1;
     @track isStep1Completed = false;
     @track isStep2Completed = false;
@@ -57,12 +61,51 @@ export default class KenCreateCampaign extends NavigationMixin(LightningElement)
 
     connectedCallback() {
         this._resetState();
+        if (this.portalBase !== null) {
+            this.checkingAccess = true;
+        }
         getPortalConfigs().then(configs => {
             if (configs) {
                 document.documentElement.style.setProperty('--primary-color', configs.primaryColor || '#1E40AF');
                 document.documentElement.style.setProperty('--secondary-color', configs.secondaryColor || '#60A563');
             }
-        }).catch(() => {});
+            this.enforcePortalCreateAccess(configs);
+        }).catch(() => { this.enforcePortalCreateAccess(null); });
+    }
+
+    get showAccessGate() {
+        return this.checkingAccess || this.accessDenied;
+    }
+
+    // Portal base path ('' in the internal Lightning app, '/<site>' on a community
+    // page); null signals a non-portal context that should never be gated.
+    get portalBase() {
+        try {
+            const path = (typeof window !== 'undefined' && window.location && window.location.pathname)
+                ? window.location.pathname : '';
+            if (!path || path.indexOf('/lightning/') !== -1) {
+                return null;
+            }
+            const seg = path.split('/').filter((s) => s);
+            return seg.length ? '/' + seg[0] : '';
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // If "Allow Create Fundraise" is off, a portal user reaching /create-campaign
+    // directly is bounced back to the Fundraise page.
+    enforcePortalCreateAccess(config) {
+        this.checkingAccess = false;
+        const base = this.portalBase;
+        if (base === null) {
+            return;
+        }
+        if (config && config.createFundraise !== false) {
+            return;
+        }
+        this.accessDenied = true;
+        window.location.assign(`${base.replace(/\/+$/, '')}/fundraise`);
     }
 
     @wire(CurrentPageReference)
@@ -79,7 +122,7 @@ export default class KenCreateCampaign extends NavigationMixin(LightningElement)
     async _loadExistingData(campaignId) {
         this._isLoadingData = true;
         try {
-            const data = await getCampaignById({ campaignId, constituentRoleId: localStorage.getItem('ConstituentRoleId') });
+            const data = await getCampaignById({ campaignId });
             if (data) {
                 this.campaignTitle    = data.name            || '';
                 this.categoryId       = data.categoryId       || '';
@@ -393,7 +436,6 @@ export default class KenCreateCampaign extends NavigationMixin(LightningElement)
                 this.submitError = null;
                 try {
                     const newId = await createCampaign({
-                        constituentRoleId: localStorage.getItem('ConstituentRoleId'),
                         request: {
                             name:             this.campaignTitle,
                             categoryId:       this.categoryId,
@@ -513,7 +555,6 @@ export default class KenCreateCampaign extends NavigationMixin(LightningElement)
 
         const apexRequest = {
             campaignId,
-            constituentRoleId: localStorage.getItem('ConstituentRoleId'),
             request: {
                 name:             this.campaignTitle,
                 categoryId:       this.categoryId,

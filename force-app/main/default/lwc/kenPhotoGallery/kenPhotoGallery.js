@@ -1,17 +1,18 @@
 import { LightningElement, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getAlbums from '@salesforce/apex/KenGalleryController.getAlbums';
 import createAlbum from '@salesforce/apex/KenGalleryController.createAlbum';
 import deleteAlbum from '@salesforce/apex/KenGalleryController.deleteAlbum';
 import updateAlbumLink from '@salesforce/apex/KenGalleryController.updateAlbumLink';
+import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 
-export default class KenPhotoGallery extends LightningElement {
+export default class KenPhotoGallery extends NavigationMixin(LightningElement) {
     @track searchTerm = '';
     @track albumSortOption = 'a-z';
+    @track canCreateAlbum = false;
     @track showCreateAlbumModal = false;
-    @track showAlbumDetail = false;
-    @track selectedAlbum = null;
     @track showSortDropdown = false;
     @track showEditLinkModal = false;
     @track editLinkAlbum = null;
@@ -26,6 +27,11 @@ export default class KenPhotoGallery extends LightningElement {
 
     connectedCallback() {
         document.addEventListener('click', this.boundHandleClickOutside);
+        getPrimaryColor()
+            .then((color) => {
+                this.canCreateAlbum = color?.createAlbum !== false;
+            })
+            .catch(() => {});
     }
 
     disconnectedCallback() {
@@ -172,22 +178,13 @@ export default class KenPhotoGallery extends LightningElement {
 
     handleAlbumClick(event) {
         const albumId = event.detail.albumId;
-        this.selectedAlbum = this.filteredAlbums.find((album) => album.id === albumId);
-        if (this.selectedAlbum) {
-            this.showAlbumDetail = true;
+        if (!albumId) {
+            return;
         }
-    }
-
-    handleBackFromAlbum() {
-        this.showAlbumDetail = false;
-        this.selectedAlbum = null;
-    }
-
-    handleAlbumPhotosAdded() {
-        refreshApex(this.wiredAlbumsResult);
-    }
-
-    handleAlbumPhotoDeleted() {
-        refreshApex(this.wiredAlbumsResult);
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'album_detail__c' },
+            state: { recordId: albumId }
+        });
     }
 }

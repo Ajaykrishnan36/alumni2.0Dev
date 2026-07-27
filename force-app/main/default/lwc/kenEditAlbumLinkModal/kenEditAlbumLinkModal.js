@@ -7,10 +7,6 @@ export default class KenEditAlbumLinkModal extends LightningElement {
 
     _album;
 
-    // Populated from the album's own setter (not showModal's) so the form field
-    // resets correctly regardless of the order the parent template sets these two
-    // attributes in — relying on attribute order here was the source of a bug
-    // where the field showed blank instead of the album's current name.
     @api
     get album() {
         return this._album;
@@ -51,8 +47,6 @@ export default class KenEditAlbumLinkModal extends LightningElement {
                 detail: {
                     albumId: this.album?.id,
                     name: this.nameValue.trim(),
-                    // Not editable here anymore — pass the existing link through
-                    // unchanged so saving a rename never wipes it out.
                     externalLink: this.album?.externalLink || ''
                 }
             })

@@ -44,48 +44,68 @@
     pointer-events: none;
 }
 
-.login-grid {
-    position: relative;
+/* Full-bleed hero photo behind the whole page (desktop only — hidden via
+   isMobile in the template below 1025px). Sits above the blurred backdrop
+   but below the card layer. */
+.hero-image-full {
+    position: absolute;
+    inset: 0;
     z-index: 1;
-    height: 100vh;
-    margin: 0;
     overflow: hidden;
 }
 
-.login-grid .slds-col {
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Blurs the crisp photo on the card side of the page. Uses backdrop-filter
+   (blurs whatever renders behind this element) rather than a mask-image
+   fade on the photo itself — mask-image gradients have inconsistent
+   default (luminance vs. alpha) interpretation across browsers and didn't
+   render the fade reliably. This sits above .hero-image-full (later in the
+   DOM, same z-index — later source order wins the stack) and below the
+   card layer (z-index 2). */
+.hero-blur-veil {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 57%;
+    z-index: 1;
+    backdrop-filter: blur(28px) saturate(1.1);
+    -webkit-backdrop-filter: blur(28px) saturate(1.1);
+    background: linear-gradient(to right, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.14) 20%);
+    pointer-events: none;
 }
 
-.left-image-container {
-    position: relative;
-    overflow: hidden;
-}
-
-.left-loginImage {
-    padding: 0 !important;
-    object-fit: cover;
-    height: 100%;
-    border-radius: 0;
+.hero-image-full-img {
     width: 100%;
+    height: 100%;
+    object-fit: cover;
     display: block;
 }
 
-.image-overlay {
+.hero-image-full-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     display: flex;
-    align-items: stretch;
+    flex-direction: column;
+    justify-content: space-between;
     padding: 44px;
-    border-radius: 0;
     /* Subtle top + bottom scrim so the logo and hero text stay readable on any image */
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0) 28%, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.42));
+}
+
+/* Card floats on top of the full-bleed photo. Bounded to the same left
+   offset as .hero-blur-veil (both 57%) and centered within that box, so the
+   card sits centered within the blurred region instead of being pushed
+   toward the right edge with lopsided margins. */
+.login-card-layer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 57%;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Logo shown above the card on mobile/tablet (hero image is hidden there).
@@ -96,14 +116,6 @@
     max-height: 72px;
     object-fit: contain;
     margin: 0 auto 24px auto;
-}
-
-.overlay-content {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-    width: 100%;
 }
 
 /* Institution logo, top-left of the hero */
@@ -119,6 +131,11 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    /* Cap the tagline's width so it wraps onto a second line instead of
+       running under the card on the crisp/blur split — the flex column
+       parent stretches this to the full page width by default, so a long
+       tagline can render wide enough to visually collide with the card. */
+    max-width: 520px;
 }
 
 .overlay-text-large {
@@ -213,19 +230,15 @@
     .page-bg-blur {
         position: fixed;
     }
-    .login-grid {
+    .login-card-layer {
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
         height: auto;
-        overflow: visible;
-        display: block;
-    }
-    .login-grid .slds-col {
-        height: auto;
-        min-height: auto;
-        display: block;
-        overflow: visible;
-    }
-    .left-image-container {
-        display: none;
+        min-height: 100vh;
+        justify-content: center;
     }
     .mobile-hero-logo {
         display: block;
@@ -260,19 +273,15 @@
         position: fixed;
         opacity: 0.6;
     }
-    .login-grid {
+    .login-card-layer {
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
         height: auto;
-        overflow: visible;
-        display: block;
-    }
-    .login-grid .slds-col {
-        height: auto;
-        min-height: auto;
-        display: block;
-        overflow: visible;
-    }
-    .left-image-container {
-        display: none;
+        min-height: 100vh;
+        justify-content: center;
     }
     .mobile-hero-logo {
         display: block;

@@ -1,8 +1,17 @@
 import { LightningElement, track } from 'lwc';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import getAlumniRolesForPerson from '@salesforce/apex/KenAlumniOnboardingService.getAlumniRolesForPerson';
+import updateLastLogin from '@salesforce/apex/KenConstituentRoleService.updateLastLogin';
 import SideLogo from '@salesforce/resourceUrl/sidelogo';
 import KenLogo from '@salesforce/resourceUrl/LoginKen';
+
+const STATUS_INITIAL_LOGIN_DONE = 'Initial Login Done';
+const ONBOARDING_STATUSES = new Set([
+    'Unregistered',
+    'Verified',
+    'Onboarding Pending',
+    'Onboarding In Progress'
+]);
 
 export default class KenRoleSelect extends LightningElement {
     sideLogoUrl = SideLogo;
@@ -10,6 +19,7 @@ export default class KenRoleSelect extends LightningElement {
     @track accounts = [];
     accountId = '';
     isLoading = true;
+    allRoles = [];
 
     connectedCallback() {
         document.body.style.overflow = 'hidden';
@@ -92,6 +102,8 @@ export default class KenRoleSelect extends LightningElement {
                 itemClass: 'account-item'
             }));
 
+            this.allRoles = normalized;
+
             if (normalized.length === 1) {
                 this.persistSelection(normalized[0]);
                 this.redirectByRoleStatus(normalized[0]);
@@ -103,8 +115,18 @@ export default class KenRoleSelect extends LightningElement {
         } catch (e) {
             console.error('Error loading alumni roles', e);
             this.accounts = [];
+            this.allRoles = [];
             this.isLoading = false;
         }
+    }
+
+    /**
+     * True once any of this person's roles has finished onboarding. A second role
+     * added later belongs to someone who is already an alumnus, so they should not
+     * be sent back through the onboarding or welcome screens for it.
+     */
+    get hasCompletedOnboarding() {
+        return this.allRoles.some((role) => role.roleStatus === STATUS_INITIAL_LOGIN_DONE);
     }
 
     persistSelection(role) {
@@ -123,14 +145,25 @@ export default class KenRoleSelect extends LightningElement {
         }
     }
 
-    redirectByRoleStatus(role) {
+    async redirectByRoleStatus(role) {
+        if (role?.id) {
+            try {
+                await updateLastLogin({ constituentRoleId: role.id });
+            } catch (e) {
+                console.error('Error updating last login', e);
+            }
+        }
         const { origin, pathname } = window.location;
         const baseMatch = pathname.match(/^\/[^/]+/);
         const basePath = baseMatch ? baseMatch[0] : '';
         const roleId = role?.id || '';
         const status = role?.roleStatus || '';
 
-        if ((status === 'Unregistered' || status === 'Verified') && roleId) {
+        if (status === STATUS_INITIAL_LOGIN_DONE || this.hasCompletedOnboarding) {
+            this.redirectToPortalHome();
+            return;
+        }
+        if (ONBOARDING_STATUSES.has(status) && roleId) {
             window.location.assign(`${origin}${basePath}/onboarding-form?roleId=${roleId}`);
             return;
         }
@@ -138,12 +171,12 @@ export default class KenRoleSelect extends LightningElement {
             window.location.assign(`${origin}${basePath}/welcome-page?roleId=${roleId}`);
             return;
         }
-        if (status === 'Initial Login Done') {
-            this.redirectToPortalHome();
+        if (roleId) {
+            window.location.assign(`${origin}${basePath}/onboarding-form?roleId=${roleId}`);
             return;
         }
 
-        window.location.assign(`${origin}${basePath}/select-role`);
+        this.redirectToPortalHome();
     }
 
     redirectToPortalHome() {

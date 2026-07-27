@@ -4,6 +4,8 @@ import { CurrentPageReference, NavigationMixin } from 'lightning/navigation';
 import loginBg from '@salesforce/resourceUrl/AlumniAlt';
 import getUserContactDetails from '@salesforce/apex/KenNavBarController.getUserContactDetails';
 import getNavigationMenuItems from '@salesforce/apex/KenNavBarController.getNavigationMenuItems';
+import ensureSessionLastLogin from '@salesforce/apex/KenConstituentRoleService.ensureSessionLastLogin';
+import getAlumniRolesForPerson from '@salesforce/apex/KenAlumniOnboardingService.getAlumniRolesForPerson';
 
 // Cache keys for sessionStorage
 const PROFILE_CACHE_KEY = 'navigationMenu_profileCache';
@@ -97,6 +99,7 @@ export default class kenNavBar extends NavigationMixin(LightningElement) {
     studentName;
     graduationYear;
     sideLogoUrl = SideLogo;
+    @track showRoleSwitch = false;
 
     publishStatus;
     isLoaded = false;
@@ -182,6 +185,8 @@ export default class kenNavBar extends NavigationMixin(LightningElement) {
     }
 
     connectedCallback() {
+        this._stampSessionLogin();
+        this._loadRoleSwitchVisibility();
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
@@ -209,6 +214,36 @@ export default class kenNavBar extends NavigationMixin(LightningElement) {
 
     disconnectedCallback() {
         document.removeEventListener('ken_mobile_menu_toggle', this._windowMenuHandler);
+    }
+
+    /**
+     * Once per browser session (and never on the login/onboarding flow pages), stamps
+     * ConstituentRole.Last_Login__c and routes sessions that skipped the select-role
+     * screen (SSO deep links, admin Login-As) back into the standard journey when the
+     * role's registration status shows onboarding/welcome is still incomplete.
+     */
+    _stampSessionLogin() {
+        const path = window.location.pathname || '';
+        if (/(login|select-role|onboarding-form|welcome-page|verify-link)/.test(path)) {
+            return;
+        }
+        try {
+            if (sessionStorage.getItem('kenSessionLoginStamped')) {
+                return;
+            }
+            sessionStorage.setItem('kenSessionLoginStamped', '1');
+        } catch (e) {
+            return;
+        }
+        ensureSessionLastLogin()
+            .then(status => {
+                if (status && status !== 'Initial Login Done') {
+                    const baseMatch = path.match(/^\/[^/]+/);
+                    const base = baseMatch ? baseMatch[0] : '';
+                    window.location.assign(`${window.location.origin}${base}/select-role`);
+                }
+            })
+            .catch(() => {});
     }
 
     /**
@@ -392,6 +427,48 @@ export default class kenNavBar extends NavigationMixin(LightningElement) {
             type: 'comm__namedPage',
             attributes: { name: 'Home' }
         });
+    }
+
+    /**
+     * The switch-role icon only renders when the person has more than one
+     * alumni role — the same list the select-role screen offers. Cached per
+     * session so the icon doesn't flicker on every page load.
+     */
+    _loadRoleSwitchVisibility() {
+        try {
+            if (sessionStorage.getItem('kenHasMultipleRoles') === '1') {
+                this.showRoleSwitch = true;
+            }
+        } catch (e) { /* ignore */ }
+        getAlumniRolesForPerson({ personId: null })
+            .then(roles => {
+                const multi = (roles || []).length > 1;
+                this.showRoleSwitch = multi;
+                try { sessionStorage.setItem('kenHasMultipleRoles', multi ? '1' : '0'); } catch (e) { /* ignore */ }
+            })
+            .catch(() => {
+                this.showRoleSwitch = false;
+            });
+    }
+
+    navigateToRoleSelect(event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        const pageRef = {
+            type: 'comm__namedPage',
+            attributes: { name: 'select_role__c' }
+        };
+        const basePath = this.getCommunityBasePath();
+        const fallbackUrl = `${basePath}/select-role`.replace(/\/+/g, '/');
+
+        this[NavigationMixin.GenerateUrl](pageRef)
+            .then(() => {
+                this[NavigationMixin.Navigate](pageRef);
+            })
+            .catch(() => {
+                window.location.assign(fallbackUrl);
+            });
     }
 
     navigateToMyProfile(event) {

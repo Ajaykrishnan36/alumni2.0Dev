@@ -41,6 +41,15 @@
                         </template>
                     </select>
                 </div>
+                <div class="filter-group">
+                    <label class="filter-label">Origin</label>
+                    <select class="filter-select" data-field="filterOrigin" onchange={handleFilterChange}>
+                        <option value="All">All Origins</option>
+                        <template for:each={originOptions} for:item="opt">
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        </template>
+                    </select>
+                </div>
                 <button class="clear-btn" onclick={clearFilters}>&#x2715; Clear</button>
             </div>
         </div>
@@ -77,30 +86,26 @@
             </div>
         </div>
 
-        <!-- Row 1: Status, Cases by Portal, Monthly Trend -->
+        <!-- Row 1: Status, Origin, Monthly Trend -->
         <div class="grid grid-3">
             <c-ken-donut-chart
                 title="Cases by Status"
-                description="Breakdown of all cases by current status"
+                description="Breakdown of cases by current status"
                 data={casesByStatusData}
                 is-loading={loadingByStatus}
                 dimension="status"
                 chart-type="donut"
-                show-export
                 ondrilldown={handleDrilldown}
-                onexportcsv={handleStatusExportCsv}
             ></c-ken-donut-chart>
 
             <c-ken-donut-chart
-                title="Cases by Target Audience"
-                description="Cases breakdown by target audience"
-                data={casesByTargetAudienceData}
-                is-loading={loadingByTargetAudience}
-                dimension="targetAudience"
+                title="Cases by Origin"
+                description="Case volume split by submission channel"
+                data={casesByOriginData}
+                is-loading={loadingByOrigin}
+                dimension="origin"
                 chart-type="donut"
-                show-export
                 ondrilldown={handleDrilldown}
-                onexportcsv={handleAllCasesExportCsv}
             ></c-ken-donut-chart>
 
             <c-ken-bar-chart
@@ -110,9 +115,7 @@
                 is-loading={loadingTrend}
                 dimension="trend"
                 chart-type="line"
-                show-export
                 ondrilldown={handleDrilldown}
-                onexportcsv={handleAllCasesExportCsv}
             ></c-ken-bar-chart>
         </div>
 
@@ -125,9 +128,7 @@
                 is-loading={loadingTopServices}
                 dimension="service"
                 chart-type="horizontal"
-                show-export
                 ondrilldown={handleDrilldown}
-                onexportcsv={handleAllCasesExportCsv}
             ></c-ken-bar-chart>
 
             <c-ken-bar-chart
@@ -137,9 +138,7 @@
                 is-loading={loadingTopOfferings}
                 dimension="offering"
                 chart-type="horizontal"
-                show-export
                 ondrilldown={handleDrilldown}
-                onexportcsv={handleAllCasesExportCsv}
             ></c-ken-bar-chart>
 
             <c-ken-bar-chart
@@ -149,9 +148,7 @@
                 is-loading={loadingTopSubmitters}
                 dimension="submitter"
                 chart-type="table"
-                show-export
                 ondrilldown={handleDrilldown}
-                onexportcsv={handleAllCasesExportCsv}
             ></c-ken-bar-chart>
         </div>
 

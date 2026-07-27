@@ -11,7 +11,6 @@ export default class KenPhotoCard extends LightningElement {
     }
 
     renderedCallback() {
-        // Attach error handler to profile image after render
         const profileImage = this.template.querySelector('[data-profile-image="true"]');
         if (profileImage && !profileImage.hasAttribute('data-error-handler-attached')) {
             profileImage.addEventListener('error', this.boundHandleProfileImageError);
@@ -25,7 +24,6 @@ export default class KenPhotoCard extends LightningElement {
 
     disconnectedCallback() {
         document.removeEventListener('click', this.boundHandleClickOutside);
-        // Remove error handler from profile image
         const profileImage = this.template.querySelector('[data-profile-image="true"]');
         if (profileImage) {
             profileImage.removeEventListener('error', this.boundHandleProfileImageError);
@@ -81,7 +79,6 @@ export default class KenPhotoCard extends LightningElement {
     }
 
     handleCardClick(event) {
-        // Don't trigger if clicking on menu button, menu dropdown, or profile overlay
         if (
             event.target.closest('.menu-button') ||
             event.target.closest('.menu-dropdown') ||
@@ -89,7 +86,6 @@ export default class KenPhotoCard extends LightningElement {
         ) {
             return;
         }
-        // Handle photo click to open full view or details
         this.dispatchEvent(
             new CustomEvent('photoclick', {
                 detail: {
@@ -101,7 +97,6 @@ export default class KenPhotoCard extends LightningElement {
 
     handleOverlayClick(event) {
         event.stopPropagation();
-        // Handle profile click
         this.dispatchEvent(
             new CustomEvent('profileclick', {
                 detail: {

@@ -65,6 +65,10 @@
                     <span>Filters</span>
                     <template lwc:if={activeFilterCount}><span class="ken-filter-badge">{activeFilterCount}</span></template>
                 </button>
+                <button type="button" class="ken-filters-btn" onclick={handleMapViewOpen}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s7-7.75 7-13a7 7 0 1 0-14 0c0 5.25 7 13 7 13z"></path><circle cx="12" cy="8" r="2.5"></circle></svg>
+                    <span>Map view</span>
+                </button>
             </div>
             <div class="master-label">Master Data</div>
             <div class="master-count">{masterCountAll}</div>
@@ -542,6 +546,20 @@
     </main>
 
     <!-- ============================================================
+         MAP VIEW MODAL — alumni distribution map (shared c/kenAlumniMap)
+         ============================================================ -->
+    <template lwc:if={showMapModal}>
+        <div class="map-view-overlay" onclick={handleMapModalClose}>
+            <div class="map-view-shell" onclick={handleMapModalClick}>
+                <div class="modal-close map-view-close" onclick={handleMapModalClose}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                </div>
+                <c-ken-alumni-map map-height={mapModalHeight} context="admin" onprofileselect={handleMapProfileSelect}></c-ken-alumni-map>
+            </div>
+        </div>
+    </template>
+
+    <!-- ============================================================
          FILTERS POPUP — multi-field, matches portal network filters
          ============================================================ -->
     <template lwc:if={showFiltersPopup}>
@@ -580,28 +598,27 @@
                         <template lwc:if={companyCount}><span class="filter-field-badge">{companyCount}</span></template>
                     </div>
                     <div class="filter-field">
-                        <c-ken-searchable-select placeholder="Role" value={filterRole}
+                        <c-ken-searchable-select placeholder="Job title" value={filterRole}
                             options={roleOptions} data-field="role"
                             onchange={handleFilterValueChange}></c-ken-searchable-select>
                         <template lwc:if={roleCount}><span class="filter-field-badge">{roleCount}</span></template>
                     </div>
                     <div class="filter-field">
-                        <c-ken-searchable-select placeholder="Domain" value={filterDomain}
-                            options={domainOptions} data-field="domain"
+                        <c-ken-searchable-select placeholder="Employment type" value={filterEmploymentType}
+                            options={employmentTypeOptions} data-field="employmentType"
                             onchange={handleFilterValueChange}></c-ken-searchable-select>
-                        <template lwc:if={domainCount}><span class="filter-field-badge">{domainCount}</span></template>
+                        <template lwc:if={employmentTypeCount}><span class="filter-field-badge">{employmentTypeCount}</span></template>
                     </div>
                     <div class="filter-field">
-                        <c-ken-searchable-select placeholder="Industry / Job function" value={filterIndustry}
-                            options={industryOptions} data-field="industry"
+                        <c-ken-searchable-select placeholder="Gender" value={filterGender}
+                            options={genderFilterOptions} data-field="gender"
                             onchange={handleFilterValueChange}></c-ken-searchable-select>
-                        <template lwc:if={industryCount}><span class="filter-field-badge">{industryCount}</span></template>
+                        <template lwc:if={genderCount}><span class="filter-field-badge">{genderCount}</span></template>
                     </div>
                     <div class="filter-field">
-                        <c-ken-searchable-select placeholder="Skill" value={filterSkill}
-                            options={skillOptions} data-field="skill"
-                            onchange={handleFilterValueChange}></c-ken-searchable-select>
-                        <template lwc:if={skillCount}><span class="filter-field-badge">{skillCount}</span></template>
+                        <c-ken-multi-select-picklist placeholder="Language" value={filterLanguage}
+                            options={languageOptions} data-field="language"
+                            onchange={handleFilterValueChange}></c-ken-multi-select-picklist>
                     </div>
                     <div class="filter-field">
                         <c-ken-searchable-select placeholder="Preference" value={filterPreference}
@@ -926,32 +943,18 @@
     </template>
 
     <!-- ============================================================
-         MODAL: LEAD UNMERGED
+         MODAL: LEAD / REFERRAL WORKSPACE (unified — both surface a Lead Id)
          ============================================================ -->
-    <template lwc:if={showLeadModal}>
+    <template lwc:if={showWorkspaceModal}>
         <div class={overlayClass} onclick={handleOverlayClick}>
-            <div class="modal modal-narrow">
-                <div class="modal-scroll" style="padding:36px 36px 32px;position:relative">
+            <div class={leadModalClass}>
+                <div class="modal-scroll" style="padding:0;position:relative">
                     <div class="modal-close" onclick={handleClose}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
                     </div>
-                    <div class="unmerged-eyebrow"><span class="state">{leadEyebrowState}</span><span class="dot"></span>{leadEyebrowStatus}</div>
-                    <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-.022em">{personName}</h2>
-                    <div class="unmerged-sub">Source: {capturedSource}</div>
-
-                    <div style="margin-top:22px"></div>
-
-                    <div class="captured-card">
-                        <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--slate-700);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--slate-100)">Captured Fields</div>
-                        <div class="row">
-                            <div><div class="label">Full name</div><div class="value">{personName}</div></div>
-                            <div><div class="label">Year of graduation</div><div class="value">{capturedGradYear}</div></div>
-                            <div><div class="label">Registration number <span class="opt">(optional)</span></div><div class="value muted">{capturedRegNumber}</div></div>
-                        </div>
-                        <div class="captured-disclaimer">Leads and referrals are captured with only these fields. All other profile data — contact, career, engagement — is filled in after the record is merged with a master record (or after the alumnus completes portal onboarding).</div>
-                    </div>
 
                     <template lwc:if={isNewRoleLead}>
+                        <div style="padding:40px 36px 32px">
                         <div class="merge-panel">
                             <div class="merge-title">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 5v14M5 12h14"></path></svg>
@@ -968,102 +971,337 @@
                                 <button class="merge-btn" style="background:var(--primary-color,#1f3b8f);color:#fff;border-color:transparent" onclick={handleApproveRole}>Approve role</button>
                             </div>
                         </div>
+                        </div>
                     </template>
 
                     <template lwc:else>
-                        <div class="merge-panel">
-                            <div class="merge-title">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 7a4 4 0 0 0 8 0M12 21V11"></path><circle cx="6" cy="20" r="2"></circle><circle cx="18" cy="20" r="2"></circle></svg>
-                                Find &amp; merge with master record
+                        <div class="lead-ws">
+                            <aside class="lead-rail">
+                                <div class="lead-railhead">
+                                    <div class="idrow">
+                                        <div class="avatar-circle">{railInitials}</div>
+                                        <div>
+                                            <h3>{railName}</h3>
+                                            <div class="sub">{railSubLine}</div>
+                                        </div>
+                                    </div>
+                                    <div class="lead-railpills">
+                                        <span class="pill teal">{recordKindLabel}</span>
+                                        <span class="pill warn">Unmerged</span>
+                                        <template lwc:if={capturedSource}><span class="pill neutral">{capturedSource}</span></template>
+                                    </div>
+                                </div>
+                                <div class="lead-datablk">
+                                    <div class="h">Captured</div>
+                                    <div class="lead-kv">
+                                        <div class="r"><span class="k">Institute</span><span class="v">{railInstitute}</span></div>
+                                        <div class="r"><span class="k">Programme</span><span class="v">{railProgram}</span></div>
+                                        <div class="r"><span class="k">Registration no.</span><span class="v muted">{capturedRegNumber}</span></div>
+                                        <div class="r"><span class="k">Year of enrollment</span><span class="v">{railYearOfEnrollment}</span></div>
+                                        <div class="r"><span class="k">Year of graduation</span><span class="v">{capturedGradYear}</span></div>
+                                        <div class="r"><span class="k">Referred by</span><span class="v muted">{capturedReferredBy}</span></div>
+                                    </div>
+                                </div>
+                                <div class="lead-datablk">
+                                    <div class="h">Contact</div>
+                                    <div class="lead-kv">
+                                        <div class="r"><span class="k">Email</span>
+                                            <template lwc:if={railEmail}><span class="v">{railEmail}</span></template>
+                                            <template lwc:else><span class="v missing">missing</span></template>
+                                        </div>
+                                        <div class="r"><span class="k">Phone</span>
+                                            <template lwc:if={railPhone}><span class="v">{railPhone}</span></template>
+                                            <template lwc:else><span class="v missing">missing</span></template>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lead-datablk">
+                                    <div class="h">Lifecycle &amp; ownership</div>
+                                    <div class="lead-kv">
+                                        <div class="r"><span class="k">Registration status</span><span class="v">{railStatusLabel}</span></div>
+                                        <div class="r"><span class="k">Owner</span><span class="v">{ownerName}</span></div>
+                                        <div class="r"><span class="k">Created</span><span class="v">{railCreated}</span></div>
+                                    </div>
+                                </div>
+                            </aside>
+
+                            <div class="lead-canvas">
+                                <div class="lead-actionbar">
+                                    <span class="spacer"></span>
+                                    <button class="la-btn ok" onclick={handleVerifyLead} disabled={isConverting}>Convert</button>
+                                    <button class="la-btn danger" onclick={handleRejectLead} disabled={isRejecting}>Reject</button>
+                                </div>
+
+                                <div class="lead-seg">
+                                    <div class={ltMerge} data-lt="merge" onclick={handleLeadTab}>Merge &amp; Lookup</div>
+                                    <div class={ltActivity} data-lt="activity" onclick={handleLeadTab}>Activity <span class="b">{timelineCount}</span></div>
+                                    <div class={ltComm} data-lt="comm" onclick={handleLeadTab}>Communication <span class="b">{commCount}</span></div>
+                                    <div class={ltOwner} data-lt="owner" onclick={handleLeadTab}>Change Owner</div>
+                                    <div class={ltHistory} data-lt="history" onclick={handleLeadTab}>Field history</div>
+                                </div>
+
+                                <div class="lead-pane">
+                                    <template lwc:if={isLeadTabMerge}>
+                        <template lwc:if={mergeReviewActive}>
+                            <div class="merge-panel">
+                                <div class="merge-top-row">
+                                    <button class="merge-back-top" onclick={handleBackToMergeCandidates}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"></path></svg>
+                                        Back to candidates
+                                    </button>
+                                    <div class="compare-bulk-actions">
+                                        <button type="button" class="btn-secondary" onclick={handleUseAllExisting}>Use all Existing</button>
+                                        <button type="button" class="btn-secondary" onclick={handleUseAllIncoming}>Use all Incoming</button>
+                                    </div>
+                                </div>
+                                <div class="merge-title">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6 9 17l-5-5"></path></svg>
+                                    Review merge
+                                </div>
+                                <div class="merge-desc">Merging into <strong>{mergeReviewMasterName}</strong></div>
+                                <template lwc:if={mergeReviewLoading}>
+                                    <div class="empty-state">Loading comparison…</div>
+                                </template>
+                                <template lwc:else>
+                                    <div class="compare-card">
+                                        <div class="compare-head">
+                                            <span>Field</span>
+                                            <span>Existing</span>
+                                            <span>Incoming</span>
+                                            <span class="result">Merged</span>
+                                        </div>
+                                        <template for:each={mergeReviewRows} for:item="row">
+                                            <div key={row.fieldKey} class={row.rowClass}>
+                                                <div class="field-name">{row.label}</div>
+                                                <button type="button" class={row.existingPillClass} data-field={row.fieldKey} data-side="existing" onclick={handlePickSide}>{row.existingValue}</button>
+                                                <button type="button" class={row.incomingPillClass} data-field={row.fieldKey} data-side="incoming" onclick={handlePickSide}>{row.incomingValue}</button>
+                                                <div class="merged-value">{row.mergedValue}</div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                                <div class="merge-foot" style="justify-content:flex-end">
+                                    <button class="merge-btn merge-btn-primary" onclick={handleConfirmMerge} disabled={isMerging}>Merge</button>
+                                </div>
                             </div>
-                            <div class="merge-desc">This record cannot be used until it is merged with a master alumni identity. Search across historical uploads, old-portal records, and student-transition cohorts.</div>
-                            <div class="merge-search">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                                <input value={mergeSearchTerm} oninput={handleMergeSearch} />
-                            </div>
-                            <template lwc:if={isMergeLoading}>
-                                <div class="empty-state">Searching…</div>
-                            </template>
-                            <template lwc:if={isMergeEmpty}>
-                                <div class="empty-state">No candidates found.</div>
-                            </template>
-                            <template for:each={mergeRows} for:item="cand">
-                                <div key={cand.alumniId} class="merge-item">
-                                    <div class="avatar-circle">{cand.initials}</div>
-                                    <div class="info"><div class="nm">{cand.name}</div><div class="det">{cand.detail}</div></div>
-                                    <button class="merge-btn" data-id={cand.alumniId} onclick={handleMergeCandidate}>Merge</button>
+                        </template>
+                        <template lwc:else>
+                            <template lwc:if={mergeMultiReviewActive}>
+                                <div class="merge-panel">
+                                    <button class="merge-back-top" onclick={handleBackFromMultiReview}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"></path></svg>
+                                        Back to candidates
+                                    </button>
+                                    <div class="merge-title">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6 9 17l-5-5"></path></svg>
+                                        Compare candidates
+                                    </div>
+                                    <div class="merge-target-row">
+                                        <label class="merge-target-label" for="mergeTargetSelectLead">Merge into</label>
+                                        <select id="mergeTargetSelectLead" class="merge-target-select" onchange={handleMultiTargetChange}>
+                                            <option value="" selected={isNoMultiTargetSelected}>Choose a candidate…</option>
+                                            <template for:each={multiTargetOptions} for:item="opt">
+                                                <option key={opt.key} value={opt.key} selected={opt.isSelected}>{opt.name}</option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                    <template lwc:if={mergeMultiReviewLoading}>
+                                        <div class="empty-state">Loading comparison…</div>
+                                    </template>
+                                    <template lwc:else>
+                                        <div class="multi-compare-scroll">
+                                            <div class="multi-compare-row multi-compare-head">
+                                                <div class="multi-compare-label-col">Field</div>
+                                                <div class="multi-compare-col multi-compare-incoming">New Lead</div>
+                                                <template for:each={mergeMultiReviewMasterNames} for:item="master">
+                                                    <div key={master.key} class="multi-compare-col">{master.name}</div>
+                                                </template>
+                                                <div class="multi-compare-col multi-compare-merged-head">Merged</div>
+                                            </div>
+                                            <template for:each={mergeMultiReviewRows} for:item="row">
+                                                <div key={row.fieldKey} class="multi-compare-row">
+                                                    <div class="multi-compare-label-col">{row.label}</div>
+                                                    <template for:each={row.sources} for:item="src">
+                                                        <button type="button" key={src.key} class={src.pillClass} data-field={row.fieldKey} data-source={src.key} onclick={handlePickMultiSide}>{src.value}</button>
+                                                    </template>
+                                                    <div class="multi-compare-col multi-compare-merged">{row.mergedValue}</div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                    <div class="merge-foot" style="justify-content:flex-end">
+                                        <button class="merge-btn merge-btn-primary" disabled={isMultiMergeDisabled} title={multiMergeButtonTitle} onclick={handleConfirmMultiMerge}>Merge</button>
+                                    </div>
                                 </div>
                             </template>
-                            <div class="merge-foot">
-                                <span class="merge-reject" onclick={handleRejectLead}>Reject as not an alumnus</span>
+                            <template lwc:else>
+                                <div class="merge-panel">
+                                    <div class="merge-title">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 7a4 4 0 0 0 8 0M12 21V11"></path><circle cx="6" cy="20" r="2"></circle><circle cx="18" cy="20" r="2"></circle></svg>
+                                        Find &amp; merge with master record
+                                    </div>
+                                    <div class="merge-desc">This record cannot be used until it is merged with a master alumni identity. Suggestions below are matched by registration number, name, email, or phone — or search directly.</div>
+                                    <div class="merge-search">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                                        <input value={mergeSearchTerm} oninput={handleMergeSearch} />
+                                    </div>
+                                    <template lwc:if={isMergeLoading}>
+                                        <div class="empty-state">Searching…</div>
+                                    </template>
+                                    <template lwc:if={isMergeEmpty}>
+                                        <div class="empty-state">No candidates found.</div>
+                                    </template>
+                                    <template lwc:if={hasMergeRows}>
+                                        <label class="merge-select-all">
+                                            <input type="checkbox" checked={isAllCandidatesSelected} onchange={handleToggleSelectAllCandidates} />
+                                            Select all
+                                        </label>
+                                    </template>
+                                    <template for:each={mergeRows} for:item="cand">
+                                        <div key={cand.alumniId} class="merge-item">
+                                            <input type="checkbox" class="merge-item-check" data-id={cand.alumniId} checked={cand.selected} onchange={handleToggleCandidate} />
+                                            <div class="avatar-circle">{cand.initials}</div>
+                                            <div class="info"><div class="nm">{cand.name}</div><div class="det">{cand.detail}</div></div>
+                                        </div>
+                                    </template>
+                                    <div class="merge-foot" style="justify-content:flex-end">
+                                        <button class="merge-btn merge-btn-primary" disabled={isCompareDisabled} onclick={handleCompareSelected}>{compareButtonLabel}</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </template>
+                                    </template>
+
+                                    <template lwc:if={isLeadTabActivity}>
+                                        <div class="detail-card">
+                                            <div class="dc-title">Activity Timeline</div>
+                                            <template lwc:if={hasTimelineRows}>
+                                                <div class="ltl">
+                                                    <template for:each={timelineRows} for:item="t">
+                                                        <div class={t.nodeClass} key={t.key}>
+                                                            <span class="ltl-node"></span>
+                                                            <div class="ltl-title">{t.title}</div>
+                                                            <div class="ltl-meta"><span class="ltl-who">{t.actor}</span><span>·</span><span>{t.dateLabel}</span></div>
+                                                            <template lwc:if={t.hasBody}><div class="ltl-body">{t.body}</div></template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="empty-state">No activity recorded yet.</div>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    <template lwc:if={isLeadTabComm}>
+                                        <div class="detail-card">
+                                            <div class="dc-title">Communicate</div>
+                                            <div class="comm-channels">
+                                                <button class={chanEmail} data-ch="email" onclick={handleCommChannel}>Email</button>
+                                                <button class={chanSms} data-ch="sms" onclick={handleCommChannel}>SMS</button>
+                                                <button class={chanCall} data-ch="call" onclick={handleCommChannel}>Log call</button>
+                                                <button class={chanNote} data-ch="note" onclick={handleCommChannel}>Note</button>
+                                            </div>
+                                            <div class="comm-composer">
+                                                <div class="cc-field">
+                                                    <label class="cc-label">{commSubjectLabel}</label>
+                                                    <input class="cc-input" value={commSubject} oninput={handleCommSubjectInput} placeholder="Short summary" />
+                                                </div>
+                                                <div class="cc-field">
+                                                    <label class="cc-label">{commBodyLabel}</label>
+                                                    <textarea class="cc-area" oninput={handleCommBodyInput} placeholder="What was said…">{commBody}</textarea>
+                                                </div>
+                                                <div class="cc-foot">
+                                                    <span class="cc-hint">Recorded on this lead's activity as a Task.</span>
+                                                    <button class="merge-btn merge-btn-primary" disabled={isCommDisabled} onclick={handleLogComm}>{commLogButtonLabel}</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="detail-card">
+                                            <div class="dc-title">Outreach Log · {commCount}</div>
+                                            <template lwc:if={hasCommLog}>
+                                                <template for:each={commLogRows} for:item="c">
+                                                    <div class="comm-logrow" key={c.key}>
+                                                        <div class={c.iconClass}></div>
+                                                        <div class="clr-meat">
+                                                            <div class="clr-l1">{c.title}<span class="pill neutral">{c.channel}</span></div>
+                                                            <template lwc:if={c.hasBody}><div class="clr-body">{c.body}</div></template>
+                                                            <div class="clr-l2">by {c.actor} · {c.dateLabel} · {c.status}</div>
+                                                        </div>
+                                                    </div>
+                                                </template>
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="empty-state">No communications logged yet.</div>
+                                            </template>
+                                        </div>
+                                    </template>
+
+                                    <template lwc:if={isLeadTabOwner}>
+                                        <div class="detail-card">
+                                            <div class="dc-title">Change Owner</div>
+                                            <div class="owner-current">
+                                                <div class="avatar-circle">{ownerInitials}</div>
+                                                <div class="oc-meat">
+                                                    <div class="oc-name">{ownerName}<template lwc:if={ownerTypeLabel}><span class="pill neutral">{ownerTypeLabel}</span></template></div>
+                                                    <div class="oc-sub">Current owner</div>
+                                                </div>
+                                            </div>
+                                            <div class="oa-search">
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                                                <input value={ownerSearchTerm} oninput={handleOwnerSearch} placeholder="Search people &amp; queues" />
+                                            </div>
+                                            <template lwc:if={hasOwnerOptions}>
+                                                <div class="oa-list">
+                                                    <template for:each={ownerOptionRows} for:item="o">
+                                                        <div class={o.itemClass} key={o.id} data-id={o.id} onclick={handleSelectNewOwner}>
+                                                            <div class={o.avatarClass}>{o.initials}</div>
+                                                            <div class="oa-meat"><div class="oa-name">{o.name}</div><div class="oa-sub">{o.subtitle}</div></div>
+                                                            <template lwc:if={o.showCheck}><span class="oa-check">✓</span></template>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="empty-state">No matching people or queues.</div>
+                                            </template>
+                                            <input class="cc-input" style="margin-top:12px" value={ownerReason} oninput={handleOwnerReasonInput} placeholder="Reason for change (optional) — added to activity" />
+                                            <div class="cc-foot">
+                                                <span class="cc-hint">Reassigns ownership and logs the change to activity.</span>
+                                                <button class="merge-btn merge-btn-primary" disabled={isReassignDisabled} onclick={handleReassign}>Reassign</button>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <template lwc:if={isLeadTabHistory}>
+                                        <div class="detail-card">
+                                            <div class="dc-title">Field Update History</div>
+                                            <template lwc:if={hasHistoryRows}>
+                                                <table class="history-table">
+                                                    <thead><tr><th>Date</th><th>Field</th><th>Previous Value</th><th>New Value</th><th>Source</th><th>Updated By</th></tr></thead>
+                                                    <tbody>
+                                                        <template for:each={historyRows} for:item="h">
+                                                            <tr key={h.key}>
+                                                                <td>{h.dateLabel}</td>
+                                                                <td>{h.field}</td>
+                                                                <td>{h.previousValue}</td>
+                                                                <td>{h.newValue}</td>
+                                                                <td>{h.sourceTag}</td>
+                                                                <td>{h.updatedBy}</td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </template>
+                                            <template lwc:else>
+                                                <div class="empty-state">No field updates recorded yet.</div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                         </div>
                     </template>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <!-- ============================================================
-         MODAL: REFERRAL UNMERGED
-         ============================================================ -->
-    <template lwc:if={showReferralModal}>
-        <div class={overlayClass} onclick={handleOverlayClick}>
-            <div class="modal modal-narrow">
-                <div class="modal-scroll" style="padding:36px 36px 32px;position:relative">
-                    <div class="modal-close" onclick={handleClose}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 6 6 18M6 6l12 12"></path></svg>
-                    </div>
-                    <div class="unmerged-eyebrow"><span class="state">REFERRAL</span><span class="dot"></span>UNMERGED</div>
-                    <h2 style="margin:0;font-size:26px;font-weight:700;letter-spacing:-.022em">{personName}</h2>
-                    <div class="unmerged-sub">Captured via referral link · {capturedSource}</div>
-
-                    <div style="margin-top:22px"></div>
-
-                    <div class="captured-card">
-                        <div style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:var(--slate-700);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--slate-100)">Captured Fields</div>
-                        <div class="row">
-                            <div><div class="label">Full name</div><div class="value">{personName}</div></div>
-                            <div><div class="label">Year of graduation</div><div class="value">{capturedGradYear}</div></div>
-                            <div><div class="label">Registration number <span class="opt">(optional)</span></div><div class="value muted">{capturedRegNumber}</div></div>
-                        </div>
-                        <div class="captured-disclaimer">Leads and referrals are captured with only these fields. All other profile data — contact, career, engagement — is filled in after the record is merged with a master record (or after the alumnus completes portal onboarding).</div>
-                    </div>
-
-                    <template lwc:if={capturedReferredBy}>
-                        <div class="referrer-card">
-                            <div class="lbl">Referred By</div>
-                            <div class="nm">{capturedReferredBy}</div>
-                        </div>
-                    </template>
-
-                    <div class="merge-panel">
-                        <div class="merge-title">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 7a4 4 0 0 0 8 0M12 21V11"></path><circle cx="6" cy="20" r="2"></circle><circle cx="18" cy="20" r="2"></circle></svg>
-                            Find &amp; merge with master record
-                        </div>
-                        <div class="merge-desc">This record cannot be used until it is merged with a master alumni identity. Search across historical uploads, old-portal records, and student-transition cohorts.</div>
-                        <div class="merge-search">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                            <input value={mergeSearchTerm} oninput={handleMergeSearch} />
-                        </div>
-                        <template lwc:if={isMergeLoading}>
-                            <div class="empty-state">Searching…</div>
-                        </template>
-                        <template lwc:if={isMergeEmpty}>
-                            <div class="empty-state">No candidates found.</div>
-                        </template>
-                        <template for:each={mergeRows} for:item="cand">
-                            <div key={cand.alumniId} class="merge-item">
-                                <div class="avatar-circle">{cand.initials}</div>
-                                <div class="info"><div class="nm">{cand.name}</div><div class="det">{cand.detail}</div></div>
-                                <button class="merge-btn" data-id={cand.alumniId} onclick={handleMergeCandidate}>Merge</button>
-                            </div>
-                        </template>
-                        <div class="merge-foot">
-                            <span class="merge-reject" onclick={handleRejectLead}>Reject as not an alumnus</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

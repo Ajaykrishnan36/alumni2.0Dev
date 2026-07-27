@@ -4,7 +4,7 @@
         <header class="landing-header">
             <div class="header-content">
                 <div class="header-logos">
-                    <img src={landingLogo} class="logo-image" alt="Somaiya Logos" />
+                    <img src={landingLogo} class="logo-image" alt="Institution logo" />
                 </div>
                 <div class="header-nav-wrapper">
                     <nav class="header-nav">
@@ -13,6 +13,7 @@
                         <a href="#" class="nav-link" data-target="community" onclick={handleNavClick}>Community</a>
                         <a href="#" class="nav-link" data-target="giving" onclick={handleNavClick}>Giving</a>
                         <a href="#" class="nav-link" data-target="newsletter" onclick={handleNavClick}>Newsletter</a>
+                        <a href="#" class="nav-link" data-target="map" onclick={handleNavClick}>Map</a>
                         <a href="#" class="nav-link" data-target="join" onclick={handleNavClick}>Join</a>
                     </nav>
                     <button class="hamburger-menu" onclick={toggleMenu} aria-label="Toggle menu">
@@ -27,6 +28,7 @@
                             <a href="#" class="mobile-nav-link" data-target="community" onclick={handleNavClick}>Community</a>
                             <a href="#" class="mobile-nav-link" data-target="giving" onclick={handleNavClick}>Giving</a>
                             <a href="#" class="mobile-nav-link" data-target="newsletter" onclick={handleNavClick}>Newsletter</a>
+                            <a href="#" class="mobile-nav-link" data-target="map" onclick={handleNavClick}>Map</a>
                             <a href="#" class="mobile-nav-link" data-target="join" onclick={handleNavClick}>Join</a>
                         </div>
                     </div>
@@ -756,4 +758,13 @@
         </footer>
     </div>
     </div>
+
+    <template if:true={showMapModal}>
+        <section class="map-modal-overlay" style={mapModalOverlayStyle} onclick={handleCloseMap}>
+            <div class="map-modal" onclick={stopMapModalClick}>
+                <button class="map-modal-close" onclick={handleCloseMap} aria-label="Close map">&times;</button>
+                <c-ken-alumni-map map-height={mapModalHeight} context="guest" onguestaction={handleMapGuestAction}></c-ken-alumni-map>
+            </div>
+        </section>
+    </template>
 </template>

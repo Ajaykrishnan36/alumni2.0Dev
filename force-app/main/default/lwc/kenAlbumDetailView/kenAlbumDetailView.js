@@ -1,19 +1,22 @@
-import { LightningElement, api, track, wire } from 'lwc';
+import { LightningElement, track, wire } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import getAlbumForRecord from '@salesforce/apex/KenGalleryController.getAlbumForRecord';
 import getAlbumPhotos from '@salesforce/apex/KenGalleryController.getAlbumPhotos';
 import uploadPhotos from '@salesforce/apex/KenGalleryController.uploadPhotos';
 import deletePhoto from '@salesforce/apex/KenGalleryController.deletePhoto';
 
-export default class KenAlbumDetailView extends LightningElement {
-    @api album;
+export default class KenAlbumDetailView extends NavigationMixin(LightningElement) {
+    @track album;
     @track showUploadPage = false;
     @track isSavingPhotos = false;
     @track showPhotoDetail = false;
     @track selectedPhoto = null;
     wiredPhotosResult;
     rawPhotos = [];
+    pendingPhotoId = null;
 
     connectedCallback() {
         getPrimaryColor().then(color => {
@@ -23,20 +26,51 @@ export default class KenAlbumDetailView extends LightningElement {
         }).catch(() => {
             console.log('Error getting primary color');
         });
+
+        if (!this.album) {
+            this.resolveAlbumFromUrl();
+        }
+    }
+
+    resolveAlbumFromUrl() {
+        const params = new URLSearchParams(window.location.search);
+        const recordId = params.get('recordId');
+        if (!recordId) {
+            return;
+        }
+        getAlbumForRecord({ recordId })
+            .then((result) => {
+                this.pendingPhotoId = result?.photoId || null;
+                this.album = result?.album || null;
+            })
+            .catch((error) => {
+                const msg = error?.body?.message || 'Could not load this album.';
+                this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: msg, variant: 'error' }));
+            });
     }
 
     @wire(getAlbumPhotos, { albumId: '$album.id' })
     wiredPhotos(result) {
         this.wiredPhotosResult = result;
         this.rawPhotos = result?.data || [];
+        this.openPendingPhoto();
+    }
+
+    openPendingPhoto() {
+        if (!this.pendingPhotoId || this.rawPhotos.length === 0) {
+            return;
+        }
+        const photo = this.albumPhotos.find((p) => p.id === this.pendingPhotoId) || null;
+        this.pendingPhotoId = null;
+        if (photo && photo.isImage) {
+            this.selectedPhoto = photo;
+            this.showPhotoDetail = true;
+        }
     }
 
     get albumPhotos() {
         return this.rawPhotos.map((p) => ({
             id: p.id,
-            // Rendition thumbnails are generated asynchronously after upload and can
-            // 404 briefly right after a photo is added, so use the full download URL
-            // (always available immediately) instead.
             imageUrl: p.imageUrl,
             profileImageUrl: p.uploaderImage,
             personName: p.uploaderName,
@@ -83,7 +117,10 @@ export default class KenAlbumDetailView extends LightningElement {
     }
 
     handleBack() {
-        this.dispatchEvent(new CustomEvent('back'));
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'gallery__c' }
+        });
     }
 
     handleAddPhotos() {
@@ -116,11 +153,6 @@ export default class KenAlbumDetailView extends LightningElement {
             .then(() => {
                 this.isSavingPhotos = false;
                 this.showUploadPage = false;
-                this.dispatchEvent(
-                    new CustomEvent('photosadded', {
-                        detail: { albumId: this.album.id, photosCount: this.rawPhotos.length }
-                    })
-                );
             })
             .catch((error) => {
                 this.isSavingPhotos = false;
@@ -139,8 +171,6 @@ export default class KenAlbumDetailView extends LightningElement {
             this.selectedPhoto = photo;
             this.showPhotoDetail = true;
         } else {
-            // Non-image files (PDFs, docs) can't be previewed as an <img>; open/download
-            // the file directly instead of showing a broken image in the viewer.
             window.open(photo.imageUrl, '_blank', 'noopener,noreferrer');
         }
     }
@@ -161,13 +191,6 @@ export default class KenAlbumDetailView extends LightningElement {
         if (action === 'delete') {
             deletePhoto({ photoId })
                 .then(() => refreshApex(this.wiredPhotosResult))
-                .then(() => {
-                    this.dispatchEvent(
-                        new CustomEvent('photodeleted', {
-                            detail: { albumId: this.album.id, photoId }
-                        })
-                    );
-                })
                 .catch((error) => {
                     const msg = error?.body?.message || 'Could not delete photo. Please try again.';
                     this.dispatchEvent(new ShowToastEvent({ title: 'Error', message: msg, variant: 'error' }));

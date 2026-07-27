@@ -46,7 +46,6 @@ export default class KenEventRegistrationPage extends NavigationMixin(LightningE
     @track isLoading = false;
     @track questionnaireId = null;
 
-    @track constituentRoleId = null;
     // When the org has Disable_Event_Fee__c enabled, all fee/payment UI is hidden.
     @track feeDisabled = false;
     @track _refreshTick = 0;
@@ -127,36 +126,13 @@ export default class KenEventRegistrationPage extends NavigationMixin(LightningE
     }
 
     _loadCurrentUser() {
-        try {
-            this.constituentRoleId = localStorage.getItem('ConstituentRoleId') || localStorage.getItem('constituentRoleId') || sessionStorage.getItem('ConstituentRoleId') || sessionStorage.getItem('constituentRoleId');
-        } catch (e) {
-            this.constituentRoleId = null;
-        }
-
         // If the user is coming back from taking the survey, restore their
         // in-progress participants/guests/group instead of resetting.
         if (this._restoreRegistrationDraft()) {
             return;
         }
 
-        if (!this.constituentRoleId) {
-            this.participants = [{
-                id: 'myself_0',
-                name: 'Me',
-                email: '',
-                phone: '',
-                type: 'myself',
-                typeLabel: 'Myself',
-                typeClass: 'type-badge type-myself',
-                meals: false,
-                dietaryPref: '',
-                selected: true,
-                canDelete: false,
-                dietaryOptions: this._buildDietaryOptions('')
-            }];
-            return;
-        }
-        getCurrentParticipantDetails({ constituentRoleId: this.constituentRoleId })
+        getCurrentParticipantDetails()
             .then(details => {
                 this.participants = [{
                     id: 'myself_0',
@@ -218,7 +194,7 @@ export default class KenEventRegistrationPage extends NavigationMixin(LightningE
         }));
     }
 
-    @wire(getEventSchedules, { eventId: '$_recordId', constituentRoleId: '$constituentRoleId' })
+    @wire(getEventSchedules, { eventId: '$_recordId' })
     wiredSchedules({ data, error }) {
         if (data) {
             this._processSchedules(data);
@@ -862,8 +838,7 @@ export default class KenEventRegistrationPage extends NavigationMixin(LightningE
         });
 
         saveEventRegistrations({
-            payload,
-            constituentRoleId: this.constituentRoleId
+            payload
         })
         .then(() => {
             this._showToast('Success', 'Registration successful!', 'success');

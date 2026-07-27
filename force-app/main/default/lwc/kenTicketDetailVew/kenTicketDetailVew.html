@@ -404,6 +404,9 @@
 						<template if:true={ratingBadge}>
 							<span class={ratingBadge.class}>{ratingBadge.text}</span>
 						</template>
+						<template if:true={showRatingError}>
+							<p class="rating-error-msg">Please select a star rating before submitting.</p>
+						</template>
 					</div>
 					<div class="feedback-textarea-container">
 						<textarea 

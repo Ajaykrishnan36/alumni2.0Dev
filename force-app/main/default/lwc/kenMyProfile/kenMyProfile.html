@@ -12,7 +12,7 @@
             batch={profileData.batch} expertise={profileData.expertise} education={educationLine}
             email={profileData.email} phone={profileData.phone} linkedin={profileData.linkedin}
             willing-to-help={profileData.willingToHelp}
-            is-my-profile="true" onviewidcard={handleViewIdCard}
+            is-my-profile="true"
             onopenchat={handleMessage} oneditprofile={navigateToSettings}></c-ken-profile-header>
 
         <!-- Stepper Tabs -->
@@ -260,45 +260,6 @@
             </div>
         </template>
     </div>
-
-    <!-- Alumni ID Card Modal – matches target: blue card, profile image same as nav menu -->
-    <template if:true={showIdCardModal}>
-        <div class="modal-overlay">
-            <div class="modal-content id-card-modal">
-                <div class="modal-header">
-                    <h2>ID Card</h2>
-                    <button type="button" class="close-modal-btn" onclick={closeIdCardModal} aria-label="Close">
-                        <lightning-icon icon-name="utility:close" size="small"></lightning-icon>
-                    </button>
-                </div>
-                <div class="modal-body centered-body">
-                    <div class="id-card-container">
-                        <div class="id-card">
-                            <div class="id-card-left">
-                                <h2 class="id-name">{profileData.name}</h2>
-                                <p class="id-number">{idCardNumber}</p>
-                                <p class="id-label">{idCardDegreeLine}</p>
-                                <div class="qr-code-placeholder">
-                                    <canvas class="qr-canvas"></canvas>
-                                </div>
-                            </div>
-                            <div class="id-card-right">
-                                <div class="id-year-badge">{idCardYear}</div>
-                                <img src={profileData.profileImage} alt="Profile" class="id-profile-img" onerror={handleImageError} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer centered-footer">
-                    <button class="cancel-btn" onclick={closeIdCardModal} style="flex:1">Cancel</button>
-                    <button class="save-btn" onclick={handleDownloadIdCard} style="flex:1" disabled={isIdCardDownloading}>
-                        <template if:true={isIdCardDownloading}>Saving...</template>
-                        <template if:false={isIdCardDownloading}>Download</template>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </template>
 
     <!-- About Me Edit Modal -->
     <template if:true={showAboutModal}>

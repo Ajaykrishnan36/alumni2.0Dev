@@ -45,6 +45,10 @@
 						</template>
 					</div>
 
+					<div class="form-field full-width note-field">
+						<p class="please-note"><strong>Please Note:</strong> {pleaseNoteText}</p>
+					</div>
+
 					<div class="form-field">
 						<div class="field-label">Registration no./Member ID/Roll no.</div>
 						<lightning-input id="regNumber" label="Registration Number" type="text"
@@ -55,13 +59,18 @@
 					</div>
 
 					<div class="form-field">
-						<div class="field-label">Institute Name</div>
+						<div class="field-label">Institute Name<span style="color:red">*</span></div>
 						<c-ken-searchable-picklist placeholder="Select" search-placeholder="Search institute..." value={institutionName} options={instituteOptions} data-id="institutionName" onchange={handlePicklistChange} class="register-searchable"></c-ken-searchable-picklist>
 					</div>
 
-					<div class="form-field">
+					<div class="form-field full-width">
 						<div class="field-label">Select Programme<span style="color:red">*</span></div>
-						<c-ken-searchable-picklist placeholder="Select" search-placeholder="Search program..." value={programPlan} options={programOptions} data-id="programPlan" onchange={handlePicklistChange} class="register-searchable"></c-ken-searchable-picklist>
+						<c-ken-searchable-picklist placeholder={programPlaceholder} search-placeholder="Search program..." value={programPlan} options={programOptions} disabled={isProgramDisabled} data-id="programPlan" onchange={handlePicklistChange} class="register-searchable"></c-ken-searchable-picklist>
+					</div>
+
+					<div class="form-field">
+						<div class="field-label">Year of Enrollment<span style="color:red">*</span></div>
+						<c-ken-searchable-picklist placeholder="Select" search-placeholder="Search year..." value={yearOfEnrollment} options={gradOptions} data-id="yearOfEnrollment" onchange={handlePicklistChange} class="register-searchable"></c-ken-searchable-picklist>
 					</div>
 
 					<div class="form-field">

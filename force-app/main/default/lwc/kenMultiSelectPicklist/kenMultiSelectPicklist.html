@@ -67,6 +67,20 @@
                             </div>
 
                             <ul class="slds-listbox slds-listbox_vertical" role="presentation">
+                                <template if:true={showSelectAll}>
+                                    <li role="presentation" class="slds-listbox__item">
+                                        <div class="optionRow" onclick={handleSelectAllClick}>
+                                            <input
+                                                class="optionCheckbox"
+                                                type="checkbox"
+                                                checked={isAllSelected}
+                                                disabled={disabled}
+                                            />
+                                            <label class="optionLabel">All</label>
+                                        </div>
+                                    </li>
+                                </template>
+
                                 <template for:each={filteredOptions} for:item="opt">
                                     <li key={opt.value} role="presentation" class="slds-listbox__item">
                                         <div

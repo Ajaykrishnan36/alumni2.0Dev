@@ -25,7 +25,6 @@ export default class KenBarChart extends LightningElement {
     @api isLoading   = false;
     @api dimension   = '';
     @api chartType   = 'horizontal'; // 'horizontal' | 'vertical' | 'line'
-    @api showExport  = false;
 
     @track _tooltip = null;
 
@@ -224,11 +223,6 @@ export default class KenBarChart extends LightningElement {
     }
 
     get lineGridLines() { return this.vGridLines; }
-
-    // ── Export ─────────────────────────────────────────────────────────────────
-    handleExport() {
-        this.dispatchEvent(new CustomEvent('exportcsv', { bubbles: true }));
-    }
 
     // ── Click ──────────────────────────────────────────────────────────────────
     handleBarClick(event) {

@@ -18,6 +18,7 @@ export default class KenGroupsViewAll extends NavigationMixin(LightningElement) 
     @track statusFilter   = 'all';
     @track ownershipFilter = 'all';
     @track showFilterPanel = false;
+    canCreateGroups = false;
 
     _filterClickHandler = null;
 
@@ -27,6 +28,7 @@ export default class KenGroupsViewAll extends NavigationMixin(LightningElement) 
                 document.documentElement.style.setProperty('--primary-color', color.primaryColor);
                 document.documentElement.style.setProperty('--secondary-color', color.secondaryColor);
                 document.documentElement.style.setProperty('--tertiary-color', color.tertiaryColor);
+                this.canCreateGroups = color.createGroups !== false;
             }
         }).catch(() => {});
 
@@ -102,6 +104,7 @@ export default class KenGroupsViewAll extends NavigationMixin(LightningElement) 
     // ── View type helpers ──────────────────────────────────────────────────
     get isCreatedView()  { return this.viewType === 'created'; }
     get isDiscoverView() { return this.viewType === 'discover'; }
+    get showCreatedCreate() { return this.isCreatedView && this.canCreateGroups; }
 
     get title() {
         if (this.viewType === 'created') return 'Created Groups';

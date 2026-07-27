@@ -7,15 +7,10 @@ import { refreshApex } from '@salesforce/apex';
 export default class KenEventSchedule extends LightningElement {
 
     @api recordId;
-    constituentRoleId;
     @track schedules = [];
     @track wiredEventScheduleResponse = [];
     selectedSessionId;
     showCancelConfirmation = false;
-
-    connectedCallback() {
-        this.constituentRoleId = localStorage.getItem('ConstituentRoleId');
-    }
 
     get showSpinner() {
         return !this.schedules;
@@ -42,7 +37,7 @@ export default class KenEventSchedule extends LightningElement {
         }));
     }
 
-    @wire(getEventSchedules, { eventId: '$recordId', constituentRoleId: '$constituentRoleId' })
+    @wire(getEventSchedules, { eventId: '$recordId' })
     wiredEventSchedules(response) {
         this.wiredEventScheduleResponse = response;
         const { error, data } = response;
@@ -86,7 +81,7 @@ export default class KenEventSchedule extends LightningElement {
 
     async handleFinalCancel() {
         try {
-            await CancelSessionRegistration({ sessionIds: [this.selectedSessionId], constituentRoleId: this.constituentRoleId });
+            await CancelSessionRegistration({ sessionIds: [this.selectedSessionId] });
             await this.refreshSchedules();
             this.selectedSessionId = null;
             this.showCancelConfirmation = false;

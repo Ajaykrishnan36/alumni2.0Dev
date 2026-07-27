@@ -3,10 +3,12 @@
         <!-- Header -->
         <div class="header-section">
             <h2 class="section-title">Businesses</h2>
-            <button class="list-btn" onclick={handleListBusiness}>
-                <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
-                List Your Business
-            </button>
+            <template if:true={canCreateBusiness}>
+                <button class="list-btn" onclick={handleListBusiness}>
+                    <lightning-icon icon-name="utility:add" size="x-small" class="add-icon"></lightning-icon>
+                    List Your Business
+                </button>
+            </template>
         </div>
 
         <!-- Business Grid -->
