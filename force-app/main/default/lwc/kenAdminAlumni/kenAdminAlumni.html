@@ -1026,18 +1026,24 @@
                             </aside>
 
                             <div class="lead-canvas">
-                                <div class="lead-actionbar">
-                                    <span class="spacer"></span>
-                                    <button class="la-btn ok" onclick={handleVerifyLead} disabled={isConverting}>Convert</button>
-                                    <button class="la-btn danger" onclick={handleRejectLead} disabled={isRejecting}>Reject</button>
-                                </div>
-
-                                <div class="lead-seg">
-                                    <div class={ltMerge} data-lt="merge" onclick={handleLeadTab}>Merge &amp; Lookup</div>
-                                    <div class={ltActivity} data-lt="activity" onclick={handleLeadTab}>Activity <span class="b">{timelineCount}</span></div>
-                                    <div class={ltComm} data-lt="comm" onclick={handleLeadTab}>Communication <span class="b">{commCount}</span></div>
-                                    <div class={ltOwner} data-lt="owner" onclick={handleLeadTab}>Change Owner</div>
-                                    <div class={ltHistory} data-lt="history" onclick={handleLeadTab}>Field history</div>
+                                <div class="lead-topbar">
+                                    <div class="lead-seg">
+                                        <div class={ltMerge} data-lt="merge" onclick={handleLeadTab}>Merge &amp; Lookup</div>
+                                        <div class={ltActivity} data-lt="activity" onclick={handleLeadTab}>Activity <span class="b">{timelineCount}</span></div>
+                                        <div class={ltComm} data-lt="comm" onclick={handleLeadTab}>Communication <span class="b">{commCount}</span></div>
+                                        <div class={ltOwner} data-lt="owner" onclick={handleLeadTab}>Change Owner</div>
+                                        <div class={ltHistory} data-lt="history" onclick={handleLeadTab}>Field history</div>
+                                    </div>
+                                    <div class="lead-actionbar">
+                                        <button class="la-btn ok" onclick={handleVerifyLead} disabled={isConverting}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"></path></svg>
+                                            Convert
+                                        </button>
+                                        <button class="la-btn danger" onclick={handleRejectLead} disabled={isRejecting}>
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+                                            Reject
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div class="lead-pane">
@@ -1104,6 +1110,7 @@
                                                 <option key={opt.key} value={opt.key} selected={opt.isSelected}>{opt.name}</option>
                                             </template>
                                         </select>
+                                        <button class="merge-btn merge-btn-primary merge-target-btn" disabled={isMultiMergeDisabled} title={multiMergeButtonTitle} onclick={handleConfirmMultiMerge}>Merge</button>
                                     </div>
                                     <template lwc:if={mergeMultiReviewLoading}>
                                         <div class="empty-state">Loading comparison…</div>
@@ -1129,9 +1136,6 @@
                                             </template>
                                         </div>
                                     </template>
-                                    <div class="merge-foot" style="justify-content:flex-end">
-                                        <button class="merge-btn merge-btn-primary" disabled={isMultiMergeDisabled} title={multiMergeButtonTitle} onclick={handleConfirmMultiMerge}>Merge</button>
-                                    </div>
                                 </div>
                             </template>
                             <template lwc:else>
@@ -1157,13 +1161,15 @@
                                             Select all
                                         </label>
                                     </template>
-                                    <template for:each={mergeRows} for:item="cand">
-                                        <div key={cand.alumniId} class="merge-item">
-                                            <input type="checkbox" class="merge-item-check" data-id={cand.alumniId} checked={cand.selected} onchange={handleToggleCandidate} />
-                                            <div class="avatar-circle">{cand.initials}</div>
-                                            <div class="info"><div class="nm">{cand.name}</div><div class="det">{cand.detail}</div></div>
-                                        </div>
-                                    </template>
+                                    <div class="merge-list">
+                                        <template for:each={mergeRows} for:item="cand">
+                                            <div key={cand.alumniId} class="merge-item">
+                                                <input type="checkbox" class="merge-item-check" data-id={cand.alumniId} checked={cand.selected} onchange={handleToggleCandidate} />
+                                                <div class="avatar-circle">{cand.initials}</div>
+                                                <div class="info"><div class="nm">{cand.name}</div><div class="det">{cand.detail}</div></div>
+                                            </div>
+                                        </template>
+                                    </div>
                                     <div class="merge-foot" style="justify-content:flex-end">
                                         <button class="merge-btn merge-btn-primary" disabled={isCompareDisabled} onclick={handleCompareSelected}>{compareButtonLabel}</button>
                                     </div>

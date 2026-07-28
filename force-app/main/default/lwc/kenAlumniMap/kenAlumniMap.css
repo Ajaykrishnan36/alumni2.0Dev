@@ -762,6 +762,55 @@ svg.leaflet-image-layer.leaflet-interactive path {
     transform: scale(1.08);
 }
 
+/* Tile loading placeholder.
+   A corrected tile takes real work to build (decode -> repaint -> re-encode), and
+   while Leaflet waits it keeps the PREVIOUS zoom level's tiles stretched up
+   underneath. The result is a torn view: half sharp new tiles, half smeared old
+   ones, with a hard seam between. Showing each pending tile as a clean box
+   instead — the way Google Maps does — reads as "loading" rather than "broken".
+
+   The fill is #fbf8f3, sampled as the dominant land colour of the Voyager
+   basemap, so a pending tile reads as empty land rather than a grey block and
+   the tile grid stays invisible. No gradient or border for the same reason.
+
+   Scoped to :not(.leaflet-tile-loaded) so loaded tiles keep Leaflet's own
+   behaviour, and mix-blend-mode is forced back to normal because Leaflet sets
+   plus-lighter on tiles, which would wash the fill out. */
+.leaflet-tile-pane img.leaflet-tile:not(.leaflet-tile-loaded) {
+    visibility: inherit;
+    background-color: #fbf8f3;
+    mix-blend-mode: normal;
+    color: transparent;
+}
+
+.leaflet-container {
+    background-color: #fbf8f3;
+}
+
+/* Split transition: when a zoom step breaks an aggregate into its constituent
+   places, each new bubble starts at the parent's screen offset and slides out to
+   its own position, so the movement reads as the bulk count separating. The
+   offset is applied to the inner element to avoid clashing with Leaflet's
+   translate3d on the marker wrapper. */
+.ken-map-icon > .map-bubble,
+.ken-map-icon > .map-pin {
+    transition: transform 0.46s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.32s ease-out;
+}
+
+.ken-map-icon.is-spawning > .map-bubble,
+.ken-map-icon.is-spawning > .map-pin {
+    transform: translate(var(--spawn-x, 0), var(--spawn-y, 0)) scale(0.4);
+    opacity: 0;
+    transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ken-map-icon > .map-bubble,
+    .ken-map-icon > .map-pin {
+        transition: none;
+    }
+}
+
 .map-pin {
     position: relative;
     display: inline-flex;

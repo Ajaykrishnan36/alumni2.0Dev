@@ -359,6 +359,7 @@
 .merge-search { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: #fff; border: 1px solid var(--slate-200); border-radius: 10px; margin-bottom: 12px; }
 .merge-search input { flex: 1; border: none; outline: none; background: transparent; font: inherit; color: var(--ink); font-size: 13px; }
 .merge-search svg { color: var(--slate-400); }
+.merge-list { max-height: 300px; overflow-y: auto; padding-right: 2px; }
 .merge-item { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #fff; border: 1px solid var(--slate-200); border-radius: 10px; margin-bottom: 8px; }
 .merge-item .avatar-circle { width: 36px; height: 36px; font-size: 11px; }
 .merge-item .info { flex: 1; }
@@ -446,6 +447,9 @@
     background: #fff; border: 1px solid var(--slate-300); border-radius: 8px; cursor: pointer;
 }
 .merge-target-select:focus { outline: none; border-color: var(--brand-primary); box-shadow: 0 0 0 3px var(--brand-primary-soft); }
+/* Merge sits right next to the picker it depends on, instead of at the
+   bottom of a table that can run tall/wide — no need to scroll to find it. */
+.merge-target-btn { margin-left: auto; flex-shrink: 0; }
 
 svg { display: block; }
 
@@ -582,12 +586,12 @@ svg { display: block; }
 .lead-rail { border-right: 1px solid var(--slate-200); background: var(--slate-50); overflow-y: auto; min-height: 0; }
 .lead-canvas { display: flex; flex-direction: column; min-width: 0; min-height: 0; overflow: hidden; }
 
-.lead-railhead { padding: 24px 22px 18px; border-bottom: 1px solid var(--slate-200); }
+.lead-railhead { padding: 24px 22px 14px; border-bottom: 1px solid var(--slate-200); }
 .lead-railhead .idrow { display: flex; gap: 13px; align-items: center; }
 .lead-railhead .avatar-circle { width: 48px; height: 48px; font-size: 16px; flex-shrink: 0; }
 .lead-railhead h3 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
 .lead-railhead .sub { font-size: 12px; color: var(--slate-500); margin-top: 3px; }
-.lead-railpills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.lead-railpills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 
 .lead-datablk { padding: 16px 22px; border-bottom: 1px solid var(--slate-200); }
 .lead-datablk .h { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--slate-500); margin-bottom: 12px; }
@@ -598,11 +602,12 @@ svg { display: block; }
 .lead-kv .r .v.muted { color: var(--slate-400); font-weight: 500; font-style: italic; }
 .lead-kv .r .v.missing { color: var(--c-rose-700); font-weight: 600; font-style: normal; }
 
-/* action bar — every function is a CTA here */
-/* padding-right reserves room for the modal close (×) pinned top-right, so the
+/* combined row: segmented tabs (left) + Convert/Reject action bar (right).
+   padding-right reserves room for the modal close (×) pinned top-right, so the
    Reject/Verify buttons never sit underneath it. */
-.lead-actionbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 14px 56px 14px 20px; border-bottom: 1px solid var(--slate-200); background: #fff; }
-.lead-actionbar .spacer { flex: 1; }
+.lead-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-right: 56px; border-bottom: 1px solid var(--slate-200); background: #fff; }
+.lead-topbar .lead-seg { flex: 1; min-width: 0; border-bottom: none; }
+.lead-actionbar { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; padding: 10px 0; flex-shrink: 0; }
 .la-btn { display: inline-flex; align-items: center; gap: 7px; font-family: inherit; font-size: 12.5px; font-weight: 600; padding: 8px 13px; border-radius: 9px; border: 1px solid var(--slate-300); background: #fff; color: var(--ink); cursor: pointer; white-space: nowrap; }
 .la-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
 .la-btn:hover:not(:disabled) { border-color: var(--brand-primary); color: var(--brand-primary); }
@@ -628,12 +633,13 @@ svg { display: block; }
 .la-btn .soon { font-size: 9px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; background: var(--slate-200); color: var(--slate-600); border-radius: 5px; padding: 1px 5px; }
 .la-btn:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 2px; }
 
-/* canvas segmented tabs */
-.lead-seg { display: flex; gap: 6px; padding: 0 20px; border-bottom: 1px solid var(--slate-200); background: #fff; overflow-x: auto; }
-.lead-seg .t { padding: 13px 4px; font-size: 12.5px; color: var(--slate-500); font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+/* canvas segmented tabs — pill-track control */
+.lead-seg { display: flex; gap: 2px; margin: 8px 12px 8px 20px; padding: 4px; background: var(--slate-100); border-radius: 10px; overflow-x: auto; }
+.lead-seg .t { padding: 7px 12px; font-size: 12px; color: var(--slate-500); font-weight: 600; cursor: pointer; border-radius: 7px; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
 .lead-seg .t:hover { color: var(--ink); }
-.lead-seg .t.active { color: var(--brand-primary); font-weight: 600; border-bottom-color: var(--brand-primary); }
-.lead-seg .t .b { font-size: 10px; font-variant-numeric: tabular-nums; background: var(--slate-100); color: var(--slate-600); border-radius: 5px; padding: 1px 6px; }
+.lead-seg .t.active { color: var(--brand-primary); background: #fff; box-shadow: 0 1px 2px rgba(15,23,42,.08); }
+.lead-seg .t .b { font-size: 9.5px; font-variant-numeric: tabular-nums; background: var(--slate-200); color: var(--slate-600); border-radius: 5px; padding: 1px 5px; }
+.lead-seg .t.active .b { background: var(--slate-100); }
 
 .lead-pane { padding: 20px; overflow-y: auto; background: var(--slate-50); flex: 1; }
 .lead-pane .merge-panel { background: #fff; }

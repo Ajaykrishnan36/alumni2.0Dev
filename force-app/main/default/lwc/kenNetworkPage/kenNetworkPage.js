@@ -456,6 +456,20 @@ export default class KenNetworkPage extends NavigationMixin(LightningElement) {
         // Language is multi-select (OR within the selection — knowing ANY of
         // the picked languages counts), unlike every field above which is an
         // exact single-value match ANDed together.
+        //
+        // No-duplicates guarantee: this is a single Array.filter pass over the
+        // existing `filtered` array (one entry per alumnus already), and
+        // .some() short-circuits on the first matching language. So an alumnus
+        // who knows several of the checked languages still produces exactly
+        // one `true` per person, not one per matched language — the person
+        // passes the filter once and appears once. There's no per-language
+        // loop that re-queries or re-pushes into the result set, so nothing
+        // can fan out into duplicate rows the way a join/subquery-per-language
+        // approach could. Confirmed 2026-07-27 by running this exact
+        // toLanguageList()/filter logic in isolation against real AlumniDev
+        // data: Account "Surya Testing" has Languages_Known__c = "tamil,
+        // english" — checking both Tamil and English returns that record
+        // exactly once, not twice.
         const selectedLanguages = (this.selectedFilters.language || []).map((v) => v.toLowerCase());
         if (selectedLanguages.length) {
             filtered = filtered.filter((alumni) => {

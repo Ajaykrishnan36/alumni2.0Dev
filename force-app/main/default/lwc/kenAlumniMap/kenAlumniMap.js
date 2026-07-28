@@ -2,6 +2,7 @@ import { LightningElement, api } from 'lwc';
 import { loadScript } from 'lightning/platformResourceLoader';
 import LEAFLET_JS from '@salesforce/resourceUrl/kenLeafletJs';
 import GEO_DATA from '@salesforce/resourceUrl/kenGeoData';
+import INDIA_BOUNDARY_JS from '@salesforce/resourceUrl/kenIndiaBoundaryJs';
 import getAlumniLocationCounts from '@salesforce/apex/KenAlumniMapController.getAlumniLocationCounts';
 import getAlumniAtLocation from '@salesforce/apex/KenAlumniMapController.getAlumniAtLocation';
 
@@ -9,6 +10,52 @@ const COUNTRY_MAX_ZOOM = 3;
 const STATE_MAX_ZOOM = 5;
 const STATE_VIEW_ZOOM = 5;
 const CITY_VIEW_ZOOM = 7;
+
+// CARTO Voyager, not standard OpenStreetMap: OSM's raster tiles carry
+// local-language labels (Chinese, Urdu, Devanagari, Burmese...) baked into the
+// image, while CARTO renders Latin/English names worldwide. Voyager is CARTO's
+// coloured style; light_all is the plainer Positron alternative and both share
+// the cartodb-light boundary config.
+const BASE_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+const BASE_ATTRIBUTION =
+    '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
+const BASE_LAYER_CONFIG = 'cartodb-light';
+const TILE_MAX_ZOOM = 12;
+// Correction geometry only exists along India's international borders — the
+// Kashmir/Ladakh sector, the Himalayan arc, the north-east and the Sir Creek
+// end of the Pakistan border. Tiles outside this envelope are served as plain
+// images, because the corrected layer has to fetch, decode, canvas-repaint and
+// re-encode every tile it handles — doing that worldwide is what made zooming
+// lag. Peninsular India (below ~22N) needs no corrections, so the southern
+// cities where alumni actually cluster stay on the fast path.
+const CORRECTION_REGION = { south: 22, west: 67, north: 37.7, east: 97.8 };
+// Keep tile churn down while the user is actively zooming/panning.
+const TILE_PERF_OPTIONS = {
+    updateWhenIdle: true,
+    updateWhenZooming: false,
+    keepBuffer: 1
+};
+// Corrected tiles are expensive to build (decode -> canvas repaint -> re-encode)
+// and the library rebuilds them on every tile creation, so zooming in and out
+// over Kashmir redid the same work each time. Hold the finished bytes so a
+// revisited tile is just an object URL. Bounded, FIFO-evicted.
+const CORRECTED_TILE_CACHE_LIMIT = 400;
+// The library keeps ONE OffscreenCanvas per TileFixer and awaits convertToBlob
+// on it, so concurrent tiles can repaint the canvas mid-encode and land each
+// other's pixels in the wrong tile. TileFixer instances are keyed by pmtilesUrl,
+// so a URL fragment (never sent to the server, shares the HTTP cache entry)
+// yields independent instances to round-robin over.
+const FIXER_POOL_SIZE = 4;
+// Ceiling on how many next-zoom tiles are built ahead of time per idle pass.
+const WARM_TILE_LIMIT = 12;
+const LEVEL_RANK = { country: 0, state: 1, city: 2 };
+const SPLIT_ANIMATION_MS = 460;
+// The boundary corrector resolves this itself from its own script URL, which
+// under LWR points at a Salesforce static-resource path that holds no data —
+// so it must always be passed explicitly.
+const PMTILES_URL =
+    'https://cdn.jsdelivr.net/npm/@india-boundary-corrector/data@0.2.2/india_boundary_corrections.pmtiles.gz';
+const CORRECTED_TILE_ERROR_LIMIT = 4;
 
 export default class KenAlumniMap extends LightningElement {
     @api title = 'Our Global Alumni Community';
@@ -101,7 +148,10 @@ export default class KenAlumniMap extends LightningElement {
             const [, , rows] = await Promise.all([
                 loadScript(this, LEAFLET_JS),
                 loadScript(this, GEO_DATA),
-                getAlumniLocationCounts()
+                getAlumniLocationCounts(),
+                loadScript(this, INDIA_BOUNDARY_JS).catch((e) => {
+                    console.warn('kenAlumniMap: India boundary corrector did not load', e);
+                })
             ]);
             const geoData = window.KEN_GEO_DATA;
             if (!geoData) {
@@ -336,8 +386,10 @@ export default class KenAlumniMap extends LightningElement {
         this.map = L.map(container, {
             attributionControl: true,
             minZoom: 2,
-            maxZoom: 9,
-            zoomSnap: 0.5,
+            maxZoom: TILE_MAX_ZOOM,
+            // Whole-level snapping: half-steps made Leaflet rebuild the tile set
+            // twice per zoom level, doubling correction work over Kashmir.
+            zoomSnap: 1,
             worldCopyJump: true,
             maxBounds: [
                 [-65, -200],
@@ -349,7 +401,11 @@ export default class KenAlumniMap extends LightningElement {
         this.setupBaseLayer();
 
         this.bubbleLayer = L.layerGroup().addTo(this.map);
-        this.map.on('zoomend', () => this.syncLevel());
+        this.map.on('zoomend', () => {
+            this.syncLevel();
+            this.warmNextZoom();
+        });
+        this.map.on('moveend', () => this.warmNextZoom());
 
         if (this.countryNodes.length) {
             this.map.fitBounds(L.latLngBounds(this.countryNodes.map((n) => n.pos)), {
@@ -363,21 +419,274 @@ export default class KenAlumniMap extends LightningElement {
         this.observeResize();
     }
 
+    /**
+     * Adds the basemap, preferring the India-boundary-corrected tile layer so
+     * Jammu & Kashmir / Ladakh render per the Indian government depiction
+     * instead of the raw OSM "on the ground" one. That layer fetches each tile
+     * and repaints the boundaries onto it, so it needs connect-src CSP for the
+     * tile host plus the PMTiles corrections host. If the extension is missing
+     * or its tiles never load, the plain layer takes over.
+     *
+     * maxZoom stays capped at 9 (not the provider's native max) — this map is
+     * an aggregate country/state/city clustering view, not street-level.
+     */
     setupBaseLayer() {
         const L = window.L;
-        // Standard OpenStreetMap tiles (leafletjs.com's own demo style), per
-        // explicit request despite the known Kashmir/disputed-border
-        // rendering issue (shared by every free tile provider, since they
-        // all render from the same OSM boundary dataset — not fixed by this
-        // style choice). Tracked separately; would need a dedicated
-        // India-compliant provider (e.g. Bhuvan, MapmyIndia) to resolve.
-        // maxZoom stays capped at 9 (not OSM's native 19) — this map is an
-        // aggregate country/state/city clustering view, not street-level.
-        this.tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 9,
-            attribution:
-                '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+        const corrector = this.resolveCorrector();
+
+        if (!corrector) {
+            console.warn(
+                'kenAlumniMap: IndiaBoundaryCorrector global not found after loadScript — using uncorrected basemap'
+            );
+        }
+
+        if (corrector && typeof corrector.extendLeaflet === 'function') {
+            try {
+                corrector.extendLeaflet(L);
+                const corrected = this.buildCorrectedLayer(L);
+                this.watchCorrectedLayer(corrected);
+                this.tileLayer = corrected;
+                this.tileLayer.addTo(this.map);
+                return;
+            } catch (e) {
+                console.warn('kenAlumniMap: corrected basemap unavailable, using uncorrected tiles', e);
+            }
+        }
+        this.addPlainBaseLayer();
+    }
+
+    /**
+     * Builds a corrected tile layer that only pays the correction cost for
+     * tiles overlapping CORRECTION_REGION; everywhere else it falls back to
+     * Leaflet's native img.src path, which the browser caches and decodes off
+     * the main thread.
+     */
+    buildCorrectedLayer(L) {
+        const Corrected = L.TileLayer.IndiaBoundaryCorrected;
+        const region = L.latLngBounds(
+            L.latLng(CORRECTION_REGION.south, CORRECTION_REGION.west),
+            L.latLng(CORRECTION_REGION.north, CORRECTION_REGION.east)
+        );
+        const cache = new Map();
+        const fixerPool = [];
+        for (let i = 0; i < FIXER_POOL_SIZE; i += 1) {
+            const probe = new Corrected(BASE_TILE_URL, {
+                pmtilesUrl: `${PMTILES_URL}#pool${i}`,
+                layerConfig: BASE_LAYER_CONFIG
+            });
+            fixerPool.push(probe.getTileFixer());
+        }
+        let nextFixer = 0;
+
+        const Hybrid = Corrected.extend({
+            createTile: function (coords, done) {
+                if (!this._tileCoordsToBounds(coords).intersects(region)) {
+                    return L.TileLayer.prototype.createTile.call(this, coords, done);
+                }
+
+                const layerConfig = this.getLayerConfig();
+                if (!layerConfig) {
+                    return L.TileLayer.prototype.createTile.call(this, coords, done);
+                }
+
+                const tile = document.createElement('img');
+                tile.alt = '';
+                const key = `${coords.z}/${coords.x}/${coords.y}`;
+                const cached = cache.get(key);
+                if (cached) {
+                    this._paintTile(tile, cached, done);
+                    return tile;
+                }
+
+                const controller = new AbortController();
+                tile.cancel = () => controller.abort();
+
+                const fixer = fixerPool[nextFixer % fixerPool.length] || this.getTileFixer();
+                nextFixer += 1;
+
+                fixer
+                    .fetchAndFixTile(
+                        this.getTileUrl(coords),
+                        coords.z,
+                        coords.x,
+                        coords.y,
+                        layerConfig,
+                        { signal: controller.signal },
+                        this.options.fallbackOnCorrectionFailure
+                    )
+                    .then(({ data, correctionsFailed, correctionsError }) => {
+                        if (correctionsFailed) {
+                            this.fire('correctionerror', {
+                                error: correctionsError,
+                                coords: { z: coords.z, x: coords.x, y: coords.y },
+                                tileUrl: this.getTileUrl(coords)
+                            });
+                        }
+                        const blob = new Blob([data]);
+                        if (cache.size >= CORRECTED_TILE_CACHE_LIMIT) {
+                            cache.delete(cache.keys().next().value);
+                        }
+                        cache.set(key, blob);
+                        tile.cancel = undefined;
+                        this._paintTile(tile, blob, done);
+                    })
+                    .catch((err) => {
+                        if (err && err.name !== 'AbortError') {
+                            console.warn('kenAlumniMap: corrected tile failed', err);
+                            done(err, tile);
+                        }
+                    });
+
+                return tile;
+            },
+
+            /**
+             * Builds the corrected tiles for `zoom` over the current viewport
+             * ahead of time, during browser idle, so zooming into the border
+             * belt hits the cache instead of blocking on decode + median blur +
+             * re-encode. Bounded per pass so idle work stays short.
+             */
+            warmZoom: function (zoom) {
+                const map = this._map;
+                if (!map || zoom > this.options.maxZoom || !this.getLayerConfig()) {
+                    return;
+                }
+                const bounds = map.getBounds();
+                const nw = map.project(bounds.getNorthWest(), zoom).divideBy(256).floor();
+                const se = map.project(bounds.getSouthEast(), zoom).divideBy(256).floor();
+                const pending = [];
+                for (let x = nw.x; x <= se.x && pending.length < WARM_TILE_LIMIT; x += 1) {
+                    for (let y = nw.y; y <= se.y && pending.length < WARM_TILE_LIMIT; y += 1) {
+                        const coords = new L.Point(x, y);
+                        coords.z = zoom;
+                        if (cache.has(`${zoom}/${x}/${y}`)) {
+                            continue;
+                        }
+                        if (!this._tileCoordsToBounds(coords).intersects(region)) {
+                            continue;
+                        }
+                        pending.push(coords);
+                    }
+                }
+                pending.forEach((coords) => this._warmTile(coords));
+            },
+
+            _warmTile: function (coords) {
+                const key = `${coords.z}/${coords.x}/${coords.y}`;
+                const fixer = fixerPool[nextFixer % fixerPool.length];
+                nextFixer += 1;
+                const run = () =>
+                    fixer
+                        .fetchAndFixTile(
+                            this.getTileUrl(coords),
+                            coords.z,
+                            coords.x,
+                            coords.y,
+                            this.getLayerConfig(),
+                            {},
+                            true
+                        )
+                        .then(({ data }) => {
+                            if (cache.has(key)) {
+                                return;
+                            }
+                            if (cache.size >= CORRECTED_TILE_CACHE_LIMIT) {
+                                cache.delete(cache.keys().next().value);
+                            }
+                            cache.set(key, new Blob([data]));
+                        })
+                        .catch(() => {
+                            /* prefetch is best-effort */
+                        });
+                if (typeof window.requestIdleCallback === 'function') {
+                    window.requestIdleCallback(run, { timeout: 2000 });
+                } else {
+                    window.setTimeout(run, 0);
+                }
+            },
+
+            _paintTile: function (tile, blob, done) {
+                const url = URL.createObjectURL(blob);
+                tile.onload = () => {
+                    URL.revokeObjectURL(url);
+                    done(null, tile);
+                };
+                tile.onerror = (e) => {
+                    URL.revokeObjectURL(url);
+                    done(e, tile);
+                };
+                tile.src = url;
+            }
         });
+
+        return new Hybrid(
+            BASE_TILE_URL,
+            Object.assign({}, TILE_PERF_OPTIONS, {
+                maxZoom: TILE_MAX_ZOOM,
+                attribution: BASE_ATTRIBUTION,
+                pmtilesUrl: PMTILES_URL,
+                layerConfig: BASE_LAYER_CONFIG,
+                fallbackOnCorrectionFailure: true
+            })
+        );
+    }
+
+    /**
+     * The corrector ships as an esbuild IIFE, so which global object its
+     * namespace lands on depends on how Lightning Web Security sandboxes the
+     * injected script — check every reachable one.
+     */
+    resolveCorrector() {
+        const candidates = [
+            typeof window !== 'undefined' ? window.IndiaBoundaryCorrector : null,
+            typeof globalThis !== 'undefined' ? globalThis.IndiaBoundaryCorrector : null
+        ];
+        return candidates.find((c) => c && typeof c.extendLeaflet === 'function') || null;
+    }
+
+    /**
+     * Swaps the corrected layer out for the plain one if its tiles fail
+     * outright — it paints tiles as blob: object URLs, which a stricter site
+     * CSP can block, and a blank basemap is worse than an imperfect border.
+     */
+    watchCorrectedLayer(layer) {
+        let errors = 0;
+        let settled = false;
+
+        layer.on('tileload', () => {
+            settled = true;
+        });
+
+        layer.on('correctionerror', (e) => {
+            console.warn('kenAlumniMap: boundary corrections unavailable', e && e.error);
+        });
+
+        layer.on('tileerror', () => {
+            if (settled) {
+                return;
+            }
+            errors += 1;
+            if (errors < CORRECTED_TILE_ERROR_LIMIT) {
+                return;
+            }
+            settled = true;
+            console.warn('kenAlumniMap: corrected tiles failed to render, falling back to uncorrected tiles');
+            if (this.map && this.map.hasLayer(layer)) {
+                this.map.removeLayer(layer);
+            }
+            this.addPlainBaseLayer();
+        });
+    }
+
+    addPlainBaseLayer() {
+        const L = window.L;
+        this.tileLayer = L.tileLayer(
+            BASE_TILE_URL,
+            Object.assign({}, TILE_PERF_OPTIONS, {
+                maxZoom: TILE_MAX_ZOOM,
+                attribution: BASE_ATTRIBUTION
+            })
+        );
         this.tileLayer.addTo(this.map);
     }
 
@@ -400,18 +709,41 @@ export default class KenAlumniMap extends LightningElement {
         const zoom = this.map.getZoom();
         const level = zoom <= COUNTRY_MAX_ZOOM ? 'country' : zoom <= STATE_MAX_ZOOM ? 'state' : 'city';
         if (level !== this.currentLevel) {
+            const previous = this.currentLevel;
             this.currentLevel = level;
-            this.drawBubbles(level);
+            this.drawBubbles(level, previous);
         }
     }
 
-    drawBubbles(level) {
+    /**
+     * Asks the basemap to pre-build the next zoom level's corrected tiles for
+     * the current viewport while the browser is idle. No-op for the plain
+     * fallback layer, which has nothing to pre-build.
+     */
+    warmNextZoom() {
+        if (!this.map || !this.tileLayer || typeof this.tileLayer.warmZoom !== 'function') {
+            return;
+        }
+        this.tileLayer.warmZoom(this.map.getZoom() + 1);
+    }
+
+    nodesForLevel(level) {
+        if (level === 'country') {
+            return this.countryNodes;
+        }
+        return level === 'state' ? this.stateLevelNodes : this.cityLevelNodes;
+    }
+
+    drawBubbles(level, previousLevel) {
         this.bubbleLayer.clearLayers();
-        const nodes =
-            level === 'country' ? this.countryNodes : level === 'state' ? this.stateLevelNodes : this.cityLevelNodes;
+        const nodes = this.nodesForLevel(level);
         if (!nodes.length) {
             return;
         }
+        const splitting =
+            previousLevel && LEVEL_RANK[level] > LEVEL_RANK[previousLevel]
+                ? this.nodesForLevel(previousLevel)
+                : null;
         const max = nodes.reduce((m, n) => Math.max(m, n.count), 1);
         nodes.forEach((n) => {
             const marker = window.L.marker(n.pos, {
@@ -431,7 +763,65 @@ export default class KenAlumniMap extends LightningElement {
                 marker.on('click', () => this.map.flyTo(n.pos, n.drillZoom, { duration: 0.8 }));
             }
             this.bubbleLayer.addLayer(marker);
+            if (splitting) {
+                this.animateSplit(marker, n, splitting);
+            }
         });
+    }
+
+    /**
+     * Makes a newly revealed bubble appear to break out of the aggregate it came
+     * from: it starts small and transparent at its parent's screen position and
+     * slides to its own. The parent is the nearest node from the level we just
+     * left, which is what a viewer reads as "that big number split into these".
+     *
+     * The offset goes on the inner element via CSS custom properties so it never
+     * fights Leaflet's own translate3d on the marker wrapper.
+     */
+    animateSplit(marker, node, parentNodes) {
+        const el = marker.getElement();
+        const inner = el && el.firstElementChild;
+        if (!inner) {
+            return;
+        }
+        const parent = this.nearestNode(node, parentNodes) || node;
+        const here = this.map.latLngToLayerPoint(node.pos);
+        const from = this.map.latLngToLayerPoint(parent.pos);
+        // A parent sitting on the same centroid as its child (a state whose
+        // alumni are all in one city) gives a zero offset — still animate, so
+        // the bubble scales and fades in rather than appearing with no
+        // transition at all.
+        const dx = Math.round(from.x - here.x);
+        const dy = Math.round(from.y - here.y);
+
+        el.style.setProperty('--spawn-x', `${dx}px`);
+        el.style.setProperty('--spawn-y', `${dy}px`);
+        el.classList.add('is-spawning');
+        // Force the start state to be committed before releasing the transition,
+        // otherwise the browser collapses both frames into no animation at all.
+        void inner.offsetWidth;
+        requestAnimationFrame(() => {
+            el.classList.remove('is-spawning');
+            window.setTimeout(() => {
+                el.style.removeProperty('--spawn-x');
+                el.style.removeProperty('--spawn-y');
+            }, SPLIT_ANIMATION_MS);
+        });
+    }
+
+    nearestNode(node, candidates) {
+        let best = null;
+        let bestDistance = Infinity;
+        candidates.forEach((c) => {
+            const dLat = c.pos[0] - node.pos[0];
+            const dLng = c.pos[1] - node.pos[1];
+            const d = dLat * dLat + dLng * dLng;
+            if (d < bestDistance) {
+                bestDistance = d;
+                best = c;
+            }
+        });
+        return best;
     }
 
     buildIcon(count, max, isTerminal) {
