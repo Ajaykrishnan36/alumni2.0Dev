@@ -41,11 +41,15 @@
         <main class="main">
             <!-- Top bar -->
             <header class="topbar">
-                <div class="newsletter">
-                    <span class="newsletter__tag">Newsletter</span>
-                    <span class="newsletter__title">Alumni Newsletter | October 2025</span>
-                    <a class="newsletter__view" onclick={handleViewNewsletter}>View Now</a>
-                    <button type="button" class="newsletter__cta" onclick={handleViewNewsletter}>Read Now</button>
+                <div class={newsletterClass}>
+                    <div class="newsletter__head">
+                        <span class="newsletter__tag">Newsletter</span>
+                        <span class="newsletter__title">Alumni Newsletter | October 2025</span>
+                    </div>
+                    <div class="newsletter__actions">
+                        <a class="newsletter__view" onclick={handleViewNewsletter}>View More</a>
+                        <button type="button" class="newsletter__cta" onclick={handleViewNewsletter}>Read Now</button>
+                    </div>
                 </div>
                 <div class="topbar__actions">
                     <button class="icon-btn" aria-label="Messages">

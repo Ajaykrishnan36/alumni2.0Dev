@@ -48,6 +48,8 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
     selectedSessionId;
     toastTitle;
     toastVariant;
+    _mediaQuery;
+    _boundMobileChange;
     toastMessage;
     showToast = false;
 
@@ -157,7 +159,7 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
 
     // Mobile-specific getters
     get showMobileView() {
-        return this.isMobile && this.event;
+        return this.isMobile;
     }
 
     get showDesktopView() {
@@ -340,12 +342,23 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
             console.log('Error getting primary color');
         });
         
+        if (typeof window !== 'undefined' && window.matchMedia) {
+            this._mediaQuery = window.matchMedia('(max-width: 768px)');
+            this._boundMobileChange = this.checkScreenSize.bind(this);
+            this._mediaQuery.addEventListener('change', this._boundMobileChange);
+        } else if (typeof window !== 'undefined') {
+            window.addEventListener('resize', this.handleResize);
+        }
         this.checkScreenSize();
-        window.addEventListener('resize', this.handleResize.bind(this));
     }
 
     disconnectedCallback() {
-        window.removeEventListener('resize', this.handleResize.bind(this));
+        if (this._mediaQuery && this._boundMobileChange) {
+            this._mediaQuery.removeEventListener('change', this._boundMobileChange);
+        }
+        if (this.handleResize) {
+            window.removeEventListener('resize', this.handleResize);
+        }
     }
 
     // Registration is created via a separate page, so getRegisteredSessions can return
@@ -363,12 +376,15 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
     }
 
     checkScreenSize() {
-        this.isMobile = window.innerWidth <= 768;
+        const byFormFactor = FORM_FACTOR === 'Small';
+        const byWidth = typeof window !== 'undefined' && window.innerWidth <= 768;
+        const byMedia = this._mediaQuery ? this._mediaQuery.matches : false;
+        this.isMobile = byFormFactor || byWidth || byMedia;
     }
 
-    handleResize() {
+    handleResize = () => {
         this.checkScreenSize();
-    }
+    };
 
     @wire(CurrentPageReference)
     setCurrentPageReference(currentPageReference) {

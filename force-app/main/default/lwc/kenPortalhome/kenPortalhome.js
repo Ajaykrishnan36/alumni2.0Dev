@@ -19,6 +19,7 @@ const QUICK_LINKS = [
 
 const MAX_RESOURCES = 4;
 const MAX_BUSINESSES = 4;
+const MOBILE_MAX_WIDTH = 768;
 
 export default class KenPortalhome extends NavigationMixin(LightningElement) {
     @track upcomingEvents = [];
@@ -27,6 +28,10 @@ export default class KenPortalhome extends NavigationMixin(LightningElement) {
     @track resources = [];
     @track businesses = [];
     @track inviteLink = '';
+    @track isMobile = false;
+
+    _mediaQuery;
+    _boundMobileChange;
 
     emptyImage = EMPTY_STATE;
     eventsEmptyImage = EVENTS_EMPTY_STATE;
@@ -47,11 +52,37 @@ export default class KenPortalhome extends NavigationMixin(LightningElement) {
         return this.businesses.length > 0;
     }
 
+    get newsletterClass() {
+        return this.isMobile
+            ? 'newsletter-banner newsletter-banner--mobile'
+            : 'newsletter-banner';
+    }
+
+    _syncMobileFromMedia() {
+        const next = this._mediaQuery ? this._mediaQuery.matches : false;
+        if (next !== this.isMobile) {
+            this.isMobile = next;
+        }
+    }
+
     connectedCallback() {
+        if (typeof window !== 'undefined' && window.matchMedia) {
+            this._mediaQuery = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
+            this._boundMobileChange = this._syncMobileFromMedia.bind(this);
+            this._syncMobileFromMedia();
+            this._mediaQuery.addEventListener('change', this._boundMobileChange);
+        }
+
         this.loadHomeData();
         this.loadResources();
         this.loadBusinesses();
         this.loadInviteLink();
+    }
+
+    disconnectedCallback() {
+        if (this._mediaQuery && this._boundMobileChange) {
+            this._mediaQuery.removeEventListener('change', this._boundMobileChange);
+        }
     }
 
     async loadHomeData() {
@@ -129,6 +160,10 @@ export default class KenPortalhome extends NavigationMixin(LightningElement) {
 
     handleViewAllEvents() {
         this.navigateToPage('event__c');
+    }
+
+    handleViewNewsletter() {
+        this.navigateToPage('gallery__c');
     }
 
     handleResourceClick() {

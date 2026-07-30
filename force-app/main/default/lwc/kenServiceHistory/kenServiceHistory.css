@@ -492,17 +492,70 @@
 .success-message { font-size: 13px; color: #6B7280; margin: 0; }
 
 @media (max-width: 768px) {
-    .history-container { padding: 1rem; }
-    .history-header { flex-wrap: wrap; gap: 0.5rem; }
-    .history-tabs { gap: 1rem; }
-    .history-item-header { flex-direction: column; align-items: stretch; }
-    .spacer { align-items: flex-start; flex-direction: row; flex-wrap: wrap; justify-content: space-between; gap: 0.4rem; }
-    .leave-feedback-btn { width: 100%; text-align: center; margin-top: 0.4rem; }
+    .history-container {
+        padding: 12px;
+        margin-top: 12px;
+    }
+
+    .history-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .history-tabs {
+        gap: 1rem;
+    }
+
+    .history-item-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .spacer {
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.4rem;
+    }
+
+    .leave-feedback-btn {
+        width: 100%;
+        text-align: center;
+        margin-top: 0.4rem;
+    }
+
+    .history-title,
+    .feedback-modal-title,
+    .success-title {
+        font-size: 16px !important;
+    }
+
+    .history-description,
+    .history-tab,
+    .view-all-button,
+    .leave-feedback-btn,
+    .success-message {
+        font-size: 14px !important;
+    }
 }
 
 @media (max-width: 480px) {
-    .history-tab { font-size: 12px; padding: 0.4rem 0.15rem; }
-    .view-all-button { padding: 0.3rem 0.8rem; font-size: 11px; }
-    .history-title { font-size: 13px; }
-    .history-description { font-size: 11px; }
+    .history-tab {
+        font-size: 12px !important;
+        padding: 0.4rem 0.15rem;
+    }
+
+    .view-all-button {
+        padding: 0.3rem 0.8rem;
+        font-size: 12px !important;
+    }
+
+    .history-title {
+        font-size: 16px !important;
+    }
+
+    .history-description {
+        font-size: 12px !important;
+    }
 }

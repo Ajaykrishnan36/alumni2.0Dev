@@ -436,3 +436,63 @@ div[id^="auraError"] {
 #auraErrorMask .button:hover {
     background: #2a2a4e !important;
 }
+
+/* ============================================================
+ * MOBILE LAYOUT SPACING — remove LWR section/column gutters
+ * Salesforce applies 0.75rem inline padding on mobile via
+ * community_layout-section (.comm-section-container). Zero the
+ * DXP spacing tokens and force edge-to-edge content on small screens.
+ * ============================================================ */
+@media only screen and (max-width: 47.9375em) {
+    :root {
+        --dxp-s-section-content-spacing-inline-start: 0;
+        --dxp-s-section-content-spacing-inline-end: 0;
+        --dxp-s-section-content-spacing-inline-start-mobile: 0;
+        --dxp-s-section-content-spacing-inline-end-mobile: 0;
+        --dxp-s-section-content-spacing-block-start: 0;
+        --dxp-s-section-content-spacing-block-end: 0;
+        --dxp-s-section-content-spacing-block-start-mobile: 0;
+        --dxp-s-section-content-spacing-block-end-mobile: 0;
+        --dxp-c-section-content-spacing-inline-start: 0;
+        --dxp-c-section-content-spacing-inline-end: 0;
+        --dxp-c-section-content-spacing-inline-start-mobile: 0;
+        --dxp-c-section-content-spacing-inline-end-mobile: 0;
+        --dxp-c-section-content-spacing-block-start-mobile: 0;
+        --dxp-c-section-content-spacing-block-end-mobile: 0;
+        --dxp-c-column-content-spacing-inline-start-mobile: 0;
+        --dxp-c-column-content-spacing-inline-end-mobile: 0;
+        --dxp-c-column-container-spacing-inline-start-mobile: 0;
+        --dxp-c-column-container-spacing-inline-end-mobile: 0;
+        --dxp-s-column-spacer-size-mobile: 0;
+    }
+
+    community_layout-section,
+    community_layout-section.comm-section-container,
+    community_layout-column,
+    community_layout-row,
+    .comm-layout-column,
+    .comm-section-container {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-inline: 0 !important;
+    }
+
+    /* Onboarding form — unlock scroll so bottom action buttons are reachable */
+    community_byo-scoped-header-and-footer > main {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    c-ken-portal-registration-stepper {
+        position: relative !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    c-ken-portal-registration-stepper .registration-container {
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+}

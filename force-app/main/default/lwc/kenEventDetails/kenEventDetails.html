@@ -467,6 +467,268 @@
         </div>
     </div>
 
+    <!-- ==================== Mobile View ==================== -->
+    <div if:true={showMobileView} class="mobile-container">
+        <template if:true={showSpinner}>
+            <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+        </template>
+
+        <template if:true={event}>
+        <!-- Sticky back header -->
+        <div class="mobile-header">
+            <div class="mobile-header-content">
+                <button type="button" class="mobile-back-btn" onclick={handleBackButton} aria-label="Back to events">
+                    <svg class="back-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h1 class="mobile-header-title">{mobileEventTitle}</h1>
+            </div>
+        </div>
+
+        <!-- Hero banner -->
+        <div class="banner-container">
+            <div class="banner-image-container">
+                <img src={mobileEventImage} alt={mobileEventTitle} class="banner-image" />
+                <div class="banner-overlay"></div>
+                <template if:true={firstCategory}>
+                    <div class="event-type-badge-overlay">
+                        <span class="event-type-badge">{firstCategory}</span>
+                    </div>
+                </template>
+                <div class="title-overlay">
+                    <h1 class="slds-text-heading_medium slds-text-color_inverse">{mobileEventTitle}</h1>
+                    <template if:true={showFeeBadge}>
+                        <span class="mobile-fee-pill">{priceLabel}</span>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="mobile-tab-nav">
+            <button type="button" class={aboutTabClass} onclick={handleTabAbout}>About</button>
+            <button type="button" class={scheduleTabClass} onclick={handleTabSchedule}>Schedule</button>
+            <template if:true={showParticipantsTab}>
+                <button type="button" class={participantsTabClass} onclick={handleTabParticipants}>Participants</button>
+            </template>
+            <template if:true={showEventUpdatesTab}>
+                <button type="button" class={updatesTabClass} onclick={handleTabUpdates}>Updates</button>
+            </template>
+        </div>
+
+        <!-- About -->
+        <template if:true={isAboutTab}>
+            <div class="mobile-tab-body">
+                <template if:true={showRejectionReason}>
+                    <div class="rejection-reason-box">
+                        <div class="rejection-reason-title">Reason for Rejection</div>
+                        <div class="rejection-reason-text">{event.rejectionReason}</div>
+                    </div>
+                </template>
+
+                <section class="mobile-section">
+                    <h2 class="mobile-section-title">About the Event</h2>
+                    <lightning-formatted-rich-text class="about-description" value={mobileEventDescription}></lightning-formatted-rich-text>
+                </section>
+
+                <template if:true={mobileEventExpectations}>
+                    <section class="mobile-section mobile-section--expect">
+                        <h2 class="mobile-section-title">What to Expect</h2>
+                        <lightning-formatted-rich-text class="about-description" value={mobileEventExpectations}></lightning-formatted-rich-text>
+                    </section>
+                </template>
+
+                <div class="get-help-row mobile-help-row">
+                    <button type="button" class="get-help-btn" onclick={handleGetHelp}>Get Event Support</button>
+                    <span class="get-help-text">Need help with this event?</span>
+                </div>
+
+                <template if:true={event.hasBrochure}>
+                    <button type="button" class="download-brochure-btn" onclick={handleDownloadBrochure}>
+                        Download Brochure
+                    </button>
+                </template>
+
+                <!-- Meta chips -->
+                <div class="mobile-meta-row">
+                    <template if:true={event.formattedDateRange}>
+                        <div class="mobile-meta-chip">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11z" fill="#585A64"/></svg>
+                            <span>{event.formattedDateRange}</span>
+                        </div>
+                    </template>
+                    <template if:true={eventLocationType}>
+                        <div class="mobile-meta-chip">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#585A64"/></svg>
+                            <span>{eventLocationType}</span>
+                        </div>
+                    </template>
+                    <div class="mobile-meta-chip">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" fill="#585A64"/></svg>
+                        <span>{mobileEventParticipants}</span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Schedule -->
+        <template if:true={isScheduleTab}>
+            <div class="mobile-tab-body">
+                <c-ken-event-schedule record-id={recordId}></c-ken-event-schedule>
+            </div>
+        </template>
+
+        <!-- Participants (host) — reuse desktop table with horizontal scroll -->
+        <template if:true={isParticipantsTab}>
+            <div class="mobile-tab-body mobile-participants">
+                <div class="pt-toolbar">
+                    <div class="pt-search">
+                        <input type="text" placeholder="Search participants" value={participantSearch} oninput={handleParticipantSearch} />
+                    </div>
+                </div>
+                <div class="pt-table-wrap">
+                    <table class="pt-table">
+                        <thead>
+                            <tr>
+                                <th>Participant</th>
+                                <th>Contact</th>
+                                <th>Sessions</th>
+                                <th>Registered On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={filteredParticipants} for:item="p">
+                                <tr key={p.id}>
+                                    <td>
+                                        <div class="pt-name">{p.name}</div>
+                                        <div class="pt-batch">{p.batchLabel}</div>
+                                    </td>
+                                    <td>
+                                        <div>{p.email}</div>
+                                        <div class="pt-phone">{p.phone}</div>
+                                    </td>
+                                    <td>{p.sessionsCount}</td>
+                                    <td>{p.registeredOnLabel}</td>
+                                </tr>
+                            </template>
+                            <template if:false={hasParticipantRows}>
+                                <tr><td colspan="4" class="pt-empty">No participants yet.</td></tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </template>
+
+        <!-- Event Updates (host) -->
+        <template if:true={isUpdatesTab}>
+            <div class="mobile-tab-body">
+                <template if:true={showPhotosCard}>
+                    <div class="eu-card mobile-eu-card">
+                        <span class="eu-card-title">Event Photos</span>
+                        <template if:true={isHost}>
+                            <button class="eu-action-btn filled" onclick={handleAddPhotos}>{photosBtnLabel}</button>
+                        </template>
+                        <template if:false={isHost}>
+                            <button class="eu-action-btn filled" onclick={handleOpenPhotos}>Open Gallery</button>
+                        </template>
+                    </div>
+                </template>
+                <template if:true={showHighlightsCard}>
+                    <div class="eu-card mobile-eu-card">
+                        <span class="eu-card-title">Event Highlights</span>
+                        <template if:true={isHost}>
+                            <button class="eu-action-btn" onclick={handleAddHighlights}>{highlightsBtnLabel}</button>
+                        </template>
+                        <template if:false={isHost}>
+                            <button class="eu-action-btn" onclick={handleOpenHighlights}>View Highlights</button>
+                        </template>
+                    </div>
+                </template>
+                <template if:true={hasPreEventSurveys}>
+                    <div class="eu-feedback-section">
+                        <h3 class="eu-feedback-heading">Surveys</h3>
+                        <template for:each={processedPreEventSurveys} for:item="survey">
+                            <div key={survey.id} class="eu-feedback-card">
+                                <div class="eu-feedback-name">{survey.name}</div>
+                                <div class="eu-feedback-period">Survey Period: {survey.periodLabel}</div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+            </div>
+        </template>
+
+        <!-- Fixed bottom CTA -->
+        <div class="mobile-register-button-container">
+            <template if:true={showHostInReviewActions}>
+                <div class="mobile-cta-row">
+                    <span class="footer-status-badge badge-review">In Review</span>
+                    <button type="button" class="footer-edit-btn" onclick={handleEditEvent}>Edit</button>
+                </div>
+            </template>
+            <template if:true={showHostRejectedActions}>
+                <div class="mobile-cta-row">
+                    <span class="footer-status-badge badge-rejected">Rejected</span>
+                    <button type="button" class="mobile-register-btn footer-register-btn" onclick={handleEditAndResubmit}>Edit &amp; Resubmit</button>
+                </div>
+            </template>
+            <template if:true={showHostApprovedActions}>
+                <div class="mobile-cta-row">
+                    <template if:true={isOngoingStatus}>
+                        <button type="button" class="footer-join-link" onclick={handleJoinEvent}>Join Event</button>
+                        <span class="footer-status-badge badge-ongoing">Ongoing</span>
+                    </template>
+                    <template if:true={isUpcomingStatus}>
+                        <span class="footer-status-badge badge-upcoming">Upcoming</span>
+                    </template>
+                    <template if:true={isCompletedStatus}>
+                        <span class="footer-status-badge badge-completed">Completed</span>
+                    </template>
+                </div>
+            </template>
+            <template if:true={showNonHostActions}>
+                <template if:true={isOngoingStatus}>
+                    <button type="button" class="mobile-register-btn footer-join-link" onclick={handleJoinEvent}>Join Event</button>
+                </template>
+                <template if:true={showRegisterButton}>
+                    <button type="button" class="mobile-register-btn footer-register-btn" onclick={handleRegister}>Register Now</button>
+                </template>
+                <template if:true={isRegistered}>
+                    <div class="mobile-cta-row">
+                        <template if:true={isUpcomingStatus}>
+                            <span class="footer-status-badge badge-upcoming">Upcoming</span>
+                        </template>
+                        <template if:true={isCompletedStatus}>
+                            <span class="footer-status-badge badge-completed">Completed</span>
+                        </template>
+                        <button type="button" class="mobile-register-btn footer-register-btn" onclick={handleViewRegistrationSummary}>
+                            View Registration Summary
+                        </button>
+                    </div>
+                </template>
+            </template>
+        </div>
+        </template>
+    </div>
+
+    <!-- Cancel registration confirmation (mobile schedule) -->
+    <template if:true={showCancelConfirmation}>
+        <div class="modal">
+            <div class="modal__backdrop" onclick={handleBackToSelection}></div>
+            <div class="modal__container" style="width: min(92vw, 360px);">
+                <div class="modal__header">
+                    <h2 class="modal__title">Cancel this session registration?</h2>
+                </div>
+                <div class="modal__footer">
+                    <button type="button" class="btn-cancel" onclick={handleBackToSelection}>Keep</button>
+                    <button type="button" class="btn-register" onclick={handleFinalCancel}>Yes, Cancel</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
     <!-- Add/Change Photos Link modal -->
     <template if:true={showPhotosModal}>
         <div class="eu-modal-backdrop"></div>

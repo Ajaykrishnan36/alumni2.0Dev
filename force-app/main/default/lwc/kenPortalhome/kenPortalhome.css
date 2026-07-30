@@ -4,6 +4,104 @@
     overflow: hidden;
 }
 
+/* Newsletter promo card */
+.newsletter-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #ffffff;
+    border: 1px solid #b5c5ff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 1rem;
+    min-width: 0;
+}
+
+.newsletter__head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+}
+
+.newsletter__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.newsletter__tag {
+    flex-shrink: 0;
+    background: #eaefff;
+    color: #3061ff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.2;
+}
+
+.newsletter__title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.3;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.newsletter__view {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: #373a45;
+    text-decoration: underline;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.newsletter__cta {
+    border: 0;
+    border-radius: 8px;
+    background: #3061ff;
+    color: #ffffff;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.newsletter-banner--mobile {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.newsletter-banner--mobile .newsletter__head {
+    width: 100%;
+}
+
+.newsletter-banner--mobile .newsletter__title {
+    font-size: 13px;
+}
+
+.newsletter-banner--mobile .newsletter__actions {
+    width: 100%;
+    justify-content: flex-start;
+    gap: 16px;
+}
+
 .empty-mini {
     display: flex;
     flex-direction: column;
@@ -527,6 +625,10 @@
         flex-direction: column;
         padding: 0.75rem;
         box-sizing: border-box;
+    }
+
+    .newsletter-banner {
+        margin-bottom: 0.75rem;
     }
 
     .home-grid {

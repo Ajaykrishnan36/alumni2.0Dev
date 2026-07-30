@@ -182,11 +182,27 @@
 /* Mobile view: allow full scroll, no clipping, stacked layout (desktop unchanged above 768px) */
 @media (max-width: 768px) {
     .mentorship-page {
-        height: auto;
-        min-height: calc(100vh - 120px);
+        height: calc(100vh - 85px);
+        min-height: calc(100vh - 85px);
         overflow-x: hidden;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
+    }
+
+    .mentorship-empty-landing {
+        height: 100%;
+        min-height: calc(100vh - 85px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+    border-radius: 0;
+    border: none !important;
+    box-shadow: none !important;
+    }
+
+    .mentorship-empty-content {
+        justify-content: center;
     }
 
     .mentorship-container {

@@ -201,73 +201,103 @@
     }
 }
 
-/* Mobile Media Query (max-width 600px) */
-@media only screen and (max-width: 600px) {
+/* Mobile Media Query (max-width 768px) */
+@media only screen and (max-width: 768px) {
     :host {
         display: block;
         width: 100%;
         box-sizing: border-box;
+        overflow: visible;
     }
+
     .stepper-container {
         width: 100%;
         max-width: 100%;
         margin: 0;
         border-radius: 0;
+        border: none;
+        box-shadow: none;
         height: auto;
         min-height: auto;
-        box-sizing: border-box; /* Critical for preventing width overflow with padding/borders */
-        overflow: hidden; /* Prevent child content from spilling out */
+        max-height: none;
+        box-sizing: border-box;
+        overflow: visible;
+        padding: 0 10px 24px;
     }
+
     .header-banner {
-        border-radius: 0;
+        border-radius: 12px;
         height: auto;
-        min-height: 100px;
+        min-height: 80px;
         width: 100%;
         display: flex;
         align-items: center;
-        padding: 1rem 0;
+        padding: 0.75rem 0;
+        margin-bottom: 0.75rem;
     }
+
     .header-image {
         position: absolute;
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
+
     .banner-overlay {
-        position: relative; /* Ensure text is above image */
+        position: relative;
     }
+
     .banner-text {
-        font-size: 1.2rem;
-        padding: 0 1rem;
-        line-height: 1.3;
-        word-wrap: break-word; /* Prevent text from overflowing horizontally */
+        font-size: 16px !important;
+        padding: 0 0.75rem;
+        line-height: 1.35;
+        word-wrap: break-word;
     }
+
     .steps-indicator {
-        padding: 0 0.5rem;
+        padding: 0 0.25rem;
         gap: 0;
         justify-content: space-between;
-        margin-top: 1rem;
+        margin-top: 0;
         width: 100%;
         box-sizing: border-box;
-        align-items: flex-start; /* Fix alignment issues with different text heights */
+        align-items: flex-start;
+        position: sticky;
+        top: 0;
     }
+
     .step-item {
-        flex-direction: column; /* Stack circle and label */
+        flex-direction: column;
         gap: 6px;
         text-align: center;
-        flex: 1; 
+        flex: 1;
         padding: 0 2px;
+        min-width: 0;
     }
+
     .step-label {
-        font-size: 0.7rem;
-        white-space: normal; /* Allow wrapping */
+        font-size: 11px !important;
+        white-space: normal;
         line-height: 1.2;
         width: 100%;
     }
+
     .step-circle {
-        width: 24px;
-        height: 24px;
-        font-size: 12px;
+        width: 22px;
+        height: 22px;
+        font-size: 11px;
         margin: 0 auto;
+    }
+
+    .step-content-wrapper {
+        flex: none;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .step-content-wrapper > * {
+        flex: none;
+        min-height: auto;
+        height: auto;
     }
 }

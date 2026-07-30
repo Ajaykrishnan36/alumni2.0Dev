@@ -38,6 +38,8 @@ const BUSINESSES = [
     { id: 4, name: 'HereJump',    tagline: 'Travel',     initial: 'H', color: '#F59E0B' }
 ];
 
+const MOBILE_MAX_WIDTH = 768;
+
 const FEED = [
     {
         id: 1, type: 'spotlight',
@@ -70,6 +72,10 @@ export default class KenPortalhomeV2 extends LightningElement {
 
     @track activeNav = 'home';
     feedFilter = 'All';
+    @track isMobile = false;
+
+    _mediaQuery;
+    _boundMobileChange;
 
     nav = NAV;
     quickLinks = QUICK_LINKS;
@@ -112,6 +118,34 @@ export default class KenPortalhomeV2 extends LightningElement {
             isEvent: f.type === 'event',
             isSocial: f.type === 'social'
         }));
+    }
+
+    get newsletterClass() {
+        return this.isMobile
+            ? 'newsletter newsletter--mobile'
+            : 'newsletter';
+    }
+
+    _syncMobileFromMedia() {
+        const next = this._mediaQuery ? this._mediaQuery.matches : false;
+        if (next !== this.isMobile) {
+            this.isMobile = next;
+        }
+    }
+
+    connectedCallback() {
+        if (typeof window !== 'undefined' && window.matchMedia) {
+            this._mediaQuery = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
+            this._boundMobileChange = this._syncMobileFromMedia.bind(this);
+            this._syncMobileFromMedia();
+            this._mediaQuery.addEventListener('change', this._boundMobileChange);
+        }
+    }
+
+    disconnectedCallback() {
+        if (this._mediaQuery && this._boundMobileChange) {
+            this._mediaQuery.removeEventListener('change', this._boundMobileChange);
+        }
     }
 
     handleNav(event) {

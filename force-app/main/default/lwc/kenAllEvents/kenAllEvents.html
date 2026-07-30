@@ -3,7 +3,7 @@
         <!-- Persistent search/filter bar. Rendered exactly ONCE and never inside a
              toggling template, so the input keeps focus while typing (typing used
              to flip the section conditionals and destroy the focused input). -->
-        <div class="section-header page-search-header">
+        <div class="page-search-header">
             <div class="filter-chips desktop-view" if:true={showResultsView}>
                 <template for:each={activeFilters} for:item="filter">
                     <div key={filter.id} class="filter-chip">
@@ -18,7 +18,9 @@
                     </div>
                 </template>
             </div>
-            <span class="mobile-events-title" if:true={showResultsView}>Events ({filteredEventsCount})</span>
+            <template if:true={showResultsView}>
+                <h2 class="mobile-events-title">Events ({filteredEventsCount})</h2>
+            </template>
             <div class="events-search-bar">
                 <div class="search-input-wrap">
                     <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

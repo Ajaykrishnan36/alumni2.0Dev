@@ -303,23 +303,30 @@
 }
 
 @media (max-width: 768px) {
+    /* 10px side gutters so cards don't touch screen edges */
     .service-support-container {
-        padding: 0;
+        padding: 10px;
+        max-height: none;
+        overflow: visible;
     }
 
     .main-content {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 12px;
     }
 
     .right-column {
         grid-template-columns: 1fr;
         height: auto;
-        gap: 1rem;
+        gap: 12px;
     }
 
     .left-column {
         height: auto;
+    }
+
+    .history-section {
+        margin-top: 0;
     }
 
     .result-item {
@@ -333,6 +340,19 @@
     }
 
     .search-results-container {
-        padding: 1rem;
+        padding: 12px;
+    }
+
+    /* Cap fonts at 16px on mobile */
+    .result-title,
+    .page-title {
+        font-size: 16px !important;
+    }
+
+    .result-description,
+    .results-count,
+    .no-results-text,
+    .result-btn {
+        font-size: 14px !important;
     }
 }

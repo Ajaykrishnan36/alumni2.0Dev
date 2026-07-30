@@ -225,7 +225,9 @@
                             value={paymentSearchTerm} oninput={handlePaymentSearchInput} />
                     </div>
                 </div>
-                <div class="payments-table-wrap">
+
+                <!-- Desktop table -->
+                <div class="payments-table-wrap payments-desktop-only">
                     <table class="payments-table">
                         <thead>
                             <tr>
@@ -256,6 +258,38 @@
                             </template>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Mobile cards -->
+                <div class="payments-cards payments-mobile-only">
+                    <template for:each={filteredPayments} for:item="pay">
+                        <article key={pay.id} class="payment-card">
+                            <div class="payment-card__top">
+                                <div class="payment-card__title-block">
+                                    <h4 class="payment-card__title">{pay.particulars}</h4>
+                                    <p class="payment-card__date">{pay.transactionDate}</p>
+                                </div>
+                                <button type="button" class="receipt-download-btn" title="Download receipt">
+                                    <lightning-icon icon-name="utility:download" size="x-small"></lightning-icon>
+                                </button>
+                            </div>
+                            <div class="payment-card__amount">{pay.paidAmount}</div>
+                            <div class="payment-card__meta">
+                                <div class="payment-card__row">
+                                    <span class="payment-card__label">Transaction ID</span>
+                                    <span class="payment-card__value payment-card__value--id">{pay.transactionId}</span>
+                                </div>
+                                <div class="payment-card__row">
+                                    <span class="payment-card__label">Payment Mode</span>
+                                    <span class="payment-card__value">{pay.paymentMode}</span>
+                                </div>
+                                <div class="payment-card__row">
+                                    <span class="payment-card__label">Currency</span>
+                                    <span class="payment-card__value">{pay.currency}</span>
+                                </div>
+                            </div>
+                        </article>
+                    </template>
                 </div>
             </div>
         </template>

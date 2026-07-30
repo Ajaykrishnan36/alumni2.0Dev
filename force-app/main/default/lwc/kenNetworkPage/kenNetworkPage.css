@@ -149,8 +149,7 @@
 /* Alumni Grid */
 .alumni-grid {
     display: grid;
-    /* grid-template-columns: repeat(4, 1fr); */
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     overflow-y: visible;
     flex: 0 0 auto;
@@ -565,8 +564,8 @@
 
 @media (max-width: 640px) {
     .alumni-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px;
     }
 
     .sidebar {
@@ -580,7 +579,15 @@
         overflow-x: hidden;
         max-width: 100%;
     }
-
+    .spotlight-widget {
+       margin: 0 10px 0 10px !important;
+    }
+    .business-widget {
+        margin: 0 10px 0 10px !important;
+    }
+    .invite-widget {
+        margin: 0 10px 0 10px !important;
+    }
     .network-container {
         overflow-x: hidden;
         max-width: 100%;
@@ -592,6 +599,7 @@
         max-width: 100%;
         min-width: 0;
         padding: 12px 10px;
+        margin: 0 10px 0 10px !important;
     }
 
     .controls-row {
@@ -604,7 +612,7 @@
     }
 
     .alumni-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 8px;
         overflow-x: hidden;
         min-width: 0;

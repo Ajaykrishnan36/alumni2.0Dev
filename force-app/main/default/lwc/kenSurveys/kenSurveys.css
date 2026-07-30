@@ -1069,51 +1069,6 @@ lightning-combobox,
     }
 }
 
-@media (max-width: 768px) {
-    .surveys-page {
-        padding: 16px;
-    }
-
-    .surveys-container {
-        padding: 16px;
-    }
-
-    .section-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .header-controls {
-        width: 100%;
-        flex-direction: column;
-    }
-
-    .all-surveys-section {
-        height: 100%;
-        min-height: 0;
-        padding: 16px;
-    }
-
-    .your-surveys-section {
-        height: 100%;
-        min-height: 0;
-    }
-
-    .your-surveys-list {
-        padding: 16px;
-    }
-
-    .monitor-screen {
-        width: 140px;
-        height: 90px;
-    }
-
-    .create-survey-illustration {
-        height: 150px;
-    }
-}
-
 /* Begin Survey Dialog */
 .begin-survey-overlay {
     position: fixed;
@@ -1765,22 +1720,25 @@ lightning-combobox {
 }
 
 @media (max-width: 768px) {
-    /* Main Layout */
+    /* Main Layout — 10px side gutters so cards don't touch screen edges */
     .surveys-page {
-        min-height: 100vh;
+        min-height: calc(100vh - 85px);
         height: auto;
         overflow-y: auto;
         flex-direction: column;
-        padding: 0;
+        padding: 10px;
+        box-sizing: border-box;
     }
 
     .surveys-container {
         display: flex;
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
         height: auto;
         overflow: visible;
         padding: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     /* Sections */
@@ -1789,9 +1747,22 @@ lightning-combobox {
         height: auto;
         min-height: auto;
         overflow: visible;
-        /* padding: 16px; */
         width: 100%;
+        max-width: 100%;
         box-sizing: border-box;
+    }
+
+    .all-surveys-section {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .your-surveys-list {
+        padding: 12px;
+    }
+
+    .create-survey-card {
+        padding: 12px;
     }
 
     .surveys-list,
@@ -1803,11 +1774,67 @@ lightning-combobox {
         flex: none;
     }
 
+    /* Mobile typography — headings max 16px, body text 14px or smaller */
+    .section-title,
+    .your-surveys-title,
+    .create-survey-title,
+    .all-surveys-empty-state .empty-state-title,
+    .survey-title,
+    .your-survey-title,
+    .begin-survey-title,
+    .survey-form-title,
+    .feedback-title,
+    .success-title,
+    .filters-title,
+    .survey-question-label {
+        font-size: 16px !important;
+        line-height: 1.35;
+    }
+
+    .section-title {
+        font-weight: 600;
+    }
+
+    .your-surveys-title {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+    }
+
+    .all-surveys-empty-state .empty-state-subtitle,
+    .empty-state-message,
+    .survey-date,
+    .your-survey-detail,
+    .questions-label,
+    .questions-count,
+    .sort-btn,
+    .filters-btn,
+    .completed-badge,
+    .retake-survey-btn,
+    .status-badge,
+    .go-back-btn,
+    .begin-survey-btn,
+    .begin-survey-message,
+    .feedback-message,
+    .get-started-btn,
+    .view-all-btn,
+    .completed-btn,
+    .checkbox-option,
+    .radio-option,
+    .reset-filters-btn,
+    .apply-filters-btn {
+        font-size: 14px !important;
+    }
+
+    .survey-text-input,
+    .rating-btn {
+        font-size: 14px !important;
+    }
+
     /* All Surveys Header */
     .section-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 12px;
     }
 
     .header-controls {
@@ -1836,12 +1863,44 @@ lightning-combobox {
         display: none;
     }
 
+    /* Empty states */
+    .all-surveys-empty-state {
+        padding: 24px 8px;
+        min-height: auto;
+    }
+
+    .all-surveys-empty-state .empty-state-image,
+    .your-surveys-empty-state .empty-state-image,
+    .empty-state-image {
+        max-width: 160px;
+        max-height: 160px;
+        margin-bottom: 16px;
+    }
+
+    .your-surveys-empty-state {
+        padding: 24px 8px;
+        min-height: auto;
+    }
+
+    .create-survey-header {
+        margin-bottom: 12px;
+    }
+
+    .create-survey-illustration {
+        height: 140px;
+    }
+
+    .monitor-screen {
+        width: 140px;
+        height: 90px;
+    }
+
     /* Survey Cards */
     .survey-card {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
-        padding: 16px;
+        gap: 12px;
+        padding: 12px;
     }
 
     .survey-info, 
@@ -1856,11 +1915,18 @@ lightning-combobox {
     .survey-meta {
         flex-wrap: wrap;
         gap: 12px;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
     }
     
     .survey-info {
         width: 100%;
+    }
+
+    .survey-title,
+    .your-survey-title {
+        white-space: normal;
+        text-overflow: unset;
+        text-wrap-mode: wrap;
     }
 
     /* Your Surveys */
@@ -1900,7 +1966,7 @@ lightning-combobox {
         width: 95%;
         max-width: 95%;
         max-height: 90vh;
-        padding: 20px;
+        padding: 16px;
         overflow-y: auto;
     }
     
@@ -1911,8 +1977,8 @@ lightning-combobox {
         right: auto !important;
         transform: translate(-50%, -50%) !important;
         position: fixed !important;
-        width: 90% !important;
-        max-width: 350px !important;
+        width: calc(100% - 20px) !important;
+        max-width: calc(100% - 20px) !important;
     }
     
     .filters-content {
@@ -1939,8 +2005,8 @@ lightning-combobox {
     .reset-filters-btn,
     .apply-filters-btn {
         flex: 1;
-        min-height: 48px;
-        height: 48px;
+        min-height: 44px;
+        height: 44px;
         padding: 0 10px;
         white-space: nowrap;
         display: flex;

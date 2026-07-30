@@ -29,6 +29,9 @@ export default class KenMentorshipConnections extends LightningElement {
     @track openDropdown = '';
 
     _previousMentors = null;
+    @track isMobile = false;
+    _mq;
+    _mqHandler;
 
     @track companyOptions = [];
     @track industryOptions = [];
@@ -171,6 +174,12 @@ export default class KenMentorshipConnections extends LightningElement {
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
             document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
         }).catch(() => {});
+        if (typeof window !== 'undefined' && window.matchMedia) {
+            this._mq = window.matchMedia('(max-width: 767px)');
+            this._mqHandler = () => { this.isMobile = this._mq.matches; };
+            this.isMobile = this._mq.matches;
+            this._mq.addEventListener('change', this._mqHandler);
+        }
     }
 
     renderedCallback() {
@@ -193,6 +202,9 @@ export default class KenMentorshipConnections extends LightningElement {
     disconnectedCallback() {
         this._removeFiltersOutsideClick();
         this._removeDropdownOutsideClick();
+        if (this._mq && this._mqHandler) {
+            this._mq.removeEventListener('change', this._mqHandler);
+        }
     }
 
     // ── Options building ──────────────────────────────────────

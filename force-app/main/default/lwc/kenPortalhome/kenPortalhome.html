@@ -1,5 +1,16 @@
 <template>
     <div class="portal-home-container">
+        <section class={newsletterClass}>
+            <div class="newsletter__head">
+                <span class="newsletter__tag">Newsletter</span>
+                <span class="newsletter__title">Alumni Newsletter | October 2025</span>
+            </div>
+            <div class="newsletter__actions">
+                <button type="button" class="newsletter__view" onclick={handleViewNewsletter}>View More</button>
+                <button type="button" class="newsletter__cta" onclick={handleViewNewsletter}>Read Now</button>
+            </div>
+        </section>
+
         <div class="home-grid">
 
             <div class="feed-column">

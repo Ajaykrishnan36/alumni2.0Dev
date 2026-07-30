@@ -100,13 +100,20 @@
 
 @media (max-width: 768px) {
     .header-container {
-        padding: 2rem 1rem;
-        min-height: 160px;
+        padding: 1.25rem 0.75rem;
+        min-height: auto;
         border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    .header-inner {
+        gap: 0.75rem;
     }
 
     .greeting-text {
-        font-size: 16px;
+        font-size: 16px !important;
+        line-height: 1.35;
+        font-weight: 600;
     }
 
     .search-input-wrapper {
@@ -114,17 +121,17 @@
     }
 
     .search-input {
-        font-size: 12px;
+        font-size: 14px !important;
     }
 }
 
 @media (max-width: 480px) {
     .header-container {
-        padding: 1.5rem 0.75rem;
-        min-height: 140px;
+        padding: 1rem 0.75rem;
+        min-height: auto;
     }
 
     .greeting-text {
-        font-size: 14px;
+        font-size: 16px !important;
     }
 }

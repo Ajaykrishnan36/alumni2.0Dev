@@ -353,6 +353,18 @@
     :host {
         background-color: #ffffff;
     }
+    .btn {
+        padding: 8px 14px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+    .footer-actions {
+        margin-left: 0;
+        margin-right: 0;
+        padding: 16px 0;
+        justify-content: space-between;
+        background-color: #ffffff;
+    }
     .form-grid {
         grid-template-columns: 1fr;
         row-gap: 20px;
@@ -458,3 +470,28 @@
 .item-tick { display: inline-block; width: 18px; font-size: 13px; font-weight: 700; color: transparent; flex-shrink: 0; }
 .item-tick.tick-active { color: var(--primary-color, #ffffff); }
 .dropdown-item { display: flex; align-items: center; gap: 4px; padding: 10px 12px; font-size: 13px; color: #374151; cursor: pointer; }
+
+/* Mobile footer — must be last to override duplicate footer/btn rules below */
+@media screen and (max-width: 768px) {
+    .footer-actions {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        margin-bottom: 0 !important;
+        padding: 16px 0 !important;
+        justify-content: space-between;
+        gap: 8px;
+        background-color: #ffffff;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .footer-actions .btn {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 8px 10px !important;
+        font-size: 12px !important;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+}

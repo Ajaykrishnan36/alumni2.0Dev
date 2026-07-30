@@ -350,12 +350,25 @@
 
 /* Persistent top bar: search stays right; chips (results mode) fill the left */
 .page-search-header {
+    display: flex;
+    flex-wrap: wrap;
     justify-content: flex-end;
     align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
 }
 
 .page-search-header .filter-chips {
     margin-right: auto;
+}
+
+.mobile-events-title {
+    display: none;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2c3e50;
+    line-height: 1.3;
 }
 
 .section-title {
@@ -696,8 +709,50 @@
 
 @media (max-width: 768px) {
     .all-events-container {
-        padding: 0rem;
-        
+        padding: 0.75rem;
+        height: auto;
+        min-height: 0;
+    }
+
+    .page-search-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .page-search-header .mobile-events-title {
+        display: block;
+        width: 100%;
+        order: 1;
+    }
+
+    .page-search-header .events-search-bar {
+        order: 2;
+        width: 100%;
+        margin-left: 0;
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .page-search-header .search-input-wrap {
+        flex: 1 1 auto;
+        min-width: 0;
+        width: auto;
+    }
+
+    .page-search-header .search-filter-button {
+        flex-shrink: 0;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .featured-events-section,
+    .upcoming-events-section {
+        margin-bottom: 1.5rem;
     }
 
     .filter-section {
@@ -754,15 +809,11 @@
         display: none;
     }
 
-    /* Filtered events header: "Events" left, Filter button right (mobile only) */
+    /* Filtered events header title — shown above search when filtering */
     .mobile-events-title {
-        display: block;
-        order: 1;
         font-size: 1rem;
-        font-weight: 900;
+        font-weight: 700;
         color: #2c3e50;
-        margin: 0;
-        align-self: center;
     }
 
     .filtered-events-header .mobile-filter-button {
@@ -918,19 +969,28 @@
 }
 
 @media (max-width: 768px) {
-    .all-events-container {
-        height: 100%;
-    }
     .event-card {
         width: 100%;
-        min-width: 100%;
+        max-width: 100%;
+        min-width: 0;
         height: 230px !important;
     }
+
+    .upcoming-events-section .section-header,
+    .featured-events-section .section-header {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 0 !important;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Section headers inside event lists only — not the top search bar */
     .section-header {
         align-items: center;
         flex-direction: row;
         gap: 1rem;
-        margin-top: 1rem !important;
+        margin-top: 0 !important;
     }
 
     /* Mobile filter button positioning */

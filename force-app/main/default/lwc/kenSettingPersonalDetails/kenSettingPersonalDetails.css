@@ -293,6 +293,11 @@
     :host {
         background-color: #ffffff;
     }
+    .btn {
+        padding: 8px 14px;
+        font-size: 12px;
+        white-space: nowrap;
+    }
     .basic-details-form {
         flex-direction: column;
         gap: 16px;
@@ -320,7 +325,20 @@
         margin-right: 0;
         padding: 16px 0;
         justify-content: space-between;
+        gap: 8px;
         background-color: #ffffff;
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .footer-actions .btn {
+        flex: 1 1 0;
+        min-width: 0;
+        padding: 8px 10px;
+        font-size: 12px;
+        white-space: nowrap;
+        box-sizing: border-box;
     }
     .card {
         padding: 16px 0;

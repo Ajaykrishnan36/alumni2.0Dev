@@ -444,6 +444,22 @@ lightning-button.studentportal-BlueButtonLogin button.slds-button_brand {
 }
 
 @media (max-width: 768px) {
+    :host {
+        position: relative;
+        overflow: visible;
+        width: 100%;
+        top: auto;
+        left: auto;
+        height: auto;
+        min-height: 0;
+    }
+
+    .registration-container {
+        height: auto;
+        min-height: calc(100vh - 85px);
+        overflow: visible;
+    }
+
     .top-dialog, .top-dialog-error {
         left: 50%;
         width: 90%;
