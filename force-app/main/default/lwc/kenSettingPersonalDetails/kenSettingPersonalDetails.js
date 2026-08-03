@@ -7,11 +7,15 @@ import eventTest2 from '@salesforce/resourceUrl/eventTest2';
 import PortalLoginImage from '@salesforce/resourceUrl/PortalLoginImage';
 import requestServiceImg from '@salesforce/resourceUrl/requestServiceImg';
 import suggestedGroupsbgimage from '@salesforce/resourceUrl/suggestedGroupsbgimage';
-import getPersonalDetails from '@salesforce/apex/KenSettingsController.getPersonalDetails';
-import savePersonalDetails from '@salesforce/apex/KenSettingsController.savePersonalDetails';
-import saveEngagementPreferences from '@salesforce/apex/KenSettingsController.saveEngagementPreferences';
-import saveProfilePhoto from '@salesforce/apex/KenSettingsController.saveProfilePhoto';
+import getPersonalDetails from '@salesforce/apex/KenProfileSettingsController.getPersonalDetails';
+import savePersonalDetails from '@salesforce/apex/KenProfileSettingsController.savePersonalDetails';
+import saveEngagementPreferences from '@salesforce/apex/KenProfileSettingsController.saveEngagementPreferences';
+import saveProfilePhoto from '@salesforce/apex/KenProfileSettingsController.saveProfilePhoto';
 import createNeedHelpCase from '@salesforce/apex/KenServiceSupportController.createNeedHelpCase';
+import getVerificationStatus from '@salesforce/apex/KenCommunityOtpLoginController.getVerificationStatus';
+import saveMobileNumber from '@salesforce/apex/KenCommunityOtpLoginController.saveMobileNumber';
+import startVerification from '@salesforce/apex/KenCommunityOtpLoginController.startVerification';
+import confirmVerificationCode from '@salesforce/apex/KenCommunityOtpLoginController.confirmVerificationCode';
 
 const INTEREST_OPTIONS = [
     { id: 1, label: 'Learn from fellow alumni', name: 'Learn from fellow alumni', img: donateImg },
@@ -35,6 +39,17 @@ export default class KenSettingPersonalDetails extends NavigationMixin(Lightning
     @track lastName = '';
     @track maskedEmail = '';
     @track maskedPhone = '';
+    @track email = '';
+    @track phone = '';
+    @track emailVerified = false;
+    @track phoneVerified = false;
+    @track verifyingChannel = '';
+    @track otpCode = '';
+    @track isVerifyBusy = false;
+    @track verifyMessage = '';
+    @track verifyMessageIsError = false;
+    @track phoneDraft = '';
+    lastVerifiedChannel = '';
     @track city = '';
     @track country = '';
     @track linkedin = '';
@@ -69,6 +84,7 @@ export default class KenSettingPersonalDetails extends NavigationMixin(Lightning
                 }
                 this._buildInterests(data.engagementPreferences);
             }
+            await this.loadVerificationStatus();
         } catch (e) {
             this.error = e?.body?.message || 'Failed to load profile.';
         } finally {
@@ -111,6 +127,182 @@ export default class KenSettingPersonalDetails extends NavigationMixin(Lightning
     handleRequestPhoneChange() {
         this.needHelpRequestType = 'phone';
         this.showNeedHelpModal = true;
+    }
+
+    async loadVerificationStatus() {
+        try {
+            const status = await getVerificationStatus();
+            this.email = status?.email || '';
+            this.phone = status?.mobilePhone || '';
+            this.emailVerified = status?.emailVerified === true;
+            this.phoneVerified = status?.phoneVerified === true;
+        } catch (e) {
+            this.email = '';
+            this.phone = '';
+        }
+    }
+
+    get isVerifyingEmail() {
+        return this.verifyingChannel === 'Email';
+    }
+
+    get isVerifyingPhone() {
+        return this.verifyingChannel === 'SMS';
+    }
+
+    get isPhoneEditable() {
+        return !this.phone;
+    }
+
+    get isSavePhoneDisabled() {
+        return this.isVerifyBusy || (this.phoneDraft || '').replace(/[^0-9]/g, '').length < 10;
+    }
+
+    handlePhoneDraftInput(event) {
+        this.phoneDraft = event.target.value;
+    }
+
+    handlePhoneDraftKeyDown(event) {
+        if (event.key === 'Enter' && !this.isSavePhoneDisabled) {
+            this.handleSaveAndVerifyPhone();
+        }
+    }
+
+    async handleSaveAndVerifyPhone() {
+        this.isVerifyBusy = true;
+        this.lastVerifiedChannel = 'SMS';
+        try {
+            const saved = await saveMobileNumber({ phone: this.phoneDraft });
+            if (!saved?.success) {
+                this.setVerifyMessage(saved?.message || 'Please try again.', true);
+                return;
+            }
+            await this.loadVerificationStatus();
+            this.phoneDraft = '';
+        } catch (error) {
+            this.setVerifyMessage(error?.body?.message || 'Please try again.', true);
+            return;
+        } finally {
+            this.isVerifyBusy = false;
+        }
+        await this.beginVerification('SMS');
+    }
+
+    get isConfirmDisabled() {
+        return this.isVerifyBusy || (this.otpCode || '').length < 6;
+    }
+
+    get emailFieldLabel() {
+        return this.isVerifyingEmail ? `Enter the code sent to ${this.email}` : 'Email';
+    }
+
+    get phoneFieldLabel() {
+        return this.isVerifyingPhone ? `Enter the code sent to ${this.phone}` : 'Phone Number';
+    }
+
+    get emailVerifyMessage() {
+        return this.verifyingChannel === 'Email' || this.lastVerifiedChannel === 'Email'
+            ? this.verifyMessage
+            : '';
+    }
+
+    get phoneVerifyMessage() {
+        return this.verifyingChannel === 'SMS' || this.lastVerifiedChannel === 'SMS'
+            ? this.verifyMessage
+            : '';
+    }
+
+    get emailVerifyMessageClass() {
+        return this.verifyMessageIsError ? 'field-note field-note_error' : 'field-note';
+    }
+
+    get phoneVerifyMessageClass() {
+        return this.emailVerifyMessageClass;
+    }
+
+    handleVerifyEmail() {
+        this.beginVerification('Email');
+    }
+
+    handleVerifyPhone() {
+        this.beginVerification('SMS');
+    }
+
+    async beginVerification(channel) {
+        this.isVerifyBusy = true;
+        this.otpCode = '';
+        this.verifyMessage = '';
+        this.lastVerifiedChannel = channel;
+        try {
+            const result = await startVerification({ channel });
+            if (result?.debugMessage) {
+                console.warn('Verification diagnostics:', result.debugMessage);
+            }
+            if (!result?.success) {
+                this.setVerifyMessage(result?.message || 'Please try again.', true);
+                return;
+            }
+            this.verifyingChannel = channel;
+        } catch (error) {
+            this.setVerifyMessage(error?.body?.message || 'Please try again.', true);
+        } finally {
+            this.isVerifyBusy = false;
+        }
+    }
+
+    handleOtpInput(event) {
+        this.otpCode = (event.target.value || '').replace(/[^0-9]/g, '');
+        event.target.value = this.otpCode;
+    }
+
+    handleOtpKeyDown(event) {
+        if (event.key === 'Enter' && !this.isConfirmDisabled) {
+            this.handleConfirmOtp();
+        }
+        if (event.key === 'Escape') {
+            this.handleCancelVerify();
+        }
+    }
+
+    handleCancelVerify() {
+        this.verifyingChannel = '';
+        this.otpCode = '';
+        this.verifyMessage = '';
+    }
+
+    async handleConfirmOtp() {
+        const channel = this.verifyingChannel;
+        this.isVerifyBusy = true;
+        try {
+            const result = await confirmVerificationCode({ channel, code: this.otpCode });
+            if (result?.debugMessage) {
+                console.warn('Verification diagnostics:', result.debugMessage);
+            }
+            if (!result?.success) {
+                this.setVerifyMessage(result?.message || 'Please try again.', true);
+                return;
+            }
+            this.verifyingChannel = '';
+            this.otpCode = '';
+            if (channel === 'SMS') {
+                this.phoneVerified = true;
+            } else {
+                this.emailVerified = true;
+            }
+            this.setVerifyMessage('Verified. You can now sign in with a one-time password.', false);
+        } catch (error) {
+            this.setVerifyMessage(error?.body?.message || 'Please try again.', true);
+        } finally {
+            this.isVerifyBusy = false;
+        }
+    }
+
+    setVerifyMessage(message, isError) {
+        this.verifyMessage = message;
+        this.verifyMessageIsError = isError;
+        setTimeout(() => {
+            this.verifyMessage = '';
+        }, 6000);
     }
 
     handleNeedHelpClose() {

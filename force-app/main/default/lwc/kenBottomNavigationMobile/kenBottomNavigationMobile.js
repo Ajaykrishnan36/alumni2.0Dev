@@ -23,7 +23,7 @@ export default class KenBottomNavigationMobile extends NavigationMixin(Lightning
         { id: 1, label: 'Home', apiName: 'Home', icon: HomeIcon, iconActive: HomeIconActive, pathSuffix: '/' },
         { id: 2, label: 'Calendar', apiName: 'Calendar__c', icon: CalendarIcon, iconActive: CalendarIconActive, pathSuffix: '/calendar' },
         { id: 3, label: 'Events', apiName: 'all_events__c', icon: CampusLifeIcon, iconActive: CampusLifeIconActive, pathSuffix: '/all-events' },
-        { id: 4, label: 'Resources', apiName: 'resource__c', icon: ResourcesIcon, iconActive: ResourcesIconActive, pathSuffix: '/resource' }
+        { id: 4, label: 'Resources', apiName: 'gallery__c', icon: ResourcesIcon, iconActive: ResourcesIconActive, pathSuffix: '/gallery' }
     ];
     
 
@@ -75,8 +75,8 @@ export default class KenBottomNavigationMobile extends NavigationMixin(Lightning
                 active = 'Calendar__c';
             } else if (rel.startsWith('/all-events')) {
                 active = 'all_events__c';
-            } else if (rel.startsWith('/resource')) {
-                active = 'resource__c';
+            } else if (rel.startsWith('/gallery')) {
+                active = 'gallery__c';
             }
             this.activeTab = active;
 

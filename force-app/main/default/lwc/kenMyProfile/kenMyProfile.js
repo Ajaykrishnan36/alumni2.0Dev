@@ -4,7 +4,7 @@ import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
 
 import getMyProfile from '@salesforce/apex/KenMyProfileController.getMyProfile';
-import getPersonalDetails from '@salesforce/apex/KenSettingsController.getPersonalDetails';
+import getPersonalDetails from '@salesforce/apex/KenProfileSettingsController.getPersonalDetails';
 import saveAboutText from '@salesforce/apex/KenMyProfileController.saveAbout';
 import saveEducationRecord from '@salesforce/apex/KenMyProfileController.saveEducation';
 import archiveEducationRecord from '@salesforce/apex/KenMyProfileController.archiveEducation';

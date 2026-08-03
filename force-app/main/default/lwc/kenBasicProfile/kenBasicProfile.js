@@ -695,7 +695,6 @@ export default class KenBasicProfile extends LightningElement {
         if (!this.email) missingFields.push('Email');
         if (!this.phoneE164) missingFields.push('Phone number');
         if (!this.country) missingFields.push('Country of Residence');
-        if (!this.state) missingFields.push('State');
         if (!this.currentCity) missingFields.push('Current City');
         if (!this.graduationYear) missingFields.push('Graduation year');
         if (!this.programmeId && !this.programme) missingFields.push('Batch');

@@ -1,5 +1,6 @@
 import { LightningElement, wire, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
 import getPortalConfigs from '@salesforce/apex/KenThemeConfigController.getPortalConfigs';
 import getAlumniRecords from '@salesforce/apex/KenAdminAlumniController.getAlumniRecords';
@@ -27,11 +28,29 @@ import getCommunicationLog from '@salesforce/apex/KenAdminAlumniController.getCo
 
 const PAGE_SIZE = 25;
 
-// Keep in sync with the data-tab values on the .alumni-tabs row in the HTML.
-const MASTER_TAB_KEYS = new Set([
-    'all', 'recent', 'registered', 'unregistered', 'oldportal', 'issues', 'leads', 'referrals'
-]);
-const MASTER_TAB_URL_PARAM = 'masterTab';
+// ---- URL state contract -----------------------------------------------
+// The whole screen is addressable, so a refresh (or a pasted link) reopens
+// exactly what was on screen instead of dropping back to the default view:
+//
+//   ?page=list&tab=leads                      master list, Leads tab
+//   ?page=list&tab=issues&chip=bounce         list + data-issue chip
+//   ?page=alumni360&alumni=<id>&sub=career    Alumni 360 on its Career tab
+//   ?page=lead&alumni=<leadId>&sub=merge      lead workspace, Merge & Lookup
+//   ?page=referral&alumni=<leadId>&sub=owner  referral workspace, Change Owner
+//   ?page=issues&alumni=<id>                  fix-contact panel
+//   ?page=map                                 alumni distribution map
+//
+// Params are written straight onto the address bar with history.replaceState
+// rather than NavigationMixin: this component lives inside the FlexiPage
+// tabset on the Alumni Management home page, and a real Lightning navigation
+// would reload that page and throw the user back to the Dashboard sub-tab.
+// Reads accept the `c__`-prefixed names too, since that is what LEX itself
+// produces when a link carries custom params.
+const URL_KEYS = ['page', 'alumni', 'tab', 'sub', 'chip'];
+const VALID_PAGES = ['list', 'alumni360', 'lead', 'referral', 'issues', 'map'];
+const VALID_TABS = ['all', 'recent', 'registered', 'oldportal', 'issues', 'leads', 'referrals'];
+const VALID_CHIPS = ['all', 'mail', 'phone', 'invmail', 'bounce', 'invphone'];
+const VALID_LEAD_SUBS = ['merge', 'activity', 'comm', 'owner', 'history'];
 
 const EMPTY_FILTERS = {
     // Legacy keys kept so any other consumer of `selectedFilters` keeps working.
@@ -149,8 +168,6 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     @track issueChipCounts = {};
     @track selectedLeadIds = [];
     @track isConverting = false;
-    @track convertSuccessMessage = '';
-    _convertSuccessTimer;
     _wiredListResult;
     _wiredCountsResult;
     _wiredIssueChipCountsResult;
@@ -257,7 +274,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         }
     }
 
-    @wire(getMergeCandidates, { searchTerm: '$mergeWireSearch', gradYear: '$mergeWireYear' })
+    @wire(getMergeCandidates, { searchTerm: '$mergeWireSearch', gradYear: '$mergeWireYear', leadId: '$mergeWireLeadId' })
     wiredMerge({ data, error }) {
         if (data) {
             this.mergeCandidates = data;
@@ -300,6 +317,13 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         return (this.activeModal === 'lead' || this.activeModal === 'referral') ? this.mergeGradYear : undefined;
     }
 
+    // Lead context for the candidate search — lets Apex stamp match % on the
+    // search results the same way getMergeSuggestions does for suggestions.
+    get mergeWireLeadId() {
+        if (this.activeModal !== 'lead' && this.activeModal !== 'referral') return undefined;
+        return this.selectedAlumniId || undefined;
+    }
+
     get isNewRoleLead() {
         return this.capturedIsNewRole;
     }
@@ -308,6 +332,187 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     }
     get leadEyebrowStatus() {
         return this.capturedIsNewRole ? 'PENDING APPROVAL' : 'UNMERGED';
+    }
+
+    /* ---- URL state — every screen is addressable, see URL_KEYS above ---- */
+
+    // The 360's own tab, tracked separately from activeInnerTab (which belongs
+    // to the legacy alumni modal, a different surface).
+    @track alumni360Tab = 'overview';
+    _lastUrlSignature = null;
+    _lastUrlState = null;
+    _restoringFromUrl = false;
+
+    _urlSignature(s) {
+        return URL_KEYS.map((k) => k + '=' + (s[k] || '')).join('&');
+    }
+
+    // Reads straight from the address bar rather than CurrentPageReference:
+    // the writes below use history.replaceState, which the Lightning router
+    // does not observe, so its page reference would go stale immediately.
+    _readUrlState() {
+        const out = {};
+        let params;
+        try {
+            params = new URLSearchParams(window.location.search);
+        } catch (e) {
+            params = null;
+        }
+        URL_KEYS.forEach((key) => {
+            const raw = !params ? null
+                : (params.get('c__' + key) !== null ? params.get('c__' + key) : params.get(key));
+            // Strip surrounding quotes so a hand-typed ?alumni='0Rl…' resolves too.
+            out[key] = raw == null ? '' : String(raw).replace(/^['"]|['"]$/g, '').trim();
+        });
+        return out;
+    }
+
+    _applyUrlState(s) {
+        this._restoringFromUrl = true;
+        try {
+            if (VALID_TABS.includes(s.tab)) this.activeTab = s.tab;
+            if (VALID_CHIPS.includes(s.chip)) this.activeIssueChip = s.chip;
+
+            const page = VALID_PAGES.includes(s.page) ? s.page : 'list';
+            this.activeModal = null;
+            this.showAlumni360 = false;
+            this.showMapModal = false;
+
+            if (page === 'map') {
+                this.handleMapViewOpen();
+                return;
+            }
+            if (page === 'list' || !s.alumni) {
+                this.selectedAlumniId = null;
+                return;
+            }
+
+            this.selectedAlumniId = s.alumni;
+            if (page === 'alumni360') {
+                this.alumni360Tab = s.sub || 'overview';
+                this.activeInnerTab = 'overview';
+                this.showAlumni360 = true;
+            } else if (page === 'lead' || page === 'referral') {
+                this._openWorkspaceFromUrl(page, s.sub);
+            } else if (page === 'issues') {
+                this._userEditedEmail = false;
+                this._userEditedPhone = false;
+                this.issueEmailError = null;
+                this.issuePhoneError = null;
+                this.contactIssue = null;
+                this.activeModal = 'issues';
+            }
+        } finally {
+            this._restoringFromUrl = false;
+        }
+    }
+
+    /**
+     * Reopen a lead/referral workspace with no clicked row to read from. The
+     * rail fills from the getAlumniDetail wire (it keys off selectedAlumniId),
+     * so only the row-captured extras need clearing and the merge suggestions
+     * fetching — the same call handleRow makes.
+     */
+    _openWorkspaceFromUrl(kind, sub) {
+        this.mergeSearchTerm = '';
+        this.mergeAppliedTerm = '';
+        this.mergeGradYear = '';
+        this.selectedCandidateIds = [];
+        this.capturedGradYear = '—';
+        this.capturedRegNumber = '';
+        this.capturedSource = '';
+        this.capturedDateLabel = '';
+        this.capturedReferredBy = '';
+        this.capturedExistingAccountId = '';
+        this.capturedExistingAccountName = '';
+        this.capturedIsNewRole = false;
+        this.activeLeadTab = VALID_LEAD_SUBS.includes(sub) ? sub : 'merge';
+        this.activeModal = kind;
+        this._loadMergeSuggestions(this.selectedAlumniId);
+        if (this.activeLeadTab === 'owner') this._loadOwners('');
+    }
+
+    _currentUrlState() {
+        let page = 'list';
+        let sub = '';
+        if (this.showMapModal) {
+            page = 'map';
+        } else if (this.showAlumni360) {
+            page = 'alumni360';
+            sub = this.alumni360Tab || 'overview';
+        } else if (this.activeModal === 'lead' || this.activeModal === 'referral') {
+            page = this.activeModal;
+            sub = this.activeLeadTab || 'merge';
+        } else if (this.activeModal === 'issues') {
+            page = 'issues';
+        }
+        const onRecord = page !== 'list' && page !== 'map';
+        return {
+            page,
+            alumni: onRecord ? (this.selectedAlumniId || '') : '',
+            tab: this.activeTab || 'all',
+            sub,
+            chip: this.activeTab === 'issues' ? (this.activeIssueChip || 'all') : ''
+        };
+    }
+
+    /**
+     * Mirror the current screen into the address bar. replace:true keeps the
+     * history usable — switching tabs shouldn't take three Backs to undo — and
+     * the URL still survives a refresh, which is the point.
+     */
+    _syncUrl() {
+        if (this._restoringFromUrl) return;
+        const next = this._currentUrlState();
+        const signature = this._urlSignature(next);
+        if (signature === this._lastUrlSignature) return;
+
+        // Moving between screens (list → 360, list → lead workspace, opening a
+        // different record) PUSHES, so browser Back steps back through them —
+        // Back from the 360 lands on the list it was opened from. Changing a
+        // tab or chip within the same screen REPLACES, so Back isn't clogged
+        // with every tab click on the way through.
+        const prev = this._lastUrlState;
+        const isScreenChange = !!prev && (prev.page !== next.page || prev.alumni !== next.alumni);
+        this._lastUrlSignature = signature;
+        this._lastUrlState = next;
+
+        try {
+            const params = new URLSearchParams(window.location.search);
+            URL_KEYS.forEach((key) => {
+                params.delete(key);
+                params.delete('c__' + key);
+                if (next[key]) params.set('c__' + key, next[key]);
+            });
+            const query = params.toString();
+            const url = window.location.pathname + (query ? '?' + query : '') + window.location.hash;
+            if (isScreenChange) {
+                window.history.pushState(window.history.state, '', url);
+            } else {
+                window.history.replaceState(window.history.state, '', url);
+            }
+        } catch (e) {
+            // A blocked History API only costs deep-linking, never the screen.
+        }
+    }
+
+    // Browser Back/Forward moves between the entries pushed above; re-apply
+    // whatever the address bar now says. Landing on a URL with none of our
+    // params resets to the list, which is the right answer for stepping back
+    // past the point where this screen was first opened.
+    _handlePopState() {
+        const incoming = this._readUrlState();
+        const signature = this._urlSignature(incoming);
+        if (signature === this._lastUrlSignature) return;
+        this._lastUrlSignature = signature;
+        this._lastUrlState = incoming;
+        this._applyUrlState(incoming);
+    }
+
+    // The 360 reports its own tab clicks so ?sub= tracks them.
+    handleAlumni360TabChange(e) {
+        this.alumni360Tab = (e.detail && e.detail.tab) || 'overview';
+        this._syncUrl();
     }
 
     /* ---- Derived list view-model ---- */
@@ -493,7 +698,9 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     get mergeRows() {
         return (this.mergeCandidates || []).map(c => ({
             ...c,
+            matchLabel: c.matchPercent == null ? '' : c.matchPercent + '% match',
             detail: 'Batch \'' + (c.batch || '—') + ' · ' + (c.registrationNumber || '—') + ' · ' + (c.source || '—')
+                + ' · ID ' + c.alumniId
                 + (c.matchedOn ? ' · Matched by ' + c.matchedOn : ''),
             selected: this.selectedCandidateIds.includes(c.alumniId)
         }));
@@ -557,9 +764,11 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             this.ownerSearchTerm = '';
             this._loadOwners('');
         }
+        this._syncUrl();
     }
     handleShowMergeTab() {
         this.activeLeadTab = 'merge';
+        this._syncUrl();
     }
 
     /* ---- Communication (logs a Task/Activity) ---- */
@@ -633,12 +842,12 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
                     if (this._wiredCommLogResult)  refreshApex(this._wiredCommLogResult);
                     if (this._wiredTimelineResult) refreshApex(this._wiredTimelineResult);
                 } else if (res) {
-                    this.showConvertSuccess(res.message || 'Could not log.');
+                    this.showConvertSuccess(res.message || 'Could not log.', 'error');
                 }
             })
             .catch((err) => {
                 this.isLoggingComm = false;
-                this.showConvertSuccess((err && err.body && err.body.message) || 'Could not log.');
+                this.showConvertSuccess((err && err.body && err.body.message) || 'Could not log.', 'error');
             });
     }
 
@@ -717,12 +926,12 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
                     if (this._wiredListResult)     refreshApex(this._wiredListResult);
                     this.activeLeadTab = 'activity';
                 } else if (res) {
-                    this.showConvertSuccess(res.message || 'Could not change owner.');
+                    this.showConvertSuccess(res.message || 'Could not change owner.', 'error');
                 }
             })
             .catch((err) => {
                 this.isReassigning = false;
-                this.showConvertSuccess((err && err.body && err.body.message) || 'Could not change owner.');
+                this.showConvertSuccess((err && err.body && err.body.message) || 'Could not change owner.', 'error');
             });
     }
 
@@ -883,7 +1092,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         if (!this.showPortalDropdown && this.activePortalStatus) {
             this.activePortalStatus = '';
         }
-        this._syncTabToUrl(this.activeTab);
+        this._syncUrl();
     }
 
     handleLeadCheckboxClick(e) {
@@ -937,7 +1146,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
                     if (this._wiredCountsResult) refreshApex(this._wiredCountsResult);
                     this.handleClose();
                 } else if (msg) {
-                    this.showConvertSuccess(msg);
+                    this.showConvertSuccess(msg, 'error');
                 }
             })
             .catch(() => {
@@ -950,7 +1159,9 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         this.selectedAlumniId = this.capturedExistingAccountId;
         this.activeModal = null;
         this.activeInnerTab = 'overview';
+        this.alumni360Tab = 'overview';
         this.showAlumni360 = true;
+        this._syncUrl();
     }
 
     handleApproveRole() {
@@ -1010,9 +1221,13 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     _openMultiReview(masterRoleIds) {
         if (this.mergeMultiReviewLoading) return;
         this._mergeMultiReviewMasterRoleIds = masterRoleIds;
+        // label carries the record Id alongside the name — several candidates
+        // routinely share the exact name (that's how they surfaced), so the
+        // name alone can't identify which record is being picked.
         this.mergeMultiReviewMasterNames = masterRoleIds.map((id) => {
             const c = (this.mergeCandidates || []).find((cand) => cand.alumniId === id);
-            return { key: id, name: c ? c.name : id };
+            const nm = c ? c.name : id;
+            return { key: id, name: nm, label: nm + ' (' + id + ')' };
         });
         this.mergeMultiReviewLoading = true;
         this.mergeMultiReviewActive = true;
@@ -1131,12 +1346,12 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
                     if (this._wiredCountsResult) refreshApex(this._wiredCountsResult);
                     this.handleClose();
                 } else if (msg) {
-                    this.showConvertSuccess(msg);
+                    this.showConvertSuccess(msg, 'error');
                 }
             })
             .catch((err) => {
                 this.isMergingMulti = false;
-                this.showConvertSuccess((err && err.body && err.body.message) || 'Merge failed.');
+                this.showConvertSuccess((err && err.body && err.body.message) || 'Merge failed.', 'error');
             });
     }
 
@@ -1234,28 +1449,29 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
                     if (this._wiredCountsResult) refreshApex(this._wiredCountsResult);
                     this.handleClose();
                 } else if (msg) {
-                    this.showConvertSuccess(msg);
+                    this.showConvertSuccess(msg, 'error');
                 }
             })
             .catch((err) => {
                 this.isMerging = false;
-                this.showConvertSuccess((err && err.body && err.body.message) || 'Merge failed.');
+                this.showConvertSuccess((err && err.body && err.body.message) || 'Merge failed.', 'error');
             });
     }
 
-    showConvertSuccess(message) {
-        this.convertSuccessMessage = message;
-        if (this._convertSuccessTimer) {
-            clearTimeout(this._convertSuccessTimer);
-        }
-        this._convertSuccessTimer = setTimeout(() => {
-            this.convertSuccessMessage = '';
-            this._convertSuccessTimer = null;
-        }, 3000);
+    // All merge/convert/owner-change outcomes surface as platform toasts —
+    // the modal usually closes right after, so an inline message would vanish
+    // with it.
+    showConvertSuccess(message, variant = 'success') {
+        this.dispatchEvent(new ShowToastEvent({
+            title: variant === 'error' ? 'Error' : 'Success',
+            message,
+            variant
+        }));
     }
     handleChip(e) {
         this.activeIssueChip = e.currentTarget.dataset.chip;
         this.currentPage = 1;
+        this._syncUrl();
     }
     handleInnerTab(e) {
         this.activeInnerTab = e.currentTarget.dataset.mt;
@@ -1394,9 +1610,11 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         // viewport, same calc as the network/landing page map views.
         this.mapModalHeight = Math.max(420, window.innerHeight - 90);
         this.showMapModal = true;
+        this._syncUrl();
     }
     handleMapModalClose() {
         this.showMapModal = false;
+        this._syncUrl();
     }
     handleMapProfileSelect(event) {
         const detail = event.detail || {};
@@ -1410,9 +1628,11 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         this.personInitials = this._initials(detail.name || '');
         this.selectedAlumniId = alumniId;
         this.activeInnerTab = 'overview';
+        this.alumni360Tab = 'overview';
         this.activeModal = null;
         this.showMapModal = false;
         this.showAlumni360 = true;
+        this._syncUrl();
     }
     handleMapModalClick(e) {
         e.stopPropagation();
@@ -1470,8 +1690,10 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             // straight to the Alumni 360 full-screen view. A Back button on the
             // 360 returns to the Master Records list.
             this.activeInnerTab = 'overview';
+            this.alumni360Tab = 'overview';
             this.activeModal = null;
             this.showAlumni360 = true;
+            this._syncUrl();
             return;
         }
         if (kind === 'issues') {
@@ -1499,6 +1721,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             if (!this.capturedIsNewRole) this._loadMergeSuggestions(alumniId);
         }
         this.activeModal = kind;
+        this._syncUrl();
     }
 
     _loadMergeSuggestions(leadId) {
@@ -1569,8 +1792,10 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         // From the Data Issues panel, jump straight to the full Alumni 360 view
         // instead of the intermediate overview modal.
         this.activeInnerTab = 'overview';
+        this.alumni360Tab = 'overview';
         this.activeModal = null;
         this.showAlumni360 = true;
+        this._syncUrl();
     }
     // Keeps its own debounce timer: sharing _searchDebounce with the background
     // list search meant typing in one box cancelled the other's pending update.
@@ -1589,9 +1814,11 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     handleView360() {
         // Keep selectedAlumniId so the child receives it; show the overlay.
         this.showAlumni360 = true;
+        this._syncUrl();
     }
     handleClose360() {
         this.showAlumni360 = false;
+        this._syncUrl();
     }
     stopBubble(event) {
         event.stopPropagation();
@@ -1633,6 +1860,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         this.ownerOptions = [];
         this.selectedNewOwnerId = '';
         this.ownerReason = '';
+        this._syncUrl();
     }
     handleOverlayClick(e) {
         if (e.target.classList.contains('modal-overlay')) this.handleClose();
@@ -1649,94 +1877,43 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             if (d.portalStatus !== undefined) this.activePortalStatus = d.portalStatus || '';
             if (d.dashboardFilter !== undefined) this.activeDashboardFilter = d.dashboardFilter || '';
             this.currentPage = 1;
-            if (d.tabKey) this._syncTabToUrl(this.activeTab);
+            this._syncUrl();
         };
         window.addEventListener('kendash:navigate', this._navListener);
-        // Order matters: restore whatever tab was in the URL first (covers a plain
-        // refresh), then let a fresh dashboard-KPI click override it — that intent
-        // is a one-shot, just-happened signal and should always win over a
-        // possibly-stale URL from before.
-        this._applyUrlTab();
-        this._applyDashboardNavIntent();
-        // The very first time this component mounts in a session (the click that
-        // opened Master Records happens before the listener below even exists to
-        // catch it), nothing has written the URL yet — sync it once here so the
-        // address bar always reflects whatever tab we actually landed on, even
-        // on that first entry, not just on later clicks/resets.
-        this._syncTabToUrl(this.activeTab);
-        this._bindMasterRecordsTabReset();
+        // A dashboard tile click is a deliberate new destination, so it beats
+        // whatever the address bar still describes. Otherwise restore the URL:
+        // this runs when the Master Records sub-tab is activated (that is when
+        // the component gets created), so after a refresh the dashboard
+        // reopens this tab and the screen underneath comes back with it.
+        this._popListener = this._handlePopState.bind(this);
+        window.addEventListener('popstate', this._popListener);
+        if (this._applyDashboardNavIntent()) {
+            this._syncUrl();
+        } else {
+            const incoming = this._readUrlState();
+            this._lastUrlSignature = this._urlSignature(incoming);
+            this._lastUrlState = incoming;
+            this._applyUrlState(incoming);
+        }
     }
 
-    // "Master Records" is a native flexipage:tab on the Home page, and the
-    // platform keeps this component mounted for the whole session once its tab
-    // has been opened once — clicking away to Dashboard/etc. and back never
-    // re-runs connectedCallback. Without this, whatever sub-tab was last open
-    // (e.g. "Registered Alumni") would just stay showing instead of resetting.
-    // kenAdminDashboard.js's _navigateToMasterRecords already forces
-    // tabKey: 'all' for its own KPI-tile entry point (via the kendash:navigate
-    // listener above) — this does the same for a direct click on the native
-    // pill itself, so both entry points land on the same default.
-    _bindMasterRecordsTabReset() {
-        try {
-            const anchors = document.querySelectorAll('a[role="tab"], [role="tab"]');
-            for (const a of anchors) {
-                const label = (a.title || a.getAttribute('aria-label') || a.textContent || '').trim();
-                if (label === 'Master Records') {
-                    this._masterRecordsTabAnchor = a;
-                    this._masterRecordsTabClickBound = this._handleMasterRecordsTabClick.bind(this);
-                    a.addEventListener('click', this._masterRecordsTabClickBound);
-                    break;
-                }
-            }
-        } catch (e) { /* cross-shadow may block */ }
-    }
-
-    _handleMasterRecordsTabClick() {
-        this.activeTab = 'all';
-        this.currentPage = 1;
-        this.selectedLeadIds = [];
-        this._syncTabToUrl(this.activeTab);
-    }
-
-    // Reads ?masterTab=<key> so refreshing the page (or sharing/bookmarking the
-    // URL) lands back on the same Master Records tab instead of resetting to
-    // "All Master Records". Validated against MASTER_TAB_KEYS so a hand-edited
-    // or stale param can't push activeTab into an unrecognized value.
-    _applyUrlTab() {
-        try {
-            const params = new URLSearchParams(window.location.search || '');
-            const tabFromUrl = params.get(MASTER_TAB_URL_PARAM);
-            if (tabFromUrl && MASTER_TAB_KEYS.has(tabFromUrl)) {
-                this.activeTab = tabFromUrl;
-            }
-        } catch (e) { /* ignore */ }
-    }
-
-    // Mirrors the active tab into the URL (replacing, not pushing, history so
-    // clicking through tabs doesn't fill up the back button) so a page refresh
-    // can restore it via _applyUrlTab.
-    _syncTabToUrl(tab) {
-        try {
-            const url = new URL(window.location.href);
-            url.searchParams.set(MASTER_TAB_URL_PARAM, tab);
-            window.history.replaceState(window.history.state, '', url.toString());
-        } catch (e) { /* ignore */ }
-    }
-
+    // Returns true when a fresh dashboard tile intent was consumed — that intent
+    // is newer than whatever the address bar still says, so it wins.
     _applyDashboardNavIntent() {
         try {
             const raw = sessionStorage.getItem('ken_dashboard_nav');
-            if (!raw) return;
+            if (!raw) return false;
             const intent = JSON.parse(raw);
             sessionStorage.removeItem('ken_dashboard_nav');
-            if (!intent) return;
-            if (Date.now() - (intent.ts || 0) > 60000) return;
+            if (!intent) return false;
+            if (Date.now() - (intent.ts || 0) > 60000) return false;
             if (intent.tabKey) this.activeTab = intent.tabKey;
             if (intent.portalStatus !== undefined) this.activePortalStatus = intent.portalStatus;
             if (intent.dashboardFilter !== undefined) this.activeDashboardFilter = intent.dashboardFilter || '';
             this.currentPage = 1;
-            if (intent.tabKey) this._syncTabToUrl(this.activeTab);
+            return true;
         } catch (e) { /* ignore */ }
+        return false;
     }
 
     get hasDashboardFilter() { return !!this.activeDashboardFilter; }
@@ -1763,9 +1940,8 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             'life-lead':                  'Lead Lifecycle · Lead',
             'life-unverified':            'Lead Lifecycle · Unverified',
             'life-leads':                 'Lead Lifecycle · Leads',
-            'life-verified':              'Lead Lifecycle · Verified',
             'life-registered':            'Lead Lifecycle · Registered',
-            'life-onboarding-pending':    'Lead Lifecycle · Onboarding Pending',
+            
             'life-onboarding-inprogress': 'Lead Lifecycle · Onboarding In Progress',
             'life-onboarding':            'Lead Lifecycle · Onboarding',
             'life-active':                'Lead Lifecycle · Active'
@@ -1779,9 +1955,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     disconnectedCallback() {
         if (this._escBound) document.removeEventListener('keydown', this._escBound);
         if (this._navListener) window.removeEventListener('kendash:navigate', this._navListener);
-        if (this._masterRecordsTabAnchor && this._masterRecordsTabClickBound) {
-            this._masterRecordsTabAnchor.removeEventListener('click', this._masterRecordsTabClickBound);
-        }
+        if (this._popListener) window.removeEventListener('popstate', this._popListener);
     }
 
     /* ---- Helpers ---- */

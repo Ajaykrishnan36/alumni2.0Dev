@@ -9,10 +9,14 @@ import createImportSession from "@salesforce/apex/KenAlumniBulkImportController.
 import saveImportChunk from "@salesforce/apex/KenAlumniBulkImportController.saveImportChunk";
 import startChunkedImport from "@salesforce/apex/KenAlumniBulkImportController.startChunkedImport";
 
-const IMPORT_CHUNK_SIZE = 200;
+const IMPORT_CHUNK_SIZE = 1000;
 const STORAGE_KEY = "kenAlumniBulkImport.activeJob";
 const BOM = String.fromCharCode(0xfeff);
 const RUNNING = ["Holding", "Queued", "Preparing", "Processing"];
+// A chained import briefly shows "Stalled" between one batch job finishing and
+// the next starting; only treat the session as finished after this many
+// consecutive stalled polls so failed rows are never revealed mid-import.
+const STALLED_POLL_GRACE = 5;
 
 export default class KenAlumniBulkImport extends LightningElement {
   file;
@@ -85,6 +89,7 @@ export default class KenAlumniBulkImport extends LightningElement {
   jobTotal = 0;
   jobErrors = 0;
   jobCompleted = false;
+  stalledPolls = 0;
   isImporting = false;
   processedSuccess = 0;
   failedRowIndexes = [];
@@ -208,10 +213,10 @@ export default class KenAlumniBulkImport extends LightningElement {
           return;
         }
         this.applyStatus(info);
-        if (info.isRunning) {
-          this.startPolling();
-        } else {
+        if (info.status === "Completed") {
           this.handleJobComplete();
+        } else {
+          this.startPolling();
         }
       })
       .catch(() => {
@@ -292,6 +297,13 @@ export default class KenAlumniBulkImport extends LightningElement {
 
   get failedCount() {
     return this.failedRowIndexes.length + this.unmatchedErrors.length;
+  }
+
+  // The skipped count is intentionally omitted while jobs are still running —
+  // failed rows are only revealed in bulk once every chained batch completes.
+  get statusLine() {
+    const base = `Status: ${this.jobStatus} - Processed ${this.processedDisplay}/${this.totalRecords}`;
+    return this.jobCompleted ? `${base} - Skipped ${this.failedCount}` : base;
   }
 
   get failedDownloadDisabled() {
@@ -583,16 +595,23 @@ export default class KenAlumniBulkImport extends LightningElement {
 
   startPolling() {
     window.clearInterval(this.pollHandle);
+    this.stalledPolls = 0;
     this.pollHandle = window.setInterval(() => {
       getSessionStatus({ sessionKey: this.sessionKey })
         .then((info) => {
           if (!info) return;
           this.applyStatus(info);
-          if (!info.isRunning) {
-            window.clearInterval(this.pollHandle);
-            this.pollHandle = null;
-            this.handleJobComplete();
+          if (info.isRunning) {
+            this.stalledPolls = 0;
+            return;
           }
+          if (info.status === "Stalled" && this.stalledPolls < STALLED_POLL_GRACE) {
+            this.stalledPolls += 1;
+            return;
+          }
+          window.clearInterval(this.pollHandle);
+          this.pollHandle = null;
+          this.handleJobComplete();
         })
         .catch(() => {});
     }, 2000);
@@ -670,7 +689,7 @@ export default class KenAlumniBulkImport extends LightningElement {
       "Current Location": "Bangalore",
       Industry: "Technology",
       Specialization: "",
-      "Date of Birth": "1996-04-12",
+      "Date of Birth": "12/04/1996",
       Nationality: "Indian",
       Gender: "",
       "Blood Group": "O+",
@@ -682,7 +701,7 @@ export default class KenAlumniBulkImport extends LightningElement {
       "Address Postal Code": "560001",
       "Address Country": "India",
       "Current Designation": "Senior Software Engineer",
-      "Employment Start Date": "2021-06-01",
+      "Employment Start Date": "01/06/2021",
       "10th School": "St. Joseph's High School",
       "10th Grade": "92",
       "10th Grade Type": "Percentage",
@@ -859,6 +878,7 @@ export default class KenAlumniBulkImport extends LightningElement {
     this.jobErrors = 0;
     this.jobCompleted = false;
     this.isImporting = false;
+    this.stalledPolls = 0;
     this.processedSuccess = 0;
     this.totalRecords = 0;
     this.failedRowIndexes = [];

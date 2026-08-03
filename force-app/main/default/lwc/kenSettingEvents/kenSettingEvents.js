@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
-import getEventPreferences from '@salesforce/apex/KenSettingsController.getEventPreferences';
-import saveEventPreferences from '@salesforce/apex/KenSettingsController.saveEventPreferences';
+import getEventPreferences from '@salesforce/apex/KenProfileSettingsController.getEventPreferences';
+import saveEventPreferences from '@salesforce/apex/KenProfileSettingsController.saveEventPreferences';
 
 const INVITE_OPTIONS   = ['Everyone', 'Only other alumni', 'Only admin'];
 const REMINDER_OPTIONS = ['One week before the event', 'One day before the event'];

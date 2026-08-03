@@ -91,7 +91,21 @@
     <div class="header-container">
         <div class="header-left">
             <div class={myFeedCardClass}>
-                <span class="my-feed-text">{computedHeaderLabel}</span>
+                <template if:true={showNewsletterBanner}>
+                    <div class="newsletter-header-row">
+                        <div class="newsletter-header-text">
+                            <p class="newsletter-header-label">Newsletter</p>
+                            <p class="newsletter-header-title">{newsletterTitle}</p>
+                        </div>
+                        <div class="newsletter-header-actions">
+                            <button type="button" class="newsletter-view-more-btn" onclick={handleNewsletterViewMore}>View More</button>
+                            <button type="button" class="newsletter-read-now-btn" onclick={handleNewsletterReadNow}>Read Now</button>
+                        </div>
+                    </div>
+                </template>
+                <template if:false={showNewsletterBanner}>
+                    <span class="my-feed-text">{computedHeaderLabel}</span>
+                </template>
                 <c-ken-page-path onbreadcrumbvisibilitychange={handleBreadcrumbVisibilityChange}></c-ken-page-path>
             </div>
         </div>
@@ -146,4 +160,12 @@
             </div>
         </div>
     </div>
+
+    <c-ken-file-preview-modal
+        show={showNewsletterPreview}
+        file-url={newsletterPreviewUrl}
+        file-title={newsletterPreviewTitle}
+        file-type={newsletterPreviewFileType}
+        onclose={handleCloseNewsletterPreview}
+    ></c-ken-file-preview-modal>
 </template>

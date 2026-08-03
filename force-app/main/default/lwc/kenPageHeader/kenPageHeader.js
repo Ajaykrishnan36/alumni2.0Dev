@@ -5,7 +5,10 @@ import KenLogo from '@salesforce/resourceUrl/LoginKen';
 import getNavigationMenuItems from '@salesforce/apex/KenNavBarController.getNavigationMenuItems';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import getUserContactDetails from '@salesforce/apex/KenNavBarController.getUserContactDetails';
+import getNewsletterBanner from '@salesforce/apex/KenGalleryController.getNewsletterBanner';
 import loginBg from '@salesforce/resourceUrl/AlumniAlt';
+
+const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 export default class KenHeader extends NavigationMixin(LightningElement) {
     @wire(MessageContext)
@@ -31,12 +34,16 @@ export default class KenHeader extends NavigationMixin(LightningElement) {
     @track breadcrumbLabel = '';
     @track breadcrumbs = [];
     @track hasBreadcrumbVisible = false;
+    @track newsletterBanner = null;
+    @track showNewsletterPreview = false;
+    @track currentPageApiName = '';
     publishStatus;
 
     @wire(CurrentPageReference)
     setCurrentPageReference(ref) {
         const app = ref?.state?.app;
         this.publishStatus = app === 'commeditor' ? 'Draft' : 'Live';
+        this.currentPageApiName = ref?.attributes?.name || '';
         this.updateHeaderLabel();
     }
 
@@ -87,16 +94,82 @@ export default class KenHeader extends NavigationMixin(LightningElement) {
         }).catch(() => {
             console.log('Error getting primary color');
         });
+        this.loadNewsletterBanner();
+    }
+
+    async loadNewsletterBanner() {
+        try {
+            this.newsletterBanner = await getNewsletterBanner();
+        } catch (e) {
+            this.newsletterBanner = null;
+        }
     }
 
     get computedHeaderLabel() {
         return this.headerLabel || this.dynamicHeaderLabel || '';
     }
 
+    get showNewsletterBanner() {
+        return this.currentPageApiName === 'Home' && !!this.newsletterBanner;
+    }
+
+    get newsletterTitle() {
+        const dateValue = this.newsletterBanner?.photoDate;
+        if (dateValue) {
+            const parsed = new Date(dateValue);
+            if (!isNaN(parsed.getTime())) {
+                return `Alumni Newsletter | ${MONTH_NAMES[parsed.getMonth()]} ${parsed.getFullYear()}`;
+            }
+        }
+        return this.newsletterBanner?.fileName || 'Alumni Newsletter';
+    }
+
+    get newsletterPreviewUrl() {
+        return this.newsletterBanner?.previewUrl;
+    }
+
+    get newsletterPreviewTitle() {
+        return this.newsletterBanner?.fileName;
+    }
+
+    get newsletterPreviewFileType() {
+        return this.newsletterBanner?.fileType;
+    }
+
     get myFeedCardClass() {
-        return this.hasBreadcrumbVisible 
-            ? 'my-feed-card has-breadcrumb' 
-            : 'my-feed-card';
+        let cls = this.hasBreadcrumbVisible ? 'my-feed-card has-breadcrumb' : 'my-feed-card';
+        if (this.showNewsletterBanner) {
+            cls += ' newsletter-mode';
+        }
+        return cls;
+    }
+
+    handleNewsletterViewMore() {
+        const albumId = this.newsletterBanner?.albumId;
+        if (albumId) {
+            this[NavigationMixin.Navigate]({
+                type: 'comm__namedPage',
+                attributes: { name: 'album_detail__c' },
+                state: { recordId: albumId }
+            });
+        } else {
+            this[NavigationMixin.Navigate]({
+                type: 'comm__namedPage',
+                attributes: { name: 'gallery__c' }
+            });
+        }
+    }
+
+    handleNewsletterReadNow() {
+        if (this.newsletterBanner?.previewUrl) {
+            this.showNewsletterPreview = true;
+        } else {
+            this.handleNewsletterViewMore();
+        }
+    }
+
+    handleCloseNewsletterPreview() {
+        this.showNewsletterPreview = false;
     }
 
     handleCalendarClick() {

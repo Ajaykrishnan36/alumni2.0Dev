@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
-import getGroupPreferences from '@salesforce/apex/KenSettingsController.getGroupPreferences';
-import saveGroupPreferences from '@salesforce/apex/KenSettingsController.saveGroupPreferences';
+import getGroupPreferences from '@salesforce/apex/KenProfileSettingsController.getGroupPreferences';
+import saveGroupPreferences from '@salesforce/apex/KenProfileSettingsController.saveGroupPreferences';
 
 const INVITE_OPTIONS  = ['Everyone', 'Only other alumni', 'Only admin'];
 const NOTIFY_OPTIONS  = ['New posts', 'New members', 'Polls', 'Events'];

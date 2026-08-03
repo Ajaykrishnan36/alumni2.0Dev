@@ -23,7 +23,16 @@ const ROUTE_OVERRIDES = {
     'group-detail':           { idParams: ['groupId', 'c__groupId'] },
     'business-detail':        { idParams: ['recordId', 'businessId', 'c__businessId'] },
     'survey-detail':          { idParams: ['surveyId', 'c__surveyId'] },
-    'request-service-detail': { idParams: ['serviceId', 'c__serviceId'] }
+    'request-service-detail': { idParams: ['serviceId', 'c__serviceId'] },
+    // 'gallery' is branded as "Resources" elsewhere (mobile nav tab, desktop
+    // header) but the URL segment stays 'gallery' — no synthetic parent needed
+    // since 'gallery' itself becomes the (relabeled) breadcrumb parent.
+    'album-detail':           { parent: null }
+};
+
+// Segment slugs whose breadcrumb label doesn't match their URL/title-cased form.
+const SEGMENT_LABEL_OVERRIDES = {
+    gallery: 'Resources'
 };
 
 export default class KenBreadcrumb extends NavigationMixin(LightningElement) {
@@ -212,6 +221,7 @@ export default class KenBreadcrumb extends NavigationMixin(LightningElement) {
 
     labelFor(slug) {
         if (!slug) return '';
+        if (SEGMENT_LABEL_OVERRIDES[slug]) return SEGMENT_LABEL_OVERRIDES[slug];
         return slug
             .split('-')
             .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())

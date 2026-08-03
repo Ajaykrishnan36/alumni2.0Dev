@@ -77,6 +77,33 @@
     --slds-c-icon-color-foreground-default: #7a7f87;
 }
 
+.searchRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid #cfd6e4;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    background: #ffffff;
+}
+
+.searchRow:focus-within {
+    border-color: var(--primary-color);
+}
+
+.searchIcon {
+    --slds-c-icon-color-foreground-default: #6a7280;
+}
+
+.searchInput {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 0.85rem;
+    color: #1f2430;
+    background: transparent;
+}
+
 .optionRow {
     display: flex;
     align-items: center;

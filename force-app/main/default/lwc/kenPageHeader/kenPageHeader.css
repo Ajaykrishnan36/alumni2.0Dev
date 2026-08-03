@@ -31,6 +31,70 @@
     padding: 0.7rem 1.5rem 0rem 1.5rem;
 }
 
+.my-feed-card.newsletter-mode {
+    padding: 1.1rem 1.5rem;
+}
+
+.newsletter-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: 100%;
+}
+
+.newsletter-header-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.newsletter-header-label {
+    font-size: 13px;
+    color: #8c8e94;
+    margin: 0;
+}
+
+.newsletter-header-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #585A64;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.newsletter-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-shrink: 0;
+}
+
+.newsletter-view-more-btn {
+    background: none;
+    border: none;
+    color: #373a45;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+}
+
+.newsletter-read-now-btn {
+    background: var(--primary-color, #4f46e5);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.25rem;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .my-feed-text {
     font-size: 20px;
     font-weight: 600;

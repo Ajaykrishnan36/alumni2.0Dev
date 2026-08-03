@@ -1,5 +1,8 @@
 import { api, LightningElement, track, wire } from 'lwc';
 import login from '@salesforce/apex/KenCommunityLoginController.login';
+import resolveOtpLoginContext from '@salesforce/apex/KenCommunityOtpLoginController.resolveOtpLoginContext';
+import sendLoginOtp from '@salesforce/apex/KenCommunityOtpLoginController.sendLoginOtp';
+import verifyLoginOtp from '@salesforce/apex/KenCommunityOtpLoginController.verifyLoginOtp';
 import linkedinLogoUrl from '@salesforce/resourceUrl/LoginLinkedinIcon';
 import KenLogo from '@salesforce/resourceUrl/LoginKen';
 import KenPoweredbyLogo from '@salesforce/resourceUrl/kenPoweredbyLogo';
@@ -7,6 +10,9 @@ import { CurrentPageReference } from 'lightning/navigation';
 import { NavigationMixin } from 'lightning/navigation';
 import basePath from '@salesforce/community/basePath';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+
+const OTP_LENGTH = 6;
+const RESEND_SECONDS = 120;
 
 export default class LoginPage extends NavigationMixin(LightningElement) {
     email = '';
@@ -16,7 +22,7 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
     isLoading = false;
     passwordFieldType = 'password';
     iconName = 'utility:hide';
-    linkedInProvider = 'LinkedIn';
+    linkedInProvider = '';
     googleProvider = '';
     linkedinLogo = linkedinLogoUrl;
     kenLogo = KenLogo;
@@ -26,6 +32,23 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
     @track toastMessage = '';
     @track toastVariant = 'success'; // success, error, warning, info
     @track isRedirectingToReset = false;
+
+    loginMethod = 'Password';
+    otpDeliveryChannel = 'Email';
+    @track otpMode = false;
+    @track otpStep = 'identify';
+    @track otpChannels = [];
+    @track selectedChannel = '';
+    @track otpAccountId = '';
+    @track otpIdentifier = '';
+    @track otpMaskedTarget = '';
+    @track otpMaskedEmail = '';
+    @track otpMaskedPhone = '';
+    @track otpCode = ['', '', '', '', '', ''];
+    @track resendSeconds = 0;
+    @track mobile = '';
+    @track defaultDialCountry = 'in';
+    resendTimerId;
 
     @wire(CurrentPageReference)
     setCurrentPageReference(currentPageReference) {
@@ -78,10 +101,23 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
             if (color?.googleSsoProvider) {
                 this.googleProvider = color.googleSsoProvider;
             }
+            this.loginMethod = color?.loginMethod || 'Password';
+            this.otpDeliveryChannel = color?.otpDeliveryChannel || 'Email';
+            if (color?.defaultDialCountry) {
+                this.defaultDialCountry = color.defaultDialCountry;
+            }
+            this.selectedChannel = this.orgChannels[0];
+            if (this.loginMethod === 'OTP') {
+                this.otpMode = true;
+            }
         }).catch(() => {
 
         });
         this.detectSsoError();
+    }
+
+    disconnectedCallback() {
+        this.stopResendTimer();
     }
 
     /**
@@ -98,9 +134,22 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
             if (!code && !description) {
                 return;
             }
-            const noUser = code === 'REGISTRATION_HANDLER_ERROR'
-                || description.toLowerCase().indexOf('no active user') > -1
-                || description.toLowerCase().indexOf('register first') > -1;
+            const lower = description.toLowerCase();
+
+            // The provider authenticated the person but shared no email, so we
+            // can't match them to an account. Sending them to registration would
+            // be wrong — an existing alumnus just needs the password route.
+            if (lower.indexOf('no_sso_email') > -1 || lower.indexOf('did not share an email') > -1) {
+                this.toastTitle = 'Email not shared';
+                this.toastMessage = 'That provider didn’t share your email address. Please sign in with your email and password.';
+                this.toastVariant = 'error';
+                this.showToast = true;
+                return;
+            }
+
+            const noUser = lower.indexOf('no active user') > -1
+                || lower.indexOf('register first') > -1
+                || code === 'REGISTRATION_HANDLER_ERROR';
             if (noUser) {
                 this.toastTitle = 'Account not found';
                 this.toastMessage = 'No account is linked to that profile. Redirecting you to registration…';
@@ -111,6 +160,24 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
                 }, 2500);
                 return;
             }
+
+            // Known non-registration failures worth naming rather than echoing
+            // Salesforce's raw text.
+            if (code === 'OAUTH_ACCESS_DENIED' || lower.indexOf('access_denied') > -1 || lower.indexOf('cancel') > -1) {
+                this.toastTitle = 'Sign-in cancelled';
+                this.toastMessage = 'You cancelled the sign-in. Try again or use your email and password.';
+                this.toastVariant = 'error';
+                this.showToast = true;
+                return;
+            }
+            if (lower.indexOf('inactive') > -1 || lower.indexOf('frozen') > -1) {
+                this.toastTitle = 'Account inactive';
+                this.toastMessage = 'Your account is not active. Please contact your alumni office.';
+                this.toastVariant = 'error';
+                this.showToast = true;
+                return;
+            }
+
             this.toastTitle = 'Sign-in failed';
             this.toastMessage = description || 'We couldn’t sign you in. Please try again or use your email and password.';
             this.toastVariant = 'error';
@@ -156,6 +223,13 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
         const startUrl = encodeURIComponent(`${siteBasePath}/select-role`);
         const ssoUrl = `${siteOrigin}${siteBasePath}/services/auth/sso/${provider}?startURL=${startUrl}`;
         window.location.assign(ssoUrl);
+    }
+
+    // Only offer LinkedIn when an Auth Provider is actually configured. The bare
+    // 'LinkedIn' provider has no Error URL, so a failed sign-in never returns here
+    // with ErrorCode and detectSsoError can't show the "register first" redirect.
+    get showLinkedInLogin() {
+        return !!this.linkedInProvider;
     }
 
     get showGoogleLogin() {
@@ -319,6 +393,323 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
                 name: 'Home',
             },
         });
+    }
+
+    get showPasswordLogin() {
+        return this.loginMethod !== 'OTP' && !this.otpMode;
+    }
+
+    get showOtpLogin() {
+        return this.loginMethod === 'OTP' || this.otpMode;
+    }
+
+    get showOtpSwitchLink() {
+        return this.loginMethod === 'Both' && !this.otpMode;
+    }
+
+    get showPasswordSwitchLink() {
+        return this.loginMethod === 'Both' && this.otpMode;
+    }
+
+    get isOtpIdentifyStep() {
+        return this.otpStep === 'identify';
+    }
+
+    get isOtpCodeStep() {
+        return this.otpStep === 'code';
+    }
+
+    get channelOptions() {
+        return this.orgChannels.map((channel) => ({
+            value: channel,
+            label: channel === 'SMS' ? 'Mobile' : 'Email',
+            checked: channel === this.selectedChannel,
+            tabClass: channel === this.selectedChannel ? 'otp-segment-tab is-active' : 'otp-segment-tab',
+        }));
+    }
+
+    /**
+     * Channels the org offers, from OTP_Delivery_Channel__c. Drives the tabs
+     * before any lookup has happened; whether this alumnus can actually use the
+     * chosen one is decided server-side on send.
+     */
+    get orgChannels() {
+        if (this.otpDeliveryChannel === 'Both') {
+            return ['Email', 'SMS'];
+        }
+        return [this.otpDeliveryChannel === 'SMS' ? 'SMS' : 'Email'];
+    }
+
+    get showChannelTabs() {
+        return this.orgChannels.length > 1;
+    }
+
+    get isSmsChannel() {
+        return this.selectedChannel === 'SMS';
+    }
+
+    get identifierLabel() {
+        return this.isSmsChannel ? 'Mobile number' : 'Email';
+    }
+
+    get otpIntroText() {
+        return 'We\'ll send a 6-digit code to confirm it\'s you';
+    }
+
+    handleChannelSelect(event) {
+        this.selectedChannel = event.currentTarget.dataset.channel;
+    }
+
+    /**
+     * The shared phone input emits both formats; keep the E.164 value so the
+     * server sees a country code, and fall back to the national digits.
+     */
+    handlePhoneChange(event) {
+        const { e164, national } = event.detail || {};
+        this.mobile = e164 || national || '';
+    }
+
+    async handleSendCode() {
+        const channel = this.selectedChannel || this.orgChannels[0];
+        const identifier = channel === 'SMS' ? this.mobile : this.email;
+
+        if (channel === 'Email' && !this.validateField('email', this.email)) {
+            return;
+        }
+        if (channel === 'SMS' && (this.mobile || '').length < 10) {
+            this.showError('Check your mobile number', 'Please enter your 10-digit mobile number.');
+            return;
+        }
+
+        this.isLoading = true;
+        try {
+            const context = await resolveOtpLoginContext({ identifier, channel });
+            if (!context || !context.success) {
+                this.showError('Can’t send a code', context?.message || 'Please try again.');
+                return;
+            }
+            this.otpAccountId = context.accountId;
+            this.otpChannels = context.availableChannels || [];
+            this.otpMaskedEmail = context.maskedEmail;
+            this.otpMaskedPhone = context.maskedPhone;
+
+            if (!this.otpChannels.includes(channel)) {
+                this.showError('Can’t use that method', context.message || 'Please choose another option.');
+                return;
+            }
+            await this.requestOtp();
+        } catch (error) {
+            this.showError('Something went wrong', error?.body?.message || 'Please try again.');
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    get otpBoxes() {
+        return this.otpCode.map((digit, index) => ({ key: `otp-${index}`, index, value: digit }));
+    }
+
+    get isOtpComplete() {
+        return this.otpCode.every((digit) => digit !== '');
+    }
+
+    get isVerifyDisabled() {
+        return !this.isOtpComplete || this.isLoading;
+    }
+
+    get canResendOtp() {
+        return this.resendSeconds <= 0;
+    }
+
+    get isResendDisabled() {
+        return !this.canResendOtp || this.isLoading;
+    }
+
+    get resendLabel() {
+        return this.canResendOtp ? 'Resend code' : `Resend in ${this.resendSeconds}s`;
+    }
+
+    get otpSentMessage() {
+        return this.otpMaskedTarget ? `We sent a 6-digit code to ${this.otpMaskedTarget}` : 'We sent you a 6-digit code';
+    }
+
+    switchToOtpLogin() {
+        this.otpMode = true;
+        this.resetOtpState();
+    }
+
+    switchToPasswordLogin() {
+        this.otpMode = false;
+        this.stopResendTimer();
+        this.resetOtpState();
+    }
+
+    resetOtpState() {
+        this.otpStep = 'identify';
+        this.otpChannels = [];
+        // Always land on a selected tab. Clearing this left both tabs looking
+        // inactive while the email field was already showing.
+        this.selectedChannel = this.orgChannels[0];
+        this.otpAccountId = '';
+        this.otpIdentifier = '';
+        this.otpMaskedTarget = '';
+        this.otpMaskedEmail = '';
+        this.otpMaskedPhone = '';
+        this.otpCode = ['', '', '', '', '', ''];
+        this.resendSeconds = 0;
+    }
+
+    showError(title, message) {
+        this.toastTitle = title;
+        this.toastMessage = message;
+        this.toastVariant = 'error';
+        this.showToast = true;
+        setTimeout(() => {
+            this.showToast = false;
+        }, 5000);
+    }
+
+    async requestOtp() {
+        const result = await sendLoginOtp({
+            accountId: this.otpAccountId,
+            channel: this.selectedChannel,
+        });
+        if (!result || !result.success) {
+            this.showError('Couldn’t send the code', result?.message || 'Please try again.');
+            return;
+        }
+        this.otpIdentifier = result.identifier;
+        this.otpMaskedTarget = result.maskedTarget;
+        this.otpCode = ['', '', '', '', '', ''];
+        this.otpStep = 'code';
+        this.startResendTimer();
+        setTimeout(() => this.focusOtpBox(0), 0);
+    }
+
+    async handleResendOtp() {
+        if (!this.canResendOtp || this.isLoading) {
+            return;
+        }
+        this.isLoading = true;
+        try {
+            await this.requestOtp();
+        } catch (error) {
+            this.showError('Couldn’t resend the code', error?.body?.message || 'Please try again.');
+        } finally {
+            this.isLoading = false;
+        }
+    }
+
+    startResendTimer() {
+        this.stopResendTimer();
+        this.resendSeconds = RESEND_SECONDS;
+        this.resendTimerId = setInterval(() => {
+            this.resendSeconds -= 1;
+            if (this.resendSeconds <= 0) {
+                this.stopResendTimer();
+            }
+        }, 1000);
+    }
+
+    stopResendTimer() {
+        if (this.resendTimerId) {
+            clearInterval(this.resendTimerId);
+            this.resendTimerId = undefined;
+        }
+    }
+
+    focusOtpBox(index) {
+        const box = this.template.querySelector(`[data-index="${index}"]`);
+        if (box) {
+            box.focus();
+        }
+    }
+
+    handleOtpInput(event) {
+        const index = parseInt(event.target.dataset.index, 10);
+        const digits = (event.target.value || '').replace(/[^0-9]/g, '');
+        const next = [...this.otpCode];
+        next[index] = digits.slice(-1);
+        this.otpCode = next;
+        event.target.value = next[index];
+        if (next[index] && index < OTP_LENGTH - 1) {
+            this.focusOtpBox(index + 1);
+        }
+    }
+
+    handleOtpKeyDown(event) {
+        const index = parseInt(event.target.dataset.index, 10);
+        if (event.key === 'Backspace' && !this.otpCode[index] && index > 0) {
+            this.focusOtpBox(index - 1);
+        }
+        if (event.key === 'Enter' && this.isOtpComplete) {
+            this.handleVerifyOtp();
+        }
+    }
+
+    handleOtpPaste(event) {
+        const pasted = (event.clipboardData || window.clipboardData)?.getData('text') || '';
+        const digits = pasted.replace(/[^0-9]/g, '').slice(0, OTP_LENGTH);
+        if (!digits) {
+            return;
+        }
+        event.preventDefault();
+        const next = ['', '', '', '', '', ''];
+        digits.split('').forEach((digit, i) => {
+            next[i] = digit;
+        });
+        this.otpCode = next;
+        this.template.querySelectorAll('[data-index]').forEach((box) => {
+            const boxIndex = parseInt(box.dataset.index, 10);
+            box.value = next[boxIndex];
+        });
+        this.focusOtpBox(Math.min(digits.length, OTP_LENGTH - 1));
+    }
+
+    async handleVerifyOtp() {
+        if (!this.isOtpComplete) {
+            return;
+        }
+        this.isLoading = true;
+        try {
+            const result = await verifyLoginOtp({
+                accountId: this.otpAccountId,
+                channel: this.selectedChannel,
+                identifier: this.otpIdentifier,
+                otpCode: this.otpCode.join(''),
+                startUrl: '/alumni/',
+            });
+
+            if (!result || !result.success || !result.redirectUrl) {
+                this.showError('Verification failed', result?.message || 'Please try again.');
+                this.otpCode = ['', '', '', '', '', ''];
+                this.template.querySelectorAll('[data-index]').forEach((box) => {
+                    box.value = '';
+                });
+                this.focusOtpBox(0);
+                return;
+            }
+
+            this.stopResendTimer();
+            if (result.accountId) {
+                try {
+                    window.localStorage.setItem('UserAccountId', result.accountId);
+                } catch (e) {
+                    // ignore storage errors
+                }
+            }
+            this.toastTitle = 'Login Successful!';
+            this.toastMessage = 'Your login was successful. We\'re redirecting you to your dashboard.';
+            this.toastVariant = 'success';
+            this.showToast = true;
+            setTimeout(() => {
+                window.location.href = result.redirectUrl;
+            }, 1500);
+        } catch (error) {
+            this.showError('Verification failed', error?.body?.message || 'Please try again.');
+        } finally {
+            this.isLoading = false;
+        }
     }
 
 }

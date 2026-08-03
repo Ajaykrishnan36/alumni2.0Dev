@@ -232,7 +232,7 @@ export default class KenAdminDashboard extends NavigationMixin(LightningElement)
 
     decorateFunnel(f) {
         const FILTER_KEYS = {
-            lifecycle: ['life-leads', 'life-verified', 'life-registered', 'life-onboarding', 'life-active']
+            lifecycle: ['life-leads', 'life-registered', 'life-onboarding', 'life-active']
         };
         const keys = FILTER_KEYS[f.funnelKey] || [];
         return {
@@ -307,6 +307,40 @@ export default class KenAdminDashboard extends NavigationMixin(LightningElement)
         if (!this._switchFlexipageTab('Report')) {
             this._switchFlexipageTab('Reports');
         }
+    }
+
+    /**
+     * The admin console is one FlexiPage whose tabset always starts on
+     * Dashboard, and its selection is not part of the URL. So when the address
+     * bar describes a Master Records screen — a refresh, or a pasted deep link
+     * like ?c__page=alumni360&c__alumni=… — reopen that sub-tab. kenAdminAlumni
+     * then restores the rest of the screen from the same params as it mounts.
+     *
+     * This runs only on the very first render: the tab anchors have to exist
+     * before they can be clicked, and once the admin has moved around by hand
+     * their choice must not be overridden.
+     */
+    renderedCallback() {
+        if (this._deepLinkChecked) return;
+        this._deepLinkChecked = true;
+        let page = '';
+        try {
+            const params = new URLSearchParams(window.location.search);
+            page = params.get('c__page') || params.get('page') || '';
+        } catch (e) {
+            return;
+        }
+        // page=list counts too: it means the admin was on the Master Records
+        // list itself, which is just as much "where I was" as the 360 is.
+        page = page.replace(/^['"]|['"]$/g, '').trim();
+        if (!page) return;
+        // The tabset can render a beat after this component does.
+        let attempts = 0;
+        const tryOpen = () => {
+            if (this._switchFlexipageTab('Master Records')) return;
+            if (++attempts < 10) setTimeout(tryOpen, 150);
+        };
+        tryOpen();
     }
 
     _switchFlexipageTab(label) {

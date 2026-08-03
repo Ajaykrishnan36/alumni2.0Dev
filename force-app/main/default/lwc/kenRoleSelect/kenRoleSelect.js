@@ -8,8 +8,6 @@ import KenLogo from '@salesforce/resourceUrl/LoginKen';
 const STATUS_INITIAL_LOGIN_DONE = 'Initial Login Done';
 const ONBOARDING_STATUSES = new Set([
     'Unregistered',
-    'Verified',
-    'Onboarding Pending',
     'Onboarding In Progress'
 ]);
 

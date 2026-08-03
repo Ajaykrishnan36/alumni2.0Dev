@@ -3,6 +3,7 @@ import { LightningElement, api, track } from 'lwc';
 export default class KenPhotoCard extends LightningElement {
     @api photo;
     @track showMenu = false;
+    @track thumbnailFailed = false;
 
     constructor() {
         super();
@@ -50,6 +51,18 @@ export default class KenPhotoCard extends LightningElement {
 
     get isImage() {
         return this.photo?.isImage !== false;
+    }
+
+    get thumbnailUrl() {
+        return this.photo?.thumbnailUrl || '';
+    }
+
+    get showThumbnail() {
+        return !this.isImage && !!this.thumbnailUrl && !this.thumbnailFailed;
+    }
+
+    get showPlaceholder() {
+        return !this.isImage && !this.showThumbnail;
     }
 
     get fileName() {
@@ -108,5 +121,9 @@ export default class KenPhotoCard extends LightningElement {
 
     handleProfileImageError(event) {
         event.target.src = '/assets/images/default-profile.png';
+    }
+
+    handleThumbnailError() {
+        this.thumbnailFailed = true;
     }
 }

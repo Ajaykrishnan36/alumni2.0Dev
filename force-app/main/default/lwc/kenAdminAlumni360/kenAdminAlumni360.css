@@ -136,8 +136,6 @@
 .factgrid .k { color: var(--ink-3); text-transform: uppercase; font-size: 10.5px; letter-spacing: .08em; font-weight: 600; margin-bottom: 2px; }
 .factgrid .v { color: var(--ink); font-weight: 500; }
 .factgrid .v svg { vertical-align: -2px; margin-right: 4px; color: var(--ink-3); }
-.verify { margin-top: 14px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
-.verify .ok { color: var(--c-emerald-700); }
 .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-weight: 700; font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; border: 1px solid transparent; }
 .pill.emerald { background: var(--c-emerald-soft); color: var(--c-emerald-700); border-color: var(--c-emerald-border); }

@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
-import getMentorshipPreferences from '@salesforce/apex/KenSettingsController.getMentorshipPreferences';
-import saveMentorshipPreferences from '@salesforce/apex/KenSettingsController.saveMentorshipPreferences';
+import getMentorshipPreferences from '@salesforce/apex/KenProfileSettingsController.getMentorshipPreferences';
+import saveMentorshipPreferences from '@salesforce/apex/KenProfileSettingsController.saveMentorshipPreferences';
 
 const DAYS_OPTIONS      = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const EXPERTISE_OPTIONS = ['Project Management', 'Design', 'Development'];

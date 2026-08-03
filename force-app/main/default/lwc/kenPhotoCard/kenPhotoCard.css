@@ -30,6 +30,22 @@
     display: block;
 }
 
+.thumbnail-filename-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 12px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+
 .file-placeholder {
     width: 100%;
     height: 100%;

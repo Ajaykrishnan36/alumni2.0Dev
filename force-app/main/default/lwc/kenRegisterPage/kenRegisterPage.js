@@ -372,8 +372,8 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
         }
 
         if (this.yearOfEnrollment && this.gradYear
-            && parseInt(this.yearOfEnrollment, 10) >= parseInt(this.gradYear, 10)) {
-            this.showErrorToast('Invalid years', 'Year of enrollment must be earlier than the year of graduation.');
+            && parseInt(this.yearOfEnrollment, 10) > parseInt(this.gradYear, 10)) {
+            this.showErrorToast('Invalid years', 'Year of enrollment cannot be later than the year of graduation.');
             return;
         }
 

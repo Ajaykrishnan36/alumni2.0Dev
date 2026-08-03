@@ -5,6 +5,7 @@ export default class KenPhotoDetailModal extends LightningElement {
     @api photo = null;
     @api allPhotos = [];
     @track currentPhotoIndex = 0;
+    @track thumbnailFailedId = null;
 
     constructor() {
         super();
@@ -62,6 +63,18 @@ export default class KenPhotoDetailModal extends LightningElement {
 
     get isImage() {
         return this.currentPhoto?.isImage !== false;
+    }
+
+    get thumbnailUrl() {
+        return this.currentPhoto?.thumbnailUrl || '';
+    }
+
+    get showThumbnail() {
+        return !this.isImage && !!this.thumbnailUrl && this.thumbnailFailedId !== this.currentPhoto?.id;
+    }
+
+    get showPlaceholder() {
+        return !this.isImage && !this.showThumbnail;
     }
 
     get hasPrevious() {
@@ -128,5 +141,9 @@ export default class KenPhotoDetailModal extends LightningElement {
 
     handleProfileImageError(event) {
         event.target.src = '/assets/images/default-profile.png';
+    }
+
+    handleThumbnailError() {
+        this.thumbnailFailedId = this.currentPhoto?.id;
     }
 }

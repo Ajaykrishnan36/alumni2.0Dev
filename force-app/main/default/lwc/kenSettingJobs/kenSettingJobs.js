@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
-import getJobPreferences from '@salesforce/apex/KenSettingsController.getJobPreferences';
-import saveJobPreferences from '@salesforce/apex/KenSettingsController.saveJobPreferences';
+import getJobPreferences from '@salesforce/apex/KenProfileSettingsController.getJobPreferences';
+import saveJobPreferences from '@salesforce/apex/KenProfileSettingsController.saveJobPreferences';
 
 const ALL_JOB_TITLES  = ['Software Engineer', 'Senior consultant', 'UX designer', 'Product Designer'];
 const ALL_SKILLS      = ['C', 'C++', 'JAVA'];

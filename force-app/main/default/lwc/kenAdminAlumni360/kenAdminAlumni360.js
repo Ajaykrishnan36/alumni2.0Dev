@@ -34,6 +34,15 @@ export default class KenAdminAlumni360 extends LightningElement {
     // Ken_Alumni_CRM__c Id of the alumnus to render.
     @api recordId;
 
+    // Which tab to open on first render — set from the URL by the host so a
+    // refresh lands on the same tab. Only seeds the initial value; user clicks
+    // take over from there.
+    @api
+    get initialTab() { return this.activeTab; }
+    set initialTab(value) {
+        if (value && value !== this.activeTab) this.activeTab = value;
+    }
+
     @track data;
     @track error;
     @track loading = true;
@@ -60,8 +69,9 @@ export default class KenAdminAlumni360 extends LightningElement {
     // Which displayed labels map to which editable field + input type. Rows whose
     // label isn't here stay read-only even in edit mode (they're derived values).
     SNAPSHOT_FIELDS = {
-        'Class of':         { key: 'classOf',        type: 'text', crm: true },
-        'Current employer': { key: 'currentCompany', type: 'text', crm: true }
+        'Registration number': { key: 'registrationNumber', type: 'text', crm: true },
+        'Class of':            { key: 'classOf',            type: 'text', crm: true },
+        'Current employer':    { key: 'currentCompany',     type: 'text', crm: true }
     };
     CONTACT_FIELDS = {
         'Phone':            { key: 'phone',       type: 'tel' },
@@ -664,5 +674,7 @@ export default class KenAdminAlumni360 extends LightningElement {
         if (this.eduEditing) this.handleCancelAcademic();
         if (this.empEditing) this.handleCancelCareer();
         this.activeTab = event.currentTarget.dataset.tab;
+        // Let the host mirror the open tab into the URL so a refresh returns here.
+        this.dispatchEvent(new CustomEvent('tabchange', { detail: { tab: this.activeTab } }));
     }
 }

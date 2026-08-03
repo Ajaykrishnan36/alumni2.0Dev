@@ -1,6 +1,6 @@
 import { LightningElement, track } from 'lwc';
-import getPreferences from '@salesforce/apex/KenSettingsController.getPreferences';
-import savePreferences from '@salesforce/apex/KenSettingsController.savePreferences';
+import getPreferences from '@salesforce/apex/KenProfileSettingsController.getPreferences';
+import savePreferences from '@salesforce/apex/KenProfileSettingsController.savePreferences';
 
 const COMM_OPTIONS   = ['Email', 'SMS', 'In-app'];
 const NOTIFY_OPTIONS = ['Events', 'Jobs', 'Mentorship requests', 'Fundraise', 'Groups', 'Survey', 'Service & Support', 'Updates'];

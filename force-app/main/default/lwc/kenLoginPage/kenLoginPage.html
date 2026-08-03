@@ -12,6 +12,7 @@
 		<p class="login-title">Login</p>
 		<p class="login-subtitle">Continue your journey with the alumni community</p>
 
+		<template if:true={showPasswordLogin}>
 		<div class="slds-grid slds-wrap">
 			<div class="slds-col slds-size_1-of-1">
 				<div class="field-label">Email</div>
@@ -56,16 +57,89 @@
 			<lightning-button variant="brand" disable-animation="true" label="Login" type="submit" onclick={handleLogin} stretch
 				class="studentportal-BlueButtonLogin"></lightning-button>
 		</div>
+		<template if:true={showOtpSwitchLink}>
+			<div class="otp-switch-container">
+				<button type="button" class="otp-switch-link" onclick={switchToOtpLogin}>Sign in with a one-time password</button>
+			</div>
+		</template>
+		</template>
+
+		<template if:true={showOtpLogin}>
+			<template if:true={isOtpIdentifyStep}>
+				<p class="otp-help-text">{otpIntroText}</p>
+
+				<template if:true={showChannelTabs}>
+					<div class="otp-segment" role="tablist">
+						<template for:each={channelOptions} for:item="option">
+							<button key={option.value} type="button" role="tab" class={option.tabClass}
+								data-channel={option.value} aria-selected={option.checked}
+								onclick={handleChannelSelect}>{option.label}</button>
+						</template>
+					</div>
+				</template>
+
+				<div class="slds-grid slds-wrap">
+					<div class="slds-col slds-size_1-of-1">
+						<div class="field-label">{identifierLabel}</div>
+						<template if:false={isSmsChannel}>
+							<lightning-input id="otpEmail" label="Email" type="email" placeholder="Email" data-id="email"
+								value={email} variant="label-hidden" oninput={handleInputChange}
+								onchange={handleInputChange} onblur={handleOnBlur} class="studentportalInputsLogin">
+							</lightning-input>
+						</template>
+						<template if:true={isSmsChannel}>
+							<c-ken-custom-phone-input value={mobile} placeholder=""
+								initial-country={defaultDialCountry} onphonechange={handlePhoneChange}
+								class="otp-phone-component">
+							</c-ken-custom-phone-input>
+						</template>
+					</div>
+				</div>
+
+				<div style="margin-top: 25px;">
+					<lightning-button variant="brand" disable-animation="true" label="Send code"
+						onclick={handleSendCode} stretch class="studentportal-BlueButtonLogin"></lightning-button>
+				</div>
+			</template>
+
+			<template if:true={isOtpCodeStep}>
+				<p class="otp-help-text">{otpSentMessage}</p>
+				<div class="otp-input-row" onpaste={handleOtpPaste}>
+					<template for:each={otpBoxes} for:item="box">
+						<input key={box.key} class="otp-input" type="text" inputmode="numeric" maxlength="1"
+							data-index={box.index} value={box.value} oninput={handleOtpInput}
+							onkeydown={handleOtpKeyDown} />
+					</template>
+				</div>
+				<div class="otp-resend-row">
+					<button type="button" class="otp-resend-link" onclick={handleResendOtp}
+						disabled={isResendDisabled}>{resendLabel}</button>
+				</div>
+				<div style="margin-top: 25px;">
+					<lightning-button variant="brand" disable-animation="true" label="Verify and sign in"
+						onclick={handleVerifyOtp} disabled={isVerifyDisabled} stretch
+						class="studentportal-BlueButtonLogin"></lightning-button>
+				</div>
+			</template>
+
+			<template if:true={showPasswordSwitchLink}>
+				<div class="otp-switch-container">
+					<button type="button" class="otp-switch-link" onclick={switchToPasswordLogin}>Sign in with your password instead</button>
+				</div>
+			</template>
+		</template>
 		<div class="divider-container">
 			<hr class="divider-line" />
 			<span class="divider-text">(or continue with)</span>
 			<hr class="divider-line" />
 		</div>
 		<div class="sso-buttons-container">
-			<div class="google-button" onclick={handleLinkedInLogin}>
-				<img src={linkedinLogo} alt="LinkedIn" class="google-logo" />
-				<span>LinkedIn</span>
-			</div>
+			<template if:true={showLinkedInLogin}>
+				<div class="google-button" onclick={handleLinkedInLogin}>
+					<img src={linkedinLogo} alt="LinkedIn" class="google-logo" />
+					<span>LinkedIn</span>
+				</div>
+			</template>
 			<template if:true={showGoogleLogin}>
 				<div class="google-button" onclick={handleGoogleLogin}>
 					<svg class="google-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

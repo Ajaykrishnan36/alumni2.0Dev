@@ -116,6 +116,25 @@
     font-weight: 500;
 }
 
+.file-thumbnail-link {
+    position: relative;
+    display: block;
+    width: 100%;
+    text-decoration: none;
+}
+
+.file-thumbnail-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px 16px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+}
+
 .modal-footer {
     display: flex;
     justify-content: space-between;

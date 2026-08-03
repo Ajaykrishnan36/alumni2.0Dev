@@ -1,9 +1,10 @@
 .album-card {
     position: relative;
     background-color: #f3f4f6;
-    border-radius: 12px;
+    border-radius: var(--portal-radius, 12px);
     padding: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
     transition: box-shadow 0.2s, transform 0.2s;
     cursor: pointer;
     display: flex;
@@ -12,7 +13,7 @@
 }
 
 .album-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(16, 24, 40, 0.15);
     transform: translateY(-2px);
 }
 
@@ -45,10 +46,10 @@
     position: absolute;
     top: 48px;
     right: 12px;
-    background-color: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background-color: var(--portal-surface, #ffffff);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e5e7eb);
+    border-radius: var(--portal-field-radius, 8px);
+    box-shadow: var(--portal-popover-shadow, 0 16px 40px rgba(16, 24, 40, 0.18));
     z-index: 20;
     min-width: 120px;
     overflow: hidden;

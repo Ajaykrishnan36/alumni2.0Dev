@@ -1,0 +1,33 @@
+<template>
+    <template if:true={show}>
+        <div class="preview-modal-overlay" onclick={handleOverlayClick}>
+            <div class="preview-modal-container" onclick={handleContentClick}>
+                <button type="button" class="preview-close-button" onclick={handleClose} aria-label="Close preview">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18" stroke="#373A45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 6L18 18" stroke="#373A45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="preview-modal-header">
+                    <p class="preview-modal-title">{modalTitle}</p>
+                </div>
+                <div class="preview-modal-body">
+                    <template if:true={isImage}>
+                        <img src={fileUrl} alt={modalTitle} class="preview-image" />
+                    </template>
+                    <template if:true={isPdf}>
+                        <iframe src={fileUrl} title={modalTitle} class="preview-iframe"></iframe>
+                    </template>
+                    <template if:true={isOther}>
+                        <div class="preview-fallback">
+                            <p class="preview-fallback-text">Preview isn't available for this file type.</p>
+                            <a href={fileUrl} target="_blank" rel="noopener noreferrer" class="preview-fallback-link">
+                                Open {modalTitle}
+                            </a>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>

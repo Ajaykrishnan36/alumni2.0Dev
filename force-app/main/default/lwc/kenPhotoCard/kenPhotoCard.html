@@ -5,7 +5,16 @@
             <template if:true={isImage}>
                 <img src={photoImageUrl} alt="Photo" class="photo-image" />
             </template>
-            <template if:false={isImage}>
+            <template if:true={showThumbnail}>
+                <img
+                    src={thumbnailUrl}
+                    alt={fileName}
+                    class="photo-image"
+                    onerror={handleThumbnailError}
+                />
+                <div class="thumbnail-filename-badge">{fileName}</div>
+            </template>
+            <template if:true={showPlaceholder}>
                 <div class="file-placeholder">
                     <lightning-icon icon-name="doctype:attachment" size="large"></lightning-icon>
                     <p class="file-placeholder-name">{fileName}</p>

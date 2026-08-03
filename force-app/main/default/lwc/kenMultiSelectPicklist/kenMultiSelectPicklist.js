@@ -27,7 +27,10 @@ export default class KenMultiSelectPicklist extends LightningElement {
 
     isOpen = false;
     searchText = '';
+    _selfInteraction = false;
+    _closeTimer;
     _boundDocClick;
+    _boundDocMouseDown;
     _boundGlobalOpen;
     _instanceId = `${Date.now()}_${Math.floor(Math.random() * 100000)}`;
 
@@ -44,6 +47,12 @@ export default class KenMultiSelectPicklist extends LightningElement {
         // would never reach this listener, so it'd never close.
         this._boundDocClick = this.handleDocumentClick.bind(this);
         document.addEventListener('click', this._boundDocClick, true);
+        // Runs before the component's own mousedown handler, so the flag always
+        // reflects only where the most recent mousedown landed.
+        this._boundDocMouseDown = () => {
+            this._selfInteraction = false;
+        };
+        document.addEventListener('mousedown', this._boundDocMouseDown, true);
         this._boundGlobalOpen = this.handleGlobalOpen.bind(this);
         window.addEventListener('ms-open', this._boundGlobalOpen);
         getPrimaryColor().then(color => {
@@ -57,7 +66,9 @@ export default class KenMultiSelectPicklist extends LightningElement {
 
     disconnectedCallback() {
         document.removeEventListener('click', this._boundDocClick, true);
+        document.removeEventListener('mousedown', this._boundDocMouseDown, true);
         window.removeEventListener('ms-open', this._boundGlobalOpen);
+        this.cancelPendingClose();
     }
 
     get comboboxClass() {
@@ -124,6 +135,7 @@ export default class KenMultiSelectPicklist extends LightningElement {
 
     handleSelectAllClick(event) {
         event.stopPropagation();
+        this.cancelPendingClose();
         if (this.disabled) {
             return;
         }
@@ -142,6 +154,7 @@ export default class KenMultiSelectPicklist extends LightningElement {
 
     toggleOpen(event) {
         event.stopPropagation();
+        this.cancelPendingClose();
         if (this.disabled) {
             return;
         }
@@ -158,6 +171,7 @@ export default class KenMultiSelectPicklist extends LightningElement {
 
     handleSearchInput(event) {
         event.stopPropagation();
+        this.cancelPendingClose();
         const nextValue = event.detail && typeof event.detail.value === 'string'
             ? event.detail.value
             : event.target.value;
@@ -169,10 +183,12 @@ export default class KenMultiSelectPicklist extends LightningElement {
 
     stopPropagation(event) {
         event.stopPropagation();
+        this.cancelPendingClose();
     }
 
     handleOptionRowClick(event) {
         event.stopPropagation();
+        this.cancelPendingClose();
         if (this.disabled) {
             return;
         }
@@ -231,15 +247,77 @@ export default class KenMultiSelectPicklist extends LightningElement {
         );
     }
 
+    /**
+     * Marks an interaction as originating inside this component and cancels any
+     * close the document listener has already queued.
+     * The document listener runs on the capture phase, where `event.target` is
+     * retargeted to the outermost host and `composedPath()` is filtered inside
+     * base-component shadow trees (the search icon, the pill remove icons), so
+     * containment checks alone read an inside click as "outside". mousedown does
+     * still reach this component's own DOM, so it is a reliable "the user is
+     * interacting with me" signal for the click that follows it.
+     */
+    markSelfInteraction() {
+        this._selfInteraction = true;
+        this.cancelPendingClose();
+    }
+
+    /**
+     * Closes the dropdown when the click happened outside this component.
+     * The close is deferred by a tick so that any handler inside this
+     * component's own subtree — which only runs after this capture-phase
+     * listener — can still cancel it via markSelfInteraction/cancelPendingClose.
+     */
     handleDocumentClick(event) {
-        // Close if click happens outside this component.
-        if (!this.isOpen) {
+        const wasSelfInteraction = this._selfInteraction;
+        this._selfInteraction = false;
+        if (!this.isOpen || wasSelfInteraction || this.isPointerInside(event)) {
             return;
         }
         const root = this.template && this.template.host;
         const path = event.composedPath ? event.composedPath() : [];
         if (root && !root.contains(event.target) && !path.includes(root)) {
+            this.schedulePendingClose();
+        }
+    }
+
+    /**
+     * Hit-tests the pointer against the trigger and dropdown boxes. Coordinates
+     * survive shadow-DOM retargeting, so this holds even when the event target
+     * and composed path are unusable. Keyboard-generated clicks carry no
+     * coordinates and are reported as outside.
+     */
+    isPointerInside(event) {
+        const x = event.clientX;
+        const y = event.clientY;
+        if (typeof x !== 'number' || typeof y !== 'number' || (x === 0 && y === 0)) {
+            return false;
+        }
+        const boxes = [
+            this.template.querySelector('.slds-combobox'),
+            this.template.querySelector('.slds-dropdown')
+        ];
+        return boxes.some((el) => {
+            if (!el) {
+                return false;
+            }
+            const r = el.getBoundingClientRect();
+            return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+        });
+    }
+
+    schedulePendingClose() {
+        this.cancelPendingClose();
+        this._closeTimer = setTimeout(() => {
+            this._closeTimer = null;
             this.isOpen = false;
+        }, 0);
+    }
+
+    cancelPendingClose() {
+        if (this._closeTimer) {
+            clearTimeout(this._closeTimer);
+            this._closeTimer = null;
         }
     }
 

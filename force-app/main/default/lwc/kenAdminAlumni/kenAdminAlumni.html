@@ -428,9 +428,6 @@
             </div>
             <div class="lead-action-bar">
                 <button class="btn-secondary" disabled={isConvertDisabled} onclick={handleConvertSelected}>{convertButtonLabel}</button>
-                <template lwc:if={convertSuccessMessage}>
-                    <span class="convert-success-toast">{convertSuccessMessage}</span>
-                </template>
             </div>
             <div class="master-label">Master Data</div>
             <div class="master-count">{masterCountLeads}</div>
@@ -1107,7 +1104,7 @@
                                         <select id="mergeTargetSelectLead" class="merge-target-select" onchange={handleMultiTargetChange}>
                                             <option value="" selected={isNoMultiTargetSelected}>Choose a candidate…</option>
                                             <template for:each={multiTargetOptions} for:item="opt">
-                                                <option key={opt.key} value={opt.key} selected={opt.isSelected}>{opt.name}</option>
+                                                <option key={opt.key} value={opt.key} selected={opt.isSelected}>{opt.label}</option>
                                             </template>
                                         </select>
                                         <button class="merge-btn merge-btn-primary merge-target-btn" disabled={isMultiMergeDisabled} title={multiMergeButtonTitle} onclick={handleConfirmMultiMerge}>Merge</button>
@@ -1121,7 +1118,12 @@
                                                 <div class="multi-compare-label-col">Field</div>
                                                 <div class="multi-compare-col multi-compare-incoming">New Lead</div>
                                                 <template for:each={mergeMultiReviewMasterNames} for:item="master">
-                                                    <div key={master.key} class="multi-compare-col">{master.name}</div>
+                                                    <div key={master.key} class="multi-compare-col">
+                                                        <div>
+                                                            <div>{master.name}</div>
+                                                            <div class="multi-compare-id">{master.key}</div>
+                                                        </div>
+                                                    </div>
                                                 </template>
                                                 <div class="multi-compare-col multi-compare-merged-head">Merged</div>
                                             </div>
@@ -1166,7 +1168,12 @@
                                             <div key={cand.alumniId} class="merge-item">
                                                 <input type="checkbox" class="merge-item-check" data-id={cand.alumniId} checked={cand.selected} onchange={handleToggleCandidate} />
                                                 <div class="avatar-circle">{cand.initials}</div>
-                                                <div class="info"><div class="nm">{cand.name}</div><div class="det">{cand.detail}</div></div>
+                                                <div class="info">
+                                                    <div class="nm">{cand.name}
+                                                        <template lwc:if={cand.matchLabel}><span class="merge-match-badge">{cand.matchLabel}</span></template>
+                                                    </div>
+                                                    <div class="det">{cand.detail}</div>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
@@ -1324,7 +1331,8 @@
                 <span class="alumni360-title">Alumni 360</span>
             </div>
             <div class="alumni360-shell">
-                <c-ken-admin-alumni360 record-id={selectedAlumniId} onclose={handleClose360}></c-ken-admin-alumni360>
+                <c-ken-admin-alumni360 record-id={selectedAlumniId} initial-tab={alumni360Tab}
+                    onclose={handleClose360} ontabchange={handleAlumni360TabChange}></c-ken-admin-alumni360>
             </div>
         </div>
     </template>

@@ -89,6 +89,8 @@
 .add-photos-button {
     --slds-c-button-brand-color-background: var(--primary-color);
     --slds-c-button-brand-color-background-hover: var(--primary-color);
+    --slds-c-button-text-color: var(--portal-on-primary, #ffffff);
+    --slds-c-button-radius-border: var(--portal-field-radius, 8px);
 }
 
 /* Album Photos */

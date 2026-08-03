@@ -44,7 +44,23 @@
                         <template if:true={isImage}>
                             <img src={photoImageUrl} alt={photoTitle} class="full-photo" />
                         </template>
-                        <template if:false={isImage}>
+                        <template if:true={showThumbnail}>
+                            <a
+                                href={photoImageUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="file-thumbnail-link"
+                            >
+                                <img
+                                    src={thumbnailUrl}
+                                    alt={photoTitle}
+                                    class="full-photo"
+                                    onerror={handleThumbnailError}
+                                />
+                                <span class="file-thumbnail-caption">Open {photoTitle}</span>
+                            </a>
+                        </template>
+                        <template if:true={showPlaceholder}>
                             <a
                                 href={photoImageUrl}
                                 target="_blank"
