@@ -195,38 +195,105 @@
 }
 
 @media (max-width: 768px) {
+    /* Unlock viewport lock so All businesses cards are not clipped to 0 height */
     .business-directory-page {
-        padding: 16px;
+        height: auto;
+        min-height: calc(100vh - 85px);
+        overflow: visible;
+        padding: 10px;
+        flex-direction: column;
+    }
+
+    .business-directory-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+        width: 100%;
     }
 
     .section-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: 12px;
     }
 
     .header-controls {
         width: 100%;
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px;
+        justify-content: flex-start;
     }
 
-    .business-cards-grid {
-        grid-template-columns: 1fr;
+    c-ken-search-bar {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .section-title,
+    .my-businesses-title {
+        font-size: 16px !important;
+        line-height: 1.35;
     }
 
     .all-businesses-section {
-        height: 100%;
-        min-height: 0;
-        padding: 16px;
+        height: auto;
+        min-height: auto;
+        overflow: visible;
+        padding: 12px;
+        gap: 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Critical: stop flex collapse that hid the All businesses cards */
+    .business-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        flex: none;
+        min-height: auto;
+        height: auto;
+        overflow: visible;
+        width: 100%;
     }
 
     .my-businesses-section {
-        height: 100%;
-        min-height: 0;
+        height: auto;
+        min-height: auto;
+        overflow: visible;
+        width: 100%;
     }
 
-.my-businesses-list {
-    padding: 16px;
+    .my-businesses-list {
+        padding: 12px;
+        height: auto;
+        min-height: auto;
+        overflow: visible;
+        flex: none;
+    }
+
+    .my-businesses-cards-container {
+        flex: none;
+        min-height: auto;
+        overflow: visible;
+        height: auto;
+    }
+
+    .filters-popup {
+        width: calc(100% - 20px);
+        max-width: calc(100% - 20px);
+        left: 10px !important;
+        right: 10px !important;
+        padding: 16px;
+        min-height: auto;
+    }
+
+    .filters-title {
+        font-size: 16px !important;
     }
 }
 

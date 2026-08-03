@@ -4,6 +4,10 @@
         <members>kenAllEvents</members>
         <members>kenAlumniCard</members>
         <members>kenBasicProfile</members>
+        <members>kenBusinessDirectory</members>
+        <members>kenBusinessDetailView</members>
+        <members>kenFeaturedBusinesses</members>
+        <members>kenListYourBusiness</members>
         <members>kenEducationStep</members>
         <members>kenEmploymentCareerInfo</members>
         <members>kenEngagementContributions</members>
@@ -32,6 +36,7 @@
         <members>kenSettingMentorship</members>
         <members>kenSettingPersonalDetails</members>
         <members>kenSettingPreferences</members>
+        <members>kenSimilarBusinesses</members>
         <members>kenSurveys</members>
         <name>LightningComponentBundle</name>
     </types>

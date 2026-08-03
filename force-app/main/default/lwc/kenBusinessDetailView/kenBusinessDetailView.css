@@ -870,39 +870,141 @@
 }
 
 @media (max-width: 768px) {
-    .business-detail-page {
-        padding: 16px;
+    .business-detail-page,
+    .business-detail-page.standalone-page {
+        height: auto;
+        min-height: calc(100vh - 85px);
+        max-height: none;
+        overflow: visible;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .business-detail-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: auto;
+        min-height: 0;
+        overflow: visible;
+    }
+
+    .main-content {
+        height: auto;
+        min-height: auto;
+        overflow: visible;
+        padding: 12px;
+        gap: 16px;
     }
 
     .banner-section {
-        height: 200px;
+        height: 140px;
+        border-radius: 12px;
+    }
+
+    .business-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: -40px;
+        gap: 12px;
+    }
+
+    .logo-container {
+        width: 88px;
+        height: 88px;
+    }
+
+    .business-header-info {
+        align-items: center;
+        width: 100%;
+        padding-top: 0;
+        text-align: center;
     }
 
     .business-name-large {
-        font-size: 24px;
+        font-size: 16px !important;
+        line-height: 1.35;
+        word-break: break-word;
+    }
+
+    .business-location-large,
+    .about-paragraph,
+    .contact-item,
+    .contact-text {
+        font-size: 14px !important;
+    }
+
+    .about-title {
+        font-size: 16px !important;
+    }
+
+    .about-section {
+        overflow: visible;
+        flex: none;
+        min-height: auto;
+    }
+
+    .about-content {
+        overflow: visible;
+        flex: none;
+        min-height: auto;
+        padding-right: 0;
     }
 
     .action-buttons {
         flex-direction: column;
         width: 100%;
+        align-items: stretch;
+        gap: 8px;
+        padding-top: 0;
     }
 
     .get-directions-btn,
-    .express-interest-btn {
+    .express-interest-btn,
+    .edit-business-btn,
+    .deactivate-btn,
+    .owner-action-btn {
         width: 100%;
+        box-sizing: border-box;
+        font-size: 14px !important;
+    }
+
+    .contact-bar {
+        flex-wrap: wrap;
+        gap: 8px;
+        justify-content: center;
+    }
+
+    .owner-actions,
+    .status-actions-row {
+        flex-wrap: wrap;
+        width: 100%;
+        gap: 8px;
+        justify-content: center;
     }
 
     .sidebar {
         height: auto;
         max-height: none;
+        min-height: auto;
+        overflow: visible;
         position: relative;
+        flex: none;
+    }
+
+    .sidebar c-ken-similar-businesses {
+        flex: none;
+        height: auto;
+        min-height: auto;
     }
 
     .list-your-business-wrapper {
-        width: calc(100vw - 32px);
-        max-width: 380px;
-        right: 16px;
-        bottom: 16px;
+        width: 100%;
+        max-width: 100%;
+        right: auto;
+        bottom: auto;
+        position: relative;
     }
 }
 

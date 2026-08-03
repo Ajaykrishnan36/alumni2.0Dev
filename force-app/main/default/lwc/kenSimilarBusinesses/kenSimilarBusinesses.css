@@ -141,3 +141,53 @@
     margin: 8px 0;
     text-align: center;
 }
+
+/* ── Mobile similar businesses ── */
+@media screen and (max-width: 768px) {
+    .similar-businesses-panel {
+        height: auto;
+        min-height: auto;
+        padding: 12px;
+        gap: 10px;
+        overflow: visible;
+    }
+
+    .panel-title {
+        font-size: 16px !important;
+        line-height: 1.35;
+    }
+
+    .view-more-btn {
+        font-size: 12px !important;
+        padding: 5px 10px;
+    }
+
+    .similar-businesses-list {
+        max-height: none;
+        overflow: visible;
+        gap: 10px;
+    }
+
+    .similar-business-item {
+        padding: 12px;
+    }
+
+    .business-icon {
+        width: 44px;
+        height: 44px;
+    }
+
+    .business-name-small {
+        font-size: 14px !important;
+        line-height: 1.3;
+        word-break: break-word;
+    }
+
+    .business-location-small {
+        font-size: 12px !important;
+    }
+
+    .business-category-tag {
+        font-size: 11px !important;
+    }
+}

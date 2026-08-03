@@ -65,8 +65,16 @@
 }
 
 @media (max-width: 768px) {
+    .list-your-business-card {
+        padding: 12px;
+    }
+
+    .card-title {
+        font-size: 16px !important;
+    }
+
     .illustration-container {
-        height: 150px;
+        height: 140px;
     }
 
     .monitor-screen {
