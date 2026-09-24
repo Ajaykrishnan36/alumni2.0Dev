@@ -1,5 +1,33 @@
 <template>
     <div class="groups-container">
+        <!-- Mobile filter modal (portal — above all stacking contexts so buttons work) -->
+        <template if:true={showMobileFilterModal}>
+            <div class="filter-portal" data-filter-root="true">
+                <div class="filter-overlay" onclick={handleCloseFilters}></div>
+                <div class="filter-popover filter-popover--modal" onclick={handleFilterWrapClick}>
+                    <h2 class="filter-popover-title">Filters</h2>
+                    <div class="filter-popover-body">
+                        <label class="filter-label">Type</label>
+                        <select class="filter-select" onchange={handleGroupTypeFilterChange}>
+                            <option value="all"     selected={filterTypeAll}>All</option>
+                            <option value="private" selected={filterTypePrivate}>Private</option>
+                            <option value="public"  selected={filterTypePublic}>Public</option>
+                        </select>
+                        <label class="filter-label">Owned By</label>
+                        <select class="filter-select" onchange={handleOwnershipFilterChange}>
+                            <option value="all"    selected={filterOwnerAll}>All</option>
+                            <option value="admin"  selected={filterOwnerAdmin}>Admin</option>
+                            <option value="alumni" selected={filterOwnerAlumni}>Alumni</option>
+                        </select>
+                    </div>
+                    <div class="filter-popover-actions">
+                        <button type="button" class="filter-reset-btn" onclick={handleClearFilters}>Reset</button>
+                        <button type="button" class="filter-apply-btn" onclick={handleApplyFilters}>Apply</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <template if:false={showGroupDetail}>
         <div class="initial-layout">
             <div class="main-discover">
@@ -22,8 +50,9 @@
                             <template if:true={hasActiveFilters}>
                                 <span class="filter-count-badge">{filterCountLabel}</span>
                             </template>
-                            <template if:true={showFilterPanel}>
-                                <div class="filter-popover">
+                            <!-- Desktop dropdown (stays next to Filters button) -->
+                            <template if:true={showDesktopFilterDropdown}>
+                                <div class="filter-popover filter-popover--dropdown" onclick={handleFilterWrapClick}>
                                     <h2 class="filter-popover-title">Filters</h2>
                                     <div class="filter-popover-body">
                                         <label class="filter-label">Type</label>
@@ -48,6 +77,12 @@
                         </div>
                     </div>
                 </div>
+
+                <template if:true={hasNoDiscoverResults}>
+                    <div class="discover-empty">
+                        <p class="discover-empty-text">No groups match your filters</p>
+                    </div>
+                </template>
 
                 <!-- Desktop: row 1 of discover cards, then suggested banner pinned to row 2, then the rest -->
                 <div class="discover-desktop">

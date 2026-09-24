@@ -325,7 +325,6 @@
 .mobile-right {
     display: flex;
     align-items: center;
-    gap: 1rem;
 }
 
 .mobile-notif-btn {
@@ -360,6 +359,13 @@
 .mobile-menu-btn svg {
     width: 32px;
     height: 32px;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn svg {
+        width: 24px;
+        height: 24px;
+    }
 }
 
 /* Mobile Navigation Drawer Styles */

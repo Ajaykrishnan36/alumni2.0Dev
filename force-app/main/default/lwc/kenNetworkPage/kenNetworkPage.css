@@ -45,6 +45,20 @@
     flex-shrink: 0;
 }
 
+/* Tabs + mobile Map button row */
+.tabs-with-map {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.map-view-btn-mobile {
+    display: none;
+}
+
 /* Search and Filter Bar */
 .search-filter-bar {
     display: flex;
@@ -609,6 +623,49 @@
     .tabs-search-row {
         margin-bottom: 16px;
         min-width: 0;
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+    }
+
+    .tabs-with-map {
+        width: 100%;
+        gap: 8px;
+    }
+
+    .tabs-with-map .tabs-wrapper {
+        flex: 1;
+        min-width: 0;
+    }
+
+    /* Compact Map button — sits next to tabs without crowding them */
+    .map-view-btn-mobile {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        flex-shrink: 0;
+        height: 36px;
+        padding: 0 10px;
+        border-radius: 8px;
+        border: 1px solid var(--primary-color, #2563eb);
+        background: #ffffff;
+        color: var(--primary-color, #2563eb);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+    .map-view-btn-mobile svg {
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+    }
+
+    .map-view-btn-mobile:active {
+        background: #F6F8FB;
     }
 
     .alumni-grid {

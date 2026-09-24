@@ -187,6 +187,9 @@ export default class KenGroups extends NavigationMixin(LightningElement) {
     }
     get firstTwoGroups()     { return this.discoverGroupsToShow.slice(0, 2); }
     get hasMoreForPreview()  { return this.discoverGroupsToShow.length > 2; }
+    get hasNoDiscoverResults() { return this.discoverGroupsToShow.length === 0; }
+    get showMobileFilterModal() { return this.showFilterPanel && this.isMobileView; }
+    get showDesktopFilterDropdown() { return this.showFilterPanel && !this.isMobileView; }
 
     // Desktop layout: row 1 holds the first 3 discover cards, the suggested
     // banner sits below it (pinned to row 2), and the rest of the discover
@@ -229,8 +232,10 @@ export default class KenGroups extends NavigationMixin(LightningElement) {
     handleClearFilters() {
         this.groupTypeFilter = 'all';
         this.ownershipFilter = 'all';
+        this.showFilterPanel = false;
     }
     handleApplyFilters() { this.showFilterPanel = false; }
+    handleCloseFilters() { this.showFilterPanel = false; }
 
     // ── Join (from suggested card) ──────────────────────────────────────────
     handleJoinGroup(event) {
