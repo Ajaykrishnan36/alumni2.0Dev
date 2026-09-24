@@ -1,7 +1,6 @@
 .similar-businesses-panel {
     background-color: var(--portal-surface, #ffffff);
     border-radius: var(--portal-radius, 12px);
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
     padding: var(--portal-card-padding, 24px);
     display: flex;
     flex-direction: column;
@@ -61,7 +60,6 @@
     transition: transform 0.2s;
     background-color: var(--portal-page-bg, #F6F8FB);
     border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .similar-business-item:hover {

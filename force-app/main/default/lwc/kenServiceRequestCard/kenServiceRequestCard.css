@@ -6,7 +6,7 @@
     border-radius: 14px;
     background: linear-gradient(135deg, var(--primary-color, #E85D04) 0%, var(--primary-color, #E85D04) 58%, var(--secondary-color, #F59E0B) 100%);
     color: #FFFFFF;
-    padding: 1.25rem 1.25rem 1rem 1.25rem;
+    padding: 24px;
     cursor: pointer;
     text-align: left;
     display: flex;

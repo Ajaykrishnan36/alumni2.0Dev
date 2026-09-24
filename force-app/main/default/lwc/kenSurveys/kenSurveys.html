@@ -105,7 +105,7 @@
                                 <template if:true={survey.isCompleted}>
                                     <div key={survey.id} class="your-survey-card completed-survey-card" onclick={handleViewSurveyDetails} data-survey-id={survey.id}>
                                         <div class="your-survey-content">
-                                            <h3 class="your-survey-title">{survey.title}</h3>
+                                            <h3 class="your-survey-title" title={survey.title}>{survey.title}</h3>
                                             <p class="your-survey-detail">Last date: {survey.lastDate}</p>
                                             <p class="your-survey-detail">Responses: {survey.responses}</p>
                                         </div>
@@ -117,7 +117,7 @@
                                 <template if:false={survey.isCompleted}>
                                     <div key={survey.id} class="your-survey-card" onclick={handleViewSurveyDetails} data-survey-id={survey.id}>
                                         <div class="your-survey-content">
-                                            <h3 class="your-survey-title">{survey.title}</h3>
+                                            <h3 class="your-survey-title" title={survey.title}>{survey.title}</h3>
                                             <template if:true={survey.submittedDate}>
                                                 <p class="your-survey-detail">Submitted on: {survey.submittedDate}</p>
                                             </template>

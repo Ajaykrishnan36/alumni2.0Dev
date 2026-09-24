@@ -10,8 +10,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
     padding: 8px 18px 20px;
     border-radius: var(--portal-radius, 12px);
     background: var(--portal-surface, #ffffff);
@@ -355,6 +353,10 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 24px 18px;
     align-items: start;
+    /* rows must fit the card; in this fixed-height scroller auto rows otherwise shrink to the
+       card min-height (230px) and each card overlaps the next one */
+    grid-auto-rows: max-content;
+    align-content: start;
 }
 
 .scroll-sentinel {
@@ -367,7 +369,6 @@
     padding: 6px;
     border-radius: 14px;
     background: #f5f7fb;
-    box-shadow: 0 1px 2px rgba(29, 41, 62, 0.03);
     cursor: pointer;
 }
 

@@ -188,7 +188,7 @@
     margin-left: 0;
     height: calc(100vh - 146.5px);
     min-height: 0;
-    gap: var(--portal-gap-y, 1rem);
+    gap: 1rem;
 }
 
 /* Two cards share 50% height each within sidebar */
@@ -212,7 +212,7 @@
     background: var(--portal-surface, white);
     margin: 0;
     border-radius: var(--portal-radius, 12px);
-    padding: 20px 10px 0 20px;
+    padding: 24px 14px 0 24px;
     box-sizing: border-box;
 }
 

@@ -15,7 +15,7 @@
 .profile-content {
   display: grid;
   grid-template-columns: 65fr 35fr;
-  gap: 8px;
+  gap: 1rem;
   margin-top: 0px;
   align-items: start;
 }
@@ -51,16 +51,13 @@
 }
 
 .right-column {
-  padding-right: 8px;
+  padding-right: 0;
 }
 
 .section {
   background-color: var(--portal-surface, #ffffff);
-  border: var(--portal-border-width, 1px) solid
-    var(--portal-border-color, #e6e8ee);
   border-radius: var(--portal-radius, 12px);
   padding: 24px;
-  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .section-title {
@@ -93,10 +90,7 @@
   height: calc(100vh - 331px);
   overflow: scroll;
   background-color: var(--portal-surface, #ffffff);
-  border: var(--portal-border-width, 1px) solid
-    var(--portal-border-color, #e6e8ee);
   border-radius: var(--portal-radius, 12px);
-  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .personal-details-content {

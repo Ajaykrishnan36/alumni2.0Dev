@@ -1,6 +1,8 @@
 .business-card {
     background-color: var(--portal-surface, #ffffff);
-    border-radius: var(--portal-radius);
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    border-radius: var(--portal-radius, 12px);
+    overflow: hidden; /* keeps the cover image inside the rounded corners */
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     display: flex;

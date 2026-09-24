@@ -437,7 +437,8 @@ lightning-combobox,
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding-right: 100px;
+    padding-right: 120px;
+    min-width: 0;
 }
 
 .completed-survey-card .your-survey-content {
@@ -456,7 +457,10 @@ lightning-combobox,
     color: #111827;
     margin: 0;
 
+    /* single line, cut with … before the absolutely-positioned status badge */
     text-wrap-mode: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .your-survey-detail {

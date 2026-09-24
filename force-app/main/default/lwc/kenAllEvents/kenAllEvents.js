@@ -199,6 +199,24 @@ isMobile = false;
         return !this.showResultsView && this.hasUpcomingEvents;
     }
 
+    // Desktop shows the first section's title in the search bar row (left of Search/Filters)
+    // instead of on its own line; the in-section copy is hidden on desktop via --promoted.
+    get headerSectionTitle() {
+        if (this.showFeaturedEvents) return `Featured events (${this.featuredEventsCount})`;
+        if (this.showUpcomingEvents) return `Upcoming events (${this.upcomingEventsCount})`;
+        return null;
+    }
+
+    get featuredHeaderClass() {
+        return this.showFeaturedEvents ? 'section-header section-header--promoted' : 'section-header';
+    }
+
+    get upcomingHeaderClass() {
+        return this.showUpcomingEvents && !this.showFeaturedEvents
+            ? 'section-header section-header--promoted'
+            : 'section-header';
+    }
+
     get showNoDataEmptyState() {
         return !this.showResultsView && !this.hasFeaturedEvents && !this.hasUpcomingEvents;
     }

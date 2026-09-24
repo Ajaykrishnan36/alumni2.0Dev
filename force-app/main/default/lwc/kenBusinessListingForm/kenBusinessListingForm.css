@@ -37,7 +37,6 @@
     display: block;
     background-color: var(--portal-surface, #ffffff);
     border-radius: var(--portal-radius, 12px);
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
     padding: var(--portal-card-padding, 24px);
     box-sizing: border-box;
     position: relative;

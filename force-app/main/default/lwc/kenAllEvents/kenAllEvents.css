@@ -1,5 +1,5 @@
 .all-events-container {
-    padding: 2rem;
+    padding: 24px;
     margin: 0 auto;
     height: calc(100vh - 146.5px);
     overflow-y: auto;
@@ -1018,5 +1018,22 @@
     .upcoming-events-section .filter-button {
         align-self: flex-start;
         order: 1;
+    }
+}
+
+/* First section title sits in the search bar row on desktop (left of Search/Filters) */
+.header-section-title {
+    margin-right: auto;
+}
+
+@media (min-width: 769px) {
+    .section-header--promoted {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-section-title {
+        display: none;
     }
 }

@@ -13,7 +13,7 @@
 .history-container {
     background: #FFFFFF;
     border-radius: 12px;
-    padding: 1rem 1.25rem 1.25rem 1.25rem;
+    padding: 24px;
     overflow: scroll;
     max-height: calc(100vh - 100px);
 }

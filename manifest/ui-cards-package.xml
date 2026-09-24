@@ -1,20 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://soap.sforce.com/2006/04/metadata">
     <types>
+        <members>kenAchievementCard</members>
         <members>kenAllEvents</members>
         <members>kenAlumniCard</members>
+        <members>kenAlumniDetailView</members>
         <members>kenBusinessCard</members>
+        <members>kenBusinessDetailView</members>
         <members>kenBusinessDirectory</members>
+        <members>kenBusinessListingForm</members>
         <members>kenCalendarSchedule</members>
+        <members>kenCampaignsShowcase</members>
         <members>kenCreateCampaignCta</members>
         <members>kenDonorImpact</members>
+        <members>kenEducationCard</members>
+        <members>kenEventDetails</members>
         <members>kenFaqSection</members>
         <members>kenFundraiseCategories</members>
+        <members>kenGroupDetailView</members>
+        <members>kenGroupPostCard</members>
+        <members>kenGroupPostComposer</members>
         <members>kenGroups</members>
         <members>kenGroupsCreated</members>
         <members>kenGroupsDiscover</members>
         <members>kenGroupsJoined</members>
-        <members>kenHostEvent</members> 
+        <members>kenHostEvent</members>
         <members>kenJobs</members>
         <members>kenMentorship</members>
         <members>kenMentorshipConnections</members>
@@ -23,11 +33,16 @@
         <members>kenNeedHelpCard</members>
         <members>kenNetworkPage</members>
         <members>kenPageHeader</members>
+        <members>kenPortalCreateEvent</members>
         <members>kenPortalHomeFeed</members>
+        <members>kenPortalServiceSupport</members>
         <members>kenPortalhome</members>
+        <members>kenProfileHeader</members>
         <members>kenRegisteredEvents</members>
         <members>kenServiceHistory</members>
         <members>kenServiceRequestCard</members>
+        <members>kenSetting</members>
+        <members>kenSimilarBusinesses</members>
         <members>kenSurveys</members>
         <members>kenTasksSection</members>
         <name>LightningComponentBundle</name>

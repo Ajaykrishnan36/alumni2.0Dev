@@ -67,8 +67,6 @@
     flex-shrink: 0;
     border-radius: var(--portal-radius, 12px) !important;
     background: var(--portal-surface, #ffffff);
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .search-box {
@@ -157,8 +155,6 @@
     height: 100%;
     overflow-y: auto;
     box-sizing: border-box;
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 /* Media Queries for responsiveness */
