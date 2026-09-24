@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
 
 export default class KenMenteePage extends LightningElement {
     @api profileId;
@@ -6,9 +7,9 @@ export default class KenMenteePage extends LightningElement {
     @track profileData = {
         name: 'Nupur Sharma1',
         title: 'Product Designer',
-        company: 'Turbostart',
+        company: 'Acme Corp',
         location: 'Bangalore',
-        profileImage: '/assets/images/profile.jpg',
+        profileImage: defaultProfileImage,
         isOnline: true,
         batch: 'UG, Psychology 2022',
         expertise: 'Marketing and Advertising',
@@ -24,7 +25,7 @@ export default class KenMenteePage extends LightningElement {
                 institution: 'Sikkim Manipal University',
                 duration: '2010 - 2012',
                 score: '7.5',
-                logo: '/assets/images/university-logo.png'
+                logo: defaultProfileImage
             },
             {
                 id: '2',
@@ -32,7 +33,7 @@ export default class KenMenteePage extends LightningElement {
                 institution: 'GRG Matric Hr Sec School',
                 duration: '2016 - 2017',
                 score: '95%',
-                logo: '/assets/images/school-logo.png'
+                logo: defaultProfileImage
             },
             {
                 id: '3',
@@ -40,29 +41,29 @@ export default class KenMenteePage extends LightningElement {
                 institution: 'GRG Matric Hr Sec School',
                 duration: '2014 - 2015',
                 score: '80%',
-                logo: '/assets/images/school-logo.png'
+                logo: defaultProfileImage
             }
         ],
         experience: [
             {
                 id: '1',
                 position: 'Sr. Design Associate',
-                company: 'Google Pay',
+                company: 'Northwind Labs',
                 employmentType: 'Full-time',
                 location: 'Coimbatore, Tamil Nadu, India',
                 workType: 'Onsite',
                 duration: 'May 2022 - Present | 1 yr 4 mos',
-                companyLogo: '/assets/images/google-logo.png'
+                companyLogo: defaultProfileImage
             },
             {
                 id: '2',
                 position: 'Front-end Developer',
-                company: 'Zoho',
+                company: 'Contoso Systems',
                 employmentType: 'Full-time',
                 location: 'Chennai, Tamil Nadu, India',
                 workType: 'Onsite',
                 duration: 'May 2021 - April 2022 | 1 yr 1 mos',
-                companyLogo: '/assets/images/zoho-logo.png'
+                companyLogo: defaultProfileImage
             }
         ],
         careerInterests: [

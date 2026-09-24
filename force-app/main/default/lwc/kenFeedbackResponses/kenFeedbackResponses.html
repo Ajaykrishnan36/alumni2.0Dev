@@ -1,55 +1,232 @@
 <template>
-    <div class="fb-card">
-        <div class="fb-head">
-            <p class="fb-title">{title}</p>
-            <template if:true={hasResponses}>
-                <span class="fb-count">{total}</span>
-                <button type="button" class="fb-download" onclick={handleDownloadCsv} title="Download responses as CSV">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                        <polyline points="7 10 12 15 17 10" />
-                        <line x1="12" y1="15" x2="12" y2="3" />
-                    </svg>
-                    <span>Download CSV</span>
-                </button>
+    <a class="ken-download-sink" data-id="download" href="#"></a>
+    <!-- Survey mode: the whole survey on its own record page -->
+    <template if:true={isSurveyMode}>
+        <div class="ken-card">
+            <template if:true={isLoading}>
+                <div class="ken-loading">
+                    <lightning-spinner alternative-text="Loading survey" size="small"></lightning-spinner>
+                </div>
             </template>
-        </div>
 
-        <template if:true={isLoading}>
-            <div class="fb-loading">
-                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
-            </div>
-        </template>
+            <template if:true={error}>
+                <div class="ken-error">{error}</div>
+            </template>
 
-        <template if:true={error}>
-            <p class="fb-empty">{error}</p>
-        </template>
-
-        <template if:false={error}>
-            <template if:true={hasResponses}>
-                <template for:each={respondents} for:item="r">
-                    <div key={r.key} class="fb-respondent">
-                        <div class="fb-respondent-head">
-                            <span class="fb-respondent-name">{r.respondentName}</span>
-                            <template if:true={r.submittedDate}>
-                                <lightning-formatted-date-time value={r.submittedDate} year="numeric"
-                                    month="short" day="2-digit" class="fb-date"></lightning-formatted-date-time>
-                            </template>
+            <template if:true={surveyView}>
+                <header class="ken-header">
+                    <div class="ken-title-row">
+                        <h2 class="ken-title">{surveyView.name}</h2>
+                        <div class="ken-pills">
+                            <span class={statusClass}>{surveyView.approvalStatus}</span>
+                            <span class={activeClass}>{activeLabel}</span>
                         </div>
-                        <template for:each={r.answers} for:item="a">
-                            <div key={a.key} class="fb-qa">
-                                <p class="fb-q">{a.question}</p>
-                                <p class="fb-a">{a.answer}</p>
+                    </div>
+                    <template if:true={surveyView.description}>
+                        <p class="ken-description">{surveyView.description}</p>
+                    </template>
+                </header>
+
+                <div class="ken-metrics">
+                    <div class="ken-metric">
+                        <span class="ken-metric-value">{surveyView.questionCount}</span>
+                        <span class="ken-metric-label">Questions</span>
+                    </div>
+                    <div class="ken-metric">
+                        <span class="ken-metric-value">{requiredCount}</span>
+                        <span class="ken-metric-label">Required</span>
+                    </div>
+                    <div class="ken-metric">
+                        <span class="ken-metric-value">{surveyView.respondentCount}</span>
+                        <span class="ken-metric-label">Responses</span>
+                    </div>
+                    <div class="ken-metric ken-metric_wide">
+                        <span class="ken-metric-window">{windowLabel}</span>
+                        <span class="ken-metric-label">Open window</span>
+                    </div>
+                </div>
+
+                <template if:true={hasAudience}>
+                    <div class="ken-audience">
+                        <span class="ken-audience-label">Audience</span>
+                        <template for:each={audienceList} for:item="audience">
+                            <span key={audience} class="ken-chip">{audience}</span>
+                        </template>
+                    </div>
+                </template>
+
+                <div class="ken-tabbar">
+                    <div class="ken-tabs" role="tablist">
+                        <button class={questionsTabClass} data-tab="questions" onclick={handleTab} role="tab" type="button">
+                            Questions
+                        </button>
+                        <button class={responsesTabClass} data-tab="responses" onclick={handleTab} role="tab" type="button">
+                            Responses
+                        </button>
+                    </div>
+                    <template if:true={showResponses}>
+                        <lightning-button
+                            label="Download CSV"
+                            icon-name="utility:download"
+                            variant="brand-outline"
+                            disabled={downloadDisabled}
+                            onclick={handleDownloadSurveyCsv}
+                            class="ken-download">
+                        </lightning-button>
+                    </template>
+                </div>
+
+                <template if:true={showQuestions}>
+                    <div class="ken-panel">
+                        <template if:false={hasQuestions}>
+                            <p class="ken-empty">This survey has no questions yet.</p>
+                        </template>
+                        <template for:each={questionsView} for:item="q">
+                            <article key={q.key} class="ken-question">
+                                <div class="ken-question-head">
+                                    <span class="ken-qnum">{q.number}</span>
+                                    <span class="ken-qlabel">{q.label}</span>
+                                    <span class="ken-type">{q.type}</span>
+                                    <template if:true={q.required}>
+                                        <span class="ken-required">Required</span>
+                                    </template>
+                                </div>
+
+                                <template if:true={q.isScale}>
+                                    <div class="ken-scale">
+                                        <template for:each={q.choices} for:item="c">
+                                            <div key={c.key} class="ken-point">
+                                                <span class="ken-point-value">{c.value}</span>
+                                                <template if:true={c.hasLabel}>
+                                                    <span class="ken-point-label">{c.label}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <template if:true={q.isChoice}>
+                                    <ul class="ken-choices">
+                                        <template for:each={q.choices} for:item="c">
+                                            <li key={c.key} class="ken-choice">
+                                                <span class="ken-bullet"></span>
+                                                <span class="ken-choice-value">{c.value}</span>
+                                                <template if:true={c.hasLabel}>
+                                                    <span class="ken-choice-label">{c.label}</span>
+                                                </template>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </template>
+
+                                <template if:true={q.isFreeText}>
+                                    <div class="ken-freetext">Free text answer</div>
+                                </template>
+                            </article>
+                        </template>
+                    </div>
+                </template>
+
+                <template if:true={showResponses}>
+                    <div class="ken-panel ken-panel_scroll">
+                        <template if:false={hasSubmissions}>
+                            <p class="ken-empty">No responses have been submitted yet.</p>
+                        </template>
+                        <template if:true={exportQueued}>
+                            <p class="ken-truncated">
+                                This survey has too many responses to build in the browser, so the full
+                                file is being prepared in the background. It will appear under Files on
+                                this record, and you will get an email when it is ready.
+                            </p>
+                        </template>
+                        <template for:each={submissionsView} for:item="s">
+                            <article key={s.key} class="ken-submission">
+                                <div class="ken-submission-head">
+                                    <span class="ken-avatar">{s.initials}</span>
+                                    <span class="ken-respondent">{s.respondentName}</span>
+                                    <span class="ken-submitted">{s.submittedDate}</span>
+                                </div>
+                                <dl class="ken-answers">
+                                    <template for:each={s.answers} for:item="a">
+                                        <div key={a.key} class="ken-answer">
+                                            <dt class="ken-answer-q">{a.question}</dt>
+                                            <dd class="ken-answer-a">{a.answer}</dd>
+                                        </div>
+                                    </template>
+                                </dl>
+                            </article>
+                        </template>
+
+                        <template if:true={hasMore}>
+                            <div class="ken-loadmore">
+                                <lightning-button
+                                    label={loadMoreLabel}
+                                    variant="neutral"
+                                    disabled={loadingMore}
+                                    onclick={handleLoadMore}>
+                                </lightning-button>
                             </div>
                         </template>
                     </div>
                 </template>
             </template>
+        </div>
+    </template>
 
-            <template if:false={hasResponses}>
-                <p class="fb-empty">No feedback has been submitted yet.</p>
+    <!-- Responses mode: unchanged viewer for event, mentorship and template pages -->
+    <template if:false={isSurveyMode}>
+        <div class="fb-card">
+            <div class="fb-head">
+                <p class="fb-title">{title}</p>
+                <template if:true={hasResponses}>
+                    <span class="fb-count">{total}</span>
+                    <button type="button" class="fb-download" onclick={handleDownloadCsv} title="Download responses as CSV">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                        </svg>
+                        <span>Download CSV</span>
+                    </button>
+                </template>
+            </div>
+
+            <template if:true={isLoading}>
+                <div class="fb-loading">
+                    <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                </div>
             </template>
-        </template>
-    </div>
+
+            <template if:true={error}>
+                <p class="fb-empty">{error}</p>
+            </template>
+
+            <template if:false={error}>
+                <template if:true={hasResponses}>
+                    <template for:each={respondents} for:item="r">
+                        <div key={r.key} class="fb-respondent">
+                            <div class="fb-respondent-head">
+                                <span class="fb-respondent-name">{r.respondentName}</span>
+                                <template if:true={r.submittedDate}>
+                                    <lightning-formatted-date-time value={r.submittedDate} year="numeric"
+                                        month="short" day="2-digit" class="fb-date"></lightning-formatted-date-time>
+                                </template>
+                            </div>
+                            <template for:each={r.answers} for:item="a">
+                                <div key={a.key} class="fb-qa">
+                                    <p class="fb-q">{a.question}</p>
+                                    <p class="fb-a">{a.answer}</p>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+
+                <template if:false={hasResponses}>
+                    <p class="fb-empty">No feedback has been submitted yet.</p>
+                </template>
+            </template>
+        </div>
+    </template>
 </template>

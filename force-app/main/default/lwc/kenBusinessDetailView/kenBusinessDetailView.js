@@ -15,13 +15,19 @@ import deleteBusiness from "@salesforce/apex/KenBusinessController.deleteBusines
 import approveBusinessDeletion from "@salesforce/apex/KenBusinessController.approveBusinessDeletion";
 import dismissBusinessDeletion from "@salesforce/apex/KenBusinessController.dismissBusinessDeletion";
 import removeFeature from "@salesforce/apex/KenBusinessController.removeFeature";
-import linkSegmentationToParent from "@salesforce/apex/KenAudienceJunctionController.linkSegmentationToParent";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
+import { localDateKey } from 'c/kenDateTime';
+
+// Same breakpoint as the other portal mobile layouts.
+const MOBILE_QUERY = "(max-width: 767px)";
 export default class KenBusinessDetailView extends NavigationMixin(
   LightningElement
 ) {
   @api business;
   _isStandaloneMode = false;
+  @track isMobile = false;
+  _mediaQuery;
+  _boundSyncMobile;
 
   // Only apply the full-viewport height/scroll treatment when this component
   // is standalone on its own page (business_detail__c) — nothing else there
@@ -38,6 +44,8 @@ export default class KenBusinessDetailView extends NavigationMixin(
   @api isMyBusiness = false;
   @track businessData = {};
   @track showExpressInterestModal = false;
+  @track showChatbox = false;
+  @track isChatExpanded = false;
   @track showDeactivateModal = false;
   @track showDeleteModal = false;
   @track showBusinessListingForm = false;
@@ -85,6 +93,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
 
   connectedCallback() {
     this.updateBusinessData();
+    this.initMobileWatch();
     getPrimaryColor()
       .then((color) => {
         this.institutionName = color?.institutionName || "";
@@ -104,6 +113,43 @@ export default class KenBusinessDetailView extends NavigationMixin(
       .catch(() => {
         console.log("Error getting primary color");
       });
+  }
+
+  initMobileWatch() {
+    this._boundSyncMobile = this.syncIsMobile.bind(this);
+    if (typeof window !== "undefined" && window.matchMedia) {
+      this._mediaQuery = window.matchMedia(MOBILE_QUERY);
+      this.isMobile = this._mediaQuery.matches;
+      // addEventListener is absent on MediaQueryList in older WebKit, which is
+      // exactly the mobile Safari this targets.
+      if (this._mediaQuery.addEventListener) {
+        this._mediaQuery.addEventListener("change", this._boundSyncMobile);
+      } else if (this._mediaQuery.addListener) {
+        this._mediaQuery.addListener(this._boundSyncMobile);
+      }
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", this._boundSyncMobile);
+    }
+  }
+
+  disconnectedCallback() {
+    if (this._mediaQuery) {
+      if (this._mediaQuery.removeEventListener) {
+        this._mediaQuery.removeEventListener("change", this._boundSyncMobile);
+      } else if (this._mediaQuery.removeListener) {
+        this._mediaQuery.removeListener(this._boundSyncMobile);
+      }
+    }
+    if (typeof window !== "undefined" && this._boundSyncMobile) {
+      window.removeEventListener("resize", this._boundSyncMobile);
+    }
+  }
+
+  syncIsMobile() {
+    this.isMobile = this._mediaQuery
+      ? this._mediaQuery.matches
+      : typeof window !== "undefined" && window.innerWidth <= 767;
   }
 
   renderedCallback() {
@@ -154,6 +200,21 @@ export default class KenBusinessDetailView extends NavigationMixin(
 
   get logoUrl() {
     return this.businessData?.logo || defaultBusinessImage;
+  }
+
+  // The owner's Person Account, used as the chat's single-thread target. Null on
+  // listings whose owner junction carries no PersonId, which is why handleChat
+  // guards on it rather than opening an empty thread.
+  get ownerAccountId() {
+    return (this.businessData && this.businessData.ownerAccountId) || null;
+  }
+
+  get chatContainerClass() {
+    return this.isChatExpanded ? "chatbox-container expanded" : "chatbox-container";
+  }
+
+  get chatExpandIcon() {
+    return this.isChatExpanded ? "utility:contract_alt" : "utility:expand_alt";
   }
 
   get ownerImageUrl() {
@@ -502,10 +563,29 @@ export default class KenBusinessDetailView extends NavigationMixin(
     }
   }
 
+  // Opens the docked chat window instead of leaving the listing. This used to be a
+  // console.log stub, so the "Chat with ..." button did nothing at all.
   handleChat() {
-    // Handle chat functionality
-    console.log("Chat clicked for:", this.businessData.name);
-    // You can add chat modal or navigation logic here
+    if (!this.ownerAccountId) {
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: "Chat unavailable",
+          message: "This listing has no owner profile linked to it yet.",
+          variant: "error"
+        })
+      );
+      return;
+    }
+    this.showChatbox = true;
+  }
+
+  handleToggleExpand() {
+    this.isChatExpanded = !this.isChatExpanded;
+  }
+
+  handleCloseChat() {
+    this.showChatbox = false;
+    this.isChatExpanded = false;
   }
 
   handleDelete() {
@@ -719,8 +799,8 @@ export default class KenBusinessDetailView extends NavigationMixin(
     tomorrow.setDate(tomorrow.getDate() + 1);
     const twoWeeks = new Date();
     twoWeeks.setDate(twoWeeks.getDate() + 15);
-    this.featureDateFrom = tomorrow.toISOString().slice(0, 10);
-    this.featureDateTo = twoWeeks.toISOString().slice(0, 10);
+    this.featureDateFrom = localDateKey(tomorrow);
+    this.featureDateTo = localDateKey(twoWeeks);
     this.showFeatureModal = true;
   }
 
@@ -745,7 +825,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
   }
 
   get featureTodayStr() {
-    return new Date().toISOString().slice(0, 10);
+    return localDateKey();
   }
 
   submitFeatureRequest() {
@@ -826,8 +906,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
     }
     this.dispatchEvent(
       new CustomEvent("back", {
-        bubbles: true,
-        composed: true
+        bubbles: true
       })
     );
   }
@@ -892,17 +971,7 @@ export default class KenBusinessDetailView extends NavigationMixin(
         });
     } else {
       // List Your Business -> create a brand new business (no id)
-      const segmentationId = payload.audienceSegmentationId || null;
       createBusiness({ req })
-        .then((newBusinessId) => {
-          if (segmentationId && newBusinessId) {
-            return linkSegmentationToParent({
-              parentObjectType: 'Business',
-              parentId: newBusinessId,
-              segmentationId
-            }).catch(() => {});
-          }
-        })
         .then(() => {
           if (form) {
             form.confirmSaved();

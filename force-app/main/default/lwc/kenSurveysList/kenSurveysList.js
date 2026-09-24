@@ -8,6 +8,7 @@ import deleteSurvey from '@salesforce/apex/KenSurveyController.deleteSurvey';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import SurveyEmptyImage from '@salesforce/resourceUrl/SurveyEmptyImage'; 
 const DRAFT_STORAGE_KEY = 'createSurveyDraft';
+const DEFAULT_SCALE_POINTS = 5;
 
 export default class KenSurveysList extends NavigationMixin(LightningElement) {
     @track activeTab = 'approved';
@@ -168,7 +169,7 @@ export default class KenSurveysList extends NavigationMixin(LightningElement) {
         return {
             bucket: statusInfo.bucket,
             id: survey.id,
-            title: survey.name || survey.sectionName || '',
+            title: survey.name || '',
             segmentationName: survey.segmentationName || '-',
             surveyPeriod: this.formatPeriod(startDate, endDate),
             submittedDate: survey.submittedDate ? this.formatDate(survey.submittedDate) : '',
@@ -469,27 +470,26 @@ export default class KenSurveysList extends NavigationMixin(LightningElement) {
             }
             const dto = result.data;
             const questions = (dto.questions || []).map((q, index) => {
+                const type = q.type || '';
                 const options = (q.options || []).map((opt, idx) => ({
                     id: `${Date.now()}-${index}-${idx}`,
-                    text: opt.text,
+                    value: String(opt.value ?? '').trim() || String(opt.text ?? '').trim() || String(idx + 1),
+                    text: opt.text || '',
                     letter: String.fromCharCode(97 + idx)
                 }));
                 return {
                     id: `${Date.now()}-${index}`,
                     number: index + 1,
                     text: q.text || '',
-                    type: q.type || '',
+                    type,
                     required: q.required || false,
                     options,
-                    scaleMin: q.scaleMin || 1,
-                    scaleMax: q.scaleMax || 5,
-                    scaleMinLabel: q.scaleMinLabel || '',
-                    scaleMaxLabel: q.scaleMaxLabel || '',
-                    showMultipleOptions: q.type === 'multiple' || q.type === 'checkbox',
-                    isMultiple: q.type === 'multiple',
-                    isCheckboxType: q.type === 'checkbox',
-                    showLinearScale: q.type === 'linear',
-                    showShortAnswer: q.type === 'short',
+                    scalePointCount: String(options.length || DEFAULT_SCALE_POINTS),
+                    showMultipleOptions: type === 'multiple' || type === 'checkbox',
+                    isMultiple: type === 'multiple',
+                    isCheckboxType: type === 'checkbox',
+                    showLinearScale: type === 'linear',
+                    showShortAnswer: type === 'short',
                     nextOptionNumber: options.length + 1
                 };
             });
@@ -509,10 +509,7 @@ export default class KenSurveysList extends NavigationMixin(LightningElement) {
                         type: '',
                         required: false,
                         options: [],
-                        scaleMin: 1,
-                        scaleMax: 5,
-                        scaleMinLabel: '',
-                        scaleMaxLabel: '',
+                        scalePointCount: String(DEFAULT_SCALE_POINTS),
                         showMultipleOptions: false,
                         isMultiple: false,
                         isCheckboxType: false,

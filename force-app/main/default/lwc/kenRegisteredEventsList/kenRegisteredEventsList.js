@@ -70,18 +70,34 @@ export default class KenRegisteredEventsList extends NavigationMixin(LightningEl
                     return { ...item, status: 'Date not available' };
                 }
 
-                const [year, month, day] = item.startDate.split('-');
-                const baseStart = new Date(year, month - 1, day);
-                const startMs = item.startTime || 0;
-                const endMs = item.endTime || 0;
-                const eventStartDateTime = new Date(baseStart.getTime() + startMs);
+                // The instant is an exact moment, so the Upcoming / Happening now /
+                // Completed comparison below is correct wherever the viewer is. The
+                // fallback rebuilds the moment from a local midnight plus a
+                // milliseconds-since-midnight offset taken from the legacy Time
+                // column — which is an IST wall clock, so the status it produces
+                // drifts by the viewer's offset. Fallback only, for rows saved
+                // before the migration.
+                let eventStartDateTime;
+                let eventEndDateTime;
+                if (item.startInstant) {
+                    eventStartDateTime = new Date(item.startInstant);
+                    eventEndDateTime = item.endInstant
+                        ? new Date(item.endInstant)
+                        : eventStartDateTime;
+                } else {
+                    const [year, month, day] = item.startDate.split('-');
+                    const baseStart = new Date(year, month - 1, day);
+                    const startMs = item.startTime || 0;
+                    const endMs = item.endTime || 0;
+                    eventStartDateTime = new Date(baseStart.getTime() + startMs);
 
-                let baseEnd = baseStart;
-                if (item.endDate) {
-                    const [ey, em, ed] = item.endDate.split('-');
-                    baseEnd = new Date(ey, em - 1, ed);
+                    let baseEnd = baseStart;
+                    if (item.endDate) {
+                        const [ey, em, ed] = item.endDate.split('-');
+                        baseEnd = new Date(ey, em - 1, ed);
+                    }
+                    eventEndDateTime = new Date(baseEnd.getTime() + endMs);
                 }
-                const eventEndDateTime = new Date(baseEnd.getTime() + endMs);
 
                 const bookingType = item.bookingType;
                 const eventStatusRaw = item.eventStatus;

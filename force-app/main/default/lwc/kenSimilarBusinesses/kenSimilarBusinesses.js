@@ -58,8 +58,7 @@ export default class KenSimilarBusinesses extends NavigationMixin(LightningEleme
             this.dispatchEvent(
                 new CustomEvent('similarselect', {
                     detail: { businessId },
-                    bubbles: true,
-                    composed: true
+                    bubbles: true
                 })
             );
         }
@@ -69,8 +68,7 @@ export default class KenSimilarBusinesses extends NavigationMixin(LightningEleme
         // Bubble up so the directory closes the detail view and shows all businesses
         this.dispatchEvent(
             new CustomEvent('viewmore', {
-                bubbles: true,
-                composed: true
+                bubbles: true
             })
         );
     }

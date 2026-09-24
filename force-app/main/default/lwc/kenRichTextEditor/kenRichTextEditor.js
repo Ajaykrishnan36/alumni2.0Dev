@@ -1,4 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
+import {
+    htmlToPlainText,
+    replaceElementHtml,
+    serializeElementHtml
+} from 'c/kenHtmlSanitizer';
 
 /**
  * Lightweight contenteditable rich-text editor with a toolbar covering the
@@ -17,6 +22,15 @@ import { LightningElement, api, track } from 'lwc';
 export default class KenRichTextEditor extends LightningElement {
     @api placeholder = '';
     @api maxLength;
+    // Opt-in: this editor is shared by a dozen components, only the ones that
+    // can actually store an image (the group post composer) turn these on.
+    // allowImages accepts pasted/dropped images; showImageButton additionally
+    // puts a picker in the toolbar. They are separate because the composer keeps
+    // its picker in the footer next to Create a Poll, but still needs paste.
+    @api allowImages = false;
+    @api showImageButton = false;
+    @api imageBusy = false;
+    @api imageAccept = 'image/jpeg,image/png,image/gif,image/webp';
 
     _value = '';
     @api
@@ -27,8 +41,8 @@ export default class KenRichTextEditor extends LightningElement {
         const incoming = v || '';
         this._value = incoming;
         this.currentLength = this._plainLen(incoming);
-        if (this.editor && !this._isFocused && this.editor.innerHTML !== incoming) {
-            this.editor.innerHTML = incoming;
+        if (this.editor && !this._isFocused && serializeElementHtml(this.editor) !== incoming) {
+            replaceElementHtml(this.editor, incoming);
             this.lastValidHtml = incoming;
             this.ensureListFormatting();
         }
@@ -102,13 +116,13 @@ export default class KenRichTextEditor extends LightningElement {
 
         if (editor !== this.editor) {
             this.editor = editor;
-            editor.innerHTML = this._value || '';
-            this.lastValidHtml = editor.innerHTML;
+            replaceElementHtml(editor, this._value || '');
+            this.lastValidHtml = serializeElementHtml(editor);
             this.currentLength = this._plainLen(this._value);
             this.ensureListFormatting();
             this.updateToolbarStates();
-        } else if (!this._isFocused && editor.innerHTML !== (this._value || '')) {
-            editor.innerHTML = this._value || '';
+        } else if (!this._isFocused && serializeElementHtml(editor) !== (this._value || '')) {
+            replaceElementHtml(editor, this._value || '');
             this.ensureListFormatting();
         }
     }
@@ -126,16 +140,16 @@ export default class KenRichTextEditor extends LightningElement {
     }
 
     handleInput(event) {
-        const html = event.target.innerHTML || '';
+        const html = serializeElementHtml(event.target);
         const max = this.maxLength ? Number(this.maxLength) : 0;
         if (max && this._plainLen(html) > max) {
-            event.target.innerHTML = this.lastValidHtml || '';
+            replaceElementHtml(event.target, this.lastValidHtml || '');
             this.placeCaretAtEnd(event.target);
             this.updateToolbarStates();
             return;
         }
         this.ensureListFormatting();
-        const finalHtml = event.target.innerHTML || '';
+        const finalHtml = serializeElementHtml(event.target);
         this.lastValidHtml = finalHtml;
         this._emit(finalHtml);
         this.saveCurrentSelection();
@@ -155,7 +169,7 @@ export default class KenRichTextEditor extends LightningElement {
 
     handleBlur(event) {
         this._isFocused = false;
-        const html = event.target.innerHTML || '';
+        const html = serializeElementHtml(event.target);
         this.lastValidHtml = html;
         this._emit(html);
         this.updateToolbarStates();
@@ -190,8 +204,8 @@ export default class KenRichTextEditor extends LightningElement {
     afterCommand() {
         if (!this.editor) return;
         this.ensureListFormatting();
-        this.lastValidHtml = this.editor.innerHTML || '';
-        this._emit(this.editor.innerHTML || '');
+        this.lastValidHtml = serializeElementHtml(this.editor);
+        this._emit(this.lastValidHtml);
         this.updateToolbarStates();
     }
 
@@ -429,6 +443,111 @@ export default class KenRichTextEditor extends LightningElement {
         this.afterCommand();
     }
 
+    // --- Images ----------------------------------------------------------
+    //
+    // The editor only knows how to place an <img> at the caret; uploading the
+    // file and deciding what the src should eventually be is the owner's job,
+    // so the picked files go out as an event and the owner calls insertImage().
+
+    handleClickImage() {
+        this.saveCurrentSelection();
+        const input = this.template.querySelector('input.rte-image-input');
+        if (input) input.click();
+    }
+
+    // A pasted or dragged image arrives as a local data: URL that only this
+    // browser can resolve. Left alone it previews perfectly and then vanishes on
+    // save, so it is intercepted and routed through the same upload as the
+    // toolbar button. Without allowImages the paste is dropped rather than
+    // silently stored as an unusable data: URL.
+    handlePaste(event) {
+        const files = this.imageFilesFrom(event.clipboardData);
+        if (files.length === 0) return;
+        event.preventDefault();
+        if (!this.allowImages) return;
+        this.dispatchEvent(new CustomEvent('imageselect', { detail: { files } }));
+    }
+
+    allowDrop(event) {
+        if (this.imageFilesFrom(event.dataTransfer).length > 0) event.preventDefault();
+    }
+
+    handleDrop(event) {
+        const files = this.imageFilesFrom(event.dataTransfer);
+        if (files.length === 0) return;
+        event.preventDefault();
+        if (!this.allowImages) return;
+        this.dispatchEvent(new CustomEvent('imageselect', { detail: { files } }));
+    }
+
+    imageFilesFrom(transfer) {
+        if (!transfer) return [];
+        const out = [];
+        // Screenshots come through items[] with no entry in files[], so both are
+        // checked and de-duplicated by name+size.
+        for (const item of Array.from(transfer.items || [])) {
+            if (item.kind === 'file' && (item.type || '').startsWith('image/')) {
+                const file = item.getAsFile();
+                if (file) out.push(file);
+            }
+        }
+        for (const file of Array.from(transfer.files || [])) {
+            if ((file.type || '').startsWith('image/') &&
+                !out.some(f => f.name === file.name && f.size === file.size)) {
+                out.push(file);
+            }
+        }
+        return out;
+    }
+
+    handleImageFiles(event) {
+        const files = Array.from(event.target.files || []);
+        event.target.value = '';
+        if (files.length === 0) return;
+        this.dispatchEvent(new CustomEvent('imageselect', { detail: { files } }));
+    }
+
+    @api
+    insertImage(url, alt) {
+        if (!url || !this.editor) return;
+        const safeUrl = String(url)
+            .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeAlt = String(alt || '')
+            .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        this.editor.focus();
+        this.restoreSelection();
+        // A trailing paragraph keeps the caret below the image so the author can
+        // carry on typing a caption instead of landing inside the image node.
+        document.execCommand('insertHTML', false,
+            `<img src="${safeUrl}" alt="${safeAlt}" /><p><br/></p>`);
+        this.afterCommand();
+    }
+
+    /**
+     * Hand every <img> in the editor to `resolver(src)` and return the resulting
+     * HTML. Whatever the resolver returns becomes the new src; returning a falsy
+     * value removes the image entirely.
+     *
+     * This reads src off the live DOM rather than matching strings in serialized
+     * markup. Serialization re-encodes characters (& becomes &amp;) and may
+     * reorder attributes, so string matching against the URL the upload returned
+     * silently missed - which is exactly how an uploaded image ended up being
+     * dropped from the saved post.
+     */
+    @api
+    resolveImages(resolver) {
+        if (!this.editor || typeof resolver !== 'function') return this.value;
+        const clone = this.editor.cloneNode(true);
+        clone.querySelectorAll('img').forEach(img => {
+            const replacement = resolver(img.getAttribute('src'));
+            if (replacement) img.setAttribute('src', replacement);
+            else img.remove();
+        });
+        return serializeElementHtml(clone);
+    }
+
     handleAiClick() {
         this.dispatchEvent(new CustomEvent('aiassist'));
     }
@@ -515,9 +634,6 @@ export default class KenRichTextEditor extends LightningElement {
     }
 
     _plainLen(html) {
-        const helper = document.createElement('div');
-        helper.innerHTML = html || '';
-        const text = (helper.textContent || '').replace(/\s+/g, ' ').trim();
-        return text.length;
+        return htmlToPlainText(html).length;
     }
 }

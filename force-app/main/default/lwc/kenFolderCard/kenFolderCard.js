@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
 export default class KenFolderCard extends LightningElement {
     @api folder;
 
@@ -16,7 +17,7 @@ export default class KenFolderCard extends LightningElement {
     }
 
     get ownerProfileImageUrl() {
-        return this.folder?.ownerProfileImageUrl || '/assets/images/default-profile.png';
+        return this.folder?.ownerProfileImageUrl || defaultProfileImage;
     }
 
     get collaboratorsCount() {
@@ -38,17 +39,17 @@ export default class KenFolderCard extends LightningElement {
     }
 
     handleAvatarError(event) {
-        event.target.src = '/assets/images/default-profile.png';
+        event.target.src = defaultProfileImage;
     }
 
     renderedCallback() {
         const profileImages = this.template.querySelectorAll('[data-profile-image="true"]');
         profileImages.forEach(img => {
             if (!img.src || img.src === '' || img.src.includes('undefined')) {
-                img.src = '/assets/images/default-profile.png';
+                img.src = defaultProfileImage;
             }
             img.addEventListener('error', () => {
-                img.src = '/assets/images/default-profile.png';
+                img.src = defaultProfileImage;
             });
         });
     }

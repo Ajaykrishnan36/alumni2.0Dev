@@ -1,4 +1,9 @@
 import { LightningElement, track } from 'lwc';
+import {
+    htmlToPlainText,
+    replaceElementHtml,
+    serializeElementHtml
+} from 'c/kenHtmlSanitizer';
 import { NavigationMixin } from 'lightning/navigation';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
@@ -12,6 +17,7 @@ import saveExperienceRecord from '@salesforce/apex/KenMyProfileController.saveEx
 import archiveExperienceRecord from '@salesforce/apex/KenMyProfileController.archiveExperience';
 import saveAchievementRecord from '@salesforce/apex/KenMyProfileController.saveAchievement';
 import archiveAchievementRecord from '@salesforce/apex/KenMyProfileController.archiveAchievement';
+import { localDateKey } from 'c/kenDateTime';
 
 const KEN_HEADER_CHAT_OPEN_KEY = 'ken_header_open_chat';
 
@@ -119,12 +125,12 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
 
         if (editor !== this.aboutRichTextEditor) {
             this.aboutRichTextEditor = editor;
-            editor.innerHTML = this.aboutEditText || '';
-            this.aboutLastValidHtml = editor.innerHTML;
+            replaceElementHtml(editor, this.aboutEditText || '');
+            this.aboutLastValidHtml = serializeElementHtml(editor);
             this.ensureAboutListFormatting();
             this.updateAboutToolbarStates();
-        } else if (editor.innerHTML !== (this.aboutEditText || '')) {
-            editor.innerHTML = this.aboutEditText || '';
+        } else if (serializeElementHtml(editor) !== (this.aboutEditText || '')) {
+            replaceElementHtml(editor, this.aboutEditText || '');
             this.ensureAboutListFormatting();
         }
     }
@@ -239,7 +245,7 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
         };
 
         this.chatMessages.forEach((msg, index) => {
-            const currentDateString = msg.date || new Date().toISOString().split('T')[0];
+            const currentDateString = msg.date || localDateKey();
             const dateLabel = getRelativeDateLabel(currentDateString);
             if (dateLabel !== lastDateString) {
                 items.push({ id: 'date-' + index, isDateSeparator: true, dateLabel });
@@ -307,7 +313,7 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
             type: 'sent',
             text: this.messageInput,
             time: timeString,
-            date: now.toISOString().split('T')[0]
+            date: localDateKey(now)
         };
         this.chatMessages = [...this.chatMessages, newMessage];
         this.messageInput = '';
@@ -374,19 +380,16 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
     }
 
     getPlainTextLength(htmlValue) {
-        const helper = document.createElement('div');
-        helper.innerHTML = htmlValue || '';
-        const text = (helper.textContent || '').replace(/\s+/g, ' ').trim();
-        return text.length;
+        return htmlToPlainText(htmlValue).length;
     }
 
     handleAboutRichTextInput(event) {
-        const html = event.target.innerHTML || '';
+        const html = serializeElementHtml(event.target) || '';
         if (this.getPlainTextLength(html) <= 1200) {
             this.aboutEditText = html;
             this.aboutLastValidHtml = html;
         } else {
-            event.target.innerHTML = this.aboutLastValidHtml || '';
+            replaceElementHtml(event.target, this.aboutLastValidHtml || '');
             this.placeCaretAtEnd(event.target);
         }
         this.ensureAboutListFormatting();
@@ -403,7 +406,7 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
 
     handleAboutRichTextBlur() {
         if (!this.aboutRichTextEditor) return;
-        this.aboutEditText = this.aboutRichTextEditor.innerHTML || '';
+        this.aboutEditText = serializeElementHtml(this.aboutRichTextEditor) || '';
         this.aboutLastValidHtml = this.aboutEditText;
         this.updateAboutToolbarStates();
     }
@@ -425,7 +428,7 @@ export default class KenMyProfile extends NavigationMixin(LightningElement) {
         }
 
         document.execCommand(command, false, null);
-        this.aboutEditText = this.aboutRichTextEditor.innerHTML || '';
+        this.aboutEditText = serializeElementHtml(this.aboutRichTextEditor) || '';
         this.aboutLastValidHtml = this.aboutEditText;
         this.ensureAboutListFormatting();
         this.updateAboutToolbarStates();

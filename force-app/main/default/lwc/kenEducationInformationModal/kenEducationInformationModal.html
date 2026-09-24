@@ -9,15 +9,18 @@
                 <div class="form-fields">
                     <div class="institution-status-container">
                         <label class="field-label">Institution Type</label>
+                        <template if:true={isRegistrationFieldLocked}>
+                            <p class="locked-note">These details were provided by your institution. Contact the alumni office if anything is incorrect.</p>
+                        </template>
                         <div class="institution-status-buttons">
-                            <button type="button" class={instituteTabClass} data-type="institute" onclick={handleInstitutionTypeChange}>
+                            <button type="button" class={instituteTabClass} data-type="institute" disabled={isRegistrationFieldLocked} onclick={handleInstitutionTypeChange}>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 3 1 8l11 5 9-4.09V15h2V8L12 3Z" fill="#373A45"/>
                                     <path d="M5 11.18v4C5 16.72 8.13 18 12 18s7-1.28 7-2.82v-4L12 14.5l-7-3.32Z" fill="#B2B3B7"/>
                                 </svg>
                                 <span class="button-text mobile-button-text">{instituteTabLabel}</span>
                             </button>
-                            <button type="button" class={otherTabClass} data-type="other" onclick={handleInstitutionTypeChange}>
+                            <button type="button" class={otherTabClass} data-type="other" disabled={isRegistrationFieldLocked} onclick={handleInstitutionTypeChange}>
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M4 21V5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16h-3v-4H7v4H4Z" fill="#B2B3B7"/>
                                     <path d="M14 21V9h5a1 1 0 0 1 1 1v11h-6Z" fill="#373A45"/>
@@ -39,7 +42,7 @@
                             <template if:true={isInstituteType}>
                                 <c-ken-searchable-picklist placeholder="Select institute" search-placeholder="Search institute..."
                                     value={institution} options={instituteOptions} data-field="institution"
-                                    onchange={handleInstitutionPicklistChange}></c-ken-searchable-picklist>
+                                    disabled={isRegistrationFieldLocked} onchange={handleInstitutionPicklistChange}></c-ken-searchable-picklist>
                             </template>
                             <template if:true={isOtherType}>
                                 <lightning-input class={institutionErrorClass} type="text" placeholder="e.g., Jain University"
@@ -52,17 +55,17 @@
                     <template if:true={isInstituteType}>
                         <div class="form-row">
                             <div class="form-field">
-                                <label class="field-label">Program Plan<span class="required">*</span></label>
-                                <c-ken-searchable-picklist placeholder="Select program plan" search-placeholder="Search program..."
+                                <label class="field-label">Program<span class="required">*</span></label>
+                                <c-ken-searchable-picklist placeholder="Select program" search-placeholder="Search program..."
                                     value={programPlan} options={programOptions} data-field="programPlan"
-                                    onchange={handleProgramPlanChange}></c-ken-searchable-picklist>
+                                    disabled={isRegistrationFieldLocked} onchange={handleProgramPlanChange}></c-ken-searchable-picklist>
                                 <template if:true={errors.programPlan}><div class="error-message">{errors.programPlan}</div></template>
                             </div>
                             <div class="form-field">
                                 <label class="field-label">University Registration Number</label>
                                 <lightning-input class="custom-input" type="text" placeholder="Optional (e.g., university roll no.)"
                                     value={registrationNumber} data-field="registrationNumber" variant="label-hidden"
-                                    maxlength="35" onchange={handleInput}></lightning-input>
+                                    maxlength="35" disabled={isRegistrationFieldLocked} onchange={handleInput}></lightning-input>
                             </div>
                         </div>
                     </template>
@@ -77,7 +80,7 @@
                                 </div>
                                 <div class="date-field-wrapper">
                                     <lightning-combobox class="custom-select" placeholder="Year" options={yearOptions}
-                                        value={startYear} data-field="startYear" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                                        value={startYear} data-field="startYear" variant="label-hidden" disabled={isRegistrationFieldLocked} onchange={handleSelect}></lightning-combobox>
                                 </div>
                             </div>
                             <template if:true={errors.startDate}>
@@ -96,7 +99,7 @@
                                 </div>
                                 <div class="date-field-wrapper">
                                     <lightning-combobox class="custom-select" placeholder="Year" options={yearOptions}
-                                        value={endYear} data-field="endYear" variant="label-hidden" onchange={handleSelect}></lightning-combobox>
+                                        value={endYear} data-field="endYear" variant="label-hidden" disabled={isRegistrationFieldLocked} onchange={handleSelect}></lightning-combobox>
                                 </div>
                             </div>
                             <template if:true={errors.endDate}>

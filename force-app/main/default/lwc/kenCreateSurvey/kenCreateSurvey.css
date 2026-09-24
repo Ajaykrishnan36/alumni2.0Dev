@@ -1006,6 +1006,21 @@
 .question-input-field {
     width: 100%;
     margin-top: 0;
+    position: relative;
+}
+
+/* Sits in the gap below the input without taking part in layout, so showing it
+   never grows the left column and knocks the row out of alignment with the
+   type dropdown next to it. */
+.inline-error {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    color: #dc2626;
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 .question-input-field .custom-input {
@@ -1356,6 +1371,45 @@
     background-color: #fef2f2;
     border: 1px solid #fecdd3;
     border-radius: 6px;
+}
+
+/* Rides along on the "Add option" row rather than claiming a row of its own,
+   so surfacing it does not push the options list or the card taller. */
+.add-option-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.add-option-row .option-inline-error {
+    color: #dc2626;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+/* Holds the option box so its "Required" note can be anchored directly beneath
+   it. The note is absolute, so it lives in the row's existing bottom padding
+   and never spreads the option rows apart. */
+.option-item .option-input-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.option-item .option-input-wrap .option-input {
+    width: 100%;
+}
+
+.option-required {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    color: #dc2626;
+    font-size: 11px;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
 }
 
 .delete-option-btn:disabled {

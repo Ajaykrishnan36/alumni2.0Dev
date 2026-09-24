@@ -1,7 +1,11 @@
 <template>
     <!-- Profile Page -->
     <template if:true={showProfilePage}>
-        <c-ken-profile-page profile-id={selectedAlumniId} onback={handleBackFromProfile}></c-ken-profile-page>
+        <c-ken-profile-page
+            profile-id={selectedAlumniId}
+            profile-name={selectedUserName}
+            onback={handleBackFromProfile}
+        ></c-ken-profile-page>
     </template>
 
     <!-- Network Page -->

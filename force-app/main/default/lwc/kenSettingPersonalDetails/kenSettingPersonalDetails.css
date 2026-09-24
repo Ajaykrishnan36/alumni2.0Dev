@@ -513,3 +513,18 @@
 .field-note_error {
     color: #b42318;
 }
+
+/* The phone field now renders c-ken-custom-phone-input, which draws its own
+   bordered box and country picker. The shared otp-wrapper border would sit
+   around it as a second box, and its flex:1 only applies to .text-input, so the
+   component would collapse to its content width. */
+.input-wrapper.otp-wrapper.phone-otp-wrapper {
+    border: none;
+    padding-right: 0;
+    gap: 8px;
+}
+
+.input-wrapper.otp-wrapper.phone-otp-wrapper .settings-phone-input {
+    flex: 1;
+    min-width: 0;
+}

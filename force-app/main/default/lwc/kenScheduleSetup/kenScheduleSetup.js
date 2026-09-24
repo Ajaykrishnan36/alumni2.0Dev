@@ -97,15 +97,13 @@ export default class KenScheduleSetup extends LightningElement {
         const date = event.currentTarget.dataset.date;
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'dateTabChange', date },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleAddSession() {
         this.dispatchEvent(new CustomEvent('addsession', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -113,8 +111,7 @@ export default class KenScheduleSetup extends LightningElement {
         const sessionId = event.currentTarget.dataset.sessionId;
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'toggleSession', sessionId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -122,8 +119,7 @@ export default class KenScheduleSetup extends LightningElement {
         const sessionId = event.currentTarget.dataset.sessionId;
         this.dispatchEvent(new CustomEvent('editsession', {
             detail: { sessionId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -131,46 +127,40 @@ export default class KenScheduleSetup extends LightningElement {
         const sessionId = event.currentTarget.dataset.sessionId;
         this.dispatchEvent(new CustomEvent('deletesession', {
             detail: { sessionId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleSaveSession() {
         this.dispatchEvent(new CustomEvent('savesession', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleDiscardSession() {
         this.dispatchEvent(new CustomEvent('discardsession', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleSessionTitleChange(event) {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'titleChange', value: event.target.value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleStartTimeChange(event) {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'startTimeChange', value: event.target.value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleEndTimeChange(event) {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'endTimeChange', value: event.target.value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -187,32 +177,28 @@ export default class KenScheduleSetup extends LightningElement {
     handleSessionAgendaChange(event) {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'agendaChange', value: event.target.value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleLocationTypeChange(event) {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'locationTypeChange', value: event.target.value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleVenueAddressChange(event) {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'venueAddressChange', value: event.target.value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleEventLinkChange(event) {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'eventLinkChange', value: event.target.value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -220,8 +206,7 @@ export default class KenScheduleSetup extends LightningElement {
         const file = event.target.files[0];
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'brochureUpload', file },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -234,15 +219,13 @@ export default class KenScheduleSetup extends LightningElement {
     handleRemoveSessionBrochure() {
         this.dispatchEvent(new CustomEvent('sessionchange', {
             detail: { type: 'removeBrochure' },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleAddSpeaker() {
         this.dispatchEvent(new CustomEvent('addspeaker', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -250,8 +233,7 @@ export default class KenScheduleSetup extends LightningElement {
         const speakerId = event.currentTarget.dataset.speakerId;
         this.dispatchEvent(new CustomEvent('editspeaker', {
             detail: { speakerId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -259,8 +241,7 @@ export default class KenScheduleSetup extends LightningElement {
         const speakerId = event.currentTarget.dataset.speakerId;
         this.dispatchEvent(new CustomEvent('deletespeaker', {
             detail: { speakerId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
     connectedCallback() {

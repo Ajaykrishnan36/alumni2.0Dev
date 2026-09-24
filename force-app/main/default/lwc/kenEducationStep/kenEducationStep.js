@@ -1,27 +1,36 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import getMyProfile from '@salesforce/apex/KenMyProfileController.getMyProfile';
 import saveEducationRecord from '@salesforce/apex/KenMyProfileController.saveEducation';
 import archiveEducationRecord from '@salesforce/apex/KenMyProfileController.archiveEducation';
-import getBasicProfile from '@salesforce/apex/KenPortalOnbordingController.getBasicProfile';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 
+// Institution_Type__c picklist value for the alumnus's own institute, which is the only
+// case where a program plan is mandatory.
+const OWN_INSTITUTE = 'Our Institute';
+
 export default class KenEducationStep extends LightningElement {
+    // Org opt-in; forwarded to the modal, which decides per-card whether the
+    // registration-derived fields lock (seeded 'Our Institute' cards only).
+    @api lockRegistrationDetails = false;
     @track educationList = [];
     @track showModal = false;
     @track selectedRecord = null;
+    @track validateOnOpen = false;
     @track isLoading = false;
     @track loadingText = 'Loading...';
     @track hasUserChange = false;
     showActions = true;
-    _seedRecordId = null;
-    _completingSeed = false;
 
     get hasEducation() {
         return this.educationList.length > 0;
     }
 
+    /**
+     * Provisioning already created the alumnus's own education row, so having a row is
+     * enough to move on — only an empty list forces an add (or a deliberate Skip).
+     */
     get isSaveNextDisabled() {
-        return !this.hasUserChange;
+        return !this.hasUserChange && this.educationList.length === 0;
     }
 
     connectedCallback() {
@@ -31,81 +40,7 @@ export default class KenEducationStep extends LightningElement {
             document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
         }).catch(() => {});
         this.loadEducationData(true)
-            .then(() => this._maybeImportFromLinkedIn())
-            .then(() => this._maybeSeedFromProfile());
-    }
-
-    /**
-     * When the alumnus reaches Step 2 with no education rows yet, seed one
-     * partially-filled entry from Step 1: own-institute type, the chosen
-     * Program Plan, and the graduation year as the end year. The user can
-     * delete it or open it to finish the remaining fields. One-shot per
-     * browser session so a deleted seed is not recreated on revisit.
-     */
-    async _maybeSeedFromProfile() {
-        if (this.educationList && this.educationList.length > 0) return;
-        try {
-            if (window.sessionStorage.getItem('educationSeedApplied') === '1') return;
-        } catch (e) {
-            return;
-        }
-        // Re-confirm against the server before seeding — a failed or stale list
-        // load must never produce a duplicate seed next to existing records.
-        try {
-            const current = await getMyProfile();
-            const existing = current?.education || [];
-            if (existing.length > 0) {
-                this.educationList = existing.map(edu => ({ ...edu }));
-                return;
-            }
-        } catch (e) {
-            return;
-        }
-        let roleId = null;
-        try { roleId = window.localStorage.getItem('ConstituentRoleId') || null; } catch (e) { /* ignore */ }
-
-        let profile;
-        try {
-            profile = await getBasicProfile({ roleId });
-        } catch (e) {
-            return;
-        }
-        const programPlan = profile?.programmeId || null;
-        const endYear = profile?.graduationYear || null;
-        if (!programPlan && !endYear) return;
-
-        this.loadingText = 'Preparing your education...';
-        this.isLoading = true;
-        try {
-            await saveEducationRecord({
-                input: {
-                    id: null,
-                    degree: '',
-                    institution: profile?.institutionName || '',
-                    institutionType: 'institute',
-                    programPlan,
-                    registrationNumber: null,
-                    startMonth: null,
-                    startYear: null,
-                    endMonth: null,
-                    endYear,
-                    gradingFormat: 'CGPA',
-                    cgpa: ''
-                }
-            });
-            try { window.sessionStorage.setItem('educationSeedApplied', '1'); } catch (e) { /* ignore */ }
-            await this.loadEducationData(false);
-            const seeded = this.educationList.find(edu => !(edu.degree || '').trim());
-            if (seeded) {
-                this._rememberSeedId(seeded.id);
-            }
-            this.hasUserChange = true;
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('Education pre-fill from profile failed', err);
-        } finally {
-            this.isLoading = false;
-        }
+            .then(() => this._maybeImportFromLinkedIn());
     }
 
     /**
@@ -147,7 +82,7 @@ export default class KenEducationStep extends LightningElement {
             await this.loadEducationData(false);
             this.dispatchEvent(new CustomEvent('notify', {
                 detail: { type: 'success', title: 'Imported from LinkedIn', message: `${edus.length} education ${edus.length === 1 ? 'entry' : 'entries'} added from LinkedIn.` },
-                bubbles: true, composed: true
+                bubbles: true
             }));
         } catch (err) {
             // eslint-disable-next-line no-console
@@ -177,6 +112,7 @@ export default class KenEducationStep extends LightningElement {
 
     handleAdd() {
         this.selectedRecord = null;
+        this.validateOnOpen = false;
         this.showModal = true;
     }
 
@@ -185,6 +121,7 @@ export default class KenEducationStep extends LightningElement {
         const found = this.educationList.find(edu => String(edu.id) === String(id));
         if (found) {
             this.selectedRecord = { ...found };
+            this.validateOnOpen = false;
             this.showModal = true;
         }
     }
@@ -199,9 +136,6 @@ export default class KenEducationStep extends LightningElement {
         try {
             await archiveEducationRecord({ recordId: id });
             this.educationList = this.educationList.filter(edu => String(edu.id) !== String(id));
-            if (this._seedRecordId && String(this._seedRecordId) === String(id)) {
-                this._clearSeedId();
-            }
             this.hasUserChange = true;
         } catch (e) {
             const msg = e?.body?.message || 'Unable to delete education record.';
@@ -212,73 +146,22 @@ export default class KenEducationStep extends LightningElement {
     }
 
     /**
-     * The auto-seeded record must be completed before moving on. Save & Next
-     * opens it in the modal instead of advancing; saving it advances, while
-     * cancelling deletes the partial seed and then advances.
+     * Cancel just closes. The pre-filled row is the alumnus's real education, created
+     * with their ConstituentRole during provisioning — not a throwaway UI seed — so
+     * backing out of the modal must never delete it. Removing it is an explicit action
+     * on the card.
      */
-    _rememberSeedId(recordId) {
-        this._seedRecordId = recordId;
-        try { window.sessionStorage.setItem('educationSeedRecordId', String(recordId)); } catch (e) { /* ignore */ }
-    }
-
-    _clearSeedId() {
-        this._seedRecordId = null;
-        try { window.sessionStorage.removeItem('educationSeedRecordId'); } catch (e) { /* ignore */ }
-    }
-
-    _restoreSeedId() {
-        if (this._seedRecordId) return;
-        try { this._seedRecordId = window.sessionStorage.getItem('educationSeedRecordId') || null; } catch (e) { /* ignore */ }
-    }
-
-    _findIncompleteSeed() {
-        this._restoreSeedId();
-        if (!this._seedRecordId) return null;
-        const row = this.educationList.find(edu => String(edu.id) === String(this._seedRecordId));
-        if (!row) {
-            this._clearSeedId();
-            return null;
-        }
-        if ((row.degree || '').trim()) {
-            this._clearSeedId();
-            return null;
-        }
-        return row;
-    }
-
-    _proceedToNextStep() {
-        this.dispatchEvent(new CustomEvent('saveandnext', { bubbles: true, composed: true }));
-    }
-
-    async handleModalClose() {
+    handleModalClose() {
         this.showModal = false;
         this.selectedRecord = null;
-        if (!this._completingSeed) return;
-        this._completingSeed = false;
-
-        const seed = this._findIncompleteSeed();
-        if (seed) {
-            this.loadingText = 'Removing incomplete education...';
-            this.isLoading = true;
-            try {
-                await archiveEducationRecord({ recordId: seed.id });
-                this.educationList = this.educationList.filter(edu => String(edu.id) !== String(seed.id));
-                this._clearSeedId();
-            } catch (e) {
-                const msg = e?.body?.message || 'Unable to remove the incomplete education record.';
-                this.dispatchNotify('error', 'Error', msg);
-                this.isLoading = false;
-                return;
-            }
-            this.isLoading = false;
-        }
-        this._proceedToNextStep();
+        this.validateOnOpen = false;
     }
 
     async handleModalSave(event) {
         const d = event.detail || {};
         this.showModal = false;
         this.selectedRecord = null;
+        this.validateOnOpen = false;
         const isEdit = !!d.id;
         this.loadingText = isEdit ? 'Updating education...' : 'Saving education...';
         this.isLoading = true;
@@ -303,44 +186,81 @@ export default class KenEducationStep extends LightningElement {
             this.hasUserChange = true;
             this.isLoading = false;
             this.dispatchNotify('success', isEdit ? 'Education Updated!' : 'Education Added!', '');
-            if (this._completingSeed) {
-                this._completingSeed = false;
-                this._clearSeedId();
-                this._proceedToNextStep();
-            }
         } catch (e) {
             this.isLoading = false;
-            this._completingSeed = false;
             const msg = e?.body?.message || 'Unable to save education record.';
             this.dispatchNotify('error', 'Error', msg);
         }
     }
 
     handlePrevious() {
-        this.dispatchEvent(new CustomEvent('previous', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('previous', { bubbles: true }));
     }
 
     handleSkip() {
-        this.dispatchEvent(new CustomEvent('skip', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('skip', { bubbles: true }));
+    }
+
+    /**
+     * The same required set the education modal enforces. A row created during provisioning
+     * never went through that modal, so it can sit here with nothing but an institute and a
+     * year on it - the alumnus has to open it and finish it before the step counts as done.
+     */
+    missingFields(edu) {
+        const missing = [];
+        const filled = value => String(value ?? '').trim().length > 0;
+
+        if (!filled(edu.degree)) {
+            missing.push('Degree');
+        }
+        if (!filled(edu.institution)) {
+            missing.push('Institution');
+        }
+        if (edu.institutionType === OWN_INSTITUTE && !filled(edu.programPlan)) {
+            missing.push('Program');
+        }
+        if (!filled(edu.startMonth) || !filled(edu.startYear)) {
+            missing.push('Start date');
+        }
+        if (!filled(edu.endMonth) || !filled(edu.endYear)) {
+            missing.push('End date');
+        }
+        return missing;
     }
 
     handleSaveAndNext() {
-        const seed = this._findIncompleteSeed();
-        if (seed) {
-            this._completingSeed = true;
-            this.selectedRecord = { ...seed };
+        const incomplete = this.educationList
+            .map(edu => ({ edu, missing: this.missingFields(edu) }))
+            .filter(row => row.missing.length > 0);
+
+        if (incomplete.length > 0) {
+            // Open the record right here with its missing fields already flagged,
+            // rather than naming them in a dialog the alumnus can only dismiss.
+            // Records are handled one at a time: the next Save & Next opens the
+            // next incomplete one.
+            const { edu } = incomplete[0];
+            this.selectedRecord = { ...edu };
+            this.validateOnOpen = true;
             this.showModal = true;
-            this.dispatchNotify('info', 'Complete your education', 'Fill in the remaining details, or cancel to remove this entry.');
+
+            if (incomplete.length > 1) {
+                const others = incomplete.length - 1;
+                this.dispatchNotify(
+                    'info',
+                    'Finish your education details',
+                    `${others} other record${others > 1 ? 's' : ''} still need${others > 1 ? '' : 's'} completing after this one.`
+                );
+            }
             return;
         }
-        this._proceedToNextStep();
+
+        this.dispatchEvent(new CustomEvent('saveandnext', { bubbles: true }));
     }
 
     dispatchNotify(type, title, message) {
         this.dispatchEvent(new CustomEvent('notify', {
             detail: { type, title, message },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 }

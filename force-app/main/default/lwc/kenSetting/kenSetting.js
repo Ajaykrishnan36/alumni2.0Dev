@@ -23,7 +23,7 @@ export default class KenSetting extends LightningElement {
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
             document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
         }).catch(() => {
-            this.institutionName = 'Ken42';
+            this.institutionName = 'Institute Name';
             console.log('Error getting primary color');
         });
     }

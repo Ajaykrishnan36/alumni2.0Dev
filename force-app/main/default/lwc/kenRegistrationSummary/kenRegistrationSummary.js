@@ -1,4 +1,5 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { formatTimeRange } from 'c/kenDateTime';
 import { CurrentPageReference, NavigationMixin } from 'lightning/navigation';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -117,7 +118,11 @@ export default class KenRegistrationSummary extends NavigationMixin(LightningEle
             map.get(key).sessions.push({
                 id: s.id,
                 name: s.name,
-                timeLabel: `${this._msToTime(s.startTime)} - ${this._msToTime(s.endTime)}`,
+                // Instant first so the summary matches what the viewer saw when
+                // registering; the ms-from-midnight pair carries no timezone.
+                timeLabel: s.startInstant
+                    ? formatTimeRange(s.startInstant, s.endInstant)
+                    : `${this._msToTime(s.startTime)} - ${this._msToTime(s.endTime)}`,
                 priceLabel: s.price ? `₹${Number(s.price).toLocaleString('en-IN')}` : 'Free'
             });
         });

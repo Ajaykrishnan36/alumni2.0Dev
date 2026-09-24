@@ -1,25 +1,37 @@
 <template>
     <div class="my-business-card" onclick={handleCardClick}>
-        <!-- Status Badge - Top Right Corner -->
-        <div class={statusClass}>
-            <template if:true={isRejected}>
-                <lightning-icon icon-name="utility:info" size="xx-small" class="info-icon"></lightning-icon>
-            </template>
-            {business.status}
-        </div>
-
         <div class="card-content">
             <!-- Left: Icon -->
             <div class="business-icon-container">
                 <div class="business-icon">
-                    <lightning-icon icon-name="utility:user" size="small" class="icon-inside"></lightning-icon>
+                    <!-- Show the uploaded business logo when there is one; fall back to the
+                         generic avatar if it is missing or fails to load. -->
+                    <template lwc:if={showLogo}>
+                        <img src={business.logo} alt={business.name} class="business-icon-image"
+                            onerror={handleLogoError} />
+                    </template>
+                    <template lwc:else>
+                        <lightning-icon icon-name="utility:user" size="small" class="icon-inside"></lightning-icon>
+                    </template>
                 </div>
             </div>
 
             <!-- Middle: Business Details -->
             <div class="business-details">
-                <h3 class="business-name">{business.name}</h3>
-                
+                <!-- Name and status share a row, so a long business name wraps or
+                     truncates instead of running underneath the badge. -->
+                <div class="name-row">
+                    <h3 class="business-name">{business.name}</h3>
+
+                    <!-- Status Badge -->
+                    <div class={statusClass}>
+                        <template if:true={isRejected}>
+                            <lightning-icon icon-name="utility:info" size="xx-small" class="info-icon"></lightning-icon>
+                        </template>
+                        {business.status}
+                    </div>
+                </div>
+
                 <!-- Location -->
                 <div class="location-info">
                     <lightning-icon icon-name="utility:location" size="xx-small" class="location-icon"></lightning-icon>

@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import { setSafeHtml } from 'c/kenHtmlSanitizer';
 import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
 
 const PROFILE_CACHE_KEY = 'navigationMenu_profileCache';
@@ -96,7 +97,10 @@ export default class KenResumePreview extends LightningElement {
         containers.forEach((el) => {
             const id = el.getAttribute('data-exp-id');
             const exp = list.find((e) => e.id === id);
-            if (exp?.description && el.innerHTML !== exp.description) el.innerHTML = exp.description;
+            if (exp?.description && el.dataset.renderedDescription !== exp.description) {
+                setSafeHtml(el, exp.description);
+                el.dataset.renderedDescription = exp.description;
+            }
         });
     }
 }

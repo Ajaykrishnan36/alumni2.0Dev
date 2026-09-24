@@ -5,6 +5,7 @@ import GEO_DATA from '@salesforce/resourceUrl/kenGeoData';
 import INDIA_BOUNDARY_JS from '@salesforce/resourceUrl/kenIndiaBoundaryJs';
 import getAlumniLocationCounts from '@salesforce/apex/KenAlumniMapController.getAlumniLocationCounts';
 import getAlumniAtLocation from '@salesforce/apex/KenAlumniMapController.getAlumniAtLocation';
+import getBasemapKey from '@salesforce/apex/KenAlumniMapController.getBasemapKey';
 
 const COUNTRY_MAX_ZOOM = 3;
 const STATE_MAX_ZOOM = 5;
@@ -16,6 +17,11 @@ const CITY_VIEW_ZOOM = 7;
 // image, while CARTO renders Latin/English names worldwide. Voyager is CARTO's
 // coloured style; light_all is the plainer Positron alternative and both share
 // the cartodb-light boundary config.
+// CARTO requires a key on its raster basemaps; without one every tile comes
+// back with an "API key required" watermark burnt into it. The key is org data
+// (Ken_Alm_Org_Parameters__c.Carto_Basemap_Client_Id__c), not a constant here, so
+// each institution's org carries its own and it rotates without a deploy — see
+// the tileUrl getter, which is what the layers are actually built from.
 const BASE_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
 const BASE_ATTRIBUTION =
     '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>';
@@ -81,6 +87,7 @@ export default class KenAlumniMap extends LightningElement {
     map;
     bubbleLayer;
     tileLayer;
+    basemapKey;
     currentLevel;
     countryNodes = [];
     stateLevelNodes = [];
@@ -143,16 +150,35 @@ export default class KenAlumniMap extends LightningElement {
         this.hasStarted = false;
     }
 
+    /**
+     * The tile template every basemap layer is built from. Without a key CARTO
+     * watermarks the tiles, so the parameter is appended only when one is set
+     * rather than sent empty.
+     */
+    get tileUrl() {
+        return this.basemapKey
+            ? `${BASE_TILE_URL}?key=${encodeURIComponent(this.basemapKey)}`
+            : BASE_TILE_URL;
+    }
+
     async initialize() {
         try {
-            const [, , rows] = await Promise.all([
+            const [, , rows, basemapKey] = await Promise.all([
                 loadScript(this, LEAFLET_JS),
                 loadScript(this, GEO_DATA),
                 getAlumniLocationCounts(),
+                // A missing key must not take the map down with it — an
+                // unwatermarked map is better, but a watermarked one still
+                // shows every alumnus in the right place.
+                getBasemapKey().catch((e) => {
+                    console.warn('kenAlumniMap: basemap key unavailable, tiles will be watermarked', e);
+                    return null;
+                }),
                 loadScript(this, INDIA_BOUNDARY_JS).catch((e) => {
                     console.warn('kenAlumniMap: India boundary corrector did not load', e);
                 })
             ]);
+            this.basemapKey = basemapKey;
             const geoData = window.KEN_GEO_DATA;
             if (!geoData) {
                 throw new Error('Map data scripts did not load');
@@ -470,7 +496,7 @@ export default class KenAlumniMap extends LightningElement {
         const cache = new Map();
         const fixerPool = [];
         for (let i = 0; i < FIXER_POOL_SIZE; i += 1) {
-            const probe = new Corrected(BASE_TILE_URL, {
+            const probe = new Corrected(this.tileUrl, {
                 pmtilesUrl: `${PMTILES_URL}#pool${i}`,
                 layerConfig: BASE_LAYER_CONFIG
             });
@@ -620,7 +646,7 @@ export default class KenAlumniMap extends LightningElement {
         });
 
         return new Hybrid(
-            BASE_TILE_URL,
+            this.tileUrl,
             Object.assign({}, TILE_PERF_OPTIONS, {
                 maxZoom: TILE_MAX_ZOOM,
                 attribution: BASE_ATTRIBUTION,
@@ -681,7 +707,7 @@ export default class KenAlumniMap extends LightningElement {
     addPlainBaseLayer() {
         const L = window.L;
         this.tileLayer = L.tileLayer(
-            BASE_TILE_URL,
+            this.tileUrl,
             Object.assign({}, TILE_PERF_OPTIONS, {
                 maxZoom: TILE_MAX_ZOOM,
                 attribution: BASE_ATTRIBUTION
@@ -903,8 +929,7 @@ export default class KenAlumniMap extends LightningElement {
         this.dispatchEvent(
             new CustomEvent('profileselect', {
                 detail: { personId, constituentRoleId, name },
-                bubbles: true,
-                composed: true
+                bubbles: true
             })
         );
     }
@@ -913,8 +938,7 @@ export default class KenAlumniMap extends LightningElement {
         this.dispatchEvent(
             new CustomEvent('guestaction', {
                 detail: { action: 'login' },
-                bubbles: true,
-                composed: true
+                bubbles: true
             })
         );
     }

@@ -1,9 +1,9 @@
 import { LightningElement, api, track, wire } from "lwc";
 import { NavigationMixin, CurrentPageReference } from "lightning/navigation";
-import { loadScript, loadStyle } from "lightning/platformResourceLoader";
-import intlTelInputResource from "@salesforce/resourceUrl/intlTelInput";
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import createBusiness from "@salesforce/apex/KenBusinessController.createBusiness";
+import { localDateKey } from 'c/kenDateTime';
+import { validatePhoneNumber } from 'c/kenCustomPhoneInput';
 
 // Complete country list in JSON-style objects with ISO code and dial code
 const COUNTRY_JSON = [
@@ -259,8 +259,6 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
   @track mapUrlError = "";
   @track coverPreviewUrl = null;
   @track countrySearchTerm = "";
-  intlTelInputInstance = null;
-  intlTelInputLoaded = false;
 
   _hasInitializedFromBusiness = false;
 
@@ -329,17 +327,6 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
       return "(000) 000-0000";
     }
     return "0000 0000 0000";
-  }
-
-  get phoneValidationRules() {
-    return {
-      "+91": { digits: 10, label: "India (+91)" },
-      "+1": { digits: 10, label: "USA (+1)" },
-      "+44": { min: 10, max: 11, label: "UK (+44)" },
-      "+61": { min: 9, max: 10, label: "Australia (+61)" },
-      "+65": { digits: 8, label: "Singapore (+65)" },
-      "+971": { digits: 9, label: "UAE (+971)" }
-    };
   }
 
   handleCoverPictureUpload() {
@@ -531,167 +518,9 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
 
     document.addEventListener("click", this._handleClickOutside);
     this.initializeFromBusiness();
-    await this.loadIntlTelInput();
-  }
-
-  async loadIntlTelInput() {
-    try {
-      console.log("=== Loading intl-tel-input Library ===");
-
-      // Load CSS first
-      await loadStyle(this, intlTelInputResource + "/css/intlTelInput.css");
-      console.log("✓ CSS loaded successfully");
-
-      // Load main script
-      await loadScript(this, intlTelInputResource + "/js/intlTelInput.min.js");
-      console.log("✓ Main script loaded successfully");
-
-      // Load utils script
-      await loadScript(this, intlTelInputResource + "/js/utils.js");
-      console.log("✓ Utils script loaded successfully");
-
-      // Verify library is available
-      if (typeof window.intlTelInput === "function") {
-        console.log("✓ intlTelInput is available");
-        this.intlTelInputLoaded = true;
-
-        // Initialize after render
-        this.defer(() => this.initializeIntlTelInput());
-      } else {
-        console.error("intlTelInput is not available after loading");
-      }
-    } catch (error) {
-      console.error("=== ERROR loading intl-tel-input ===");
-      console.error("Error:", error?.message || error);
-      console.error("Stack:", error?.stack);
-    }
-  }
-
-  initializeIntlTelInput() {
-    const phoneInput = this.template.querySelector('[data-id="phone-input"]');
-
-    console.log("Initializing intl-tel-input:", {
-      phoneInputFound: !!phoneInput,
-      intlTelInputAvailable: typeof window.intlTelInput,
-      alreadyInitialized: !!this.intlTelInputInstance
-    });
-
-    if (!phoneInput) {
-      console.log("Phone input not found, retrying...");
-      this.defer(() => this.initializeIntlTelInput());
-      return;
-    }
-
-    if (!window.intlTelInput) {
-      console.log("intlTelInput not available yet, retrying...");
-      this.defer(() => this.initializeIntlTelInput());
-      return;
-    }
-
-    if (this.intlTelInputInstance) {
-      console.log("Already initialized");
-      return;
-    }
-
-    try {
-      const utilsPath = intlTelInputResource + "/js/utils.js";
-      console.log("Initializing with utils path:", utilsPath);
-
-      // Clear any existing placeholder to prevent conflicts
-      phoneInput.placeholder = "";
-
-      this.intlTelInputInstance = window.intlTelInput(phoneInput, {
-        initialCountry: "in",
-        preferredCountries: ["in", "us", "gb", "ca", "au"],
-        separateDialCode: false,
-        utilsScript: utilsPath,
-        formatOnDisplay: true,
-        nationalMode: true,
-        autoHideDialCode: false,
-        showSelectedDialCode: true,
-        allowDropdown: true,
-        onlyCountries: [],
-        excludeCountries: [],
-        customPlaceholder: function () {
-          return "0000 0000 00";
-        }
-      });
-
-      console.log(
-        "intl-tel-input initialized, instance:",
-        !!this.intlTelInputInstance
-      );
-
-      // Force flag visibility after render
-      this.defer(() => {
-        const wrapper = phoneInput.closest(".phone-input-wrapper");
-        if (wrapper) {
-          const flagElement = wrapper.querySelector(".iti__flag");
-          const flagBox = wrapper.querySelector(".iti__flag-box");
-          const flagContainer = wrapper.querySelector(".iti__flag-container");
-
-          if (flagElement) {
-            flagElement.style.display = "inline-block";
-            flagElement.style.visibility = "visible";
-            flagElement.style.opacity = "1";
-          }
-          if (flagBox) {
-            flagBox.style.display = "inline-block";
-            flagBox.style.visibility = "visible";
-          }
-          if (flagContainer) {
-            flagContainer.style.display = "flex";
-          }
-
-          console.log("Flag visibility forced:", {
-            flagElement: !!flagElement,
-            flagBox: !!flagBox,
-            flagContainer: !!flagContainer
-          });
-        }
-      });
-
-      console.log("intl-tel-input initialized successfully");
-
-      // Update formData when country changes
-      phoneInput.addEventListener("countrychange", () => {
-        const countryData = this.intlTelInputInstance.getSelectedCountryData();
-        this.formData.countryCode = "+" + countryData.dialCode;
-        this.phoneError = "";
-        console.log(
-          "Country changed to:",
-          countryData.name,
-          countryData.dialCode
-        );
-      });
-
-      // Update formData when phone number changes
-      phoneInput.addEventListener("input", () => {
-        this.formData.phone = phoneInput.value;
-        this.validatePhone();
-      });
-
-      // Validate on blur
-      phoneInput.addEventListener("blur", () => {
-        this.validatePhone();
-      });
-
-      // Set initial value if exists
-      if (this.formData.phone) {
-        this.intlTelInputInstance.setNumber(this.formData.phone);
-      }
-    } catch (initError) {
-      console.error("Error initializing intl-tel-input:", initError);
-      console.error("Init error details:", initError.message, initError.stack);
-      // Retry initialization
-      this.defer(() => this.initializeIntlTelInput());
-    }
   }
 
   renderedCallback() {
-    if (this.intlTelInputLoaded && !this.intlTelInputInstance) {
-      this.initializeIntlTelInput();
-    }
     // Reflect the pre-populated business type onto the native <select> (edit mode).
     const typeSelect = this.template.querySelector("select.form-select");
     if (
@@ -732,10 +561,6 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
 
   disconnectedCallback() {
     document.removeEventListener("click", this._handleClickOutside);
-    if (this.intlTelInputInstance) {
-      this.intlTelInputInstance.destroy();
-      this.intlTelInputInstance = null;
-    }
   }
 
   handleCountrySearch(event) {
@@ -749,58 +574,19 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
   validatePhone() {
     this.phoneError = "";
 
-    // Use intl-tel-input validation if available
-    if (this.intlTelInputInstance) {
-      const phoneInput = this.template.querySelector(".phone-input");
-      if (!phoneInput || !phoneInput.value.trim()) {
-        return true; // Allow empty, required validation happens elsewhere
-      }
-
-      if (this.intlTelInputInstance.isValidNumber()) {
-        this.formData.phone = phoneInput.value;
-        this.formData.countryCode =
-          "+" + this.intlTelInputInstance.getSelectedCountryData().dialCode;
-        return true;
-      }
-
-      const countryData = this.intlTelInputInstance.getSelectedCountryData();
-      const errorCode = this.intlTelInputInstance.getValidationError();
-
-      switch (errorCode) {
-        case 1: // TOO_SHORT
-          this.phoneError = `Phone number is too short for ${countryData.name}.`;
-          break;
-        case 2: // TOO_LONG
-          this.phoneError = `Phone number is too long for ${countryData.name}.`;
-          break;
-        case 3: // INVALID_COUNTRY_CODE
-          this.phoneError = "Invalid country code.";
-          break;
-        default:
-          this.phoneError = `Please enter a valid phone number for ${countryData.name}.`;
-      }
-      return false;
-    }
-
-    // Fallback validation if intl-tel-input not loaded
-    const digits = this.formData.phone.replace(/\D/g, "");
-    const rules = this.phoneValidationRules[this.formData.countryCode];
-    if (rules) {
-      if (rules.digits && digits.length !== rules.digits) {
-        this.phoneError = `Enter a ${rules.digits}-digit phone number for ${rules.label}.`;
-      } else {
-        const min = rules.min || rules.digits || 0;
-        const max = rules.max || rules.digits || 15;
-        if (digits.length < min || digits.length > max) {
-          this.phoneError = `Enter a valid phone number for ${rules.label}.`;
-        }
-      }
-    } else {
-      // Default validation
-      if (digits.length < 7 || digits.length > 15) {
-        this.phoneError = "Enter a valid phone number.";
-      }
-    }
+    // Validation uses the same country rules as c/kenCustomPhoneInput - 245
+    // countries. This used to consult a local map
+    // of six dial codes and wave everything else through on a 7-15 digit check, so
+    // the business directory accepted numbers the rest of the portal rejects. It now
+    // uses the same country rules as c/kenCustomPhoneInput — 245 countries.
+    // This form keeps the dial code in its own picker, so glue it back on and let
+    // the shared parser resolve the country from it. Countries sharing a code share
+    // its digit range, so '+1' resolving to the first NANP entry is still correct.
+    const typed = (this.formData.phone || '').trim();
+    const dialCode = this.formData.countryCode || '';
+    const candidate = typed.startsWith("+") ? typed : dialCode + " " + typed;
+    const check = validatePhoneNumber(typed ? candidate : '', null, false);
+    this.phoneError = check.valid ? "" : check.message;
     return !this.phoneError;
   }
 
@@ -890,8 +676,7 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
       this.dispatchEvent(
         new CustomEvent("submit", {
           detail: submissionData,
-          bubbles: true,
-          composed: true
+          bubbles: true
         })
       );
     } catch (error) {
@@ -920,7 +705,7 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
         return;
       }
       this.dispatchEvent(
-        new CustomEvent("closeform", { bubbles: true, composed: true })
+        new CustomEvent("closeform", { bubbles: true })
       );
     }, 2000);
   }
@@ -951,19 +736,19 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
   }
 
   get todayStr() {
-    return new Date().toISOString().slice(0, 10);
+    return localDateKey();
   }
 
   get defaultFeatureFrom() {
     const d = new Date();
     d.setDate(d.getDate() + 1); // tomorrow
-    return d.toISOString().slice(0, 10);
+    return localDateKey(d);
   }
 
   get defaultFeatureTo() {
     const d = new Date();
     d.setDate(d.getDate() + 15); // tomorrow + 14 days
-    return d.toISOString().slice(0, 10);
+    return localDateKey(d);
   }
 
   get featureDatesSummary() {
@@ -1052,10 +837,20 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
     this.formData.hidePhone = event.target.checked;
   }
 
-  handlePhoneInput(event) {
-    // This will be handled by intl-tel-input event listeners
-    // Just ensure formData is updated
-    this.formData.phone = event.target.value;
+  get phoneE164() {
+    const typed = (this.formData.phone || "").trim();
+    if (!typed) return "";
+    if (typed.startsWith("+")) return typed;
+    return (this.formData.countryCode || "") + typed;
+  }
+
+  handlePhoneChange(event) {
+    const detail = event.detail || {};
+    this.formData.phone = detail.national || "";
+    if (detail.country && detail.country.dialCode) {
+      this.formData.countryCode = detail.country.dialCode;
+    }
+    this.validatePhone();
   }
 
   handleEmailChange(event) {
@@ -1096,7 +891,7 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
         return "URL must start with http:// or https://.";
       }
       return "";
-    } catch {
+    } catch (e) {
       return "Enter a valid URL starting with http:// or https://.";
     }
   }
@@ -1116,8 +911,7 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
     // Dispatch event to go back
     this.dispatchEvent(
       new CustomEvent("cancel", {
-        bubbles: true,
-        composed: true
+        bubbles: true
       })
     );
   }
@@ -1146,9 +940,12 @@ export default class KenBusinessListingForm extends NavigationMixin(LightningEle
       businessName: this.business.name || "",
       businessType: this.business.category || "",
       phone,
-      hidePhone: !phone,
+      // Use the saved masking flags. These used to be derived as !phone / !email,
+      // which meant a business that HAS a phone always loaded with "hide" cleared —
+      // so the user's saved choice was shown wrong and then overwritten on save.
+      hidePhone: this.business.hidePhone ?? !phone,
       email,
-      hideEmail: !email,
+      hideEmail: this.business.hideEmail ?? !email,
       website: clean(this.business.website),
       address: clean(this.business.address) || clean(this.business.location),
       mapUrl: clean(this.business.mapUrl),

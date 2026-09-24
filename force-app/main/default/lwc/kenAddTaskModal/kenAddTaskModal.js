@@ -1,5 +1,10 @@
 import { LightningElement, api, track } from 'lwc';
+import {
+    replaceElementHtml,
+    serializeElementHtml
+} from 'c/kenHtmlSanitizer';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import { localDateKey } from 'c/kenDateTime';
 
 const TITLE_MAX_LENGTH = 255;
 
@@ -105,7 +110,7 @@ export default class KenAddTaskModal extends LightningElement {
 
     get minEndDate() {
         const now = new Date();
-        return new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString().slice(0, 10);
+        return localDateKey(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
     }
 
     get titleErrorClass() {
@@ -145,15 +150,15 @@ export default class KenAddTaskModal extends LightningElement {
         if (editor) {
             if (editor !== this.richTextEditor) {
                 this.richTextEditor = editor;
-                if (this.descriptionHtml && editor.innerHTML !== this.descriptionHtml) {
-                    editor.innerHTML = this.descriptionHtml;
+                if (this.descriptionHtml && serializeElementHtml(editor) !== this.descriptionHtml) {
+                    replaceElementHtml(editor, this.descriptionHtml);
                 }
                 editor.addEventListener('keyup', () => this.updateButtonStates());
                 editor.addEventListener('mouseup', () => this.updateButtonStates());
-            } else if (this.descriptionHtml && editor.innerHTML !== this.descriptionHtml) {
-                editor.innerHTML = this.descriptionHtml;
-            } else if (!this.descriptionHtml && editor.innerHTML) {
-                editor.innerHTML = '';
+            } else if (this.descriptionHtml && serializeElementHtml(editor) !== this.descriptionHtml) {
+                replaceElementHtml(editor, this.descriptionHtml);
+            } else if (!this.descriptionHtml && serializeElementHtml(editor)) {
+                replaceElementHtml(editor, '');
             }
             this.ensureListFormatting();
         }
@@ -198,7 +203,7 @@ export default class KenAddTaskModal extends LightningElement {
         if (/^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
         const d = new Date(value);
         if (Number.isNaN(d.getTime())) return '';
-        return d.toISOString().slice(0, 10);
+        return localDateKey(d);
     }
 
     handleTitleChange(event) {
@@ -243,7 +248,7 @@ export default class KenAddTaskModal extends LightningElement {
     }
 
     handleRichTextInput(event) {
-        this.descriptionHtml = event.target.innerHTML || '';
+        this.descriptionHtml = serializeElementHtml(event.target) || '';
         setTimeout(() => {
             this.updateButtonStates();
         }, 50);
@@ -256,7 +261,7 @@ export default class KenAddTaskModal extends LightningElement {
     }
 
     handleRichTextBlur(event) {
-        this.descriptionHtml = event.target.innerHTML || '';
+        this.descriptionHtml = serializeElementHtml(event.target) || '';
     }
 
     handleDescriptionChange(event) {
@@ -264,9 +269,8 @@ export default class KenAddTaskModal extends LightningElement {
     }
 
     _plainFromHtml(html) {
-        const helper = document.createElement('div');
-        helper.innerHTML = html || '';
-        return (helper.textContent || '').trim();
+        const parsed = new DOMParser().parseFromString(String(html || ''), 'text/html');
+        return (((parsed.body && parsed.body.textContent) || '')).trim();
     }
 
     handleRichTextSelection() {
@@ -363,7 +367,7 @@ export default class KenAddTaskModal extends LightningElement {
         const success = document.execCommand(command, false, null);
         
         setTimeout(() => {
-            this.descriptionHtml = this.richTextEditor.innerHTML;
+            this.descriptionHtml = serializeElementHtml(this.richTextEditor);
             this.updateButtonStates();
             
             if (command === 'insertUnorderedList' || command === 'insertOrderedList') {
@@ -422,8 +426,7 @@ export default class KenAddTaskModal extends LightningElement {
 
     handleClose() {
         this.dispatchEvent(new CustomEvent('close', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -476,8 +479,7 @@ export default class KenAddTaskModal extends LightningElement {
 
         this.dispatchEvent(new CustomEvent('savetask', {
             detail: taskData,
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
 
         this.handleClose();

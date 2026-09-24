@@ -68,8 +68,7 @@ export default class KenFeaturedBusinesses extends LightningElement {
       this.dispatchEvent(
         new CustomEvent("businessselect", {
           detail: { businessId: b.id },
-          bubbles: true,
-          composed: true
+          bubbles: true
         })
       );
     }

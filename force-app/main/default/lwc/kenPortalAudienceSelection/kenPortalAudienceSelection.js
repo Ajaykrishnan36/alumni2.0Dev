@@ -276,8 +276,7 @@ export default class KenTargetAudienceSelection extends LightningElement {
                 segmentationName: this.segmentationName,
                 isDirty: this.isDirty
             },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

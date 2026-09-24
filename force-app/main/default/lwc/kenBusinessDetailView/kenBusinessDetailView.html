@@ -13,6 +13,29 @@
 
   <template if:true={hasBusinessData}>
     <template if:false={showBusinessListingForm}>
+      <!-- Mobile only: the business detail fills the screen and covers the
+           portal navigation, leaving the browser's back button as the only way
+           out. handleBack() already existed and already knows where to go - it
+           simply had nothing calling it except the "View More" link on Similar
+           Businesses. Desktop keeps the surrounding navigation, so it needs
+           nothing. Matches the event and alumni-profile detail pages. -->
+      <template if:true={isMobile}>
+        <div class="mobile-header">
+          <div class="mobile-header-content">
+            <button
+              type="button"
+              class="mobile-back-btn"
+              onclick={handleBack}
+              aria-label="Back to business directory"
+            >
+              <svg class="back-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <h1 class="mobile-header-title">{businessData.name}</h1>
+          </div>
+        </div>
+      </template>
       <div class={pageContainerClass}>
         <div class="business-detail-container">
           <!-- Main Content Area -->
@@ -434,5 +457,36 @@
         </div>
       </template>
     </template>
+
+  <!--
+    Docked chat window, same shape and behaviour as the one on the alumni profile:
+    a fixed panel bottom-right rather than a jump to the chat page, so the listing
+    stays on screen while you talk to the owner. c/kenChat in single-thread mode
+    brings the working layer - polling, read receipts, uploads - and hide-header
+    because the bar above already names who this is.
+  -->
+  <template if:true={showChatbox}>
+    <div class={chatContainerClass}>
+      <div class="chatbox-header">
+        <div class="chat-user-info">
+          <div class="chat-avatar-container">
+            <img src={ownerImageUrl} alt={businessData.ownerName} class="chat-avatar" onerror={handleOwnerImageError} />
+          </div>
+          <span class="chat-username">{businessData.ownerName}</span>
+        </div>
+        <div class="chat-actions">
+          <button class="chat-action-btn" onclick={handleToggleExpand} title="Expand/Contract">
+            <lightning-icon icon-name={chatExpandIcon} size="x-small"></lightning-icon>
+          </button>
+          <button class="chat-action-btn" onclick={handleCloseChat} title="Close">
+            <lightning-icon icon-name="utility:close" size="x-small"></lightning-icon>
+          </button>
+        </div>
+      </div>
+      <div class="chatbox-body">
+        <c-ken-chat alumnus-id={ownerAccountId} hide-header></c-ken-chat>
+      </div>
+    </div>
+  </template>
   </template>
 </template>

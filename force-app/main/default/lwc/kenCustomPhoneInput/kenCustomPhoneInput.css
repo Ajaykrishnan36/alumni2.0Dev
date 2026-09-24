@@ -253,3 +253,17 @@
         max-height: 200px;
     }
 }
+
+.country-selector.disabled,
+.country-selector.disabled:hover {
+    background-color: #f3f4f6;
+    cursor: not-allowed;
+}
+
+.country-selector.disabled .dial-code {
+    color: #6b7280;
+}
+
+.country-selector.disabled .dropdown-arrow {
+    opacity: 0.5;
+}

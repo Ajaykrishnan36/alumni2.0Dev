@@ -2484,7 +2484,7 @@
 }
 
 .multi-select-input:hover {
-    border-color: #80bdff;
+    border-color: var(--primary-color, #80bdff) !important;
 }
 
 .selected-tags {
@@ -2532,30 +2532,64 @@
 
 .dropdown-options {
     position: absolute;
-    top: 100%;
+    /* Detached from the field rather than welded under it: the old flush box with
+       border-top:none read as a dark seam against the 0.5px input border. */
+    top: calc(100% + 6px);
     left: 0;
     right: 0;
-    background: white;
-    border: 1px solid #ced4da;
-    border-top: none;
-    border-radius: 0 0 4px 4px;
-    /* box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); */
+    background: #FFFFFF;
+    border: 1px solid #E6E8EC;
+    border-radius: 12px;
+    box-shadow: 0 12px 28px rgba(16, 24, 40, 0.12), 0 2px 6px rgba(16, 24, 40, 0.06);
     z-index: 1000;
-    max-height: 200px;
+    /* The language list runs to 46 entries; 200px sliced the fifth row in half and
+       made the panel look truncated rather than scrollable. */
+    max-height: 280px;
     overflow-y: auto;
+    padding: 6px;
+    scrollbar-width: thin;
+    scrollbar-color: #D3D7DE transparent;
+}
+
+.dropdown-options::-webkit-scrollbar {
+    width: 10px;
+}
+
+.dropdown-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb {
+    background: #D3D7DE;
+    border-radius: 999px;
+    /* Border in the panel's own colour insets the thumb clear of the rounded corners. */
+    border: 3px solid #FFFFFF;
+}
+
+.dropdown-options::-webkit-scrollbar-thumb:hover {
+    background: #B9BFC9;
 }
 
 .dropdown-option {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px;
+    gap: 8px;
+    padding: 9px 10px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background 0.3s ease;
+    font-size: 0.875rem;
+    color: #1F2937;
+    /* 0.3s felt sluggish on a list this long, where the pointer crosses many rows. */
+    transition: background-color 0.15s ease;
 }
 
 .dropdown-option:hover {
-    background: #f8f9fa;
+    background: #F3F5F9;
+}
+
+.dropdown-option:active {
+    background: #E8ECF4;
 }
 
 .option-label {
@@ -2563,8 +2597,9 @@
 }
 
 .option-check {
-    color: #28a745;
-    font-weight: bold;
+    color: var(--primary-color, #2563EB);
+    font-weight: 700;
+    line-height: 1;
 }
 
 .suggested-categories {

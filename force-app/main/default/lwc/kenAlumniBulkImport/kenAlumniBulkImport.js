@@ -34,7 +34,6 @@ export default class KenAlumniBulkImport extends LightningElement {
     "Current Company",
     "Current Location",
     "Industry",
-    "Specialization",
     // --- Personal & contact (Person Account) ---
     "Date of Birth",
     "Nationality",
@@ -75,11 +74,13 @@ export default class KenAlumniBulkImport extends LightningElement {
   ];
   requiredHeaders = ["First Name", "Last Name", "Email", "Program", "Status", "Year of Graduation"];
 
+  // Values are ConstituentRole.Source_Funnel__c picklist entries — the import
+  // stamps that field directly, so no translation layer is needed.
   dataSourceOptions = [
-    { label: "Historic Records", value: "Historic Import" },
-    { label: "Old Portal Migration", value: "Portal Migration" },
+    { label: "Historic Records", value: "Historical Upload" },
+    { label: "Old Portal Migration", value: "Old Portal Migration" },
   ];
-  selectedDataSource = "Historic Import";
+  selectedDataSource = "Historical Upload";
 
   parsedHeaders = [];
   sessionKey;
@@ -119,7 +120,6 @@ export default class KenAlumniBulkImport extends LightningElement {
     "Current Company": ["Current Company", "Company", "Employer"],
     "Current Location": ["Current Location", "Location", "City"],
     Industry: ["Industry"],
-    Specialization: ["Specialization", "Specialisation", "Major"],
     // --- Personal & contact ---
     "Date of Birth": ["Date of Birth", "DOB", "Birth Date", "Birthdate"],
     Nationality: ["Nationality", "Citizenship"],
@@ -688,7 +688,6 @@ export default class KenAlumniBulkImport extends LightningElement {
       "Current Company": "Acme Corp",
       "Current Location": "Bangalore",
       Industry: "Technology",
-      Specialization: "",
       "Date of Birth": "12/04/1996",
       Nationality: "Indian",
       Gender: "",

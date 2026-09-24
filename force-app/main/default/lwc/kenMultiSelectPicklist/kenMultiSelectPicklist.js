@@ -241,8 +241,7 @@ export default class KenMultiSelectPicklist extends LightningElement {
         this.dispatchEvent(
             new CustomEvent('search', {
                 detail: { value },
-                bubbles: true,
-                composed: true
+                bubbles: true
             })
         );
     }

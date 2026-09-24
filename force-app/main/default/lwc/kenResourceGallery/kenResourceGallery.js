@@ -1,5 +1,6 @@
 import { LightningElement, track } from 'lwc';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
 export default class KenResourceGallery extends LightningElement {
     @track currentTab = 'files';
     @track searchTerm = '';
@@ -11,7 +12,7 @@ export default class KenResourceGallery extends LightningElement {
             uploadedDate: '2025-05-20',
             fileType: 'PDF',
             uploaderName: 'Ranav J',
-            uploaderImageUrl: '/assets/images/profile1.jpg'
+            uploaderImageUrl: defaultProfileImage
         },
         {
             id: '2',
@@ -19,7 +20,7 @@ export default class KenResourceGallery extends LightningElement {
             uploadedDate: '2025-05-20',
             fileType: 'XLS',
             uploaderName: 'Akash Sharama',
-            uploaderImageUrl: '/assets/images/profile2.jpg'
+            uploaderImageUrl: defaultProfileImage
         },
         {
             id: '3',
@@ -27,7 +28,7 @@ export default class KenResourceGallery extends LightningElement {
             uploadedDate: '2025-05-30',
             fileType: 'DOC',
             uploaderName: 'Libresh A',
-            uploaderImageUrl: '/assets/images/profile3.jpg'
+            uploaderImageUrl: defaultProfileImage
         },
         {
             id: '4',
@@ -35,7 +36,7 @@ export default class KenResourceGallery extends LightningElement {
             uploadedDate: '2025-06-10',
             fileType: 'JPG',
             uploaderName: 'Sanjay Kumar',
-            uploaderImageUrl: '/assets/images/profile4.jpg'
+            uploaderImageUrl: defaultProfileImage
         },
         {
             id: '5',
@@ -43,7 +44,7 @@ export default class KenResourceGallery extends LightningElement {
             uploadedDate: '2025-07-15',
             fileType: 'MP3',
             uploaderName: 'Praveen Kumar',
-            uploaderImageUrl: '/assets/images/default-profile.png'
+            uploaderImageUrl: defaultProfileImage
         },
         {
             id: '6',
@@ -51,7 +52,7 @@ export default class KenResourceGallery extends LightningElement {
             uploadedDate: '2025-08-10',
             fileType: 'MP4',
             uploaderName: 'Sam Mattew',
-            uploaderImageUrl: '/assets/images/default-profile.png'
+            uploaderImageUrl: defaultProfileImage
         }
     ];
     @track filteredFiles = [];
@@ -61,7 +62,7 @@ export default class KenResourceGallery extends LightningElement {
             name: 'Newsletters',
             lastUpdatedDate: '30 May, 2025',
             ownerName: 'Admin',
-            ownerProfileImageUrl: '/assets/images/default-profile.png',
+            ownerProfileImageUrl: defaultProfileImage,
             collaboratorsCount: 0
         },
         {
@@ -69,7 +70,7 @@ export default class KenResourceGallery extends LightningElement {
             name: 'Sustainability in Everyday Work Life',
             lastUpdatedDate: '20 May, 2025',
             ownerName: 'Ranav J',
-            ownerProfileImageUrl: '/assets/images/profile1.jpg',
+            ownerProfileImageUrl: defaultProfileImage,
             collaboratorsCount: 3
         },
         {
@@ -77,7 +78,7 @@ export default class KenResourceGallery extends LightningElement {
             name: 'Staying Relevant in a Changing Industry',
             lastUpdatedDate: '30 May, 2025',
             ownerName: 'Sanjay Kumar',
-            ownerProfileImageUrl: '/assets/images/profile2.jpg',
+            ownerProfileImageUrl: defaultProfileImage,
             collaboratorsCount: 3
         },
         {
@@ -85,7 +86,7 @@ export default class KenResourceGallery extends LightningElement {
             name: 'The power of UX testing',
             lastUpdatedDate: '30 May, 2025',
             ownerName: 'You',
-            ownerProfileImageUrl: '/assets/images/default-profile.png',
+            ownerProfileImageUrl: defaultProfileImage,
             collaboratorsCount: 3
         }
     ];

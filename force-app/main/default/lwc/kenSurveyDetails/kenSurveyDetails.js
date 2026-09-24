@@ -6,7 +6,6 @@ import getSurveyForEdit from '@salesforce/apex/KenSurveyController.getSurveyForE
 import getMySurveys from '@salesforce/apex/KenSurveyController.getMySurveys';
 import getSurveyResponsesForExport from '@salesforce/apex/KenSurveyController.getSurveyResponsesForExport';
 import deleteSurvey from '@salesforce/apex/KenSurveyController.deleteSurvey';
-import createNeedHelpCase from '@salesforce/apex/KenServiceSupportController.createNeedHelpCase';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 
 // NEW feature apex
@@ -15,8 +14,16 @@ import getShortAnswerQuestionCounts from '@salesforce/apex/KenSurveyController.g
 import getShortAnswerResponsesForExport from '@salesforce/apex/KenSurveyController.getShortAnswerResponsesForExport';
 
 const DRAFT_STORAGE_KEY = 'createSurveyDraft';
+const DEFAULT_SCALE_POINTS = 5;
+
+// Same breakpoint the rest of the portal's mobile layouts use.
+const MOBILE_QUERY = '(max-width: 767px)';
 
 export default class KenSurveyDetails extends NavigationMixin(LightningElement) {
+    @track isMobile = false;
+    _mediaQuery;
+    _boundSyncMobile;
+
     @api surveyId;
     @track surveyData = {};
     @track statusInfo = null;
@@ -30,7 +37,6 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
     @track selectedIssueType = '';
     @track issueSubject = '';
     @track isSubmittingHelp = false;
-    @track showNeedHelpModal = false;
     @track isSuccessToastVisible = false;
     @track successTitle = 'Request submitted';
     @track successDescription = 'Your request has been submitted successfully.';
@@ -44,9 +50,58 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
 
     disconnectedCallback() {
         window.clearTimeout(this._successTimer);
+        if (this._mediaQuery) {
+            if (this._mediaQuery.removeEventListener) {
+                this._mediaQuery.removeEventListener('change', this._boundSyncMobile);
+            } else if (this._mediaQuery.removeListener) {
+                this._mediaQuery.removeListener(this._boundSyncMobile);
+            }
+        }
+        if (typeof window !== 'undefined' && this._boundSyncMobile) {
+            window.removeEventListener('resize', this._boundSyncMobile);
+        }
+    }
+
+    initMobileWatch() {
+        this._boundSyncMobile = this.syncIsMobile.bind(this);
+        if (typeof window !== 'undefined' && window.matchMedia) {
+            this._mediaQuery = window.matchMedia(MOBILE_QUERY);
+            this.isMobile = this._mediaQuery.matches;
+            // addEventListener is missing on MediaQueryList in older WebKit,
+            // which is exactly the mobile Safari this targets.
+            if (this._mediaQuery.addEventListener) {
+                this._mediaQuery.addEventListener('change', this._boundSyncMobile);
+            } else if (this._mediaQuery.addListener) {
+                this._mediaQuery.addListener(this._boundSyncMobile);
+            }
+        }
+        if (typeof window !== 'undefined') {
+            window.addEventListener('resize', this._boundSyncMobile);
+        }
+    }
+
+    syncIsMobile() {
+        this.isMobile = this._mediaQuery
+            ? this._mediaQuery.matches
+            : typeof window !== 'undefined' && window.innerWidth <= 767;
+    }
+
+    /**
+     * Back goes to the surveys list rather than through history: this page is
+     * reached from the surveys hub, the all-surveys list, an event's surveys and
+     * the registration page, so history is not a dependable place to return to.
+     * all_surveys__c is also where this component already navigates after a
+     * survey is deleted.
+     */
+    handleBack() {
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'all_surveys__c' }
+        });
     }
 
     connectedCallback() {
+        this.initMobileWatch();
         if (this.surveyId) {
             this.loadSurveyDetails();
         }   
@@ -112,34 +167,21 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
                 const audienceGroup = this.parseSegmentationDefinition(editResult.segmentationDefinitionJson);
 
                 const questionsBuilt = (dto.questions || []).map((q, index) => {
-                    const options = (q.options || []).map((opt, idx) => ({
-                        id: `${Date.now()}-${index}-${idx}`,
-                        text: opt.text,
-                        letter: String.fromCharCode(97 + idx),
-                        count: 0,
-                        percent: 0
-                    }));
+                    const options = this.buildOptions(q.options, `${Date.now()}-${index}`);
 
                     return {
                         id: `${Date.now()}-${index}`, // UI only
-                        sfId: q.id,                  // IMPORTANT: real Questionnaire_Parameter__c Id from Apex
+                        sfId: q.id,                  // IMPORTANT: real AssessmentQuestion Id from Apex
                         number: index + 1,
                         text: q.text || '',
                         type: q.type || '',
                         required: q.required || false,
                         options,
-                        scaleMin: q.scaleMin || 1,
-                        scaleMax: q.scaleMax || 5,
-                        scaleMinLabel: q.scaleMinLabel || '',
-                        scaleMaxLabel: q.scaleMaxLabel || '',
                         showOptions: q.type === 'multiple' || q.type === 'checkbox',
                         showLinearScale: q.type === 'linear',
                         showShortAnswer: q.type === 'short',
-                        hasLabels:
-                            q.type === 'linear' &&
-                            (((q.scaleMinLabel || '').trim()) || ((q.scaleMaxLabel || '').trim())),
                         totalResponses: 0,
-                        scaleStats: [],
+                        scaleStats: q.type === 'linear' ? this.buildScaleStats(options, null) : [],
 
                         // NEW short answer UI fields
                         textResponseCount: 0,
@@ -194,8 +236,7 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
                         });
 
                         const options = (question.options || []).map(opt => {
-                            const key = (opt.text || '').trim();
-                            const st = byValue.get(key) || { count: 0, percent: 0 };
+                            const st = byValue.get((opt.value || '').trim()) || { count: 0, percent: 0 };
                             return {
                                 ...opt,
                                 count: st.count,
@@ -203,22 +244,9 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
                             };
                         });
 
-                        let scaleStats = [];
-                        if (question.type === 'linear') {
-                            const min = question.scaleMin || 1;
-                            const max = question.scaleMax || 5;
-                            for (let v = min; v <= max; v++) {
-                                const key = String(v);
-                                const st = byValue.get(key) || { count: 0, percent: 0 };
-                                scaleStats.push({
-                                    value: v,
-                                    count: st.count,
-                                    percent: st.percent,
-                                    isFirst: v === min,
-                                    isLast: v === max
-                                });
-                            }
-                        }
+                        const scaleStats = question.type === 'linear'
+                            ? this.buildScaleStats(options, byValue)
+                            : [];
 
                         return {
                             ...question,
@@ -243,6 +271,44 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
         } finally {
             this.isLoading = false;
         }
+    }
+
+    /**
+     * Normalises a question's stored choices into { value, text } pairs. `value` is what
+     * respondents submit, so it is also the key the response stats are matched on.
+     */
+    buildOptions(rawOptions, idPrefix) {
+        return (rawOptions || [])
+            .filter(opt => opt)
+            .map((opt, idx) => {
+                const text = String(opt.text ?? '').trim();
+                const value = String(opt.value ?? '').trim() || text;
+                return {
+                    id: `${idPrefix}-${idx}`,
+                    value: value,
+                    text: text || value,
+                    letter: String.fromCharCode(97 + idx),
+                    count: 0,
+                    percent: 0
+                };
+            })
+            .filter(opt => opt.value);
+    }
+
+    /**
+     * One bar per scale point, in the order the points were authored. A label that merely
+     * repeats its point is dropped so the number is not printed twice.
+     */
+    buildScaleStats(options, byValue) {
+        return (options || []).map(opt => {
+            const st = (byValue && byValue.get((opt.value || '').trim())) || { count: 0, percent: 0 };
+            return {
+                value: opt.value,
+                label: opt.text && opt.text !== opt.value ? opt.text : '',
+                count: st.count,
+                percent: st.percent
+            };
+        });
     }
 
     // =========================
@@ -571,9 +637,11 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
             if (!result || !result.data) return;
             const dto = result.data;
             const questions = (dto.questions || []).map((q, index) => {
+                const type = q.type || '';
                 const options = (q.options || []).map((opt, idx) => ({
                     id: `${Date.now()}-${index}-${idx}`,
-                    text: opt.text,
+                    value: String(opt.value ?? '').trim() || String(opt.text ?? '').trim() || String(idx + 1),
+                    text: opt.text || '',
                     letter: String.fromCharCode(97 + idx)
                 }));
                 return {
@@ -581,18 +649,15 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
                     sfId: q.id,
                     number: index + 1,
                     text: q.text || '',
-                    type: q.type || '',
+                    type,
                     required: q.required || false,
                     options,
-                    scaleMin: q.scaleMin || 1,
-                    scaleMax: q.scaleMax || 5,
-                    scaleMinLabel: q.scaleMinLabel || '',
-                    scaleMaxLabel: q.scaleMaxLabel || '',
-                    showMultipleOptions: q.type === 'multiple' || q.type === 'checkbox',
-                    isMultiple: q.type === 'multiple',
-                    isCheckboxType: q.type === 'checkbox',
-                    showLinearScale: q.type === 'linear',
-                    showShortAnswer: q.type === 'short',
+                    scalePointCount: String(options.length || DEFAULT_SCALE_POINTS),
+                    showMultipleOptions: type === 'multiple' || type === 'checkbox',
+                    isMultiple: type === 'multiple',
+                    isCheckboxType: type === 'checkbox',
+                    showLinearScale: type === 'linear',
+                    showShortAnswer: type === 'short',
                     nextOptionNumber: options.length + 1
                 };
             });
@@ -613,10 +678,7 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
                         type: '',
                         required: false,
                         options: [],
-                        scaleMin: 1,
-                        scaleMax: 5,
-                        scaleMinLabel: '',
-                        scaleMaxLabel: '',
+                        scalePointCount: String(DEFAULT_SCALE_POINTS),
                         showMultipleOptions: false,
                         isMultiple: false,
                         isCheckboxType: false,
@@ -710,46 +772,14 @@ export default class KenSurveyDetails extends NavigationMixin(LightningElement) 
     }
 
     handleNeedHelpClick() {
-        this.showNeedHelpModal = true;
+        this.navigateToServiceSupport();
     }
 
-    handleCloseNeedHelpModal() {
-        this.showNeedHelpModal = false;
-    }
-
-    
-    async handleNeedHelpSubmit(event) {
-        const { description, issueType, subject, file } = event.detail || {};
-
-        try {
-            let fileData;
-            let fileName;
-
-            if (file) {
-                ({ fileData, fileName } = await this.readFileAsBase64(file));
-            }
-
-            await createNeedHelpCase({
-                serviceOfferingId: issueType,
-                subject,
-                description,
-                fileName,
-                fileData
-            });
-
-            this.showNeedHelpModal = false;
-
-            //  this is the success modal (not toast)
-            this.successTitle = 'Request submitted';
-            this.successDescription = 'Your request has been submitted successfully.';
-            this.showSuccessModalWithTimeout();
-
-        } catch (error) {
-            // show the child error modal (your existing pattern)
-            const modal = this.template.querySelector('c-need-help-modal');
-            const message = error?.body?.message || error?.message || 'An unexpected error occurred.';
-            if (modal) modal.showError('Submission failed', message);
-        }
+    navigateToServiceSupport() {
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'service_support__c' }
+        });
     }
 
     readFileAsBase64(file) {

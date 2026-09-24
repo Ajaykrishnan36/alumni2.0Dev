@@ -48,8 +48,7 @@ export default class KenAudienceFilterRow extends LightningElement {
     this.dispatchEvent(
       new CustomEvent("rowchange", {
         detail: { row },
-        bubbles: true,
-        composed: true
+        bubbles: true
       })
     );
   }
@@ -64,8 +63,7 @@ export default class KenAudienceFilterRow extends LightningElement {
     this.dispatchEvent(
       new CustomEvent("remove", {
         detail: { id: this.row.id },
-        bubbles: true,
-        composed: true
+        bubbles: true
       })
     );
   };

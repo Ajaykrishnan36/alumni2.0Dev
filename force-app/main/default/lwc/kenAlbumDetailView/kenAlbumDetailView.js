@@ -72,6 +72,11 @@ export default class KenAlbumDetailView extends NavigationMixin(LightningElement
         return this.rawPhotos.map((p) => ({
             id: p.id,
             imageUrl: p.imageUrl,
+            // publicUrl is the absolute link the card prefers, and thumbnailUrl
+            // drives the document preview - neither was being passed through, so
+            // the card only ever had the root-relative URL to work with.
+            publicUrl: p.publicUrl,
+            thumbnailUrl: p.thumbnailUrl,
             profileImageUrl: p.uploaderImage,
             personName: p.uploaderName,
             isImage: p.isImage,
@@ -171,7 +176,10 @@ export default class KenAlbumDetailView extends NavigationMixin(LightningElement
             this.selectedPhoto = photo;
             this.showPhotoDetail = true;
         } else {
-            window.open(photo.imageUrl, '_blank', 'noopener,noreferrer');
+            // A document cannot be previewed, so clicking it opens the file.
+            // Prefer the absolute link - the shepherd URL does not resolve from
+            // inside the Experience Cloud site.
+            window.open(photo.publicUrl || photo.imageUrl, '_blank', 'noopener,noreferrer');
         }
     }
 

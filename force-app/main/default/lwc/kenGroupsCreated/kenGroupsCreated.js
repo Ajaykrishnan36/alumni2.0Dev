@@ -31,8 +31,7 @@ export default class KenGroupsCreated extends LightningElement {
         const groupId = event.currentTarget.dataset.groupId;
         this.dispatchEvent(new CustomEvent('groupclick', {
             detail: { groupId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
     connectedCallback() {

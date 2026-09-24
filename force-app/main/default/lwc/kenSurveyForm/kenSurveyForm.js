@@ -98,17 +98,13 @@ export default class KenSurveyForm extends NavigationMixin(LightningElement) {
                 this.surveyId = data.surveyId;
                 this.survey = {
                     id: data.surveyId,
-                    title: data.name || data.sectionName,
+                    title: data.name,
                     questions: (data.questions || []).map((q, i) => this.mapQuestion({
                         id: q.id,
                         displayOrder: i + 1,
                         questionLabel: q.label,
                         questionType: q.type,
-                        mcqOptions: q.options,
-                        minGrade: q.minGrade,
-                        maxGrade: q.maxGrade,
-                        minGradeLabel: q.minGradeLabel,
-                        maxGradeLabel: q.maxGradeLabel,
+                        options: q.choices,
                         required: q.required
                     }, i))
                 };
@@ -153,7 +149,7 @@ export default class KenSurveyForm extends NavigationMixin(LightningElement) {
         // Transform survey data similar to surveys.js
         return {
             id: surveyData.id,
-            title: surveyData.name || surveyData.sectionName,
+            title: surveyData.name,
             questions: this.mapQuestionsFromSurvey(surveyData.questionnaire?.parameters)
         };
     }
@@ -168,13 +164,14 @@ export default class KenSurveyForm extends NavigationMixin(LightningElement) {
     mapQuestion(question, index) {
         const displayOrder = question.displayOrder != null ? Number(question.displayOrder) : index + 1;
         const type = this.mapQuestionType(question.questionType);
+        const options = this.buildOptions(question.questionType, question.options);
         return {
             id: question.id,
             displayId: displayOrder,
             question: question.questionLabel || '',
             type: type,
-            options: this.buildOptions(question.questionType, question.mcqOptions),
-            scale: this.buildScale(question),
+            options: options,
+            scale: type === 'rating' ? this.buildScale(options) : null,
             isRequired: question.required === true,
             isRating: type === 'rating',
             isRadio: type === 'radio',
@@ -206,31 +203,35 @@ export default class KenSurveyForm extends NavigationMixin(LightningElement) {
         }
     }
 
-    buildOptions(questionType, mcqOptions) {
-        if (questionType === 'Yes/No') {
-            return ['Yes', 'No'];
+    /**
+     * Normalises the question's stored choices into { value, text } pairs. `value` is what
+     * gets submitted, `text` is what the respondent reads. Accepts the survey controller's
+     * `{ value, text }` and the module feedback controller's `{ value, label }`.
+     */
+    buildOptions(questionType, rawOptions) {
+        const options = (rawOptions || [])
+            .filter(option => option)
+            .map(option => {
+                const text = String(option.text ?? option.label ?? '').trim();
+                const value = String(option.value ?? '').trim() || text;
+                return { value: value, text: text || value };
+            })
+            .filter(option => option.value);
+        if (!options.length && questionType === 'Yes/No') {
+            return [{ value: 'Yes', text: 'Yes' }, { value: 'No', text: 'No' }];
         }
-        if (!mcqOptions) return [];
-        return mcqOptions.split(/[\n;,]+/).map(option => option.trim()).filter(option => option);
+        return options;
     }
 
-    buildScale(question) {
-        if (question.questionType === 'Rating' || question.questionType === 'Linear Scale') {
-            const min = question.minGrade || 1;
-            const max = question.maxGrade || 5;
-            const minLabel = question.minGradeLabel || '';
-            const maxLabel = question.maxGradeLabel || '';
-            
-            const scale = [];
-            for (let i = min; i <= max; i++) {
-                scale.push({ 
-                    value: i, 
-                    label: i === min ? minLabel : i === max ? maxLabel : '' 
-                });
-            }
-            return scale;
-        }
-        return null;
+    /**
+     * A linear scale is its options in order — each point carries its own label, and a label
+     * that merely repeats the point is dropped so the number is not printed twice.
+     */
+    buildScale(options) {
+        return (options || []).map(option => ({
+            value: option.value,
+            label: option.text && option.text !== option.value ? option.text : ''
+        }));
     }
 
     get completedQuestions() {
@@ -304,16 +305,15 @@ export default class KenSurveyForm extends NavigationMixin(LightningElement) {
     }
 
     handleRatingClick(event) {
-        const value = parseInt(event.currentTarget.dataset.ratingValue);
+        const value = event.currentTarget.dataset.ratingValue;
         const questionId = event.currentTarget.dataset.questionId;
         this.surveyAnswers = { ...this.surveyAnswers, [questionId]: value };
-        
+
         // Update button states
         const ratingButtons = this.template.querySelectorAll(`[data-question-id="${questionId}"]`);
         ratingButtons.forEach(btn => {
             if (btn.dataset.ratingValue) {
-                const btnValue = parseInt(btn.dataset.ratingValue);
-                if (btnValue === value) {
+                if (btn.dataset.ratingValue === value) {
                     btn.classList.add('selected');
                 } else {
                     btn.classList.remove('selected');
@@ -487,8 +487,7 @@ export default class KenSurveyForm extends NavigationMixin(LightningElement) {
                         setTimeout(() => {
                             const ratingButtons = this.template.querySelectorAll(`[data-question-id="${questionId}"].rating-btn`);
                             ratingButtons.forEach(btn => {
-                                const btnValue = parseInt(btn.dataset.ratingValue);
-                                if (btnValue === selectedValue) {
+                                if (btn.dataset.ratingValue === String(selectedValue)) {
                                     btn.classList.add('selected');
                                 } else {
                                     btn.classList.remove('selected');

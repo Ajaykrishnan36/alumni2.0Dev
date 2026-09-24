@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import { setSafeHtml } from 'c/kenHtmlSanitizer';
 import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
 
 // Same cache key as kenNavigationMenu – use same default profile image when no photo uploaded
@@ -153,7 +154,7 @@ export default class KenResumeEditDetails extends LightningElement {
     handleFieldChange(event) {
         const field = event.target.dataset?.field;
         const value = event.target.value ?? '';
-        this.dispatchEvent(new CustomEvent('personalchange', { detail: { path: field, value }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('personalchange', { detail: { path: field, value }, bubbles: true }));
     }
 
     handlePhotoClick() {
@@ -166,7 +167,7 @@ export default class KenResumeEditDetails extends LightningElement {
         if (!file || !file.type.startsWith('image/')) return;
         const reader = new FileReader();
         reader.onload = () => {
-            this.dispatchEvent(new CustomEvent('personalchange', { detail: { path: 'photoUrl', value: reader.result }, bubbles: true, composed: true }));
+            this.dispatchEvent(new CustomEvent('personalchange', { detail: { path: 'photoUrl', value: reader.result }, bubbles: true }));
         };
         reader.readAsDataURL(file);
         event.target.value = '';
@@ -198,7 +199,7 @@ export default class KenResumeEditDetails extends LightningElement {
 
     handleEducationRemove(event) {
         const id = event.currentTarget?.dataset?.id;
-        if (id) this.dispatchEvent(new CustomEvent('educationremove', { detail: { id }, bubbles: true, composed: true }));
+        if (id) this.dispatchEvent(new CustomEvent('educationremove', { detail: { id }, bubbles: true }));
     }
 
     handleEduModalChange(event) {
@@ -229,9 +230,9 @@ export default class KenResumeEditDetails extends LightningElement {
             gpa: (this.eduGpa || '').trim()
         };
         if (payload.id) {
-            this.dispatchEvent(new CustomEvent('educationedit', { detail: payload, bubbles: true, composed: true }));
+            this.dispatchEvent(new CustomEvent('educationedit', { detail: payload, bubbles: true }));
         } else {
-            this.dispatchEvent(new CustomEvent('educationadd', { detail: payload, bubbles: true, composed: true }));
+            this.dispatchEvent(new CustomEvent('educationadd', { detail: payload, bubbles: true }));
         }
         this.handleEducationModalClose();
     }
@@ -254,16 +255,16 @@ export default class KenResumeEditDetails extends LightningElement {
 
     handleExperienceRemove(event) {
         const id = event.currentTarget?.dataset?.id;
-        if (id) this.dispatchEvent(new CustomEvent('experienceremove', { detail: { id }, bubbles: true, composed: true }));
+        if (id) this.dispatchEvent(new CustomEvent('experienceremove', { detail: { id }, bubbles: true }));
     }
 
     handleCareerSave(event) {
         const detail = event.detail || {};
         const entry = careerDetailToExperience(detail, this.editingExperienceId || undefined);
         if (this.editingExperienceId) {
-            this.dispatchEvent(new CustomEvent('experienceedit', { detail: entry, bubbles: true, composed: true }));
+            this.dispatchEvent(new CustomEvent('experienceedit', { detail: entry, bubbles: true }));
         } else {
-            this.dispatchEvent(new CustomEvent('experienceadd', { detail: entry, bubbles: true, composed: true }));
+            this.dispatchEvent(new CustomEvent('experienceadd', { detail: entry, bubbles: true }));
         }
         this.showCareerModal = false;
         this.editingExperienceId = null;
@@ -299,22 +300,22 @@ export default class KenResumeEditDetails extends LightningElement {
             this.skillInput = '';
             return;
         }
-        this.dispatchEvent(new CustomEvent('skilladd', { detail: { value: raw }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('skilladd', { detail: { value: raw }, bubbles: true }));
         this.skillInput = '';
     }
 
     handleRemoveSkill(event) {
         const value = event.currentTarget?.dataset?.skill;
-        if (value != null) this.dispatchEvent(new CustomEvent('skillremove', { detail: { value }, bubbles: true, composed: true }));
+        if (value != null) this.dispatchEvent(new CustomEvent('skillremove', { detail: { value }, bubbles: true }));
     }
 
     handleAddSection(event) {
         const name = event.currentTarget?.dataset?.name || 'Custom section';
-        this.dispatchEvent(new CustomEvent('customsectionadd', { detail: { name }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('customsectionadd', { detail: { name }, bubbles: true }));
     }
 
     handleCreateCoverLetter() {
-        this.dispatchEvent(new CustomEvent('customsectionadd', { detail: { name: 'Cover letter', isCoverLetter: true }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('customsectionadd', { detail: { name: 'Cover letter', isCoverLetter: true }, bubbles: true }));
     }
 
     renderedCallback() {
@@ -323,7 +324,10 @@ export default class KenResumeEditDetails extends LightningElement {
         containers.forEach((el) => {
             const id = el.getAttribute('data-exp-id');
             const exp = list.find((e) => e.id === id);
-            if (exp?.description && el.innerHTML !== exp.description) el.innerHTML = exp.description;
+            if (exp?.description && el.dataset.renderedDescription !== exp.description) {
+                setSafeHtml(el, exp.description);
+                el.dataset.renderedDescription = exp.description;
+            }
         });
     }
 }

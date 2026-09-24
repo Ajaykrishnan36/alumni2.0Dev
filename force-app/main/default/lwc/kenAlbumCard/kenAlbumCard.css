@@ -102,11 +102,14 @@
 }
 
 /* Album Cover */
+/* Same 4:3 frame the file cards inside an album use, so a folder card and a file
+   card are the same size. Was flex:1 + min-height, which let the cover absorb
+   leftover height and made folder cards noticeably taller than file cards. */
 .album-cover {
     position: relative;
     width: 100%;
-    flex: 1;
-    min-height: 180px;
+    aspect-ratio: 4 / 3;
+    flex: none;
     overflow: hidden;
     background-color: #ffffff;
     border-radius: 8px;
@@ -121,6 +124,25 @@
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
+}
+
+/* Names the file a document cover stands in for. Same treatment as the badge on
+   the file cards inside the album, so the two views read alike. */
+.cover-filename-badge {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 8px 12px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent);
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-radius: 8px 8px 0 0;
+    pointer-events: none;
 }
 
 .cover-placeholder {

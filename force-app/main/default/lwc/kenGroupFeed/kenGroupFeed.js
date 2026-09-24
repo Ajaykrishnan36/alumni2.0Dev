@@ -1,8 +1,7 @@
 import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getFeed from '@salesforce/apex/KenGroupFeedController.getFeed';
-import createPost from '@salesforce/apex/KenGroupFeedController.createPost';
-import createPostWithAttachments from '@salesforce/apex/KenGroupFeedController.createPostWithAttachments';
+import createGroupPost from '@salesforce/apex/KenGroupFeedController.createGroupPost';
 import deletePost from '@salesforce/apex/KenGroupFeedController.deletePost';
 
 const PAGE_SIZE = 10;
@@ -75,14 +74,13 @@ export default class KenGroupFeed extends LightningElement {
         const detail = event.detail || {};
         const body = detail.body || '';
         const contentDocumentIds = detail.contentDocumentIds || [];
+        const commentsEnabled = detail.commentsEnabled !== false;
         const id = this.effectiveGroupId;
         if (!body.trim() && contentDocumentIds.length === 0) return;
         if (this.isPosting || !id) return;
         this.isPosting = true;
 
-        const promise = contentDocumentIds.length > 0
-            ? createPostWithAttachments({ groupId: id, body, contentDocumentIds })
-            : createPost({ groupId: id, body });
+        const promise = createGroupPost({ groupId: id, body, contentDocumentIds, commentsEnabled });
 
         promise
             .then(() => {

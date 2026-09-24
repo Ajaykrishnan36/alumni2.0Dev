@@ -1,0 +1,50 @@
+<template>
+    <lightning-card icon-name="standard:contact_list" title={cardTitle}>
+        <div slot="actions">
+            <lightning-button label="Download CSV" icon-name="utility:download"
+                onclick={handleDownloadCsv} disabled={isLoading}></lightning-button>
+        </div>
+
+        <div class="slds-var-p-horizontal_medium">
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Loading registrations" size="small"></lightning-spinner>
+            </template>
+
+            <template if:true={error}>
+                <div class="slds-text-color_error slds-var-p-vertical_small">{error}</div>
+            </template>
+
+            <template if:true={hasParticipants}>
+                <div class="slds-grid slds-wrap slds-gutters_x-small slds-var-m-bottom_small">
+                    <div class="slds-col">
+                        <div class="ker-stat-label">Session Seats</div>
+                        <div class="ker-stat-value">{totalSeats}</div>
+                    </div>
+                    <div class="slds-col">
+                        <div class="ker-stat-label">Meals Opted</div>
+                        <div class="ker-stat-value">{mealsOptedCount}</div>
+                    </div>
+                    <div class="slds-col">
+                        <div class="ker-stat-label">Pre-Event Form Filled</div>
+                        <div class="ker-stat-value">{formFilledCount}</div>
+                    </div>
+                </div>
+
+                <div class="ker-table">
+                    <lightning-datatable key-field="id" data={participants} columns={columns}
+                        hide-checkbox-column resize-column-disabled></lightning-datatable>
+                </div>
+            </template>
+
+            <template if:false={hasParticipants}>
+                <template if:false={isLoading}>
+                    <template if:false={error}>
+                        <div class="slds-text-color_weak slds-var-p-vertical_small">
+                            No one has registered for this event yet.
+                        </div>
+                    </template>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+</template>

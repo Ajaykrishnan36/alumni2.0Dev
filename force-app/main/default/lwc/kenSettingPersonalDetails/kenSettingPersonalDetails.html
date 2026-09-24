@@ -96,10 +96,11 @@
                         <label class="field-label">{phoneFieldLabel}</label>
                         <template if:false={isVerifyingPhone}>
                             <template if:true={isPhoneEditable}>
-                                <div class="input-wrapper otp-wrapper">
-                                    <input type="tel" class="text-input" inputmode="numeric" maxlength="15"
-                                        placeholder="Enter your mobile number" value={phoneDraft}
-                                        oninput={handlePhoneDraftInput} onkeydown={handlePhoneDraftKeyDown} />
+                                <div class="input-wrapper otp-wrapper phone-otp-wrapper">
+                                    <c-ken-custom-phone-input class="settings-phone-input" value={phoneDraft}
+                                        placeholder="Enter your mobile number" required="true"
+                                        onphonechange={handlePhoneDraftChange}>
+                                    </c-ken-custom-phone-input>
                                     <button class="input-suffix-text-btn verify-cta" onclick={handleSaveAndVerifyPhone}
                                         disabled={isSavePhoneDisabled}>Save &amp; Verify</button>
                                 </div>
@@ -206,7 +207,4 @@
 
     <c-ken-status-popup visible={showSuccessPopup} message={successPopupMessage} variant="success"></c-ken-status-popup>
 
-    <template if:true={showNeedHelpModal}>
-        <c-ken-need-help-modal onclose={handleNeedHelpClose} onsubmit={handleNeedHelpSubmit}></c-ken-need-help-modal>
-    </template>
 </template>

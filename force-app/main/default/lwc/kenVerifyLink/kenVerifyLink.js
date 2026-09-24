@@ -89,6 +89,12 @@ export default class KenVerifyLink extends LightningElement {
             const msg = e?.body?.message || 'Verification failed. Please try again or request a new link.';
             if (msg === 'EXPIRED') {
                 this.error = 'Token is expired. Please click on the resend verification in the email.';
+            } else if (msg === 'ONBOARDING_IN_PROGRESS') {
+                // The link opened once already and moved the role to Onboarding In
+                // Progress. Re-opening it would restart a registration that is
+                // underway, so point at login instead — the temporary password went
+                // out by email, and forgot-password covers a lost one.
+                this.error = 'This link has already been used. Please log in to continue your registration.';
             } else if (msg === 'ALREADY_REGISTERED') {
                 this.error = 'Already registered. Please login.';
             } else if (msg === 'INVALID_TOKEN' || msg === 'Missing or invalid verification token.') {

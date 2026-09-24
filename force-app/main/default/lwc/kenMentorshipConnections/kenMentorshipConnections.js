@@ -454,8 +454,7 @@ export default class KenMentorshipConnections extends LightningElement {
     handleMentorClick(event) {
         this.dispatchEvent(new CustomEvent('mentorclick', {
             detail: event.detail,
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

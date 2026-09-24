@@ -41,19 +41,19 @@
             <p class="album-date">Last updated on: {lastUpdatedDate}</p>
         </div>
 
-        <!-- Album Cover Image -->
+        <!-- Cover is the album's most recent upload, resolved in Apex. Three
+             distinct states: a real image, document art when the newest upload
+             is a file, and the "No files yet" art only when the album is
+             genuinely empty. -->
         <div class="album-cover" onclick={handleAlbumClick}>
-            <template if:true={hasCoverImage}>
-                <img src={coverImageUrl} alt={albumName} class="cover-image" />
-            </template>
-            <template if:false={hasCoverImage}>
-                <div class="cover-placeholder">
-                    <lightning-icon
-                        icon-name="utility:image"
-                        size="large"
-                        class="placeholder-icon"
-                    ></lightning-icon>
-                </div>
+            <img
+                src={coverImageUrl}
+                alt={albumName}
+                class="cover-image"
+                data-cover-image="true"
+            />
+            <template if:true={showCoverFileName}>
+                <div class="cover-filename-badge">{coverFileName}</div>
             </template>
         </div>
 

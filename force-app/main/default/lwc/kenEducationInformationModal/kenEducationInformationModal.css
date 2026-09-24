@@ -34,6 +34,18 @@
     background-color: #F6F8FB;
 }
 
+/* Locked by Lock_Registration_Details__c: the buttons keep their selected state
+   so the alumnus can still read which institution type applies, but must not
+   invite a click. Matches the not-allowed cursor the picklists already use. */
+.institution-status-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+}
+
+.institution-status-button:disabled .button-text {
+    color: #7A7F8C;
+}
+
 .institution-status-button.active {
     background-color: #F6F8FB;
     border-color: var(--primary-color);
@@ -268,4 +280,10 @@
     .form-row {
         grid-template-columns: 1fr;
     }
+}
+.locked-note {
+    margin: 4px 0 8px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: #5C6472;
 }

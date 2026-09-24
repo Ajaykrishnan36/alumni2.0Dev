@@ -1,5 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
 export default class KenUserNotFoundModal extends LightningElement {
     @api showModal = false;
     @api userName = '';
@@ -9,7 +10,7 @@ export default class KenUserNotFoundModal extends LightningElement {
     @track displayImage = '';
 
     connectedCallback() {
-        this.displayImage = this.profileImage || '/assets/images/default-profile.png';
+        this.displayImage = this.profileImage || defaultProfileImage;
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
@@ -20,7 +21,7 @@ export default class KenUserNotFoundModal extends LightningElement {
     }
 
     get profileImageUrl() {
-        return this.displayImage || '/assets/images/default-profile.png';
+        return this.displayImage || defaultProfileImage;
     }
 
     handleClose() {
@@ -38,7 +39,7 @@ export default class KenUserNotFoundModal extends LightningElement {
     }
 
     handleImageError() {
-        this.displayImage = '/assets/images/default-profile.png';
+        this.displayImage = defaultProfileImage;
     }
 
     handleCopyLink() {

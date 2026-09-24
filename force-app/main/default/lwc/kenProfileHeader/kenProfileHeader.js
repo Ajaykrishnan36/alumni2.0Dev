@@ -145,36 +145,36 @@ export default class KenProfileHeader extends LightningElement {
 
     handleRemoveConnection() {
         this.isMenuOpen = false;
-        this.dispatchEvent(new CustomEvent('removeconnection', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('removeconnection', { bubbles: true }));
     }
 
     handleRemoveMentorship() {
         this.isMenuOpen = false;
-        this.dispatchEvent(new CustomEvent('removementorship', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('removementorship', { bubbles: true }));
     }
 
     handleReportUser() {
         this.isMenuOpen = false;
-        this.dispatchEvent(new CustomEvent('reportuser', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('reportuser', { bubbles: true }));
     }
 
     // ─── Other ────────────────────────────────────────────────────────────────
 
     handleRequestConnection() {
         if (this.connectButtonDisabled) return;
-        this.dispatchEvent(new CustomEvent('requestconnection', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('requestconnection', { bubbles: true }));
     }
 
     handleRequestMentorship() {
         if (this.mentorshipButtonDisabled) return;
-        this.dispatchEvent(new CustomEvent('requestmentorship', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('requestmentorship', { bubbles: true }));
     }
 
     handleMessage() {
-        this.dispatchEvent(new CustomEvent('openchat', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('openchat', { bubbles: true }));
     }
 
     handleEditProfile() {
-        this.dispatchEvent(new CustomEvent('editprofile', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('editprofile', { bubbles: true }));
     }
 }

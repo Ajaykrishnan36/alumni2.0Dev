@@ -18,14 +18,13 @@ export default class KenOptInModal extends LightningElement {
     }
 
     handleClose() {
-        this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('close', { bubbles: true }));
     }
 
     handleFinish() {
         this.dispatchEvent(new CustomEvent('finish', {
             detail: { universityUpdates: this.universityUpdates },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 }

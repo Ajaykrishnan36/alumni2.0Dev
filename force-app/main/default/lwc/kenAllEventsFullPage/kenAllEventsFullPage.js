@@ -185,11 +185,13 @@ get showAllEvents() {
 
     get upcomingEvents() {
         const now = new Date();
-    
+
         let events = this.futureEvents
             .filter(event => {
-                const eventEndDateTime = new Date(`${event.endDate}T${event.endTime}`);
-                return event.featuredEvents === false && eventEndDateTime >= now;
+                const eventEndDateTime = new Date(event.effectiveEndDateTime);
+                return event.featuredEvents === false
+                    && !isNaN(eventEndDateTime.getTime())
+                    && eventEndDateTime >= now;
             })
             .map(event => ({
                 ...event,

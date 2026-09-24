@@ -96,6 +96,35 @@
 }
 .refresh-btn:hover:not([disabled]) { background: var(--brand-primary-hover); }
 .refresh-btn[disabled] { opacity: .65; cursor: not-allowed; }
+.dash-header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+.export-btn {
+    background: #fff;
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--slate-600);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.export-btn:hover:not([disabled]) { background: var(--slate-50); color: var(--ink); border-color: var(--slate-300); }
+.export-btn[disabled] { opacity: .65; cursor: not-allowed; }
+.btn-spinner-dark {
+    border-color: rgba(15,23,42,.2);
+    border-top-color: var(--brand-primary);
+}
 .btn-spinner {
     width: 12px; height: 12px;
     border: 2px solid rgba(255,255,255,.4);

@@ -33,8 +33,7 @@ export default class KenEventSummaryStep extends LightningElement {
         const step = parseInt(event.currentTarget.dataset.step, 10);
         this.dispatchEvent(new CustomEvent('editstep', {
             detail: { step },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 }

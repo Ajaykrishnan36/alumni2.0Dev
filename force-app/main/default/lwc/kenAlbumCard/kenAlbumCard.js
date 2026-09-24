@@ -1,5 +1,9 @@
 import { LightningElement, api, track } from 'lwc';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import AlbumCoverPlaceholder from '@salesforce/resourceUrl/AlbumCoverPlaceholder';
+import FilePreviewPlaceholder from '@salesforce/resourceUrl/FilePreviewPlaceholder';
+import ExternalFolderPlaceholder from '@salesforce/resourceUrl/ExternalFolderPlaceholder';
+import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
 export default class KenAlbumCard extends LightningElement {
     @api album;
     @track showMenu = false;
@@ -8,6 +12,7 @@ export default class KenAlbumCard extends LightningElement {
         super();
         this.boundHandleClickOutside = this.handleClickOutside.bind(this);
         this.boundHandleProfileImageError = this.handleProfileImageError.bind(this);
+        this.boundHandleCoverImageError = this.handleCoverImageError.bind(this);
     }
 
     renderedCallback() {
@@ -16,6 +21,54 @@ export default class KenAlbumCard extends LightningElement {
             profileImage.addEventListener('error', this.boundHandleProfileImageError);
             profileImage.setAttribute('data-error-handler-attached', 'true');
         }
+        const coverImage = this.template.querySelector('[data-cover-image="true"]');
+        if (coverImage && !coverImage.hasAttribute('data-error-handler-attached')) {
+            coverImage.addEventListener('error', this.boundHandleCoverImageError);
+            coverImage.setAttribute('data-error-handler-attached', 'true');
+        }
+    }
+
+    // The album's most recent upload is its cover, except for a drive-linked
+    // album: its real contents live in the external folder, so any file that
+    // happens to be attached in Salesforce would misrepresent what the card
+    // opens. Those always get the external-folder art.
+    //
+    // Otherwise three states, and the distinction matters: an album holding a
+    // PDF is NOT empty, so it must not get the "No files yet" art - it gets the
+    // same document art the file cards inside the album use.
+    get coverImageUrl() {
+        if (this.isLinked) {
+            return ExternalFolderPlaceholder;
+        }
+        if (this.album?.coverIsImage && this.album?.coverImageUrl) {
+            return this.album.coverImageUrl;
+        }
+        return this.hasPhotos ? FilePreviewPlaceholder : AlbumCoverPlaceholder;
+    }
+
+    // Name the file the cover stands in for, so a document cover says what it is
+    // rather than showing anonymous art.
+    get coverFileName() {
+        return this.album?.coverFileName || '';
+    }
+
+    get showCoverFileName() {
+        return (
+            !this.isLinked &&
+            this.hasPhotos &&
+            !this.album?.coverIsImage &&
+            !!this.coverFileName
+        );
+    }
+
+    handleCoverImageError(event) {
+        if (this.isLinked) {
+            event.target.src = ExternalFolderPlaceholder;
+            return;
+        }
+        event.target.src = this.hasPhotos
+            ? FilePreviewPlaceholder
+            : AlbumCoverPlaceholder;
     }
 
     connectedCallback() {
@@ -51,14 +104,6 @@ export default class KenAlbumCard extends LightningElement {
         return !!this.album?.isOwner;
     }
 
-    get coverImageUrl() {
-        return this.album?.coverImageUrl || '';
-    }
-
-    get hasCoverImage() {
-        return !!this.album?.coverImageUrl;
-    }
-
     get lastUpdatedDate() {
         const raw = this.album?.lastUpdatedDate;
         if (!raw) {
@@ -80,7 +125,7 @@ export default class KenAlbumCard extends LightningElement {
     }
 
     get ownerProfileImageUrl() {
-        return this.album?.ownerProfileImageUrl || '/assets/images/default-profile.png';
+        return this.album?.ownerProfileImageUrl || defaultProfileImage;
     }
 
     get photoCount() {
@@ -104,7 +149,7 @@ export default class KenAlbumCard extends LightningElement {
     }
 
     handleAvatarError(event) {
-        event.target.src = '/assets/images/default-profile.png';
+        event.target.src = defaultProfileImage;
     }
 
     handleMenuClick(event) {
@@ -140,6 +185,6 @@ export default class KenAlbumCard extends LightningElement {
     }
 
     handleProfileImageError(event) {
-        event.target.src = '/assets/images/default-profile.png';
+        event.target.src = defaultProfileImage;
     }
 }

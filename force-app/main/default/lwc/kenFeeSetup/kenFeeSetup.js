@@ -95,16 +95,14 @@ export default class KenFeeSetup extends LightningElement {
     handleSelectSessionWise() {
         this.dispatchEvent(new CustomEvent('modechange', {
             detail: { pricingMode: 'SESSION_WISE' },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleSelectOverall() {
         this.dispatchEvent(new CustomEvent('modechange', {
             detail: { pricingMode: 'OVERALL' },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -115,8 +113,7 @@ export default class KenFeeSetup extends LightningElement {
         const value = event.target.value;
         this.dispatchEvent(new CustomEvent('sessionpricechange', {
             detail: { sessionId, dateKey, value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -126,8 +123,7 @@ export default class KenFeeSetup extends LightningElement {
         const isFree = event.target.checked;
         this.dispatchEvent(new CustomEvent('sessionfreetoggle', {
             detail: { sessionId, dateKey, isFree },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -136,8 +132,7 @@ export default class KenFeeSetup extends LightningElement {
         const value = event.target.value;
         this.dispatchEvent(new CustomEvent('overallpricechange', {
             detail: { value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -145,8 +140,7 @@ export default class KenFeeSetup extends LightningElement {
         const isFree = event.target.checked;
         this.dispatchEvent(new CustomEvent('overallfreetoggle', {
             detail: { isFree },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -154,8 +148,7 @@ export default class KenFeeSetup extends LightningElement {
         const value = event.target.value;
         this.dispatchEvent(new CustomEvent('mealfeeschanged', {
             detail: { value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -165,8 +158,7 @@ export default class KenFeeSetup extends LightningElement {
 
     handleViewSummary() {
         this.dispatchEvent(new CustomEvent('viewsummary', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
     connectedCallback() {

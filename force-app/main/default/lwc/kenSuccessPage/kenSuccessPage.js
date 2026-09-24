@@ -7,7 +7,7 @@ export default class KenSuccessPage extends LightningElement {
     handleGotIt() {
         // Handle navigation or event dispatch
         // You can dispatch a custom event or navigate to another page
-        this.dispatchEvent(new CustomEvent('complete', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('complete', { bubbles: true }));
     }
     connectedCallback() {
         getPrimaryColor().then(color => {

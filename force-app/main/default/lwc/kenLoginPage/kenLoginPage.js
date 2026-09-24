@@ -10,9 +10,10 @@ import { CurrentPageReference } from 'lightning/navigation';
 import { NavigationMixin } from 'lightning/navigation';
 import basePath from '@salesforce/community/basePath';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import { validatePhoneNumber } from 'c/kenCustomPhoneInput';
 
 const OTP_LENGTH = 6;
-const RESEND_SECONDS = 120;
+const RESEND_SECONDS = 60;
 
 export default class LoginPage extends NavigationMixin(LightningElement) {
     email = '';
@@ -311,29 +312,37 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
             }, requirePasswordReset ? 100 : 1500);
 
         } catch (error) {
-            const errMsg = error.body?.message;
-            console.log(errMsg,'errormsgss');
+            // Never assume a message came back. When the server fails before it can
+            // build one, error.body is undefined and calling .includes on it used to
+            // throw inside this handler, leaving the spinner up and no toast at all.
+            const errMsg = (error && error.body && error.body.message) || '';
             this.isLoading = false; // Hide loader on error
             this.showToast = true;
             this.toastVariant = 'error';
-    
+
             if (errMsg.includes('could not connect')) {
                 this.toastTitle = `Couldn't connect to your account`;
                 this.toastMessage = 'We had trouble connecting to your account. Please check your details and try again.';
             } else if (errMsg.includes('User credentials not found')) {
                 this.toastTitle = 'Account not found';
                 this.toastMessage = 'We couldn’t find an account with those details. Please verify and try again.';
+            } else if (errMsg.includes('account is inactive')) {
+                this.toastTitle = 'Account inactive';
+                this.toastMessage = errMsg;
             } else if (errMsg.includes('Wrong studentId or Password')) {
                 this.toastTitle = 'Incorrect password';
                 this.toastMessage = 'Please try again.';
             } else if (errMsg.includes('Wrong Email or Password')) {
                 this.toastTitle = 'Incorrect email or password';
                 this.toastMessage = 'The email or password you entered is incorrect. Please try again, or use “Forgot password” to reset it.';
+            } else if (errMsg && !errMsg.includes('Script-thrown exception')) {
+                this.toastTitle = 'Sign-in failed';
+                this.toastMessage = errMsg;
             } else {
-                this.toastTitle = 'Unexpected Error';
-                this.toastMessage = 'An unexpected error occurred. Please try again.' + errMsg;
+                this.toastTitle = 'Sign-in failed';
+                this.toastMessage = 'We couldn’t sign you in. Please try again, or contact your alumni office if it keeps happening.';
             }
-            
+
             setTimeout(() => {
                 this.showToast = false;
             }, 5000);
@@ -476,9 +485,16 @@ export default class LoginPage extends NavigationMixin(LightningElement) {
         if (channel === 'Email' && !this.validateField('email', this.email)) {
             return;
         }
-        if (channel === 'SMS' && (this.mobile || '').length < 10) {
-            this.showError('Check your mobile number', 'Please enter your 10-digit mobile number.');
-            return;
+        // This used to be a length check on the whole E.164 string, so the '+91 '
+        // prefix counted as four of the ten characters and a six-digit number passed
+        // straight through to the SMS provider. Check the national digits against the
+        // selected country's own range instead.
+        if (channel === 'SMS') {
+            const phoneCheck = validatePhoneNumber(this.mobile, null, true);
+            if (!phoneCheck.valid) {
+                this.showError('Check your mobile number', phoneCheck.message);
+                return;
+            }
         }
 
         this.isLoading = true;

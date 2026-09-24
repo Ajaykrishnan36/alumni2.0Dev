@@ -5,7 +5,28 @@
         </template>
 
         <div class="campaigns-header">
-            <h1 class="page-title">Active Campaigns</h1>
+            <!-- Mobile only: back chevron beside the title. The wrapper is
+                 inside the mobile branch so the desktop DOM is byte-identical to
+                 before - .campaigns-header is justify-content:space-between, and
+                 a wrapper there would change how the title is laid out. -->
+            <template if:true={isMobile}>
+                <div class="header-titlebar">
+                    <button
+                        type="button"
+                        class="mobile-back-btn"
+                        onclick={handleBack}
+                        aria-label="Back to fundraise"
+                    >
+                        <svg class="back-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h1 class="page-title">Active Campaigns</h1>
+                </div>
+            </template>
+            <template if:false={isMobile}>
+                <h1 class="page-title">Active Campaigns</h1>
+            </template>
 
             <div class="toolbar">
                 <label class="search-box" for="campaign-search">

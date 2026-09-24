@@ -50,6 +50,9 @@ export default class KenPhotoGallery extends NavigationMixin(LightningElement) {
             name: a.name,
             lastUpdatedDate: a.lastUpdatedDate,
             coverImageUrl: a.coverImageUrl || '',
+            // Without these the card cannot tell a PDF cover from an empty album.
+            coverIsImage: a.coverIsImage,
+            coverFileName: a.coverFileName,
             ownerName: a.ownerName,
             ownerProfileImageUrl: a.ownerImage,
             photoCount: a.photoCount,

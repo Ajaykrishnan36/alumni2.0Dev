@@ -1,4 +1,5 @@
 import { LightningElement, api, track, wire } from 'lwc';
+import { formatTime } from 'c/kenDateTime';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getEventSchedules from '@salesforce/apex/KenPortalEventController.getEventSchedules';
 import searchAudienceGroups from '@salesforce/apex/KenAudienceEngineService.searchAudienceGroups';
@@ -17,6 +18,7 @@ export default class KenRegisterEventModal extends LightningElement {
     @track guestName = '';
     @track guestEmail = '';
     @track guestPhone = '';
+    _guestPhoneValid = true;
     @track searchQuery = '';
     @track currentPage = 1;
     @track groups = [];
@@ -126,8 +128,11 @@ export default class KenRegisterEventModal extends LightningElement {
             title: s.title || s.Name || 'Session',
             sessionDate: s.sessionDate ? this._formatDateStr(s.sessionDate) : null,
             sessionDateRaw: s.sessionDate,
-            startTime: s.startTime != null ? this._msToTime(s.startTime) : null,
-            endTime: s.endTime != null ? this._msToTime(s.endTime) : null,
+            // See kenEventRegistrationPage — instant first, bare Time as fallback.
+            startTime: s.startInstant ? formatTime(s.startInstant)
+                : (s.startTime != null ? this._msToTime(s.startTime) : null),
+            endTime: s.endInstant ? formatTime(s.endInstant)
+                : (s.endTime != null ? this._msToTime(s.endTime) : null),
             price: s.price ? Number(s.price) : 0,
             isRegistered: !!s.isRegistered,
             checked: !s.isRegistered,
@@ -345,11 +350,22 @@ export default class KenRegisterEventModal extends LightningElement {
     // -- Handlers: guest form --
     handleGuestNameChange(e) { this.guestName = e.target.value; }
     handleGuestEmailChange(e) { this.guestEmail = e.target.value; }
-    handleGuestPhoneChange(e) { this.guestPhone = e.target.value; }
+    handleGuestPhoneChange(e) {
+        const { e164, isValid } = e.detail || {};
+        this.guestPhone = e164 || '';
+        this._guestPhoneValid = isValid === true;
+    }
 
     handleAddGuest() {
         if (!this.guestName || !this.guestEmail) {
             this._showToast('Error', 'Name and Email are required.', 'error');
+            return;
+        }
+        // The phone field used to sit behind a fixed '🇮🇳 +91' label that was decoration
+        // only — nothing checked the digits or recorded a country. Optional, so an
+        // empty value still passes.
+        if (this.guestPhone && !this._guestPhoneValid) {
+            this._showToast('Error', 'Enter a valid phone number for the selected country.', 'error');
             return;
         }
         const guestCount = this.participants.filter(p => p.type === 'guest').length;
@@ -375,6 +391,7 @@ export default class KenRegisterEventModal extends LightningElement {
         this.guestName = '';
         this.guestEmail = '';
         this.guestPhone = '';
+        this._guestPhoneValid = true;
     }
 
     // -- Handlers: groups --
@@ -585,7 +602,7 @@ export default class KenRegisterEventModal extends LightningElement {
         try {
             this.dispatchEvent(new ShowToastEvent({ title, message, variant }));
         } catch (e) {
-            this.dispatchEvent(new CustomEvent('showtoast', { detail: { title, message, variant }, bubbles: true, composed: true }));
+            this.dispatchEvent(new CustomEvent('showtoast', { detail: { title, message, variant }, bubbles: true }));
         }
     }
 }

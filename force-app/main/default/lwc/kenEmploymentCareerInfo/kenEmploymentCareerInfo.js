@@ -123,11 +123,11 @@ export default class KenEmploymentCareerInfo extends LightningElement {
     }
 
     handlePrevious() {
-        this.dispatchEvent(new CustomEvent('previous', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('previous', { bubbles: true }));
     }
 
     handleSkip() {
-        this.dispatchEvent(new CustomEvent('skip', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('skip', { bubbles: true }));
     }
 
     handleSaveAndNext() {
@@ -137,16 +137,14 @@ export default class KenEmploymentCareerInfo extends LightningElement {
         }
         this.dispatchEvent(new CustomEvent('saveandnext', {
             detail: { careers: this.careerInfoList },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     dispatchNotify(type, title, message) {
         this.dispatchEvent(new CustomEvent('notify', {
             detail: { type, title, message },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

@@ -12,6 +12,7 @@
  * campaigns so the user can drop into analytics without re-walking the wizard.
  */
 import { LightningElement, track, wire } from 'lwc';
+import { setSafeHtml } from 'c/kenHtmlSanitizer';
 import getPortalConfigs from '@salesforce/apex/KenThemeConfigController.getPortalConfigs';
 import previewSegmentationCount from '@salesforce/apex/KenCommunicationController.previewSegmentationCount';
 import saveDraftCampaign from '@salesforce/apex/KenCommunicationController.saveDraftCampaign';
@@ -173,7 +174,7 @@ export default class KenCommunications extends LightningElement {
         if (pb) {
             const html = this.sanitizePreview(this.form.body || '');
             if (pb.dataset.html !== html) {
-                pb.innerHTML = html;
+                setSafeHtml(pb, html);
                 pb.dataset.html = html;
             }
         }
@@ -480,7 +481,7 @@ export default class KenCommunications extends LightningElement {
     }
 
     toast(message, variant) {
-        this.dispatchEvent(new CustomEvent('ken_toast', { bubbles: true, composed: true, detail: { message, variant } }));
+        this.dispatchEvent(new CustomEvent('ken_toast', { bubbles: true, detail: { message, variant } }));
         // also alert via simple console for now
         // eslint-disable-next-line no-console
         console.log(`[${variant || 'info'}] ${message}`);

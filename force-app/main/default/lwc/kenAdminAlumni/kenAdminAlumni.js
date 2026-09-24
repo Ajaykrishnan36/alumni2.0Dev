@@ -47,8 +47,16 @@ const PAGE_SIZE = 25;
 // Reads accept the `c__`-prefixed names too, since that is what LEX itself
 // produces when a link carries custom params.
 const URL_KEYS = ['page', 'alumni', 'tab', 'sub', 'chip'];
+// Label of the FlexiPage tab this component lives in, as rendered by the
+// tabset. kenAdminDashboard matches the same string to switch tabs.
+const MASTER_RECORDS_TAB_LABEL = 'Master Records';
+// This component's own host element, used to tell the console tabset apart
+// from any tablist rendered inside this screen.
+const HOST_TAG = 'c-ken-admin-alumni';
 const VALID_PAGES = ['list', 'alumni360', 'lead', 'referral', 'issues', 'map'];
-const VALID_TABS = ['all', 'recent', 'registered', 'oldportal', 'issues', 'leads', 'referrals'];
+// Ordered the way the tab row reads: the master list, then the alumni
+// lifecycle (lead → un-registered → registered), then the rest.
+const VALID_TABS = ['all', 'leads', 'unregistered', 'registered', 'recent', 'oldportal', 'issues', 'referrals'];
 const VALID_CHIPS = ['all', 'mail', 'phone', 'invmail', 'bounce', 'invphone'];
 const VALID_LEAD_SUBS = ['merge', 'activity', 'comm', 'owner', 'history'];
 
@@ -157,6 +165,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     @track contactIssue;
     @track issueEmailValue = '';
     @track issuePhoneValue = '';
+    _issuePhoneValid = false;
     @track issueEmailError = null;
     @track issuePhoneError = null;
     @track isSavingEmail = false;
@@ -185,9 +194,9 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     }
 
     _toSoft(hex) {
-        if (!hex || typeof hex !== 'string') return 'rgba(185,28,92,.10)';
+        if (!hex || typeof hex !== 'string') return '#FFFFFF';
         const v = hex.replace('#', '');
-        if (v.length !== 3 && v.length !== 6) return 'rgba(185,28,92,.10)';
+        if (v.length !== 3 && v.length !== 6) return '#FFFFFF';
         const e = v.length === 3 ? v.split('').map(c => c + c).join('') : v;
         const r = parseInt(e.slice(0, 2), 16);
         const g = parseInt(e.slice(2, 4), 16);
@@ -397,6 +406,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             } else if (page === 'issues') {
                 this._userEditedEmail = false;
                 this._userEditedPhone = false;
+                this._issuePhoneValid = false;
                 this.issueEmailError = null;
                 this.issuePhoneError = null;
                 this.contactIssue = null;
@@ -493,6 +503,65 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
             }
         } catch (e) {
             // A blocked History API only costs deep-linking, never the screen.
+        }
+    }
+
+    /**
+     * Strip every param this component owns, leaving the rest of the query
+     * string untouched.
+     */
+    _clearUrlState() {
+        this._lastUrlSignature = null;
+        this._lastUrlState = null;
+        try {
+            const params = new URLSearchParams(window.location.search);
+            let touched = false;
+            URL_KEYS.forEach((key) => {
+                if (params.has(key)) { params.delete(key); touched = true; }
+                if (params.has('c__' + key)) { params.delete('c__' + key); touched = true; }
+            });
+            if (!touched) return;
+            const query = params.toString();
+            window.history.replaceState(window.history.state, '',
+                window.location.pathname + (query ? '?' + query : '') + window.location.hash);
+        } catch (e) {
+            // A blocked History API only costs deep-linking, never the screen.
+        }
+    }
+
+    /**
+     * The console is one FlexiPage tabset whose selection is not part of the
+     * URL, and kenAdminDashboard reopens Master Records whenever it finds a
+     * c__page param on load. So these params must not outlive the tab: left
+     * behind, a refresh taken from the Dashboard threw the admin back into
+     * Master Records. Leaving clears them; coming back writes them again.
+     *
+     * The tabset is outside this component, so the tab anchors are reached
+     * through the document — the same way kenAdminDashboard clicks them.
+     */
+    _handleConsoleTabClick(e) {
+        let anchor = null;
+        try {
+            const target = e && e.target;
+            anchor = (target && target.closest) ? target.closest('[role="tab"]') : null;
+        } catch (err) {
+            anchor = null;
+        }
+        if (!anchor) return;
+        // Only the console tabset counts. Any tablist rendered inside this
+        // component (or a child of it) is a screen within Master Records, not a
+        // way out of it, and must leave the address bar alone.
+        try {
+            if (anchor.closest(HOST_TAG)) return;
+        } catch (err) {
+            return;
+        }
+        const label = (anchor.title || anchor.getAttribute('aria-label') || anchor.textContent || '').trim();
+        if (!label) return;
+        if (label === MASTER_RECORDS_TAB_LABEL) {
+            this._syncUrl();
+        } else {
+            this._clearUrlState();
         }
     }
 
@@ -695,15 +764,26 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     get phoneVisibilityPillClass() { return this.detail.hidePhone ? 'pill neutral' : 'pill success'; }
 
     /* ---- Merge view-model ---- */
+    // Candidates come from two places at once: converted alumni identities and
+    // leads that are still pending. Both are mergeable and either can be the
+    // survivor, so each row carries an explicit badge — without it the two are
+    // indistinguishable in the list, and picking the wrong one is destructive.
     get mergeRows() {
-        return (this.mergeCandidates || []).map(c => ({
-            ...c,
-            matchLabel: c.matchPercent == null ? '' : c.matchPercent + '% match',
-            detail: 'Batch \'' + (c.batch || '—') + ' · ' + (c.registrationNumber || '—') + ' · ' + (c.source || '—')
-                + ' · ID ' + c.alumniId
-                + (c.matchedOn ? ' · Matched by ' + c.matchedOn : ''),
-            selected: this.selectedCandidateIds.includes(c.alumniId)
-        }));
+        return (this.mergeCandidates || []).map(c => {
+            const isLead = c.candidateType === 'lead';
+            return {
+                ...c,
+                isLeadCandidate: isLead,
+                typeLabel: isLead ? 'Pending lead' : 'Master record',
+                typeBadgeClass: isLead ? 'merge-type-badge is-lead' : 'merge-type-badge is-master',
+                matchLabel: c.matchPercent == null ? '' : c.matchPercent + '% match',
+                detail: 'Batch \'' + (c.batch || '—') + ' · ' + (c.registrationNumber || '—') + ' · ' + (c.source || '—')
+                    + (isLead && c.statusLabel ? ' · ' + c.statusLabel : '')
+                    + ' · ID ' + c.alumniId
+                    + (c.matchedOn ? ' · Matched by ' + c.matchedOn : ''),
+                selected: this.selectedCandidateIds.includes(c.alumniId)
+            };
+        });
     }
     get hasMergeRows() { return !this.mergeCandidatesLoading && this.mergeRows.length > 0; }
     get isMergeEmpty() { return !this.mergeCandidatesLoading && this.mergeRows.length === 0; }
@@ -991,9 +1071,20 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     get isLeads()        { return this.activeTab === 'leads'; }
     get isReferrals()    { return this.activeTab === 'referrals'; }
 
-    // Status filter is redundant on tabs that already hard-filter by registration status.
+    // Status filter is redundant on tabs that already hard-filter by registration
+    // status, and meaningless on Leads — every row there is an unconverted lead.
     get showStatusFilter() {
-        return this.activeTab !== 'registered' && this.activeTab !== 'unregistered';
+        return this.activeTab !== 'registered'
+            && this.activeTab !== 'unregistered'
+            && this.activeTab !== 'leads';
+    }
+    /**
+     * Employment type, gender, language and engagement preference live on the
+     * Person Account. Leads are pre-conversion and have none, so the Leads tab
+     * hides these rather than offering filters that cannot match anything.
+     */
+    get showPersonFilters() {
+        return this.activeTab !== 'leads';
     }
     // Source filter is redundant on tabs that already hard-filter by source funnel.
     get showSourceFilter() {
@@ -1084,9 +1175,18 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
 
     /* ---- Handlers ---- */
     handleTab(e) {
+        const previousTab = this.activeTab;
         this.activeTab = e.currentTarget.dataset.tab;
         this.currentPage = 1;
         this.selectedLeadIds = [];
+        // Leads are grouped from the Lead object and every other tab from
+        // ConstituentRole, so the two option sets are disjoint. Carrying a
+        // selection across that boundary leaves a filter applied whose value
+        // exists nowhere in the new tab's data.
+        if ((previousTab === 'leads') !== (this.activeTab === 'leads')) {
+            this.selectedFilters = { ...EMPTY_FILTERS };
+            this.appliedFiltersJson = '';
+        }
         // Drop any Portal Status selection when moving to a tab that hides the
         // dropdown, so a hidden filter can't silently constrain the new results.
         if (!this.showPortalDropdown && this.activePortalStatus) {
@@ -1193,14 +1293,17 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     }
 
     // "Compare" (single candidate) opens the review screen so the admin can see
-    // (and, per field, override) what the master record will look like
+    // (and, per field, override) what the surviving record will look like
     // post-merge before anything is written — nothing is saved until
-    // handleConfirmMerge fires.
+    // handleConfirmMerge fires. The candidate may be a converted master or
+    // another pending lead; the heading spells out which.
     _openSingleReview(masterRoleId) {
         if (this.mergeReviewLoading) return;
         const candidate = (this.mergeCandidates || []).find((c) => c.alumniId === masterRoleId);
         this._mergeReviewMasterRoleId = masterRoleId;
-        this.mergeReviewMasterName = candidate ? candidate.name : '';
+        this.mergeReviewMasterName = candidate
+            ? candidate.name + (candidate.candidateType === 'lead' ? ' (pending lead)' : '')
+            : '';
         this.mergeReviewLoading = true;
         this.mergeReviewActive = true;
         getMergeFieldComparison({ leadId: this.selectedAlumniId, masterRoleId })
@@ -1227,7 +1330,12 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         this.mergeMultiReviewMasterNames = masterRoleIds.map((id) => {
             const c = (this.mergeCandidates || []).find((cand) => cand.alumniId === id);
             const nm = c ? c.name : id;
-            return { key: id, name: nm, label: nm + ' (' + id + ')' };
+            // The kind matters as much as the name here: the "Merge into" picker
+            // decides which record survives, and a pending lead surviving is a
+            // different outcome from a master surviving.
+            const isLead = !!(c && c.candidateType === 'lead');
+            const kind = isLead ? 'Pending lead' : 'Master record';
+            return { key: id, name: nm, kind: kind, isLead: isLead, label: nm + ' · ' + kind + ' (' + id + ')' };
         });
         this.mergeMultiReviewLoading = true;
         this.mergeMultiReviewActive = true;
@@ -1307,18 +1415,43 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     handleMultiTargetChange(e) {
         this.mergeMultiTargetId = e.target.value;
     }
+    // A master owns a Person Account and portal user that can't be folded into a
+    // Lead, so once one is in the comparison it has to be the record kept. Apex
+    // refuses the combination anyway — disabling the lead options here means the
+    // admin never gets that far.
+    get _comparisonHasMaster() {
+        return (this.mergeMultiReviewMasterNames || []).some((m) => !m.isLead);
+    }
     get multiTargetOptions() {
         // <select> in LWC markup can't bind `value` directly — each <option>
         // has to be told whether it's selected instead.
-        return this.mergeMultiReviewMasterNames.map((m) => ({ ...m, isSelected: m.key === this.mergeMultiTargetId }));
+        const blockLeads = this._comparisonHasMaster;
+        return this.mergeMultiReviewMasterNames.map((m) => ({
+            ...m,
+            isSelected: m.key === this.mergeMultiTargetId,
+            isDisabled: blockLeads && m.isLead,
+            label: blockLeads && m.isLead ? m.label + ' — cannot keep a lead here' : m.label
+        }));
     }
+    get multiTargetHint() {
+        const hasLead = (this.mergeMultiReviewMasterNames || []).some((m) => m.isLead);
+        return this._comparisonHasMaster && hasLead
+            ? 'An existing alumni record is in this comparison, so it must be the one kept — a lead cannot absorb a Person Account.'
+            : '';
+    }
+    get hasMultiTargetHint() { return !!this.multiTargetHint; }
     get isNoMultiTargetSelected() {
         return !this.mergeMultiTargetId;
     }
     get isMultiMergeDisabled() {
-        return !this.mergeMultiTargetId || this.isMergingMulti;
+        return !this.mergeMultiTargetId || this.isMergingMulti || this._isSelectedTargetBlocked;
+    }
+    get _isSelectedTargetBlocked() {
+        const picked = (this.multiTargetOptions || []).find((o) => o.key === this.mergeMultiTargetId);
+        return !!(picked && picked.isDisabled);
     }
     get multiMergeButtonTitle() {
+        if (this._isSelectedTargetBlocked) return 'Keep the existing alumni record instead — a lead cannot absorb it';
         return this.mergeMultiTargetId ? '' : 'Please choose a candidate to merge into';
     }
 
@@ -1699,6 +1832,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         if (kind === 'issues') {
             this._userEditedEmail = false;
             this._userEditedPhone = false;
+            this._issuePhoneValid = false;
             this.issueEmailError = null;
             this.issuePhoneError = null;
             this.contactIssue = null;
@@ -1743,8 +1877,10 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         this._userEditedEmail = true;
         this.issueEmailError = null;
     }
-    handleIssuePhoneInput(e) {
-        this.issuePhoneValue = (e.target.value || '').trim();
+    handleIssuePhoneChange(e) {
+        const { e164, isValid } = e.detail || {};
+        this.issuePhoneValue = e164 || '';
+        this._issuePhoneValid = isValid === true;
         this._userEditedPhone = true;
         this.issuePhoneError = null;
     }
@@ -1770,6 +1906,12 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
     }
     handleSavePhone() {
         if (!this.selectedAlumniId) return;
+        // saveContactPhone only rejects a blank string, so without this the screen for
+        // FIXING bad phone data would happily write more of it.
+        if (!this._issuePhoneValid) {
+            this.issuePhoneError = 'Enter a valid number for the selected country.';
+            return;
+        }
         this.isSavingPhone = true;
         this.issuePhoneError = null;
         saveContactPhone({ alumniId: this.selectedAlumniId, phoneValue: this.issuePhoneValue })
@@ -1777,6 +1919,7 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
                 this.isSavingPhone = false;
                 if (result && result.success) {
                     this._userEditedPhone = false;
+                    this._issuePhoneValid = false;
                     if (this._wiredListResult) refreshApex(this._wiredListResult);
                     this.handleClose();
                 } else if (result) {
@@ -1887,14 +2030,24 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         // reopens this tab and the screen underneath comes back with it.
         this._popListener = this._handlePopState.bind(this);
         window.addEventListener('popstate', this._popListener);
-        if (this._applyDashboardNavIntent()) {
-            this._syncUrl();
-        } else {
+        // Capture phase: the tabset handles the click itself and must not be
+        // able to swallow it before we see which tab was chosen.
+        this._tabClickListener = this._handleConsoleTabClick.bind(this);
+        document.addEventListener('click', this._tabClickListener, true);
+        if (!this._applyDashboardNavIntent()) {
             const incoming = this._readUrlState();
             this._lastUrlSignature = this._urlSignature(incoming);
             this._lastUrlState = incoming;
             this._applyUrlState(incoming);
         }
+        // Stamp the address bar as soon as the screen opens. Seeding
+        // _lastUrlSignature from the URL above means an untouched screen looks
+        // like "nothing changed", so the very first visit used to leave the URL
+        // bare until a sub-tab was clicked — and a refresh taken in that window
+        // dropped the admin back on the Dashboard. This component is created
+        // lazily, when the Master Records tab is first activated, so reaching
+        // here means the admin is looking at this screen right now.
+        this._syncUrl();
     }
 
     // Returns true when a fresh dashboard tile intent was consumed — that intent
@@ -1956,6 +2109,12 @@ export default class KenAdminAlumni extends NavigationMixin(LightningElement) {
         if (this._escBound) document.removeEventListener('keydown', this._escBound);
         if (this._navListener) window.removeEventListener('kendash:navigate', this._navListener);
         if (this._popListener) window.removeEventListener('popstate', this._popListener);
+        if (this._tabClickListener) document.removeEventListener('click', this._tabClickListener, true);
+        // Deliberately NOT clearing the URL here. This also runs when the page
+        // itself is torn down, and a refresh must keep its params — restoring
+        // the screen from them is the whole point. Leaving the tab is handled
+        // on the tab click, which fires whether the tabset then destroys this
+        // component or merely hides it.
     }
 
     /* ---- Helpers ---- */

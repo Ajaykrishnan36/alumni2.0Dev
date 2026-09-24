@@ -15,44 +15,30 @@
                 <c-ken-rich-text-editor
                     value={body}
                     placeholder="What's on your mind?"
+                    allow-images="true"
+                    show-image-button="true"
+                    image-busy={isUploading}
+                    onimageselect={handleImageSelect}
                     onchange={handleRichTextChange}>
                 </c-ken-rich-text-editor>
             </div>
 
-            <template if:true={hasAttachments}>
-                <ul class="attachment-list">
-                    <template for:each={attachments} for:item="att">
-                        <li key={att.contentDocumentId} class="attachment-chip">
-                            <lightning-icon icon-name="utility:image" size="xx-small"></lightning-icon>
-                            <span class="attachment-name">{att.name}</span>
-                            <button
-                                type="button"
-                                class="attachment-remove"
-                                data-id={att.contentDocumentId}
-                                onclick={handleRemoveAttachment}
-                                aria-label="Remove attachment">
-                                <lightning-icon icon-name="utility:close" size="xx-small"></lightning-icon>
-                            </button>
-                        </li>
-                    </template>
-                </ul>
-            </template>
-
             <div class="composer-footer">
                 <div class="footer-left">
-                    <button type="button" class="icon-btn" onclick={handleClickAttach} disabled={isUploading} title="Attach image">
-                        <lightning-icon icon-name="utility:image" size="x-small"></lightning-icon>
-                    </button>
-                    <input
-                        type="file"
-                        class="hidden-file-input"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
-                        multiple
-                        onchange={handleFileChange} />
-
                     <button type="button" class="pill-btn" onclick={handleOpenPoll}>
-                        <lightning-icon icon-name="utility:poll" size="x-small"></lightning-icon>
+                        <svg class="poll-glyph" viewBox="0 0 16 16" width="15" height="15" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                            <line x1="2" y1="4"  x2="14" y2="4"></line>
+                            <line x1="2" y1="8"  x2="10" y2="8"></line>
+                            <line x1="2" y1="12" x2="6"  y2="12"></line>
+                        </svg>
                         <span>Create a Poll</span>
+                    </button>
+
+                    <button type="button" class={commentsToggleClass} onclick={handleToggleCommentsSetting}
+                        aria-pressed={commentsEnabled}>
+                        <lightning-icon icon-name="utility:comments" size="x-small"></lightning-icon>
+                        <span>{commentsToggleLabel}</span>
                     </button>
 
                     <template if:true={isUploading}>

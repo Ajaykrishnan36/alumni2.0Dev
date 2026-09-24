@@ -52,9 +52,9 @@ export default class KenAdminDashboard extends NavigationMixin(LightningElement)
     }
 
     toSoft(hex) {
-        if (!hex || typeof hex !== 'string') return 'rgba(185,28,92,.10)';
+        if (!hex || typeof hex !== 'string') return '#FFFFFF';
         const v = hex.replace('#', '');
-        if (v.length !== 3 && v.length !== 6) return 'rgba(185,28,92,.10)';
+        if (v.length !== 3 && v.length !== 6) return '#FFFFFF';
         const expand = v.length === 3 ? v.split('').map(c => c + c).join('') : v;
         const r = parseInt(expand.slice(0, 2), 16);
         const g = parseInt(expand.slice(2, 4), 16);
@@ -287,7 +287,7 @@ export default class KenAdminDashboard extends NavigationMixin(LightningElement)
             window.dispatchEvent(new CustomEvent('kendash:navigate', { detail: intent }));
         } catch (e) { /* ignore */ }
         this.dispatchEvent(new CustomEvent('dashboardnavigate', {
-            bubbles: true, composed: true,
+            bubbles: true,
             detail: { destination: 'masterRecords', ...intent }
         }));
         this._switchFlexipageTab('Master Records');
@@ -301,7 +301,7 @@ export default class KenAdminDashboard extends NavigationMixin(LightningElement)
             }));
         } catch (e) { /* sessionStorage may be blocked */ }
         this.dispatchEvent(new CustomEvent('dashboardnavigate', {
-            bubbles: true, composed: true,
+            bubbles: true,
             detail: { destination: 'reports', reportKey }
         }));
         if (!this._switchFlexipageTab('Report')) {

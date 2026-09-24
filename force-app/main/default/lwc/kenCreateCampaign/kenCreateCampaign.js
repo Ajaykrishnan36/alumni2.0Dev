@@ -1,4 +1,4 @@
-import { LightningElement, track, wire } from 'lwc';
+import { LightningElement, api, track, wire } from 'lwc';
 import { CurrentPageReference, NavigationMixin } from 'lightning/navigation';
 import { getPortalConfigs } from 'c/kenThemeConfig';
 import createCampaign             from '@salesforce/apex/KenFundraiseController.createCampaign';
@@ -108,15 +108,69 @@ export default class KenCreateCampaign extends NavigationMixin(LightningElement)
         window.location.assign(`${base.replace(/\/+$/, '')}/fundraise`);
     }
 
+    // Backend Edit override passes the record through here; the portal never sets it
+    // and relies on the page-reference state instead.
+    @api
+    get recordId() {
+        return this._editCampaignId;
+    }
+    set recordId(value) {
+        if (value && value !== this._editCampaignId) {
+            this._enterEditMode(value);
+        }
+    }
+
+    // True inside the internal Lightning app, where community named pages do not
+    // resolve and navigation has to use standard object/record pages.
+    get isBackend() {
+        return typeof window !== 'undefined'
+            && !!window.location
+            && (window.location.pathname || '').indexOf('/lightning/') !== -1;
+    }
+
     @wire(CurrentPageReference)
     handlePageRef(ref) {
         const campaignId = ref?.state?.recordId || ref?.state?.c__campaignId;
         if (campaignId && campaignId !== this._editCampaignId) {
-            this._editCampaignId = campaignId;
-            this._isEditMode = true;
-            this.campaignId = campaignId;
-            this._loadExistingData(campaignId);
+            this._enterEditMode(campaignId);
         }
+    }
+
+    _enterEditMode(campaignId) {
+        this._editCampaignId = campaignId;
+        this._isEditMode = true;
+        this.campaignId = campaignId;
+        this._loadExistingData(campaignId);
+    }
+
+    _navigateToCampaign(campaignId) {
+        if (this.isBackend) {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__recordPage',
+                attributes: { recordId: campaignId, objectApiName: 'Ken_Fundraise__c', actionName: 'view' }
+            });
+            return;
+        }
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'campaign_detail__c' },
+            state: { recordId: campaignId }
+        });
+    }
+
+    _navigateToFundraiseList() {
+        if (this.isBackend) {
+            this[NavigationMixin.Navigate]({
+                type: 'standard__objectPage',
+                attributes: { objectApiName: 'Ken_Fundraise__c', actionName: 'list' },
+                state: { filterName: 'Recent' }
+            });
+            return;
+        }
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'fundraise__c' }
+        });
     }
 
     async _loadExistingData(campaignId) {
@@ -534,16 +588,9 @@ export default class KenCreateCampaign extends NavigationMixin(LightningElement)
     handleCancel() {
         if (this.campaignId) {
             // Navigate to the campaign detail (works for both edit and create-then-cancel)
-            this[NavigationMixin.Navigate]({
-                type: 'comm__namedPage',
-                attributes: { name: 'campaign_detail__c' },
-                state: { recordId: this.campaignId }
-            });
+            this._navigateToCampaign(this.campaignId);
         } else {
-            this[NavigationMixin.Navigate]({
-                type: 'comm__namedPage',
-                attributes: { name: 'fundraise__c' }
-            });
+            this._navigateToFundraiseList();
         }
     }
 
@@ -581,19 +628,11 @@ export default class KenCreateCampaign extends NavigationMixin(LightningElement)
                     const navId = campaignId;
                     this._successTimer = setTimeout(() => {
                         this._updateSuccess = false;
-                        this[NavigationMixin.Navigate]({
-                            type: 'comm__namedPage',
-                            attributes: { name: 'campaign_detail__c' },
-                            state: { recordId: navId }
-                        });
+                        this._navigateToCampaign(navId);
                     }, 1500);
                 } else {
                     this.isStep3Completed = true;
-                    this[NavigationMixin.Navigate]({
-                        type: 'comm__namedPage',
-                        attributes: { name: 'campaign_detail__c' },
-                        state: { recordId: this.campaignId }
-                    });
+                    this._navigateToCampaign(this.campaignId);
                 }
             })
             .catch(error => {

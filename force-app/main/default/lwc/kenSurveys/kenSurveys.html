@@ -152,18 +152,20 @@
                 </div>
 
                 <!-- Create New Survey Card -->
-                <div class="create-survey-card" onclick={handleCreateSurvey}>
-                    <div class="create-survey-header">
-                        <div class="create-survey-header-content">
-                            <p class="create-survey-title">Create New Survey</p>
-                            <lightning-icon icon-name="utility:chevronright" size="small" class="arrow-icon"></lightning-icon>
+                <template if:true={canCreateSurvey}>
+                    <div class="create-survey-card" onclick={handleCreateSurvey}>
+                        <div class="create-survey-header">
+                            <div class="create-survey-header-content">
+                                <p class="create-survey-title">Create New Survey</p>
+                                <lightning-icon icon-name="utility:chevronright" size="small" class="arrow-icon"></lightning-icon>
+                            </div>
+                            <div class="create-survey-header-line"></div>
                         </div>
-                        <div class="create-survey-header-line"></div>
+                        <div class="create-survey-illustration">
+                            <img src={listYourBusinessImageUrl} alt="Create New Survey" class="create-survey-image" onerror={handleImageError} />
+                        </div>
                     </div>
-                    <div class="create-survey-illustration">
-                        <img src={listYourBusinessImageUrl} alt="Create New Survey" class="create-survey-image" onerror={handleImageError} />
-                    </div>
-                </div>
+                </template>
             </div>
         </div>
 
@@ -316,14 +318,14 @@
                         <template if:true={isCheckboxQuestion}>
                             <div class="survey-options">
                                 <template for:each={currentQuestion.options} for:item="option">
-                                    <label key={option} class="checkbox-option">
-                                        <input 
-                                            type="checkbox" 
-                                            value={option}
+                                    <label key={option.value} class="checkbox-option">
+                                        <input
+                                            type="checkbox"
+                                            value={option.value}
                                             data-question-id={currentQuestion.id}
                                             onchange={handleCheckboxChange}
                                         />
-                                        <span>{option}</span>
+                                        <span>{option.text}</span>
                                     </label>
                                 </template>
                             </div>
@@ -366,15 +368,15 @@
                         <template if:true={isRadioQuestion}>
                             <div class="survey-options">
                                 <template for:each={currentQuestion.options} for:item="option">
-                                    <label key={option} class="radio-option">
-                                        <input 
-                                            type="radio" 
+                                    <label key={option.value} class="radio-option">
+                                        <input
+                                            type="radio"
                                             name={currentQuestion.id}
-                                            value={option}
+                                            value={option.value}
                                             data-question-id={currentQuestion.id}
                                             onchange={handleRadioChange}
                                         />
-                                        <span>{option}</span>
+                                        <span>{option.text}</span>
                                     </label>
                                 </template>
                             </div>

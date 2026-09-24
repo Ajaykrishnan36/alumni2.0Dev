@@ -1,5 +1,6 @@
 import { LightningElement, api } from 'lwc';
 import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
+import defaultCompanyLogo from '@salesforce/resourceUrl/AlumniAlt';
 
 export default class KenMenteeHeader extends LightningElement {
     @api name;
@@ -20,11 +21,7 @@ export default class KenMenteeHeader extends LightningElement {
     }
 
     get companyLogo() {
-        // Return company logo based on company name
-        if (this.company === 'Turbostart') {
-            return '/assets/images/turbostart-logo.png';
-        }
-        return '/assets/images/default-company-logo.png';
+        return defaultCompanyLogo;
     }
 
     handleImageError(event) {

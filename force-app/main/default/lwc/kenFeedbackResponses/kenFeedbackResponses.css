@@ -115,3 +115,453 @@
     position: relative;
     min-height: 60px;
 }
+
+/* ── Survey mode ─────────────────────────────────────────────────────────── */
+:host {
+    --ken-accent: #0b6b70;
+    --ken-accent-soft: #e6f2f2;
+    --ken-ink: #16232b;
+    --ken-ink-soft: #5d6b76;
+    --ken-line: #e3e8ec;
+    --ken-surface: #ffffff;
+    --ken-surface-alt: #f7f9fa;
+    display: block;
+}
+
+.ken-card {
+    background: var(--ken-surface);
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+}
+
+.ken-loading {
+    position: relative;
+    min-height: 6rem;
+}
+
+.ken-error {
+    color: #a4262c;
+    background: #fdf2f2;
+    border: 1px solid #f5c6c6;
+    border-radius: 0.4rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+}
+
+/* ---------- header ---------- */
+.ken-header {
+    border-bottom: 1px solid var(--ken-line);
+    padding-bottom: 0.9rem;
+}
+
+.ken-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.ken-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ken-ink);
+    line-height: 1.25;
+    margin: 0;
+}
+
+.ken-pills {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.ken-pill {
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.ken-pill_success { background: #e3f3ea; color: #1c6b41; }
+.ken-pill_pending { background: #fdf2dc; color: #8a5b00; }
+.ken-pill_error   { background: #fdeceb; color: #a4262c; }
+.ken-pill_muted   { background: #eef1f3; color: #5d6b76; }
+
+.ken-description {
+    margin: 0.5rem 0 0;
+    color: var(--ken-ink-soft);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+/* ---------- metrics ---------- */
+.ken-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.75rem;
+    margin: 1rem 0;
+}
+
+.ken-metric {
+    background: var(--ken-surface-alt);
+    border: 1px solid var(--ken-line);
+    border-radius: 0.5rem;
+    padding: 0.7rem 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.ken-metric_wide { grid-column: span 2; }
+
+.ken-metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--ken-accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.ken-metric-window {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ken-ink);
+    line-height: 1.3;
+}
+
+.ken-metric-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ken-ink-soft);
+    font-weight: 600;
+}
+
+/* ---------- audience ---------- */
+.ken-audience {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+.ken-audience-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ken-ink-soft);
+    font-weight: 600;
+    margin-right: 0.15rem;
+}
+
+.ken-chip {
+    background: var(--ken-accent-soft);
+    color: var(--ken-accent);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+}
+
+/* ---------- tabs ---------- */
+.ken-tabbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--ken-line);
+    flex-wrap: wrap;
+}
+
+.ken-tabs { display: flex; gap: 0.25rem; }
+
+.ken-tab {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--ken-ink-soft);
+    cursor: pointer;
+}
+
+.ken-tab:hover { color: var(--ken-ink); }
+
+.ken-tab_active {
+    color: var(--ken-accent);
+    border-bottom-color: var(--ken-accent);
+}
+
+.ken-tab:focus-visible {
+    outline: 2px solid var(--ken-accent);
+    outline-offset: -2px;
+}
+
+.ken-download { padding-bottom: 0.35rem; }
+
+.ken-panel { padding-top: 1rem; }
+
+/* ---------- questions ---------- */
+.ken-question {
+    border: 1px solid var(--ken-line);
+    border-radius: 0.5rem;
+    padding: 0.8rem 0.95rem;
+    margin-bottom: 0.65rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ken-question:hover {
+    border-color: #cfd8de;
+    box-shadow: 0 1px 3px rgba(22, 35, 43, 0.06);
+}
+
+.ken-question-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.ken-qnum {
+    background: var(--ken-accent);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+.ken-qlabel {
+    font-weight: 600;
+    color: var(--ken-ink);
+    flex: 1 1 12rem;
+    font-size: 0.9rem;
+}
+
+.ken-type {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--ken-ink-soft);
+    background: #eef1f3;
+    padding: 0.12rem 0.5rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+}
+
+.ken-required {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #a4262c;
+    background: #fdeceb;
+    padding: 0.12rem 0.45rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+}
+
+.ken-scale {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.7rem;
+}
+
+.ken-point {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 3.4rem;
+    padding: 0.4rem 0.45rem;
+    border: 1px solid var(--ken-line);
+    border-radius: 0.4rem;
+    background: var(--ken-surface-alt);
+}
+
+.ken-point-value {
+    font-weight: 700;
+    color: var(--ken-accent);
+    font-variant-numeric: tabular-nums;
+}
+
+.ken-point-label {
+    font-size: 0.7rem;
+    color: var(--ken-ink-soft);
+    text-align: center;
+    line-height: 1.2;
+}
+
+.ken-choices {
+    margin: 0.6rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.ken-choice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--ken-ink);
+}
+
+.ken-bullet {
+    width: 0.7rem;
+    height: 0.7rem;
+    border: 1.5px solid #c3ccd3;
+    border-radius: 50%;
+    flex: none;
+}
+
+.ken-choice-label {
+    color: var(--ken-ink-soft);
+    font-size: 0.78rem;
+}
+
+.ken-freetext {
+    margin-top: 0.6rem;
+    font-size: 0.8rem;
+    color: var(--ken-ink-soft);
+    font-style: italic;
+    background: var(--ken-surface-alt);
+    border-radius: 0.35rem;
+    padding: 0.5rem 0.7rem;
+}
+
+/* ---------- responses ---------- */
+.ken-submission {
+    border: 1px solid var(--ken-line);
+    border-radius: 0.5rem;
+    padding: 0.8rem 0.95rem;
+    margin-bottom: 0.65rem;
+}
+
+.ken-submission-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 1px solid #f1f4f6;
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+
+.ken-avatar {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--ken-accent-soft);
+    color: var(--ken-accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+}
+
+.ken-respondent {
+    font-weight: 600;
+    color: var(--ken-ink);
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.ken-submitted {
+    font-size: 0.75rem;
+    color: var(--ken-ink-soft);
+    white-space: nowrap;
+}
+
+.ken-answers { margin: 0; }
+
+.ken-answer {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1fr) minmax(8rem, 1.2fr);
+    gap: 0.5rem 1rem;
+    padding: 0.3rem 0;
+    border-bottom: 1px solid #f6f8f9;
+}
+
+.ken-answer:last-child { border-bottom: none; }
+
+.ken-answer-q {
+    margin: 0;
+    color: var(--ken-ink-soft);
+    font-size: 0.82rem;
+}
+
+.ken-answer-a {
+    margin: 0;
+    color: var(--ken-ink);
+    font-size: 0.85rem;
+    font-weight: 500;
+    word-break: break-word;
+}
+
+.ken-empty {
+    padding: 1.5rem 0;
+    text-align: center;
+    color: var(--ken-ink-soft);
+    font-size: 0.85rem;
+}
+
+@media (max-width: 40rem) {
+    .ken-metric_wide { grid-column: span 1; }
+    .ken-answer { grid-template-columns: 1fr; gap: 0.15rem; }
+}
+
+/* Long answer and response lists scroll inside the card rather than stretching the page. */
+.ken-panel_scroll {
+    max-height: 32rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 0.25rem;
+}
+
+.ken-panel_scroll::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+.ken-panel_scroll::-webkit-scrollbar-thumb {
+    background: #cfd8de;
+    border-radius: 999px;
+}
+
+.ken-truncated {
+    margin: 0 0 0.6rem;
+    padding: 0.45rem 0.7rem;
+    background: #f5f8f8;
+    border-left: 3px solid var(--ken-accent, #0b6b70);
+    border-radius: 0.25rem;
+    font-size: 0.78rem;
+    color: var(--ken-ink-soft, #5d6b76);
+}
+
+.ken-answers {
+    max-height: 18rem;
+    overflow-y: auto;
+}
+
+.ken-loadmore {
+    display: flex;
+    justify-content: center;
+    padding: 0.6rem 0 0.2rem;
+}
+
+.ken-download-sink {
+    display: none;
+}

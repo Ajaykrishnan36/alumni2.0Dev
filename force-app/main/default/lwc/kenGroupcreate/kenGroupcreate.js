@@ -1,4 +1,5 @@
 import { LightningElement, track, api } from 'lwc';
+import { htmlToPlainText } from 'c/kenHtmlSanitizer';
 import { NavigationMixin } from 'lightning/navigation';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import saveDraftGroup from '@salesforce/apex/KenGroupsController.saveDraftGroup';
@@ -503,9 +504,7 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
 
     // Visible-text length of an HTML string (mirrors kenRichTextEditor._plainLen).
     _plainTextLen(html) {
-        const helper = document.createElement('div');
-        helper.innerHTML = html || '';
-        return (helper.textContent || '').replace(/\s+/g, ' ').trim().length;
+        return htmlToPlainText(html).length;
     }
 
     // ── Image upload helper ──────────────────────────────────────────────────
@@ -717,8 +716,7 @@ export default class KenGroupcreate extends NavigationMixin(LightningElement) {
         this.dispatchEvent(
             new CustomEvent('error', {
                 detail: { title, message },
-                bubbles: true,
-                composed: true
+                bubbles: true
             })
         );
     }

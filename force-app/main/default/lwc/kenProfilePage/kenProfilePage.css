@@ -431,3 +431,46 @@
         border-radius: 12px 12px 0 0;
     }
 }
+/* ── Mobile back header (phone only; desktop never renders it) ──
+   Copied from the event detail page so the two detail screens feel identical.
+   Sticky, because the alumni profile is long and the way back should not
+   scroll away. */
+.mobile-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.mobile-header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.mobile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 8px;
+    background: #F3F4F6;
+    color: #373A45;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.mobile-header-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #373A45;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

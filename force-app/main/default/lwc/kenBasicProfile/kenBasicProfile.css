@@ -1067,16 +1067,12 @@ body .slds-dropdown__item:hover {
     padding-right: 40px !important;
 }
 
-.dob-native-picker {
+/* Floats the calendar under the field without the field's own height moving. */
+.dob-picker-anchor {
     position: absolute;
-    right: 0.75rem;
-    bottom: 0;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    border: 0;
-    opacity: 0;
-    pointer-events: none;
+    top: calc(100% + 0.25rem);
+    left: 0;
+    z-index: 20;
 }
 
 .dob-calendar-button {
@@ -1108,4 +1104,98 @@ body .slds-dropdown__item:hover {
     stroke-width: 1.6;
     stroke-linecap: round;
     stroke-linejoin: round;
+}
+/* ── Required-field validation: box border only ──
+   Set when Continue is pressed with a required field empty, cleared as soon as
+   the field is filled. Nothing but the border colour changes. */
+.custom-input.has-error,
+.custom-select.has-error {
+    --sds-c-input-color-border: #C02B2B;
+    --sds-c-input-color-border-focus: #C02B2B;
+    --slds-c-input-color-border: #C02B2B;
+    --slds-c-input-color-border-focus: #C02B2B;
+    --sds-c-combobox-color-border: #C02B2B;
+    --slds-c-combobox-color-border: #C02B2B;
+    --slds-c-combobox-color-border-focus: #C02B2B;
+}
+
+/* The neutral border above is pinned with !important on the SLDS internals,
+   so the error state has to be pinned the same way to win. */
+.custom-input.has-error .slds-input,
+.custom-input.has-error .slds-input:focus,
+.custom-select.has-error .slds-input,
+.custom-select.has-error .slds-input:focus,
+.custom-select.has-error .slds-combobox__input,
+.custom-select.has-error .slds-combobox__input:focus,
+.custom-select.has-error .slds-combobox__input:hover {
+    border-color: #C02B2B !important;
+}
+
+/* Terms & conditions checkbox */
+.terms-checkbox.has-error {
+    --sds-c-checkbox-color-border: #C02B2B;
+    --slds-c-checkbox-color-border: #C02B2B;
+}
+
+.terms-checkbox.has-error .slds-checkbox__faux {
+    border-color: #C02B2B !important;
+}
+
+/* ── Desktop: left/right column alignment ──
+   Each field pair shares one grid row, so the two sides always line up no
+   matter how tall either field gets (the LinkedIn note, an inline error).
+   The two .form-column wrappers are `display: contents`, so their 8 fields
+   become items of this single grid; `grid-auto-flow: column` over 8 explicit
+   rows fills the left column top-to-bottom first, then the right one. Column
+   gap is left to the responsive `gap` shorthand above. */
+.desktop .form-row {
+    grid-template-rows: repeat(8, auto);
+    grid-auto-flow: column;
+    row-gap: 1rem;
+}
+
+.desktop .form-column {
+    display: contents;
+}
+
+/* The grid rows do the aligning now, so the hand-tuned top margins that used
+   to nudge the right column into place are dropped (mobile keeps them). */
+.desktop .twitter-css,
+.desktop .current-city-css {
+    margin-top: 0 !important;
+}
+
+/* The note sits inside the LinkedIn field now, so it no longer needs the
+   negative margin that pulled it back over the field below, nor the bottom
+   spacing — the grid's row-gap handles that. */
+.desktop .field-linkedin .linkedin-note {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* ── Inline messages sit the same distance below every field ──
+   lightning-input's .slds-form-element carries a bottom margin that
+   c-ken-searchable-picklist and c-ken-custom-phone-input do not. Anything
+   rendered after it as a sibling therefore cleared that margin first, so the
+   message under Current City floated ~30px below its box while the one under
+   Country of Residence (a picklist) sat right against it. The Education modal
+   hit the same thing and zeroes the margin outright; here it is scoped to
+   fields actually showing a message, plus the LinkedIn field whose note is
+   always on, so the rest of the form keeps the spacing it has now. */
+.form-field:has(> .field-error) .slds-form-element,
+.desktop .field-linkedin .slds-form-element {
+    margin-bottom: 0 !important;
+}
+
+/* One offset for every inline message, replacing the -10px that was tuned for
+   the two fields that had messages before. */
+.form-field > .field-error {
+    margin-top: -0.25rem;
+}
+
+/* Terms checkbox sits outside a .form-field, so its message needs its own
+   spacing. Same .field-error styling as every other inline message. */
+.terms-error {
+    margin-top: 0.375rem;
+    margin-left: 0.5rem;
 }

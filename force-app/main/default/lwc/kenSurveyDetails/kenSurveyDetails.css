@@ -400,6 +400,14 @@
     color: #373A45;
 }
 
+/* Descriptions copied from an event or session are rich text, so the value is
+   rendered through lightning-formatted-rich-text rather than interpolated. */
+.survey-description-rich {
+    display: block;
+    line-height: 1.5;
+    margin: 0;
+}
+
 .summary-empty {
     color: #6b7280;
     font-size: 14px;
@@ -1296,4 +1304,46 @@
         white-space: nowrap;
         padding: 10px 4px;
     }
+}
+/* ── Mobile back header (phone only) ──
+   Identical to the event, alumni-profile, campaigns and business detail pages so
+   every mobile detail screen offers the same way back. */
+.mobile-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.mobile-header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.mobile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 8px;
+    background: #F3F4F6;
+    color: #373A45;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+}
+
+.mobile-header-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #373A45;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

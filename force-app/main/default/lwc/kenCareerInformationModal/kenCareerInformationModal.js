@@ -1,4 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
+import {
+    replaceElementHtml,
+    serializeElementHtml
+} from 'c/kenHtmlSanitizer';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 
 const EMPLOYMENT_TYPES_JSON = [
@@ -122,16 +126,16 @@ export default class KenCareerInformationModal extends LightningElement {
         if (editor) {
             if (editor !== this.richTextEditor) {
                 this.richTextEditor = editor;
-                if (this.roleDescriptionHtml && editor.innerHTML !== this.roleDescriptionHtml) {
-                    editor.innerHTML = this.roleDescriptionHtml;
+                if (this.roleDescriptionHtml && serializeElementHtml(editor) !== this.roleDescriptionHtml) {
+                    replaceElementHtml(editor, this.roleDescriptionHtml);
                 }
 
                 editor.addEventListener('keyup', () => this.updateButtonStates());
                 editor.addEventListener('mouseup', () => this.updateButtonStates());
-            } else if (this.roleDescriptionHtml && editor.innerHTML !== this.roleDescriptionHtml) {
-                editor.innerHTML = this.roleDescriptionHtml;
-            } else if (!this.roleDescriptionHtml && editor.innerHTML) {
-                editor.innerHTML = '';
+            } else if (this.roleDescriptionHtml && serializeElementHtml(editor) !== this.roleDescriptionHtml) {
+                replaceElementHtml(editor, this.roleDescriptionHtml);
+            } else if (!this.roleDescriptionHtml && serializeElementHtml(editor)) {
+                replaceElementHtml(editor, '');
             }
             this.ensureListFormatting();
         }
@@ -325,14 +329,14 @@ export default class KenCareerInformationModal extends LightningElement {
     }
 
     handleRichTextInput(event) {
-        const rawHtml = event.target.innerHTML || '';
+        const rawHtml = serializeElementHtml(event.target) || '';
         const cleaned = this.sanitizeSpacesWhileTyping(rawHtml);
 
         this.roleDescriptionHtml = cleaned;
 
         // Reflect back if user entered 2+ spaces
         if (cleaned !== rawHtml) {
-            event.target.innerHTML = cleaned;
+            replaceElementHtml(event.target, cleaned);
         }
 
         setTimeout(() => {
@@ -353,14 +357,14 @@ export default class KenCareerInformationModal extends LightningElement {
     }
 
     handleRichTextBlur(event) {
-        const rawHtml = event.target.innerHTML || '';
+        const rawHtml = serializeElementHtml(event.target) || '';
         const cleanedFinal = this.sanitizeSpacesFinal(rawHtml);
 
         this.roleDescriptionHtml = cleanedFinal;
 
         // Reflect final cleaned content
         if (cleanedFinal !== rawHtml) {
-            event.target.innerHTML = cleanedFinal;
+            replaceElementHtml(event.target, cleanedFinal);
         }
     }
 
@@ -440,7 +444,7 @@ export default class KenCareerInformationModal extends LightningElement {
 
         setTimeout(() => {
             // keep html synced; don't trim here, user might still type
-            this.roleDescriptionHtml = this.richTextEditor.innerHTML || '';
+            this.roleDescriptionHtml = serializeElementHtml(this.richTextEditor) || '';
             this.updateButtonStates();
 
             if (command === 'insertUnorderedList' || command === 'insertOrderedList') {
@@ -550,7 +554,7 @@ export default class KenCareerInformationModal extends LightningElement {
     }
 
     handleClose() {
-        this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('close', { bubbles: true }));
     }
 
     validateForm() {
@@ -639,9 +643,9 @@ export default class KenCareerInformationModal extends LightningElement {
 
         // Get HTML content from rich text editor
         if (this.richTextEditor) {
-            const rawHtml = this.richTextEditor.innerHTML || '';
+            const rawHtml = serializeElementHtml(this.richTextEditor) || '';
             this.roleDescriptionHtml = this.sanitizeSpacesFinal(rawHtml);
-            this.richTextEditor.innerHTML = this.roleDescriptionHtml;
+            replaceElementHtml(this.richTextEditor, this.roleDescriptionHtml);
         }
 
         this.normalizeCareerFieldsFinal();
@@ -660,8 +664,7 @@ export default class KenCareerInformationModal extends LightningElement {
 
         this.dispatchEvent(new CustomEvent('save', {
             detail: careerInfo,
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

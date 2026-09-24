@@ -9,7 +9,7 @@
             </template>
         </div>
     </template>
-    <div style="width: 100%;">
+    <div class="form-page-shell">
     <c-ken-toast-notification
         is-visible={isToastVisible}
         toast-title={toastTitle}
@@ -114,14 +114,13 @@
                         <div class="form-field">
                             <label class="field-label">Phone number</label>
                             <div class="phone-input-wrapper">
-                                <input 
-                                    type="tel" 
-                                    class="form-input phone-input" 
-                                    data-id="phone-input"
+                                <c-ken-custom-phone-input
+                                    value={phoneE164}
                                     placeholder="0000 0000 00"
-                                    value={formData.phone}
-                                    oninput={handlePhoneInput}
-                                />
+                                    initial-country="in"
+                                    has-error={phoneError}
+                                    onphonechange={handlePhoneChange}>
+                                </c-ken-custom-phone-input>
                             </div>
                             <template if:true={phoneError}>
                                 <div class="error-text">{phoneError}</div>

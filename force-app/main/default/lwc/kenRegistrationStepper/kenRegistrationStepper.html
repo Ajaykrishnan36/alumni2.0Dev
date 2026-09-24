@@ -43,10 +43,11 @@
 
 		<div class="step-content-wrapper">
 			<template if:true={isStep1Active}>
-				<c-ken-basic-profile email={userEmail} oncontinue={handleStep1Continue} onprofilechange={handleBasicProfileChange} onnotify={handleNotify}></c-ken-basic-profile>
+				<c-ken-basic-profile email={userEmail} lock-registration-details={lockRegistrationDetails} oncontinue={handleStep1Continue} onprofilechange={handleBasicProfileChange} onnotify={handleNotify}></c-ken-basic-profile>
 			</template>
 			<template if:true={isStep2Active}>
 				<c-ken-education-step
+					lock-registration-details={lockRegistrationDetails}
 					onprevious={handleStep2Previous}
 					onskip={handleStep2Skip}
 					onsaveandnext={handleStep2SaveAndNext}

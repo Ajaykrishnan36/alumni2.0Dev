@@ -34,6 +34,6 @@ export default class KenRegistrationHeader extends LightningElement {
 
     handleLogout() {
         window.location.href = `${basePath}/secur/logout.jsp?retUrl/login`;
-        this.dispatchEvent(new CustomEvent('logout', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('logout', { bubbles: true }));
     }
 }

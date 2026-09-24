@@ -142,14 +142,12 @@ export default class KenTasksSection extends NavigationMixin(LightningElement) {
         if (this.modalMode === 'edit') {
             this.dispatchEvent(new CustomEvent('edittask', {
                 detail: taskData,
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
         } else {
             this.dispatchEvent(new CustomEvent('addtask', {
                 detail: taskData,
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
         }
         this.handleCloseAddTaskModal();
@@ -185,8 +183,7 @@ export default class KenTasksSection extends NavigationMixin(LightningElement) {
 
         this.dispatchEvent(new CustomEvent('taskaction', {
             detail: { action, taskId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

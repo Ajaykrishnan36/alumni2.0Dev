@@ -5,11 +5,9 @@ import KenLogo from '@salesforce/resourceUrl/LoginKen';
 import KenPoweredbyLogo from '@salesforce/resourceUrl/kenPoweredbyLogo';
 import basePath from '@salesforce/community/basePath';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
-import instituteWhiteLogo from '@salesforce/resourceUrl/instituteWhiteLogo';
 export default class KenPortalResetPasswordPage extends LightningElement {
     @track isMobile = false;
     @track institutionName = '';
-    instituteWhiteLogo = instituteWhiteLogo;
     @api get crpage() {
         return this.currentPage;
     }
@@ -35,11 +33,11 @@ export default class KenPortalResetPasswordPage extends LightningElement {
     }
 
     handleLogin() {
-        this.dispatchEvent(new CustomEvent('login', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('login', { bubbles: true }));
     }
 
     handleRegister() {
-        this.dispatchEvent(new CustomEvent('register', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('register', { bubbles: true }));
     }
 
     connectedCallback() {

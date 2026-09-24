@@ -1,7 +1,7 @@
 <template>
     <div class="custom-phone-input-container">
         <div class={phoneInputWrapperClass}>
-            <div class="country-selector" onclick={handleDropdownToggle}>
+            <div class={countrySelectorClass} onclick={handleDropdownToggle}>
                 <template if:true={selectedCountry}>
                     <img 
                         src={flagUrl} 
@@ -21,6 +21,7 @@
             <input
                 type="tel"
                 inputmode="numeric"
+                maxlength={maxDigits}
                 class="phone-number-input"
                 value={displayValue}
                 placeholder={placeholder}
@@ -35,7 +36,7 @@
             />
         </div>
         
-        <template if:true={showDropdown}>
+        <template if:true={isDropdownVisible}>
             <div class="country-dropdown">
                 <div class="country-search-wrapper">
                     <input

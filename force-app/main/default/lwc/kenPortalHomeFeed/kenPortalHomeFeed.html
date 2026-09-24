@@ -2,9 +2,16 @@
     <div class="feed-container">
         <div class="feed-header">
             <p class="feed-title">Feed</p>
-            <template if:true={showFeedViewMore}>
-                <button type="button" class="feed-view-more-btn" onclick={handleViewMoreFeed}>View more</button>
-            </template>
+            <div class="feed-header-actions">
+                <select class="feed-filter" onchange={handleFeedFilterChange} aria-label="Filter feed">
+                    <template for:each={filterOptions} for:item="opt">
+                        <option key={opt.value} value={opt.value} selected={opt.selected}>{opt.label}</option>
+                    </template>
+                </select>
+                <template if:true={showFeedViewMore}>
+                    <button type="button" class="feed-view-more-btn" onclick={handleViewMoreFeed}>View more</button>
+                </template>
+            </div>
         </div>
 
         <div class="feed-content">
@@ -66,9 +73,20 @@
                     <div class="feed-item-content">
                         <div class="feed-item-header">
                             <p class="feed-item-title">{item.title}</p>
-                            <span class="feed-item-tag">{item.tag}</span>
+                            <span class="feed-item-tag">
+                                <template if:true={item.hasPlatformLogo}>
+                                    <img src={item.platformLogo} alt="" class="feed-item-tag-logo" />
+                                </template>
+                                {item.tag}
+                            </span>
                         </div>
-                        <p class="feed-item-text">{item.contentDisplayText}</p>
+                        <div class={item.textClass} data-body-id={item.id} lwc:dom="manual"></div>
+                        <template if:true={item.hasImage}>
+                            <img src={item.imageUrl} alt="" class="feed-item-image" loading="lazy" />
+                        </template>
+                        <template if:true={item.hasPostUrl}>
+                            <a href={item.postUrl} target="_blank" rel="noopener noreferrer" class="feed-item-link">{item.postLinkLabel}</a>
+                        </template>
                         <template if:true={item.contentShowToggle}>
                             <div class="expand-toggle-mobile">
                                 <button type="button" class="show-all-btn feed-item-show-all" onclick={toggleItemContentExpand} data-item-id={item.id}>

@@ -1,4 +1,5 @@
 import { LightningElement, api } from 'lwc';
+import defaultCompanyLogo from '@salesforce/resourceUrl/AlumniAlt';
 
 export default class KenExperienceCard extends LightningElement {
     @api recordId;
@@ -14,7 +15,7 @@ export default class KenExperienceCard extends LightningElement {
     showDeleteConfirm = false;
 
     handleEdit() {
-        this.dispatchEvent(new CustomEvent('edit', { detail: { id: this.recordId }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('edit', { detail: { id: this.recordId }, bubbles: true }));
     }
 
     handleDelete() {
@@ -23,7 +24,7 @@ export default class KenExperienceCard extends LightningElement {
 
     handleConfirmDelete() {
         this.showDeleteConfirm = false;
-        this.dispatchEvent(new CustomEvent('delete', { detail: { id: this.recordId }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('delete', { detail: { id: this.recordId }, bubbles: true }));
     }
 
     handleCancelDelete() {
@@ -31,7 +32,7 @@ export default class KenExperienceCard extends LightningElement {
     }
 
     get displayLogo() {
-        return this.companyLogo || '/assets/images/default-company-logo.png';
+        return this.companyLogo || defaultCompanyLogo;
     }
 
     handleLogoError(event) {

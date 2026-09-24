@@ -9,6 +9,8 @@ import RegistrationSuccessGif from '@salesforce/resourceUrl/RegistrationSuccessG
 import KenPoweredbyLogo from '@salesforce/resourceUrl/kenPoweredbyLogo';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import getRegistrationOptions from '@salesforce/apex/KenPortalRegisterController.getRegistrationOptions';
+// Keep in sync with KenPortalRegisterController.OTP_EXPIRY_MINUTES.
+const OTP_TIMER_SECONDS = 60;
 export default class KenRegisterPage extends NavigationMixin(LightningElement) {
     @api startUrl = '';
     @api institutionLabel = ''; // org institution alias, used only in the "Please Note" copy
@@ -49,7 +51,7 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
         { id: '2', value: '' },
         { id: '3', value: '' }
     ];
-    @track timerSeconds = 120;
+    @track timerSeconds = OTP_TIMER_SECONDS;
     @track canResend = false;
     timerInterval;
 
@@ -405,7 +407,7 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
     }
 
     startTimer() {
-        this.timerSeconds = 120;
+        this.timerSeconds = OTP_TIMER_SECONDS;
         this.canResend = false;
         
         if (this.timerInterval) {
@@ -521,8 +523,7 @@ export default class KenRegisterPage extends NavigationMixin(LightningElement) {
             await verifySignupOtp({ requestJson: JSON.stringify(payload) });
             this.dispatchEvent(new CustomEvent('registercomplete', {
                 detail: { email: this.email },
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
             this.showOTP = false;
             this.showSuccessGif = true;

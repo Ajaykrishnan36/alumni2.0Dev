@@ -2,7 +2,6 @@
 
 import { refreshApex } from '@salesforce/apex';
 import getEvent from '@salesforce/apex/KenEventFormController.getEvent';
-import getFileUploadSettings from '@salesforce/apex/KenEventFormController.getFileUploadSettings';
 import getPicklistValuesByFields from '@salesforce/apex/KenEventFormController.getPicklistValues';
 import updateEvent from '@salesforce/apex/KenEventFormController.saveEvent';
 import { NavigationMixin } from 'lightning/navigation';
@@ -12,6 +11,8 @@ import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 const BASE64_DATA_INDEX = 1,
   BYTES_IN_KB = 1024,
   BYTES_IN_MB = BYTES_IN_KB * BYTES_IN_KB,
+  BANNER_FILE_TYPES = ['png', 'jpeg', 'jpg'],
+  BANNER_MAX_MB = 2,
   CHILD_INIT_DELAY_MS = 2000,
   MONTH_OFFSET = 1,
   TEXTAREA_MAX_CHARS = 1000,
@@ -71,8 +72,8 @@ export default class KenCreateEvent extends NavigationMixin(LightningElement)
   };
   showSpinner = true;
   suitableFor;
-  acceptedBannerFormats = [];
-  maxBannerSize;
+  acceptedBannerFormats = BANNER_FILE_TYPES;
+  maxBannerSize = BANNER_MAX_MB * BYTES_IN_MB;
   @track eventCategories = [];
   @track eventLanguages = [];
   hasRendered = false;
@@ -116,23 +117,13 @@ export default class KenCreateEvent extends NavigationMixin(LightningElement)
         this.isFileInputVisible = false;
        }
         this.getPicklistOptions();
-      } catch {
+      } catch (e) {
         this.showToast('Error', 'Failed to load Event Data, Please try again.', 'error');
       }
     } else if (error) {
       this.showToast('Error', 'Failed to load Event Data, Please try again.', 'error');
     }
     this.showSpinner = false;
-  }
-
-  @wire(getFileUploadSettings, { allowedFileTypes: 'Event_Banner_File_Types__c', maxFileSize: 'Event_Banner_File_Size_MB__c' })
-  fileUploadSettings({ error, data }) {
-    if (data) {
-      this.acceptedBannerFormats = data?.allowedFileTypes?.toLowerCase().split(',');
-      this.maxBannerSize = parseInt(data?.maxFileSize, 10) * BYTES_IN_MB;
-    } else if (error) {
-      this.showToast('Error', 'Error fetching file upload settings', 'error');
-    }
   }
 
   renderedCallback() {
@@ -254,7 +245,7 @@ if (!file) {
        },
       type: 'standard__recordPage'
       });
-    } catch {
+    } catch (e) {
       this.showToast('Error', 'Error saving record', 'error');
     } finally {
       this.showSpinner = false;
@@ -287,7 +278,7 @@ if (!file) {
           detail: { eventId: this.eventRecordId }
         })
       );
-    } catch  {
+    } catch (e) {
       this.showToast('Error', 'Error saving record', 'error');
     } finally {
       this.showSpinner = false;
@@ -328,7 +319,10 @@ if (!file) {
       return;
     }
 
-    this.eventLanguages = this.formatPicklistValues(picklistData.Language__c, this.selectedLanguages);
+    // Sorted by label - see the note in kenPortalCreateEvent; the org's picklist order
+    // is not alphabetical and the list is long enough to need scanning.
+    this.eventLanguages = this.formatPicklistValues(picklistData.Language__c, this.selectedLanguages)
+      .sort((x, y) => (x.label || '').localeCompare(y.label || ''));
     this.eventCategories = this.formatPicklistValues(picklistData.Event_Type__c, this.selectedCategories);
   }
 

@@ -18,6 +18,9 @@ import getProfessionalDistribution  from '@salesforce/apex/KenAlumniDashboardCon
 import getIndiaStateDistribution    from '@salesforce/apex/KenAlumniDashboardController.getIndiaStateDistribution';
 import getWorldDistribution         from '@salesforce/apex/KenAlumniDashboardController.getWorldDistribution';
 import getAlumniList                from '@salesforce/apex/KenAlumniDashboardController.getAlumniList';
+import getReports                   from '@salesforce/apex/KenAlumniReportController.getReports';
+import getRowCount                  from '@salesforce/apex/KenAlumniReportController.getRowCount';
+import getReportChunk               from '@salesforce/apex/KenAlumniReportController.getReportChunk';
 
 function mapItems(rawList) {
     return (rawList || []).map(d => ({ label: d.label, value: d.value }));
@@ -95,6 +98,9 @@ export default class KenAlumniDemographicsDashboard extends LightningElement {
 
     // ── Refresh state ──────────────────────────────────────────────────────────
     @track isRefreshing = false;
+
+    // ── Report downloads ───────────────────────────────────────────────────────
+    @track reportDownloads = [];
 
     // ── Modal ──────────────────────────────────────────────────────────────────
     @track modalOpen    = false;
@@ -249,6 +255,118 @@ export default class KenAlumniDemographicsDashboard extends LightningElement {
                 }));
             })
             .catch(() => { this.isRefreshing = false; });
+    }
+
+    // ── Report downloads ───────────────────────────────────────────────────────
+    connectedCallback() {
+        getReports()
+            .then((options) => {
+                this.reportDownloads = (options || []).map(option => ({
+                    key: option.key,
+                    label: option.label,
+                    buttonLabel: option.label,
+                    description: `${option.description} (${option.columnCount} columns)`,
+                    filePrefix: option.filePrefix,
+                    isBusy: false
+                }));
+            })
+            .catch(() => { this.reportDownloads = []; });
+    }
+
+    /**
+     * Pulls the report a slice at a time and assembles the CSV in the browser.
+     * Each call is its own Apex transaction, so the export is not bounded by a
+     * single transaction's governor limits however many alumni the org holds.
+     */
+    async handleDownloadReport(event) {
+        const key = event.currentTarget.dataset.key;
+        const report = this.reportDownloads.find(r => r.key === key);
+        if (!report || report.isBusy) return;
+        this._setReport(key, { isBusy: true, buttonLabel: 'Preparing…' });
+
+        try {
+            const total = await getRowCount({ reportKey: key });
+            const parts = [];
+            let afterId = null;
+            let fetched = 0;
+            let done = false;
+
+            while (!done) {
+                const chunk = await getReportChunk({ reportKey: key, afterId });
+                if (chunk.headerLine) parts.push(chunk.headerLine);
+                if (chunk.csv) parts.push(chunk.csv);
+                fetched += chunk.rowsInChunk || 0;
+                afterId = chunk.lastId;
+                done = chunk.done || !chunk.rowsInChunk || !afterId;
+                this._setReport(key, { buttonLabel: this._progressLabel(fetched, total) });
+            }
+
+            this._saveCsv(parts.join('\r\n'), `${report.filePrefix}${this._stamp()}.csv`);
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Download ready',
+                message: `${fetched} row${fetched === 1 ? '' : 's'} exported.`,
+                variant: 'success'
+            }));
+        } catch (error) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: `${report.label} failed`,
+                message: error?.body?.message || error?.message || 'Unexpected error.',
+                variant: 'error'
+            }));
+        } finally {
+            this._setReport(key, { isBusy: false, buttonLabel: report.label });
+        }
+    }
+
+    _progressLabel(fetched, total) {
+        if (!total) return `${fetched} rows…`;
+        return `${Math.min(99, Math.floor((fetched / total) * 100))}%`;
+    }
+
+    _stamp() {
+        const pad = n => String(n).padStart(2, '0');
+        const d = new Date();
+        return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+    }
+
+    /**
+     * Saves the assembled CSV. Lightning Web Security only lets
+     * URL.createObjectURL accept a restricted set of MIME types and rejects
+     * text/csv outright, so the permitted types are tried in turn and a data
+     * URI is the last resort. The .csv extension on the download attribute is
+     * what makes Excel open it, not the MIME type. The leading byte order mark
+     * is what makes Excel read it as UTF-8.
+     */
+    _saveCsv(csv, fileName) {
+        const text = '﻿' + csv;
+        const types = ['text/plain;charset=utf-8', 'application/octet-stream', 'text/csv;charset=utf-8'];
+        for (const type of types) {
+            try {
+                const url = URL.createObjectURL(new Blob([text], { type }));
+                this._clickDownload(url, fileName);
+                window.setTimeout(() => URL.revokeObjectURL(url), 30000);
+                return;
+            } catch (error) {
+                // This MIME type is not permitted here; fall through to the next.
+            }
+        }
+        this._clickDownload('data:text/csv;charset=utf-8,' + encodeURIComponent(text), fileName);
+    }
+
+    _clickDownload(url, fileName) {
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        link.target = '_self';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    _setReport(key, changes) {
+        this.reportDownloads = this.reportDownloads.map(
+            r => (r.key === key ? { ...r, ...changes } : r)
+        );
     }
 
     // ── Stat card drill-down ───────────────────────────────────────────────────

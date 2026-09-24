@@ -216,8 +216,8 @@ export default class KenPreEventSurvey extends LightningElement {
                     type: 'Multiple Choice',
                     required: true,
                     options: [
-                        { id: `opt-${Date.now()}-a`, text: '', letter: 'a' },
-                        { id: `opt-${Date.now()}-b`, text: '', letter: 'b' }
+                        { id: `opt-${Date.now()}-a`, value: '', text: '', letter: 'a' },
+                        { id: `opt-${Date.now()}-b`, value: '', text: '', letter: 'b' }
                     ]
                 }
             ];
@@ -257,8 +257,7 @@ export default class KenPreEventSurvey extends LightningElement {
                 customSurveyEnabled: this.customSurveyEnabled,
                 surveyQuestions: this.customSurveyEnabled ? this.surveyQuestions : []
             },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 }

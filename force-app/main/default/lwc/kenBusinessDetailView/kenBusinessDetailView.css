@@ -1378,3 +1378,181 @@ span[title] {
     color: #6b7280;
     margin: 8px 0 0 0;
 }
+/* ── Mobile back header (phone only) ──
+   Identical to the event, alumni-profile and campaigns pages so every mobile
+   detail screen in the portal offers the same way back. Sticky, because the
+   business detail is long and the way out should not scroll away. */
+.mobile-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e9ecef;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.mobile-header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mobile-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: #f3f4f6;
+  color: #373a45;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.mobile-header-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #373a45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Docked chat window ───────────────────────────────────────────────
+   Lifted from kenAlumniDetailView so the owner chat on a listing looks and
+   behaves exactly like the one on a profile. Same z-index note applies: the
+   KAI bot widget sits on document.body outside this shadow DOM, so the panel
+   has to sit at the ceiling to stay above it. */
+.chatbox-container {
+  position: fixed;
+  bottom: 0;
+  right: 24px;
+  width: 380px;
+  height: 520px;
+  background-color: #ffffff;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  /* The KAI bot widget is injected onto document.body by its own SDK, outside this
+     shadow DOM, and it outranked the 9999 that used to be here - so the bot bubble
+     covered the chat window. Its z-index lives in third-party CSS we do not ship, so
+     rather than chase a number, sit at the 32-bit ceiling: nothing can be above it. */
+  z-index: 2147483647;
+  overflow: hidden;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  border: 1px solid #e5e7eb;
+  transition:
+    width 0.3s ease,
+    height 0.3s ease;
+}
+
+.chatbox-container.expanded {
+  width: 600px;
+  height: 750px;
+  max-height: 90vh;
+  max-width: 90vw;
+}
+
+.chatbox-header {
+  background-color: var(--primary-color, #ffffff);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-avatar-container {
+  position: relative;
+  width: 32px;
+  height: 32px;
+}
+
+.chat-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+}
+
+.chat-online-indicator {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  background-color: #10b981;
+  border-radius: 50%;
+  border: 1px solid #ffffff;
+}
+
+.chat-username {
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.chat-action-btn lightning-icon {
+  --slds-c-icon-color-foreground-default: #ffffff;
+  --sds-c-icon-color-foreground-default: #ffffff;
+  --slds-c-icon-color-foreground: #ffffff;
+  --lwc-colorTextIconDefault: #ffffff;
+  fill: #ffffff;
+  color: #ffffff;
+}
+
+.chat-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Chat Body */
+/* Now just a frame for c/kenChat, which brings its own padding, scrolling and composer. The
+   padding and gap that used to lay out message bubbles here would double up on the chat's own. */
+.chatbox-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  background-color: var(--portal-surface, #ffffff);
+}
+
+.chatbox-body c-ken-chat {
+  flex: 1;
+  min-width: 0;
+}

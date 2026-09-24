@@ -1,4 +1,5 @@
 import { LightningElement, track, wire } from 'lwc';
+import { formatTime as viewerTime } from 'c/kenDateTime';
 import { CurrentPageReference } from 'lightning/navigation';
 import getEventDetails from '@salesforce/apex/KenPortalEventController.getEventDetails';
 import getRegisteredSessions from '@salesforce/apex/KenPortalEventController.getRegisteredSessions';
@@ -390,6 +391,12 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
     setCurrentPageReference(currentPageReference) {
         if (currentPageReference) {
             this.recordId = currentPageReference.state?.recordId;
+            // Returning from the feedback form lands back here with tab=updates so the
+            // attendee sees their form flip to Completed instead of the About tab.
+            const tabParam = currentPageReference.state?.tab || currentPageReference.state?.c__tab;
+            if (tabParam === 'updates') {
+                this.activeTab = 'updates';
+            }
             console.log('Current Page Record ID:', this.recordId);
         }
     }
@@ -450,6 +457,11 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
 
     handleTabUpdates() {
         this.activeTab = 'updates';
+        // getEventUpdatesData is cacheable; a form submitted this session would
+        // otherwise still read Pending.
+        if (this.wiredEventUpdatesResult) {
+            refreshApex(this.wiredEventUpdatesResult);
+        }
     }
 
     handleTabParticipants() {
@@ -462,8 +474,9 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
     }
 
     @wire(getEventUpdatesData, { eventId: '$recordId' })
-    wiredEventUpdates({ data }) {
-        if (data) this.eventUpdatesData = data;
+    wiredEventUpdates(result) {
+        this.wiredEventUpdatesResult = result;
+        if (result?.data) this.eventUpdatesData = result.data;
     }
 
     get hasPreEventSurveys() { return this.eventUpdatesData?.preEventSurveys?.length > 0; }
@@ -505,6 +518,114 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
             isUpcoming: s.status === 'Upcoming',
             statusClass: s.status === 'Completed' ? 'eu-fb-completed' : (s.status === 'Active' ? 'eu-fb-active' : 'eu-fb-upcoming')
         }));
+    }
+
+    /**
+     * Every feedback form an attendee can actually fill — the event-level survey plus
+     * one per session — flattened into a single list. Host-only concerns (setup,
+     * response drill-down) are deliberately absent.
+     */
+    get attendeeFeedbackForms() {
+        const data = this.eventUpdatesData;
+        if (!data) return [];
+        const forms = [];
+        const seen = new Set();
+        (data.preEventSurveys || []).forEach(s => {
+            if (!s.hasQuestionnaire || seen.has(s.id)) return;
+            seen.add(s.id);
+            forms.push(this._mapAttendeeForm({
+                id: s.id,
+                name: s.name,
+                startDate: s.startDate,
+                endDate: s.endDate,
+                questionCount: s.questionCount,
+                responseCount: s.responseCount,
+                respondedByMe: s.respondedByMe
+            }));
+        });
+        (data.sessions || []).forEach(s => {
+            if (!s.hasSurvey || !s.hasQuestionnaire || seen.has(s.surveyId)) return;
+            seen.add(s.surveyId);
+            forms.push(this._mapAttendeeForm({
+                id: s.surveyId,
+                name: s.surveyName || s.sessionName,
+                startDate: s.surveyStartDate,
+                endDate: s.surveyEndDate,
+                questionCount: s.questionCount,
+                responseCount: s.responseCount,
+                respondedByMe: s.respondedByMe
+            }));
+        });
+        return forms;
+    }
+
+    get hasAttendeeFeedbackForms() {
+        return this.attendeeFeedbackForms.length > 0;
+    }
+
+    get showHostPreEventSurveys() { return this.isHost && this.hasPreEventSurveys; }
+    get showHostSessionFeedbacks() { return this.isHost && this.hasSessionFeedbacks; }
+    get showAttendeeFeedbackForms() { return !this.isHost && this.hasAttendeeFeedbackForms; }
+    // Held back until both wires have landed — isHost reads false while the event and
+    // role are still loading, which would flash the empty state at a host.
+    get showAttendeeNoForms() {
+        return !!this.event && !!this.eventUpdatesData && !this.isHost && !this.hasAttendeeFeedbackForms;
+    }
+
+    _mapAttendeeForm(f) {
+        const start = f.startDate ? this.formatDate(f.startDate) : null;
+        const end = f.endDate ? this.formatDate(f.endDate) : null;
+        const completed = f.respondedByMe === true || this._locallySubmitted(f.id);
+        return {
+            id: f.id,
+            name: f.name,
+            periodLabel: start && end ? `${start} – ${end}` : (start || '–'),
+            questionLabel: f.questionCount > 0 ? String(f.questionCount) : '––',
+            responseLabel: f.responseCount > 0 ? String(f.responseCount) : '––',
+            isCompleted: completed,
+            badgeLabel: completed ? 'Completed' : 'Pending',
+            badgeClass: completed ? 'eu-fb-badge eu-fb-completed' : 'eu-fb-badge eu-fb-pending',
+            buttonClass: completed ? 'eu-fill-feedback-btn is-done' : 'eu-fill-feedback-btn'
+        };
+    }
+
+    /**
+     * kenSurveyForm stamps the survey id in sessionStorage on submit, so the card
+     * reads Completed even before the cached Apex response refreshes.
+     */
+    _locallySubmitted(surveyId) {
+        if (!surveyId) return false;
+        try {
+            const raw = sessionStorage.getItem('kenFbSubmitted:' + surveyId);
+            return !!raw && JSON.parse(raw).length > 0;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    handleFillFeedback(e) {
+        const surveyId = e.currentTarget.dataset.id;
+        if (!surveyId) return;
+        // recId (not surveyId) puts the form in module-record mode, which resolves the
+        // questionnaire in system context — a registrant has no sharing on the host's
+        // Ken_Survey__c, so surveyId mode would load an empty form.
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'survey_form__c' },
+            state: { recId: surveyId, returnUrl: encodeURIComponent(this._eventUpdatesReturnUrl()) }
+        });
+    }
+
+    _eventUpdatesReturnUrl() {
+        // Built from the live URL rather than a hardcoded path — the event detail page
+        // sits at a different route per site.
+        try {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tab', 'updates');
+            return url.toString();
+        } catch (e) {
+            return `${basePath}/event/event-detail?recordId=${this.recordId}&tab=updates`;
+        }
     }
 
     // ---- Participants tab (host only, hidden for In Review) ----
@@ -625,7 +746,9 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
         if (this.isHost) return this.isApproved;
         return this.isRegistered && (this.isOngoingStatus || this.isCompletedStatus);
     }
-    get isUpdatesTab() { return this.activeTab === 'updates'; }
+    // Gated on the same rule as the tab button: the tab can also be reached by a
+    // ?tab=updates deep link, which must not bypass it.
+    get isUpdatesTab() { return this.activeTab === 'updates' && this.showEventUpdatesTab; }
     get updatesTabClass() {
         return this.activeTab === 'updates' ? 'event-tab-btn active' : 'event-tab-btn';
     }
@@ -855,8 +978,13 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
         if (!data || data.length === 0) return [];
 
         const sorted = [...data].sort((a, b) => {
-            const aDateTime = this.getDateTime(a.sessionDate, a.startTime);
-            const bDateTime = this.getDateTime(b.sessionDate, b.startTime);
+            // Sort on the instant when we have one — getDateTime rebuilds a moment
+            // from a local midnight plus a zoneless offset, which orders sessions
+            // wrongly for a viewer outside the zone the times were entered in.
+            const aDateTime = a.startInstant ? new Date(a.startInstant).getTime()
+                : this.getDateTime(a.sessionDate, a.startTime);
+            const bDateTime = b.startInstant ? new Date(b.startInstant).getTime()
+                : this.getDateTime(b.sessionDate, b.startTime);
             return aDateTime - bDateTime;
         });
 
@@ -869,8 +997,10 @@ export default class KenEventDetails extends NavigationMixin(LightningElement) {
 
             return {
                 ...item,
-                startTime: item.startTime ? this.formatTime(item.startTime) : null,
-                endTime: item.endTime ? this.formatTime(item.endTime) : null,
+                startTime: item.startInstant ? viewerTime(item.startInstant)
+                    : (item.startTime ? this.formatTime(item.startTime) : null),
+                endTime: item.endInstant ? viewerTime(item.endInstant)
+                    : (item.endTime ? this.formatTime(item.endTime) : null),
                 sessionDate: item.sessionDate ? this.formatDate(item.sessionDate) : null,
                 rawDate: item.sessionDate || null,
                 isCompleted: this.checkIsCompleted(item),

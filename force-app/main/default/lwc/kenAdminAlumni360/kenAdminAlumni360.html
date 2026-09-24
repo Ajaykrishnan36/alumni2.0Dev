@@ -182,16 +182,7 @@
                                 <div key={row.key} class="kv k2">
                                     <div class="l">{row.label}</div>
                                     <template lwc:if={row.editableNow}>
-                                        <template lwc:if={row.isAddress}>
-                                            <div class="a360-addr-grid">
-                                                <lightning-input class="a360-edit-input" type="text" label="Street" value={addrStreet} data-key="street" onchange={handleEditChange}></lightning-input>
-                                                <lightning-input class="a360-edit-input" type="text" label="City" value={addrCity} data-key="city" onchange={handleEditChange}></lightning-input>
-                                                <lightning-input class="a360-edit-input" type="text" label="State" value={addrState} data-key="state" onchange={handleEditChange}></lightning-input>
-                                                <lightning-input class="a360-edit-input" type="text" label="Postal Code" value={addrPostal} data-key="postalCode" onchange={handleEditChange}></lightning-input>
-                                                <lightning-input class="a360-edit-input" type="text" label="Country" value={addrCountry} data-key="country" onchange={handleEditChange}></lightning-input>
-                                            </div>
-                                        </template>
-                                        <template lwc:elseif={row.isSelect}>
+                                        <template lwc:if={row.isSelect}>
                                             <lightning-combobox class="a360-edit-input" value={row.editValue} options={row.options}
                                                 data-key={row.fieldKey} onchange={handleEditChange} variant="label-hidden" placeholder="—">
                                             </lightning-combobox>
@@ -270,12 +261,13 @@
                             <div class="section-label">EDUCATION HISTORY</div>
                             <table class="sem-table edu-table">
                                 <thead>
-                                    <tr><th>INSTITUTE</th><th>DEGREE</th><th>GRADE</th><th>YEAR</th></tr>
+                                    <tr><th>INSTITUTE</th><th>PROGRAM</th><th>DEGREE</th><th>GRADE</th><th>YEAR</th></tr>
                                 </thead>
                                 <tbody>
                                     <template for:each={educationView} for:item="e">
                                         <tr key={e.key}>
                                             <td>{e.institute}</td>
+                                            <td>{e.program}</td>
                                             <td>{e.degree}</td>
                                             <td>{e.gradeLabel}</td>
                                             <td>{e.yearOfCompletion}</td>
@@ -287,12 +279,6 @@
 
                         <template lwc:if={hasNoEducation}>
                             <div class="empty-tab">No education records on file.</div>
-                        </template>
-
-                        <template lwc:if={data.academic.graduationFooter}>
-                            <div class="grad-footer">
-                                <strong>{data.academic.graduationFooter}</strong>
-                            </div>
                         </template>
                     </template>
                 </div>
@@ -493,16 +479,7 @@
                                 <div key={row.key} class="kv k2">
                                     <div class="l">{row.label}</div>
                                     <template lwc:if={row.editableNow}>
-                                        <template lwc:if={row.isAddress}>
-                                            <div class="a360-addr-grid">
-                                                <lightning-input class="a360-edit-input" type="text" label="Street" value={addrStreet} data-key="street" onchange={handleEditChange}></lightning-input>
-                                                <lightning-input class="a360-edit-input" type="text" label="City" value={addrCity} data-key="city" onchange={handleEditChange}></lightning-input>
-                                                <lightning-input class="a360-edit-input" type="text" label="State" value={addrState} data-key="state" onchange={handleEditChange}></lightning-input>
-                                                <lightning-input class="a360-edit-input" type="text" label="Postal Code" value={addrPostal} data-key="postalCode" onchange={handleEditChange}></lightning-input>
-                                                <lightning-input class="a360-edit-input" type="text" label="Country" value={addrCountry} data-key="country" onchange={handleEditChange}></lightning-input>
-                                            </div>
-                                        </template>
-                                        <template lwc:elseif={row.isSelect}>
+                                        <template lwc:if={row.isSelect}>
                                             <lightning-combobox class="a360-edit-input" value={row.editValue} options={row.options}
                                                 data-key={row.fieldKey} onchange={handleEditChange} variant="label-hidden" placeholder="—">
                                             </lightning-combobox>

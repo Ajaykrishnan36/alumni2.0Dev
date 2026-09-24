@@ -2,8 +2,16 @@
     <div class="photo-card" onclick={handleCardClick}>
         <!-- Photo Image -->
         <div class="photo-image-container">
-            <template if:true={isImage}>
-                <img src={photoImageUrl} alt="Photo" class="photo-image" />
+            <!-- An image renders itself. It had no error handler before, which is
+                 why an unreachable file showed the browser's broken-image box
+                 rather than falling back to the placeholder art. -->
+            <template if:true={showImage}>
+                <img
+                    src={photoImageUrl}
+                    alt={fileName}
+                    class="photo-image"
+                    onerror={handleImageError}
+                />
             </template>
             <template if:true={showThumbnail}>
                 <img
@@ -14,10 +22,12 @@
                 />
                 <div class="thumbnail-filename-badge">{fileName}</div>
             </template>
+            <!-- A document has no renderable preview, so it gets the same static
+                 art the album cards use, with its name underneath. -->
             <template if:true={showPlaceholder}>
                 <div class="file-placeholder">
-                    <lightning-icon icon-name="doctype:attachment" size="large"></lightning-icon>
-                    <p class="file-placeholder-name">{fileName}</p>
+                    <img src={placeholderImageUrl} alt={fileName} class="photo-image" />
+                    <div class="thumbnail-filename-badge">{fileName}</div>
                 </div>
             </template>
             <div class="photo-overlay"></div>

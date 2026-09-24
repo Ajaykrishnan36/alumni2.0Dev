@@ -23,8 +23,7 @@ export default class KenGroupsJoined extends LightningElement {
         const groupId = event.currentTarget.dataset.groupId;
         this.dispatchEvent(new CustomEvent('groupclick', {
             detail: { groupId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -35,8 +34,7 @@ export default class KenGroupsJoined extends LightningElement {
         this.dispatchEvent(
             new CustomEvent('leavegroup', {
                 detail: { groupId, memberRecordId },
-                bubbles: true,
-                composed: true
+                bubbles: true
             })
         );
     }

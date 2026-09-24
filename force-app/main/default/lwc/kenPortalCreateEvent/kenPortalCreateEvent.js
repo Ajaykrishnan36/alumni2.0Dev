@@ -1,4 +1,5 @@
 import { LightningElement, track, wire, api } from 'lwc';
+import { toUtcInstant } from 'c/kenDateTime';
 import saveEvent from '@salesforce/apex/KenEventFormController.saveEvent';
 import getEvent from '@salesforce/apex/KenEventFormController.getEvent';
 import getEventSchedule from '@salesforce/apex/KenEventFormController.getEventSchedule';
@@ -853,7 +854,12 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
                 return;
             }
 
-            this.eventLanguages = this.formatPicklistValues(picklistData.Language__c, this.selectedLanguages);
+            // Sorted by label: the picklist runs to 46 languages in the org's own
+            // definition order, which is neither alphabetical nor meaningful to a user
+            // scanning the list. Only the languages are sorted - event type and audience
+            // keep their curated picklist order.
+            this.eventLanguages = this.formatPicklistValues(picklistData.Language__c, this.selectedLanguages)
+                .sort((x, y) => (x.label || '').localeCompare(y.label || ''));
             this.eventCategories = this.formatPicklistValues(picklistData.Event_Type__c, this.selectedCategories);
             this.suitableForData = this.formatPicklistValues(picklistData.Target_Audience_Applicable__c, this.selectedSuitableFor);
 
@@ -1005,7 +1011,7 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
      * Gate the Host-an-Event page for PORTAL users only.
      * In internal/backend Lightning, @salesforce/community/basePath is empty, so
      * admins are never blocked. For portal users, if Allow Create Events
-     * (Alumni_Module_Settings__c) is not enabled for the org, deny access and
+     * (Ken_Alm_Module_Settings__c) is not enabled for the org, deny access and
      * redirect to the Events page so a user
      * cannot reach /host-event directly while the Host Event card is hidden.
      */
@@ -1532,7 +1538,6 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
 
             this.isStep5Completed = true;
             this.currentStep = 6;
-            this.showToast('Success', 'Proceeding to feedback form', 'success');
         } catch (error) {
             console.error('Error in handleSaveFeeStep, but proceeding anyway:', error);
             this.isStep5Completed = true;
@@ -1674,39 +1679,11 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
     async persistFeedbackQuestionnaire(sessionId, questions) {
         try {
             const existing = this.feedbackDataBySession?.[sessionId] || {};
-            const questionnaire = {
-                Id: existing.questionnaireId || null
-            };
-
-            const questionsPayload = (questions || []).map(q => {
-                const questionId = this.isSalesforceId(q.id) ? q.id : null;
-                const typeValue = this.mapQuestionTypeForPicklist(q.type);
-                const normalizedType = String(q.type || '').toLowerCase();
-                const isLinear = normalizedType === 'linear' || normalizedType === 'linear scale';
-                let MCQ_Options__c = '';
-                if (isLinear) {
-                    MCQ_Options__c = JSON.stringify({
-                        scaleMin: q.scaleMin != null ? String(q.scaleMin) : '1',
-                        scaleMax: q.scaleMax != null ? String(q.scaleMax) : '5',
-                        scaleMinLabel: q.scaleMinLabel || '',
-                        scaleMaxLabel: q.scaleMaxLabel || ''
-                    });
-                } else if (Array.isArray(q.options) && q.options.length) {
-                    MCQ_Options__c = q.options.map(opt => opt.text).join(';');
-                }
-                return {
-                    Id: questionId,
-                    Question_Label__c: q.text || '',
-                    Question_Type__c: typeValue,
-                    Is_Required__c: q.required || false,
-                    MCQ_Options__c
-                };
-            });
 
             const questionnaireId = await saveQuestionnaireForSession({
                 sessionId,
-                questionnaire,
-                questions: questionsPayload
+                surveyTitle: null,
+                questions: this.buildQuestionSavePayload(questions)
             });
 
             this.feedbackDataBySession = {
@@ -2057,9 +2034,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
         if (str.indexOf('<') === -1) {
             return str;
         }
-        const tmp = document.createElement('div');
-        tmp.innerHTML = str;
-        return tmp.textContent || tmp.innerText || '';
+        const parsed = new DOMParser().parseFromString(str, 'text/html');
+        return (parsed.body && parsed.body.textContent) || '';
     }
 
     // Step 1: Event Setup Handlers - Child Component Event Handlers
@@ -3620,13 +3596,13 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
                 }
             }
 
+            // This block used to also raise the per-step "Step N saved successfully" toast.
+            // That popup is gone, but the condition is kept exactly as it was so the
+            // currentEventId cache is still written on the same saves as before.
             if (!options.suppressToast && step != 3 && !options.submit) {
                 if (this.currentEventId) {
                     sessionStorage.setItem('currentEventId', this.currentEventId);
                 }
-
-                const message = this.isEditMode ? 'updated' : 'saved';
-                this.showToast('Save Success!', `Step ${step} ${message} successfully`, 'success');
             }
         } catch (error) {
             console.log('error', error);
@@ -4013,8 +3989,6 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             if (sessionId) {
                 await refreshApex(this.wiredEventScheduleResponse);
             }
-
-            this.showToast('Success', 'Session deleted successfully', 'success');
         } catch (error) {
             console.error('Delete session failed:', error);
             this.showToast('Error', 'Failed to delete session', 'error');
@@ -4178,7 +4152,6 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             this.currentSession.brochureFileName = file.name;
             this.currentSession.brochureFileType = file.type || '';
             this.currentSession = { ...this.currentSession };
-            this.showToast('Success', `Brochure "${file.name}" selected successfully`, 'success');
             console.log('✅ Session brochure uploaded:', file.name);
         };
         reader.onerror = (error) => {
@@ -4379,8 +4352,6 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
 
         this.resetCurrentSpeaker();
         this.showSpeakerForm = false;
-
-        this.showToast('Success', 'Speaker details saved successfully', 'success');
     }
 
     // --- localStorage helpers for draft sessions (no Apex ID yet) ---
@@ -4524,6 +4495,11 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
                 startDate: resolvedSessionDate,
                 startTime: normalizedStartTime || null,
                 endTime: normalizedEndTime || null,
+                // normalizeTimeForApex returns a bare local "HH:mm" — this builder
+                // uses plain <input type="time">, which never converts. Pairing it
+                // with the session's own date is what makes the instant unambiguous.
+                startDateTime: toUtcInstant(resolvedSessionDate, normalizedStartTime),
+                endDateTime: toUtcInstant(resolvedSessionDate, normalizedEndTime),
                 eventId: resolvedEventId,
                 locationType: this.currentSession.locationType,
                 locationAddress: this.currentSession.venueAddress,
@@ -4551,8 +4527,6 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             this.showSessionForm = false;
             this.editingSessionId = null;
             this.resetCurrentSession();
-
-            this.showToast('Success', 'Session saved successfully', 'success');
         } catch (error) {
             this.showToast('Error', 'Failed to save session', 'error');
         } finally {
@@ -4697,6 +4671,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
                         startDate: dateKey,
                         startTime: normalizedStartTime || null,
                         endTime: normalizedEndTime || null,
+                        startDateTime: toUtcInstant(dateKey, normalizedStartTime),
+                        endDateTime: toUtcInstant(dateKey, normalizedEndTime),
                         eventId: resolvedEventId,
                         locationType: session.locationType,
                         locationAddress: session.venueAddress || '',
@@ -4738,7 +4714,6 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             this.buildFeedbackForms();
             await this.loadSurveyIfNeeded();
             this.currentStep = 4;
-            this.showToast('Success', 'Proceeding to pre-event surveys', 'success');
         } catch (error) {
             console.error('Error in handleSubmitRequest, but proceeding anyway:', error);
             this.isStep3Completed = true;
@@ -4766,32 +4741,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             if (!questionnaire) {
                 return;
             }
-            this.surveyQuestionnaireId = questionnaire.Id;
-            const params = questionnaire.Ken_Questionnaire_Parameters__r || [];
-            const questions = params.map((qp, idx) => {
-                const type = this.mapQuestionTypeFromPicklist(qp.Question_Type__c);
-                const isLinear = type === 'linear';
-                let options = [];
-                if (type === 'multiple' || type === 'checkbox' || type === 'dropdown') {
-                    options = this.parseOptionsFromServer(qp.MCQ_Options__c, qp.Id);
-                    if (!options.length) {
-                        options = this.defaultOptionsForType(qp.Id);
-                    }
-                }
-                const linearConfig = this.parseLinearConfig(qp.MCQ_Options__c);
-                return {
-                    id: qp.Id,
-                    number: idx + 1,
-                    text: qp.Question_Label__c || '',
-                    type: type,
-                    required: !!qp.Is_Required__c,
-                    options: options,
-                    scaleMin: isLinear ? (linearConfig.scaleMin || '1') : '1',
-                    scaleMax: isLinear ? (linearConfig.scaleMax || '5') : '5',
-                    scaleMinLabel: isLinear ? (linearConfig.scaleMinLabel || '') : '',
-                    scaleMaxLabel: isLinear ? (linearConfig.scaleMaxLabel || '') : ''
-                };
-            });
+            this.surveyQuestionnaireId = questionnaire.questionSetId;
+            const questions = this.buildQuestionsFromParams(questionnaire.questions);
             if (questions.length) {
                 this.surveyQuestions = questions;
                 this.customSurveyEnabled = true;
@@ -4801,66 +4752,57 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
         }
     }
 
-    parseOptionsFromServer(rawOptions, questionId) {
-        if (!rawOptions) return [];
-        const values = String(rawOptions)
-            .split(';')
-            .map(v => v.trim())
-            .filter(Boolean);
-        return values.map((text, idx) => ({
-            id: `${questionId}-opt-${idx + 1}`,
-            text,
-            letter: String.fromCharCode(97 + idx)
-        }));
-    }
-
     defaultOptionsForType(questionId) {
         return [
-            { id: `${questionId}-opt-1`, text: '', letter: 'a' },
-            { id: `${questionId}-opt-2`, text: '', letter: 'b' }
+            { id: `${questionId}-opt-1`, value: '', text: '', letter: 'a' },
+            { id: `${questionId}-opt-2`, value: '', text: '', letter: 'b' }
         ];
     }
 
-    parseLinearConfig(rawConfig) {
-        if (!rawConfig) return {};
-        try {
-            const parsed = JSON.parse(rawConfig);
-            return parsed && typeof parsed === 'object' ? parsed : {};
-        } catch (e) {
-            return {};
-        }
-    }
-
-    // Map server-side Ken_Questionnaire_Parameter__c records into the LWC question shape
-    // (shared by survey + per-session feedback prepopulation).
+    /**
+     * Maps stored questions into the builder's shape. Choice questions and linear scales both
+     * arrive as a choices array; a scale point's label is carried on the point itself.
+     */
     buildQuestionsFromParams(params) {
         if (!Array.isArray(params) || !params.length) {
             return [];
         }
         return params.map((qp, idx) => {
-            const type = this.mapQuestionTypeFromPicklist(qp.Question_Type__c);
-            const isLinear = type === 'linear';
-            let options = [];
-            if (type === 'multiple' || type === 'checkbox' || type === 'dropdown') {
-                options = this.parseOptionsFromServer(qp.MCQ_Options__c, qp.Id);
-                if (!options.length) {
-                    options = this.defaultOptionsForType(qp.Id);
-                }
-            }
-            const linearConfig = this.parseLinearConfig(qp.MCQ_Options__c);
+            const type = this.mapQuestionTypeFromPicklist(qp.questionType);
+            const options = (qp.choices || []).map((choice, optIdx) => ({
+                id: `${qp.id}-opt-${optIdx + 1}`,
+                value: choice.value || '',
+                text: choice.label || choice.value || '',
+                letter: String.fromCharCode(97 + optIdx)
+            }));
             return {
-                id: qp.Id,
+                id: qp.id,
                 number: idx + 1,
-                text: qp.Question_Label__c || '',
+                text: qp.questionLabel || '',
                 type: type,
-                required: !!qp.Is_Required__c,
-                options: options,
-                scaleMin: isLinear ? (linearConfig.scaleMin || '1') : '1',
-                scaleMax: isLinear ? (linearConfig.scaleMax || '5') : '5',
-                scaleMinLabel: isLinear ? (linearConfig.scaleMinLabel || '') : '',
-                scaleMaxLabel: isLinear ? (linearConfig.scaleMaxLabel || '') : ''
+                required: !!qp.required,
+                options: options.length ? options : this.defaultOptionsForType(qp.id)
             };
         });
+    }
+
+    /**
+     * Converts builder questions into the save payload. Every question carries its choices,
+     * so a linear scale needs no separate bounds or end labels.
+     */
+    buildQuestionSavePayload(questions) {
+        return (questions || []).map(q => ({
+            text: q.text || '',
+            questionType: this.mapQuestionTypeForPicklist(q.type),
+            required: q.required || false,
+            choices: (q.options || [])
+                .filter(opt => (opt.value && String(opt.value).trim()) || (opt.text && String(opt.text).trim()))
+                .map(opt => {
+                    const value = String(opt.value || opt.text || '').trim();
+                    const label = String(opt.text || opt.value || '').trim();
+                    return { value, label };
+                })
+        }));
     }
 
     handleSurveyQuestionChange(event) {
@@ -4875,37 +4817,55 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
 
         this.surveyQuestions = this.surveyQuestions.map(q => {
             if (q.id !== questionId) return q;
-            const needsOptions = value === 'multiple' || value === 'checkbox';
-            const options = needsOptions ? (q.options && q.options.length ? q.options : [
-                { id: `${questionId}-opt-1`, text: '', letter: 'a' },
-                { id: `${questionId}-opt-2`, text: '', letter: 'b' }
-            ]) : [];
-            const isLinear = value === 'linear';
+            const options = this.seedOptionsForType(questionId, value, q.options);
             return {
                 ...q,
                 type: value,
                 options: options,
-                hasOptions: options && options.length > 0,
-                scaleMin: isLinear ? (q.scaleMin != null ? String(q.scaleMin) : '1') : (q.scaleMin || '1'),
-                scaleMax: isLinear ? (q.scaleMax != null ? String(q.scaleMax) : '5') : (q.scaleMax || '5'),
-                scaleMinLabel: isLinear ? (q.scaleMinLabel || '') : (q.scaleMinLabel || ''),
-                scaleMaxLabel: isLinear ? (q.scaleMaxLabel || '') : (q.scaleMaxLabel || '')
+                hasOptions: options.length > 0
             };
         });
     }
 
+    /**
+     * Returns the option list a question type starts with. A linear scale is a choice list of
+     * numbered points, each of which can carry its own label.
+     */
+    seedOptionsForType(questionId, type, currentOptions) {
+        if (currentOptions && currentOptions.length) {
+            return currentOptions;
+        }
+        if (type === 'linear') {
+            return this.buildScalePoints(questionId, 5);
+        }
+        if (type === 'multiple' || type === 'checkbox') {
+            return this.defaultOptionsForType(questionId);
+        }
+        return [];
+    }
+
+    buildScalePoints(questionId, pointCount, existingOptions) {
+        const points = [];
+        for (let i = 1; i <= pointCount; i++) {
+            const existing = (existingOptions || []).find(opt => String(opt.value) === String(i));
+            points.push({
+                id: `${questionId}-opt-${i}`,
+                value: String(i),
+                text: existing ? existing.text : '',
+                letter: String.fromCharCode(96 + i)
+            });
+        }
+        return points;
+    }
+
     handleSurveyScaleChange(event) {
-        const { questionId, scaleMin, scaleMax, scaleMinLabel, scaleMaxLabel } = event.detail || {};
-        if (!questionId) return;
+        const { questionId, pointCount } = event.detail || {};
+        if (!questionId || !pointCount) return;
 
         this.surveyQuestions = (this.surveyQuestions || []).map(q => {
             if (q.id !== questionId) return q;
-            const updated = { ...q };
-            if (scaleMin !== undefined) updated.scaleMin = scaleMin;
-            if (scaleMax !== undefined) updated.scaleMax = scaleMax;
-            if (scaleMinLabel !== undefined) updated.scaleMinLabel = scaleMinLabel;
-            if (scaleMaxLabel !== undefined) updated.scaleMaxLabel = scaleMaxLabel;
-            return updated;
+            const options = this.buildScalePoints(questionId, Number(pointCount), q.options);
+            return { ...q, options, hasOptions: options.length > 0 };
         });
     }
 
@@ -5025,45 +4985,17 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
                 if (this.feeDisabled) {
                     this.isStep5Completed = true;
                     this.currentStep = 6;
-                    this.showToast('Success', 'Proceeding to feedback form', 'success');
                 } else {
                     this.currentStep = 5;
-                    this.showToast('Success', 'Proceeding to fee setup', 'success');
                 }
                 return;
             }
 
-            const questionnaire = {
-                Id: this.surveyQuestionnaireId || null,
-                Section_Name__c: `${this.eventData.title || 'Event'} Survey`,
-                Descripation__c: 'Registration survey',
-                Target_Audience__c: this.selectedSuitableFor.map(item => item.value).join(';')
-            };
-
-            const questionsPayload = this.surveyQuestions.map(q => {
-                const isLinear = q.type === 'linear';
-                const MCQ_Options__c = isLinear
-                    ? JSON.stringify({
-                        scaleMin: q.scaleMin != null ? String(q.scaleMin) : '1',
-                        scaleMax: q.scaleMax != null ? String(q.scaleMax) : '5',
-                        scaleMinLabel: q.scaleMinLabel || '',
-                        scaleMaxLabel: q.scaleMaxLabel || ''
-                    })
-                    : (q.options || []).map(opt => opt.text).join(';');
-                return {
-                    Id: q.Id || null,
-                    Question_Label__c: q.text,
-                    Question_Type__c: this.mapQuestionTypeForPicklist(q.type),
-                    Is_Required__c: q.required || false,
-                    MCQ_Options__c
-                };
-            });
-
             try {
                 const questionnaireId = await saveQuestionnaireForEvent({
                     eventId: this.currentEventId,
-                    questionnaire,
-                    questions: questionsPayload
+                    surveyTitle: `${this.eventData.title || 'Event'} Survey`,
+                    questions: this.buildQuestionSavePayload(this.surveyQuestions)
                 });
                 this.surveyQuestionnaireId = questionnaireId;
             } catch (error) {
@@ -5074,10 +5006,8 @@ export default class KenPortalCreateEvent extends NavigationMixin(LightningEleme
             if (this.feeDisabled) {
                 this.isStep5Completed = true;
                 this.currentStep = 6;
-                this.showToast('Success', 'Proceeding to feedback form', 'success');
             } else {
                 this.currentStep = 5;
-                this.showToast('Success', 'Proceeding to fee setup', 'success');
             }
         } catch (error) {
             console.error('Error in handleSaveSurveyProceed, but proceeding anyway:', error);

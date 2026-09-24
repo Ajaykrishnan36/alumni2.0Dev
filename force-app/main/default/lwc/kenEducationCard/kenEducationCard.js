@@ -1,5 +1,6 @@
 import { LightningElement, api } from 'lwc';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import defaultEducationLogo from '@salesforce/resourceUrl/AlumniAlt';
 export default class KenEducationCard extends LightningElement {
     @api recordId;
     @api degree;
@@ -11,7 +12,7 @@ export default class KenEducationCard extends LightningElement {
     showDeleteConfirm = false;
 
     handleEdit() {
-        this.dispatchEvent(new CustomEvent('edit', { detail: { id: this.recordId }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('edit', { detail: { id: this.recordId }, bubbles: true }));
     }
 
     handleDelete() {
@@ -20,7 +21,7 @@ export default class KenEducationCard extends LightningElement {
 
     handleConfirmDelete() {
         this.showDeleteConfirm = false;
-        this.dispatchEvent(new CustomEvent('delete', { detail: { id: this.recordId }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('delete', { detail: { id: this.recordId }, bubbles: true }));
     }
 
     handleCancelDelete() {
@@ -28,7 +29,7 @@ export default class KenEducationCard extends LightningElement {
     }
 
     get displayLogo() {
-        return this.logo || '/assets/images/default-education-logo.png';
+        return this.logo || defaultEducationLogo;
     }
 
     get metaLine() {

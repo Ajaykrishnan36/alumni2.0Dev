@@ -337,15 +337,14 @@ export default class KenResumeBuilder extends LightningElement {
     }
 
     handleCancel() {
-        this.dispatchEvent(new CustomEvent('cancel', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('cancel', { bubbles: true }));
     }
 
     handleSaveResume() {
         this.dispatchEvent(
             new CustomEvent('saveresume', {
                 detail: { resumeData: this.resumeData },
-                bubbles: true,
-                composed: true
+                bubbles: true
             })
         );
     }

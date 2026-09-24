@@ -135,8 +135,7 @@ export default class KenCustomGroupBuilder extends LightningElement {
         this.dispatchEvent(
             new CustomEvent('fieldsearch', {
                 detail: { key, value },
-                bubbles: true,
-                composed: true
+                bubbles: true
             })
         );
     }

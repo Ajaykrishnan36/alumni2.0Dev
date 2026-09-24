@@ -88,7 +88,7 @@
                                     </thead>
                                     <tbody>
                                         <template for:each={paginatedList} for:item="r">
-                                            <tr key={r.id} class="data-row" data-record-id={r.id} data-object-api="Ken_Questionnaire_Parameter_Response__c" onclick={handleRowClick}>
+                                            <tr key={r.id} class="data-row" data-record-id={r.id} data-object-api="AssessmentQuestionResponse" onclick={handleRowClick}>
                                                 <td class="col-respondent name-cell">{r.respondentName}</td>
                                                 <td class="col-survey-name">{r.surveyName}</td>
                                                 <td class="col-question">{r.questionLabel}</td>

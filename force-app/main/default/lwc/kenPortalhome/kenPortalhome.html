@@ -1,15 +1,9 @@
 <template>
     <div class="portal-home-container">
-        <section class={newsletterClass}>
-            <div class="newsletter__head">
-                <span class="newsletter__tag">Newsletter</span>
-                <span class="newsletter__title">Alumni Newsletter | October 2025</span>
-            </div>
-            <div class="newsletter__actions">
-                <button type="button" class="newsletter__view" onclick={handleViewNewsletter}>View More</button>
-                <button type="button" class="newsletter__cta" onclick={handleViewNewsletter}>Read Now</button>
-            </div>
-        </section>
+        <!-- The newsletter banner lives in c-ken-page-header, rendered in place of
+             the "Home" label and only when a Newsletter album actually exists.
+             The hardcoded strip that used to sit here duplicated it, showed a
+             fixed "October 2025" title, and appeared even with no album. -->
 
         <div class="home-grid">
 
@@ -80,7 +74,7 @@
                             <template if:false={hasBirthdays}>
                                 <div class="empty-mini">
                                     <img src={emptyImage} alt="" class="empty-mini-img" />
-                                    <p class="empty-mini-text">No upcoming birthdays</p>
+                                    <p class="empty-mini-text">No birthdays in the next 30 days</p>
                                 </div>
                             </template>
                         </div>

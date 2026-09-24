@@ -593,3 +593,30 @@
         overflow-y: visible;
     }
 }
+
+/* Keeps the back button and the page title together as a single flex child, so
+   .campaigns-header's space-between still puts the title left and the toolbar
+   right rather than centring the title. */
+.header-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* Same control as the event and alumni-profile detail pages, so every mobile
+   back button in the portal looks and behaves identically. */
+.mobile-back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 8px;
+    background: #F3F4F6;
+    color: #373A45;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+}

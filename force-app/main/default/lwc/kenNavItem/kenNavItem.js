@@ -97,8 +97,7 @@ export default class kenNavItem extends NavigationMixin(LightningElement) {
                 selectedItem: this.item,
                 selectedItemId: this.item.id
             },
-            bubbles: true,
-            composed: true
+            bubbles: true
         });
         this.dispatchEvent(selectEvent);
 
@@ -189,8 +188,7 @@ export default class kenNavItem extends NavigationMixin(LightningElement) {
                 selectedItem: event.detail.selectedItem,
                 selectedItemId: selectedSubmenuItemId
             },
-            bubbles: true,
-            composed: true
+            bubbles: true
         });
         this.dispatchEvent(selectEvent);
     }

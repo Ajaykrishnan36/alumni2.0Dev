@@ -49,8 +49,7 @@ export default class KenGroupsDiscover extends LightningElement {
         if (!groupId) return;
         this.dispatchEvent(new CustomEvent('groupclick', {
             detail: { groupId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

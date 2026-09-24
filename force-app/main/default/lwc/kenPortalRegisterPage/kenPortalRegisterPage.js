@@ -5,11 +5,9 @@ import KenLogo from '@salesforce/resourceUrl/LoginKen';
 import KenPoweredbyLogo from '@salesforce/resourceUrl/kenPoweredbyLogo';
 import basePath from '@salesforce/community/basePath';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
-import instituteWhiteLogo from '@salesforce/resourceUrl/instituteWhiteLogo';
 export default class KenPortalRegisterPage extends LightningElement {
     @track isMobile = false;
     @track institutionName = '';
-    instituteWhiteLogo = instituteWhiteLogo;
     KenLogo = KenLogo;
     @api get crpage() {
         return this.currentPage;

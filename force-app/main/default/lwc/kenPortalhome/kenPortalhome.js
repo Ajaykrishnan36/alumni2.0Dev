@@ -1,7 +1,7 @@
 import { LightningElement, track } from 'lwc';
 import { NavigationMixin } from 'lightning/navigation';
-import AlumniAlt from '@salesforce/resourceUrl/eventTest2';
-import AlumniAlt2 from '@salesforce/resourceUrl/eventTest1';
+import eventPlaceholder from '@salesforce/resourceUrl/eventTest2';
+import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
 import EMPTY_STATE from '@salesforce/resourceUrl/MentorshipEmptyState';
 import EVENTS_EMPTY_STATE from '@salesforce/resourceUrl/EmptyStateEventImage';
 import getHomeData from '@salesforce/apex/KenPortalHomeController.getHomeData';
@@ -52,12 +52,6 @@ export default class KenPortalhome extends NavigationMixin(LightningElement) {
         return this.businesses.length > 0;
     }
 
-    get newsletterClass() {
-        return this.isMobile
-            ? 'newsletter-banner newsletter-banner--mobile'
-            : 'newsletter-banner';
-    }
-
     _syncMobileFromMedia() {
         const next = this._mediaQuery ? this._mediaQuery.matches : false;
         if (next !== this.isMobile) {
@@ -91,8 +85,14 @@ export default class KenPortalhome extends NavigationMixin(LightningElement) {
             this.upcomingEvents = (data?.events || []).slice(0, 1).map(ev => ({
                 id: ev.id,
                 title: ev.title,
+                // An event is day-granular — Start_Date__c with no time of its
+                // own — so dateLabel is the whole story here. A Date carries no
+                // timezone, so building the label server-side cannot shift it
+                // the way formatting a DateTime in the running user's zone would.
+                // Session times, which are real instants, are formatted from the
+                // instant on the event detail page.
                 date: ev.dateLabel,
-                image: ev.image || AlumniAlt
+                image: ev.image || eventPlaceholder
             }));
             this.upcomingBirthdays = (data?.birthdays || []).map(b => ({
                 id: b.id,
@@ -101,7 +101,7 @@ export default class KenPortalhome extends NavigationMixin(LightningElement) {
                 course: b.program || '',
                 month: b.monthLabel,
                 day: b.dayLabel,
-                image: b.photoUrl || AlumniAlt2,
+                image: b.photoUrl || defaultProfileImage,
                 isOnline: false
             }));
         } catch (e) {
@@ -128,7 +128,7 @@ export default class KenPortalhome extends NavigationMixin(LightningElement) {
             this.businesses = (rows || []).slice(0, MAX_BUSINESSES).map(b => ({
                 id: b.id,
                 name: b.name,
-                logo: b.logo || b.featuredImage || AlumniAlt
+                logo: b.logo || b.featuredImage || eventPlaceholder
             }));
         } catch (e) {
             this.businesses = [];
@@ -160,10 +160,6 @@ export default class KenPortalhome extends NavigationMixin(LightningElement) {
 
     handleViewAllEvents() {
         this.navigateToPage('event__c');
-    }
-
-    handleViewNewsletter() {
-        this.navigateToPage('gallery__c');
     }
 
     handleResourceClick() {

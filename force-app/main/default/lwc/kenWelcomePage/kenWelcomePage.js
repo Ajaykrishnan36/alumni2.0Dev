@@ -7,6 +7,7 @@ import WelcomeImage2 from '@salesforce/resourceUrl/welcomeImage2';
 import WelcomeImage3 from '@salesforce/resourceUrl/welcomeImage3';
 import kenPoweredbyLogoUrl from '@salesforce/resourceUrl/kenPoweredbyLogoUrl';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
 export default class KenWelcomePage extends LightningElement {
     @track currentSlide = 1;
     @track institutionName = '';
@@ -19,7 +20,7 @@ export default class KenWelcomePage extends LightningElement {
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
             document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);  
         }).catch(() => {
-            this.institutionName = 'Ken42';
+            this.institutionName = 'Institute Name';
             console.log('Error getting primary color');
         });
 
@@ -167,7 +168,7 @@ export default class KenWelcomePage extends LightningElement {
         const profileImages = this.template.querySelectorAll('.profile-image, .call-profile-image, .author-image');
         profileImages.forEach(img => {
             img.addEventListener('error', () => {
-                img.src = '/assets/images/default-profile.png';
+                img.src = defaultProfileImage;
             });
         });
     }

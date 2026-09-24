@@ -3,6 +3,18 @@ import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 export default class KenMyBusinessCard extends LightningElement {
     @api business;
 
+    // Flipped when the logo URL fails to load, so the card drops back to the
+    // generic avatar instead of showing a broken image.
+    logoFailed = false;
+
+    get showLogo() {
+        return Boolean(this.business?.logo) && !this.logoFailed;
+    }
+
+    handleLogoError() {
+        this.logoFailed = true;
+    }
+
     get statusClass() {
         if (!this.business?.status) return 'status-badge';
         
@@ -57,8 +69,7 @@ export default class KenMyBusinessCard extends LightningElement {
                     businessId: this.business.id,
                     business: this.business
                 },
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
         }
     }

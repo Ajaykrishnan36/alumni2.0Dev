@@ -1,4 +1,5 @@
 import { LightningElement, track, wire } from 'lwc';
+import { formatTimeCompact } from 'c/kenDateTime';
 import getAllEvents from '@salesforce/apex/KenPortalEventController.getAllEvents';
 import { NavigationMixin } from 'lightning/navigation';
 import basePath from '@salesforce/community/basePath';
@@ -226,7 +227,7 @@ isMobile = false;
         // search can no longer surface ended events the listing hides.
         const now = new Date();
         return this.events.filter(event => {
-            const eventEndDateTime = new Date(`${event.endDate}T${event.endTime}`);
+            const eventEndDateTime = new Date(event.effectiveEndDateTime);
             return !isNaN(eventEndDateTime.getTime()) && eventEndDateTime >= now;
         });
     }
@@ -238,38 +239,26 @@ isMobile = false;
     }
 
     get upcomingEventsCount() {
-        const now = new Date();
-        const count = this.futureEvents.filter(event => {
-            if (event.featuredEvents === true) return false;
-            const eventEndDateTime = new Date(`${event.endDate}T${event.endTime}`);
-            return eventEndDateTime >= now;
-        }).length;
-        return count;
+        return this.futureEvents.filter(event => event.featuredEvents !== true).length;
     }
 
     get featuredEvents() {
         const events = this.futureEvents.filter(event => event.featuredEvents === true).map(event => ({
             ...event,
             formattedDateRange: this.formatDateRange(event.startDate, event.endDate),
-            formattedTimeRange: this.formatTimeRange(event.startTime, event.endTime)
+            formattedTimeRange: this.formatTimeRange(event.startTime, event.endTime, event.startInstant, event.endInstant)
         }));
         console.log('Featured events:', events);
         return events;
     }
 
     get upcomingEvents() {
-        const now = new Date();
-
         const events = this.futureEvents
-            .filter(event => {
-                const eventEndDateTime = new Date(`${event.endDate}T${event.endTime}`);
-
-                return event.featuredEvents === false && eventEndDateTime >= now;
-            })
+            .filter(event => event.featuredEvents === false)
             .map(event => ({
                 ...event,
                 formattedDateRange: this.formatDateRange(event.startDate, event.endDate),
-                formattedTimeRange: this.formatTimeRange(event.startTime, event.endTime)
+                formattedTimeRange: this.formatTimeRange(event.startTime, event.endTime, event.startInstant, event.endInstant)
             }));
 
         return events;
@@ -279,7 +268,7 @@ isMobile = false;
         return this.futureEvents.map(event => ({
             ...event,
             formattedDateRange: this.formatDateRange(event.startDate, event.endDate),
-            formattedTimeRange: this.formatTimeRange(event.startTime, event.endTime)
+            formattedTimeRange: this.formatTimeRange(event.startTime, event.endTime, event.startInstant, event.endInstant)
         }));
     }
 
@@ -311,7 +300,16 @@ isMobile = false;
         return months[monthIndex];
     }
 
-    formatTimeRange(startTime, endTime) {
+    formatTimeRange(startTime, endTime, startInstant, endInstant) {
+        // Prefer the stored instant so the card shows the event in the viewer's
+        // own timezone. The bare startTime is milliseconds-from-midnight off a
+        // Time column that carries no zone, and for most events it is null
+        // anyway — Ken_Event_Master__c.Start_Time__c has no writer.
+        if (startInstant) {
+            // Compact, title-case meridiem — the card styling this screen has
+            // always used. Only the instant behind it changed.
+            return `${formatTimeCompact(startInstant, 'title')} - ${formatTimeCompact(endInstant, 'title')}`;
+        }
         const startFormatted = this.formatTime(startTime);
         const endFormatted = this.formatTime(endTime);
         return `${startFormatted} - ${endFormatted}`;

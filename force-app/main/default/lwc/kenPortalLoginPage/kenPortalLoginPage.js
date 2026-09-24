@@ -5,11 +5,9 @@ import KenLogo from '@salesforce/resourceUrl/LoginKen';
 import basePath from '@salesforce/community/basePath';
 import KenPoweredbyLogo from '@salesforce/resourceUrl/kenPoweredbyLogo';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
-import instituteWhiteLogo from '@salesforce/resourceUrl/instituteWhiteLogo';
 export default class StudentPortalLoginPage extends NavigationMixin(LightningElement) {
     @track institutionName = '';
     @track isMobile = false;
-    @track instituteWhiteLogo = instituteWhiteLogo;
     @track redirectingToReset = false;
     @api get crpage() {
         return this.currentPage;

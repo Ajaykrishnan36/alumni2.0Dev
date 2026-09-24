@@ -26,13 +26,15 @@
         <!-- Alumni tabs -->
         <div class="alumni-tab-row">
             <div class="alumni-tabs">
+                <!-- Ordered to follow the alumni lifecycle: a lead becomes an
+                     un-registered alumnus, who then registers. -->
                 <div class={cAll} data-tab="all" onclick={handleTab}>All Master Records <span class="count">{countAll}</span></div>
-                <div class={cRecent} data-tab="recent" onclick={handleTab}>Recently Joined <span class="count">{countRecent}</span></div>
-                <div class={cRegistered} data-tab="registered" onclick={handleTab}>Registered Alumni <span class="count">{countRegistered}</span></div>
+                <div class={cLeads} data-tab="leads" onclick={handleTab}>Leads <span class="count">{countLeads}</span></div>
                 <div class={cUnregistered} data-tab="unregistered" onclick={handleTab}>Un-registered Alumni <span class="count">{countUnregistered}</span></div>
+                <div class={cRegistered} data-tab="registered" onclick={handleTab}>Registered Alumni <span class="count">{countRegistered}</span></div>
+                <div class={cRecent} data-tab="recent" onclick={handleTab}>Recently Joined <span class="count">{countRecent}</span></div>
                 <div class={cOldPortal} data-tab="oldportal" onclick={handleTab}>Old Portal Records <span class="count">{countOldPortal}</span></div>
                 <div class={cIssues} data-tab="issues" onclick={handleTab}>Data Issues <span class="count">{countIssues}</span></div>
-                <div class={cLeads} data-tab="leads" onclick={handleTab}>Leads <span class="count">{countLeads}</span></div>
                 <div class={cReferrals} data-tab="referrals" onclick={handleTab}>Referrals <span class="count">{countReferrals}</span></div>
             </div>
         </div>
@@ -41,7 +43,7 @@
         <template lwc:if={isAll}>
             <div class="alumni-desc">Every alumni identity in the master database, regardless of portal status, source, or data quality.</div>
             <div class="filter-bar">
-                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number, program, batch, company, city, country, LinkedIn URL…" oninput={handleSearch}/></div>
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number, program, batch, company, city, country, LinkedIn URL…" value={searchTerm} oninput={handleSearch}/></div>
                 <template lwc:if={showPortalDropdown}>
                     <div class="filter-select">
                         <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
@@ -105,7 +107,7 @@
         <template lwc:if={isRecent}>
             <div class="alumni-desc">Alumni who recently registered on the new alumni portal.</div>
             <div class="filter-bar">
-                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" oninput={handleSearch}/></div>
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" value={searchTerm} oninput={handleSearch}/></div>
                 <template lwc:if={showPortalDropdown}>
                     <div class="filter-select">
                         <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
@@ -168,7 +170,7 @@
         <template lwc:if={isRegistered}>
             <div class="alumni-desc">Alumni who are registered or active on the new alumni portal.</div>
             <div class="filter-bar">
-                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" oninput={handleSearch}/></div>
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" value={searchTerm} oninput={handleSearch}/></div>
                 <template lwc:if={showPortalDropdown}>
                     <div class="filter-select">
                         <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
@@ -228,7 +230,7 @@
         <template lwc:if={isUnregistered}>
             <div class="alumni-desc">Alumni whose master record exists but who have not yet completed registration on the new portal (Unregistered / Verified / no status).</div>
             <div class="filter-bar">
-                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" oninput={handleSearch}/></div>
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" value={searchTerm} oninput={handleSearch}/></div>
                 <button type="button" class="ken-filters-btn" onclick={handleFiltersClick}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"></path></svg>
                     <span>Filters</span>
@@ -270,7 +272,7 @@
         <template lwc:if={isOldPortal}>
             <div class="alumni-desc">Records migrated from or matched against the previous alumni portal. May or may not have registered on the new portal yet.</div>
             <div class="filter-bar">
-                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" oninput={handleSearch}/></div>
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search by name, email, registration number…" value={searchTerm} oninput={handleSearch}/></div>
                 <template lwc:if={showPortalDropdown}>
                     <div class="filter-select">
                         <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
@@ -330,7 +332,7 @@
         <template lwc:if={isIssues}>
             <div class="alumni-desc">Records with missing or invalid contact details.</div>
             <div class="filter-bar">
-                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" oninput={handleSearch}/></div>
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" value={searchTerm} oninput={handleSearch}/></div>
                 <template lwc:if={showPortalDropdown}>
                     <div class="filter-select">
                         <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
@@ -401,7 +403,7 @@
         <template lwc:if={isLeads}>
             <div class="alumni-desc">Alumni coming through campaign flows (website forms, QR codes, LinkedIn, email, "I am an alum" forms). Captured with name, graduation year, and an optional registration number — must be merged with a master record before they can be used.</div>
             <div class="filter-bar">
-                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" oninput={handleSearch}/></div>
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" value={searchTerm} oninput={handleSearch}/></div>
                 <template lwc:if={showPortalDropdown}>
                     <div class="filter-select">
                         <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
@@ -469,7 +471,7 @@
         <template lwc:if={isReferrals}>
             <div class="alumni-desc">Signups that came through referral links shared by registered alumni. Referrer is captured — record is not auto-verified and must be merged with a master record.</div>
             <div class="filter-bar">
-                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" oninput={handleSearch}/></div>
+                <div class="search-input"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg><input placeholder="Search…" value={searchTerm} oninput={handleSearch}/></div>
                 <template lwc:if={showPortalDropdown}>
                     <div class="filter-select">
                         <button type="button" class="ken-dd-trigger" onclick={handlePortalStatusToggle}>
@@ -600,29 +602,31 @@
                             onchange={handleFilterValueChange}></c-ken-searchable-select>
                         <template lwc:if={roleCount}><span class="filter-field-badge">{roleCount}</span></template>
                     </div>
-                    <div class="filter-field">
-                        <c-ken-searchable-select placeholder="Employment type" value={filterEmploymentType}
-                            options={employmentTypeOptions} data-field="employmentType"
-                            onchange={handleFilterValueChange}></c-ken-searchable-select>
-                        <template lwc:if={employmentTypeCount}><span class="filter-field-badge">{employmentTypeCount}</span></template>
-                    </div>
-                    <div class="filter-field">
-                        <c-ken-searchable-select placeholder="Gender" value={filterGender}
-                            options={genderFilterOptions} data-field="gender"
-                            onchange={handleFilterValueChange}></c-ken-searchable-select>
-                        <template lwc:if={genderCount}><span class="filter-field-badge">{genderCount}</span></template>
-                    </div>
-                    <div class="filter-field">
-                        <c-ken-multi-select-picklist placeholder="Language" value={filterLanguage}
-                            options={languageOptions} data-field="language"
-                            onchange={handleFilterValueChange}></c-ken-multi-select-picklist>
-                    </div>
-                    <div class="filter-field">
-                        <c-ken-searchable-select placeholder="Preference" value={filterPreference}
-                            options={preferenceOptions} data-field="preference"
-                            onchange={handleFilterValueChange}></c-ken-searchable-select>
-                        <template lwc:if={preferenceCount}><span class="filter-field-badge">{preferenceCount}</span></template>
-                    </div>
+                    <template lwc:if={showPersonFilters}>
+                        <div class="filter-field">
+                            <c-ken-searchable-select placeholder="Employment type" value={filterEmploymentType}
+                                options={employmentTypeOptions} data-field="employmentType"
+                                onchange={handleFilterValueChange}></c-ken-searchable-select>
+                            <template lwc:if={employmentTypeCount}><span class="filter-field-badge">{employmentTypeCount}</span></template>
+                        </div>
+                        <div class="filter-field">
+                            <c-ken-searchable-select placeholder="Gender" value={filterGender}
+                                options={genderFilterOptions} data-field="gender"
+                                onchange={handleFilterValueChange}></c-ken-searchable-select>
+                            <template lwc:if={genderCount}><span class="filter-field-badge">{genderCount}</span></template>
+                        </div>
+                        <div class="filter-field">
+                            <c-ken-multi-select-picklist placeholder="Language" value={filterLanguage}
+                                options={languageOptions} data-field="language"
+                                onchange={handleFilterValueChange}></c-ken-multi-select-picklist>
+                        </div>
+                        <div class="filter-field">
+                            <c-ken-searchable-select placeholder="Preference" value={filterPreference}
+                                options={preferenceOptions} data-field="preference"
+                                onchange={handleFilterValueChange}></c-ken-searchable-select>
+                            <template lwc:if={preferenceCount}><span class="filter-field-badge">{preferenceCount}</span></template>
+                        </div>
+                    </template>
                     <div class="filter-field">
                         <c-ken-searchable-select placeholder="Location / City" value={filterLocation}
                             options={locationOptions} data-field="location"
@@ -920,9 +924,9 @@
                         <template lwc:if={issuePhoneMissing}>
                             <div class="kv-row" style="color:var(--c-rose-700)"><span class="k" style="color:var(--c-rose-700)">●</span><span>Phone number is missing</span></div>
                         </template>
-                        <input class="filter-native" style="width:100%;padding:10px 12px;border:1px solid var(--slate-200);border-radius:8px;font-size:13px;margin-top:8px" placeholder="+91 98765 43210" value={issuePhoneValue} oninput={handleIssuePhoneInput} />
+                        <c-ken-custom-phone-input value={issuePhoneValue} placeholder="98765 43210" required="true" onphonechange={handleIssuePhoneChange} class="admin-phone-input"></c-ken-custom-phone-input>
                         <div class="kv-row" style="margin-top:10px;justify-content:space-between">
-                            <span class="k" style="color:var(--slate-500);font-size:11.5px">Include country code. Format will be re-validated on save.</span>
+                            <span class="k" style="color:var(--slate-500);font-size:11.5px">Pick the country, then enter the number. Checked against that country's digit rules.</span>
                             <button class="btn-secondary" onclick={handleSavePhone} disabled={isSavingPhone}>Save phone</button>
                         </div>
                         <template lwc:if={issuePhoneError}>
@@ -1104,11 +1108,14 @@
                                         <select id="mergeTargetSelectLead" class="merge-target-select" onchange={handleMultiTargetChange}>
                                             <option value="" selected={isNoMultiTargetSelected}>Choose a candidate…</option>
                                             <template for:each={multiTargetOptions} for:item="opt">
-                                                <option key={opt.key} value={opt.key} selected={opt.isSelected}>{opt.label}</option>
+                                                <option key={opt.key} value={opt.key} selected={opt.isSelected} disabled={opt.isDisabled}>{opt.label}</option>
                                             </template>
                                         </select>
                                         <button class="merge-btn merge-btn-primary merge-target-btn" disabled={isMultiMergeDisabled} title={multiMergeButtonTitle} onclick={handleConfirmMultiMerge}>Merge</button>
                                     </div>
+                                    <template lwc:if={hasMultiTargetHint}>
+                                        <div class="merge-target-hint">{multiTargetHint}</div>
+                                    </template>
                                     <template lwc:if={mergeMultiReviewLoading}>
                                         <div class="empty-state">Loading comparison…</div>
                                     </template>
@@ -1121,6 +1128,7 @@
                                                     <div key={master.key} class="multi-compare-col">
                                                         <div>
                                                             <div>{master.name}</div>
+                                                            <div class="multi-compare-kind">{master.kind}</div>
                                                             <div class="multi-compare-id">{master.key}</div>
                                                         </div>
                                                     </div>
@@ -1144,9 +1152,9 @@
                                 <div class="merge-panel">
                                     <div class="merge-title">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 7a4 4 0 0 0 8 0M12 21V11"></path><circle cx="6" cy="20" r="2"></circle><circle cx="18" cy="20" r="2"></circle></svg>
-                                        Find &amp; merge with master record
+                                        Find &amp; merge duplicate record
                                     </div>
-                                    <div class="merge-desc">This record cannot be used until it is merged with a master alumni identity. Suggestions below are matched by registration number, name, email, or phone — or search directly.</div>
+                                    <div class="merge-desc">This record cannot be used until it is merged. Candidates below cover both converted alumni identities and leads that are still pending — matched by registration number, name, email, or phone, or search directly.</div>
                                     <div class="merge-search">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg>
                                         <input value={mergeSearchTerm} oninput={handleMergeSearch} />
@@ -1170,6 +1178,7 @@
                                                 <div class="avatar-circle">{cand.initials}</div>
                                                 <div class="info">
                                                     <div class="nm">{cand.name}
+                                                        <span class={cand.typeBadgeClass}>{cand.typeLabel}</span>
                                                         <template lwc:if={cand.matchLabel}><span class="merge-match-badge">{cand.matchLabel}</span></template>
                                                     </div>
                                                     <div class="det">{cand.detail}</div>

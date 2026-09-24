@@ -7,14 +7,28 @@
                     <h1 class="dash-title">Alumni Demographics Dashboard</h1>
                     <p class="dash-subtitle">Interactive insights across {totalAlumni} alumni records</p>
                 </div>
-                <button class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
-                    <template if:true={isRefreshing}>
-                        <span class="btn-spinner"></span>Refreshing...
+                <div class="dash-header-actions">
+                    <template for:each={reportDownloads} for:item="report">
+                        <button key={report.key} class="export-btn" data-key={report.key}
+                                onclick={handleDownloadReport} disabled={report.isBusy}
+                                title={report.description}>
+                            <template if:true={report.isBusy}>
+                                <span class="btn-spinner btn-spinner-dark"></span>{report.buttonLabel}
+                            </template>
+                            <template if:false={report.isBusy}>
+                                &#x2913; {report.label}
+                            </template>
+                        </button>
                     </template>
-                    <template if:false={isRefreshing}>
-                        &#x21BB; Refresh
-                    </template>
-                </button>
+                    <button class="refresh-btn" onclick={handleRefresh} disabled={isRefreshing}>
+                        <template if:true={isRefreshing}>
+                            <span class="btn-spinner"></span>Refreshing...
+                        </template>
+                        <template if:false={isRefreshing}>
+                            &#x21BB; Refresh
+                        </template>
+                    </button>
+                </div>
             </div>
 
             <!-- Filter Bar -->

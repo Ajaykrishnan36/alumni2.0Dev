@@ -486,10 +486,6 @@ textarea.input { min-height: 110px; resize: vertical; }
 .a360-edit-input input { min-height: 30px; }
 .dc-grid .a360-edit-input { margin-top: 4px; }
 
-/* ===== Address sub-grid (Overview edit) ===== */
-.a360-addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; }
-.a360-addr-grid > lightning-input:first-child { grid-column: 1 / -1; }
-
 /* ===== Child-record inline edit (Education / Employment) ===== */
 .a360-edit-table th:last-child { width: 36px; }
 .a360-edit-table td { padding: 4px 6px; vertical-align: middle; }
@@ -503,4 +499,4 @@ textarea.input { min-height: 110px; resize: vertical; }
 .a360-emp-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px 14px; }
 .a360-emp-desc { grid-column: 1 / -1; }
 .a360-emp-desc-label { display: block; font-size: 12px; color: #3e3e3c; margin-bottom: 4px; }
-@media (max-width: 720px) { .a360-emp-grid { grid-template-columns: 1fr; } .a360-addr-grid { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .a360-emp-grid { grid-template-columns: 1fr; } }

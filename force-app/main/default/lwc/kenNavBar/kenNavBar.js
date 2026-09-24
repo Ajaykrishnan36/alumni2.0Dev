@@ -29,7 +29,7 @@ import SideLogo from '@salesforce/resourceUrl/sidelogo';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 import { getModuleVisibility } from 'c/kenModuleConfig';
 
-// Maps a navigation item label to its Alumni_Module_Settings__c toggle key.
+// Maps a navigation item label to its Ken_Alm_Module_Settings__c toggle key.
 // Labels not listed here (e.g. Logout, My Feed, Info Hub) are never hidden.
 const LABEL_TO_MODULE_FLAG = {
     'Home': 'home',

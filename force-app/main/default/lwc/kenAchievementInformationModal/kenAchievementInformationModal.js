@@ -1,4 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
+import {
+    replaceElementHtml,
+    serializeElementHtml
+} from 'c/kenHtmlSanitizer';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 
 const TYPE_OPTIONS = [
@@ -141,9 +145,9 @@ export default class KenAchievementInformationModal extends LightningElement {
         if (editor) {
             if (editor !== this.richTextEditor) {
                 this.richTextEditor = editor;
-                editor.innerHTML = this.description || '';
-            } else if (editor.innerHTML !== (this.description || '')) {
-                editor.innerHTML = this.description || '';
+                replaceElementHtml(editor, this.description || '');
+            } else if (serializeElementHtml(editor) !== (this.description || '')) {
+                replaceElementHtml(editor, this.description || '');
             }
             this.ensureListFormatting();
         }
@@ -174,7 +178,7 @@ export default class KenAchievementInformationModal extends LightningElement {
     }
 
     handleClose() {
-        this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('close', { bubbles: true }));
     }
 
     handleSelect(event) {
@@ -206,7 +210,7 @@ export default class KenAchievementInformationModal extends LightningElement {
     }
 
     handleRichTextInput(event) {
-        const rawHtml = event.target.innerHTML || '';
+        const rawHtml = serializeElementHtml(event.target) || '';
         this.description = String(rawHtml).replace(/\s{2,}/g, ' ');
         setTimeout(() => this.updateButtonStates(), 0);
     }
@@ -220,10 +224,10 @@ export default class KenAchievementInformationModal extends LightningElement {
     }
 
     handleRichTextBlur(event) {
-        const rawHtml = event.target.innerHTML || '';
+        const rawHtml = serializeElementHtml(event.target) || '';
         this.description = String(rawHtml).replace(/\s{2,}/g, ' ').trim();
         if (this.richTextEditor) {
-            this.richTextEditor.innerHTML = this.description;
+            replaceElementHtml(this.richTextEditor, this.description);
         }
     }
 
@@ -242,7 +246,7 @@ export default class KenAchievementInformationModal extends LightningElement {
             }
         }
         document.execCommand(command, false, null);
-        this.description = this.richTextEditor.innerHTML || '';
+        this.description = serializeElementHtml(this.richTextEditor) || '';
         this.ensureListFormatting();
         setTimeout(() => this.updateButtonStates(), 0);
     }
@@ -349,7 +353,7 @@ export default class KenAchievementInformationModal extends LightningElement {
         if (!this.validate()) return;
 
         if (this.richTextEditor) {
-            this.description = this.richTextEditor.innerHTML || '';
+            this.description = serializeElementHtml(this.richTextEditor) || '';
         }
 
         this.dispatchEvent(new CustomEvent('save', {
@@ -367,8 +371,7 @@ export default class KenAchievementInformationModal extends LightningElement {
                 referenceUrl: (this.referenceUrl || '').trim(),
                 paperType: this.paperType || null
             },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 }

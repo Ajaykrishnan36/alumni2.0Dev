@@ -5,11 +5,15 @@
    ============================================================ */
 :host {
     /* SF-injectable brand tokens */
-    --brand-primary: #B91C5C;
-    --brand-secondary: #102659;
-    --brand-tertiary: #FDF2F4;
+    /* WHITE is the fallback when no custom colour is configured, and it is
+       also what paints for the moment before the getPortalConfigs wire
+       resolves on a page load. A coloured default flashed the wrong brand
+       there; white shows nothing instead. Same choice as kenAdminAlumni360. */
+    --brand-primary: #FFFFFF;
+    --brand-secondary: #FFFFFF;
+    --brand-tertiary: #FFFFFF;
     --brand-primary-hover: color-mix(in srgb, var(--brand-primary) 88%, #000);
-    --brand-primary-soft: rgba(185,28,92,.10);
+    --brand-primary-soft: color-mix(in srgb, var(--brand-primary) 10%, #FFFFFF);
     --brand-on-primary: #FFFFFF;
 
     /* Neutrals */
@@ -131,8 +135,15 @@
 .ken-filter-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--brand-primary); color: var(--brand-on-primary, #fff); font-size: 11px; font-weight: 700; }
 .filters-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: flex; align-items: flex-start; justify-content: center; padding-top: 8vh; z-index: 9001; }
 .filters-popup { width: var(--portal-filters-popup-width, min(560px, 92vw)); max-height: var(--portal-filters-popup-max-height, 80vh); overflow: hidden; display: flex; flex-direction: column; background: var(--portal-surface, #fff); border-radius: var(--portal-radius, 16px); box-shadow: var(--portal-popover-shadow, 0 24px 60px rgba(15,23,42,.25)); padding: var(--portal-popover-padding, 24px 26px 20px); }
-.filters-title { margin: 0 0 18px; flex-shrink: 0; font-size: var(--portal-title-size, 18px); font-weight: 700; color: var(--portal-text-primary, var(--slate-700)); }
-.filters-content { display: grid; grid-template-columns: 1fr 1fr; gap: var(--portal-field-gap, 14px); overflow-y: auto; flex: 1; min-height: 0; }
+/* 8px here + the 10px badge gutter on .filters-content below = the 18px gap the
+   popup is designed around. */
+.filters-title { margin: 0 0 8px; flex-shrink: 0; font-size: var(--portal-title-size, 18px); font-weight: 700; color: var(--portal-text-primary, var(--slate-700)); }
+/* The count badges hang 8px outside their field's box. overflow-y makes this a
+   scroll container, which clips on BOTH axes (overflow-x computes to auto), so
+   the badge on any right-column field was sliced off and left a stray
+   horizontal scrollbar. The padding gives the badges room inside the scroll
+   box; the negative margin keeps the fields visually where they were. */
+.filters-content { display: grid; grid-template-columns: 1fr 1fr; gap: var(--portal-field-gap, 14px); padding: 10px 10px 0; margin: 0 -10px; overflow-y: auto; overflow-x: hidden; flex: 1; min-height: 0; }
 .filter-field { min-width: 0; position: relative; }
 .filter-field-badge {
     position: absolute;
@@ -255,7 +266,7 @@
    overflow-x:auto on .multi-compare-scroll is still the fallback once even
    this much room runs out. */
 .modal-wide { max-width: 1200px; }
-.modal-close { position: absolute; top: 18px; right: 18px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.85); border: 1px solid var(--slate-200); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--slate-600); z-index: 5; }
+.modal-close { position: absolute; top: 9px; right: 10px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,.85); border: 1px solid var(--slate-200); display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--slate-600); z-index: 5; }
 .modal-close:hover { background: #fff; color: var(--ink); border-color: var(--slate-300); }
 .modal-scroll { overflow-y: auto; padding: 0; }
 
@@ -352,6 +363,12 @@
 .merge-item .nm { font-weight: 600; color: var(--ink); font-size: 13.5px; }
 .merge-item .det { font-size: 11.5px; color: var(--slate-500); margin-top: 2px; }
 .merge-match-badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--brand-primary-soft, #eef1fb); color: var(--brand-primary, #1f3b8f); font-size: 10.5px; font-weight: 700; vertical-align: 1px; }
+/* Candidate kind. A master identity and a still-pending lead are both mergeable
+   and either can be kept, so the two must never look alike in the list —
+   solid slate for the master, amber for the lead that has no identity yet. */
+.merge-type-badge { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 700; vertical-align: 1px; }
+.merge-type-badge.is-master { background: var(--slate-100, #eef1f6); color: var(--slate-600, #4a5568); }
+.merge-type-badge.is-lead { background: var(--c-amber-soft, #fdf4e3); color: var(--c-amber-700, #92600a); }
 .merge-item-check { width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--brand-primary); cursor: pointer; }
 .merge-select-all { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--slate-600); padding: 0 4px 10px; cursor: pointer; }
 .merge-select-all input { width: 15px; height: 15px; accent-color: var(--brand-primary); cursor: pointer; }
@@ -411,6 +428,7 @@
 .multi-compare-incoming { color: var(--brand-primary); font-weight: 600; }
 /* Record Id under each candidate column header — same-name candidates are
    indistinguishable without it. */
+.multi-compare-kind { font-size: 9.5px; font-weight: 700; color: var(--c-amber-700); margin-top: 2px; text-transform: uppercase; letter-spacing: .3px; }
 .multi-compare-id { font-size: 9.5px; font-weight: 400; color: var(--slate-400); margin-top: 2px; word-break: break-all; }
 .multi-compare-head .multi-compare-incoming { color: var(--brand-primary); }
 /* Pill buttons reuse .side-pill for the button look, .multi-compare-col for
@@ -432,6 +450,9 @@
    of which of the N compared candidates actually gets written to. */
 .merge-target-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .merge-target-label { font-size: 12px; font-weight: 700; color: var(--ink-2); flex-shrink: 0; }
+/* Explains why the lead options in "Merge into" are greyed out — a disabled
+   option with no stated reason reads as a bug. */
+.merge-target-hint { font-size: 11.5px; color: var(--c-amber-700); margin: -6px 0 14px; line-height: 1.5; }
 .merge-target-select {
     flex: 0 1 260px; height: 38px; padding: 0 12px; font: inherit; font-size: 12.5px; color: var(--ink);
     background: #fff; border: 1px solid var(--slate-300); border-radius: 8px; cursor: pointer;
@@ -699,3 +720,11 @@ svg { display: block; }
 .oa-meat .oa-name { font-size: 13px; font-weight: 600; color: var(--ink); }
 .oa-meat .oa-sub { font-size: 11px; color: var(--slate-500); margin-top: 1px; }
 .oa-check { color: var(--brand-primary); font-weight: 800; font-size: 15px; }
+/* Replaces the plain text input in the Data Issues phone fix, which carried an
+   inline width:100%. The component is a custom element, so it needs the width
+   set on the host to keep filling the panel. */
+.admin-phone-input {
+    display: block;
+    width: 100%;
+    margin-top: 8px;
+}

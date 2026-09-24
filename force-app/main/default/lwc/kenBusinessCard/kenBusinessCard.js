@@ -37,8 +37,7 @@ export default class KenBusinessCard extends LightningElement {
                     businessId: this.business.id,
                     business: this.business
                 },
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
         }
     }

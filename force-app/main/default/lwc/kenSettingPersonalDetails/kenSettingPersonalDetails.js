@@ -11,7 +11,6 @@ import getPersonalDetails from '@salesforce/apex/KenProfileSettingsController.ge
 import savePersonalDetails from '@salesforce/apex/KenProfileSettingsController.savePersonalDetails';
 import saveEngagementPreferences from '@salesforce/apex/KenProfileSettingsController.saveEngagementPreferences';
 import saveProfilePhoto from '@salesforce/apex/KenProfileSettingsController.saveProfilePhoto';
-import createNeedHelpCase from '@salesforce/apex/KenServiceSupportController.createNeedHelpCase';
 import getVerificationStatus from '@salesforce/apex/KenCommunityOtpLoginController.getVerificationStatus';
 import saveMobileNumber from '@salesforce/apex/KenCommunityOtpLoginController.saveMobileNumber';
 import startVerification from '@salesforce/apex/KenCommunityOtpLoginController.startVerification';
@@ -49,6 +48,7 @@ export default class KenSettingPersonalDetails extends NavigationMixin(Lightning
     @track verifyMessage = '';
     @track verifyMessageIsError = false;
     @track phoneDraft = '';
+    @track phoneDraftValid = false;
     lastVerifiedChannel = '';
     @track city = '';
     @track country = '';
@@ -56,8 +56,6 @@ export default class KenSettingPersonalDetails extends NavigationMixin(Lightning
     @track twitter = '';
     @track interests = [];
 
-    @track showNeedHelpModal = false;
-    @track needHelpRequestType = '';
 
     _pendingPhotoBase64 = null;
 
@@ -120,13 +118,18 @@ export default class KenSettingPersonalDetails extends NavigationMixin(Lightning
     }
 
     handleRequestEmailChange() {
-        this.needHelpRequestType = 'email';
-        this.showNeedHelpModal = true;
+        this.navigateToServiceSupport();
     }
 
     handleRequestPhoneChange() {
-        this.needHelpRequestType = 'phone';
-        this.showNeedHelpModal = true;
+        this.navigateToServiceSupport();
+    }
+
+    navigateToServiceSupport() {
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'service_support__c' }
+        });
     }
 
     async loadVerificationStatus() {
@@ -154,18 +157,18 @@ export default class KenSettingPersonalDetails extends NavigationMixin(Lightning
         return !this.phone;
     }
 
+    // The plain input this replaced hardcoded India's ten digits, so a nine-digit
+    // UAE number could never be saved here and a fifteen-digit one sailed through.
+    // The phone component reports validity against whichever country the user
+    // picked, using the same rules as onboarding and registration.
     get isSavePhoneDisabled() {
-        return this.isVerifyBusy || (this.phoneDraft || '').replace(/[^0-9]/g, '').length < 10;
+        return this.isVerifyBusy || !this.phoneDraftValid;
     }
 
-    handlePhoneDraftInput(event) {
-        this.phoneDraft = event.target.value;
-    }
-
-    handlePhoneDraftKeyDown(event) {
-        if (event.key === 'Enter' && !this.isSavePhoneDisabled) {
-            this.handleSaveAndVerifyPhone();
-        }
+    handlePhoneDraftChange(event) {
+        const { e164, isValid } = event.detail || {};
+        this.phoneDraft = e164 || '';
+        this.phoneDraftValid = isValid === true;
     }
 
     async handleSaveAndVerifyPhone() {
@@ -303,58 +306,6 @@ export default class KenSettingPersonalDetails extends NavigationMixin(Lightning
         setTimeout(() => {
             this.verifyMessage = '';
         }, 6000);
-    }
-
-    handleNeedHelpClose() {
-        this.showNeedHelpModal = false;
-        this.needHelpRequestType = '';
-    }
-
-    async handleNeedHelpSubmit(event) {
-        const { description, issueType, subject, file } = event.detail || {};
-        const requestType = this.needHelpRequestType;
-        this.showNeedHelpModal = false;
-        this.needHelpRequestType = '';
-        this.isSaving = true;
-        try {
-            let fileData;
-            let fileName;
-            if (file) {
-                ({ fileData, fileName } = await this.readFileAsBase64(file));
-            }
-            const constituentRoleId = localStorage.getItem('ConstituentRoleId');
-            await createNeedHelpCase({
-                serviceOfferingId: issueType,
-                subject,
-                description,
-                fileName,
-                fileData,
-                constituentRoleId
-            });
-            this.successPopupMessage = 'Request submitted successfully';
-            this.showSuccessPopup = true;
-            setTimeout(() => {
-                this.showSuccessPopup = false;
-                this[NavigationMixin.Navigate]({
-                    type: 'comm__namedPage',
-                    attributes: { name: 'service_support__c' }
-                });
-            }, 600);
-        } catch (error) {
-            this.needHelpRequestType = requestType;
-            this.showNeedHelpModal = true;
-            const message = error?.body?.message || error?.message || 'An unexpected error occurred.';
-            // Defer until the modal re-renders so we can call its @api method
-            // eslint-disable-next-line @lwc/lwc/no-async-operation
-            setTimeout(() => {
-                const modal = this.template.querySelector('c-ken-need-help-modal');
-                if (modal) {
-                    modal.showError('Submission failed', message);
-                }
-            }, 0);
-        } finally {
-            this.isSaving = false;
-        }
     }
 
     readFileAsBase64(file) {

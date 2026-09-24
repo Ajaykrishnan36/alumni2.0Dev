@@ -1,22 +1,37 @@
 import { LightningElement, track } from 'lwc';
-import SofiaProfilePhoto from '@salesforce/resourceUrl/SofiaProfilePhoto';
+import defaultProfileImage from '@salesforce/resourceUrl/AlumniAlt';
+import linkedinLogo from '@salesforce/resourceUrl/linkedinLogo';
+import twitterLogo from '@salesforce/resourceUrl/twitterLogo';
+import instaLogo from '@salesforce/resourceUrl/instaLogo';
+import facebookLogo from '@salesforce/resourceUrl/facebookLogo';
 import EMPTY_STATE from '@salesforce/resourceUrl/MentorshipEmptyState';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import { setSafeHtml } from 'c/kenHtmlSanitizer';
 import getAlumniSpotlights from '@salesforce/apex/KenAlumniSpotlightController.getAlumniSpotlights';
 import getHomeData from '@salesforce/apex/KenPortalHomeController.getHomeData';
+
+// Threads has no logo asset, so its chip stays text-only rather than borrowing
+// another platform's mark.
+const PLATFORM_LOGOS = {
+    LinkedIn: linkedinLogo,
+    X: twitterLogo,
+    Instagram: instaLogo,
+    Facebook: facebookLogo
+};
+
+const FILTER_ALL = 'all';
+const FILTER_SOCIAL = 'social';
+const FILTER_GROUPS = 'groups';
 
 const SPOTLIGHT_TRUNCATE_LEN = 80;
 const SPOTLIGHT_AUTO_ADVANCE_MS = 10000;
 const META_TRUNCATE_LEN = 50;
-const CONTENT_TRUNCATE_LEN = 120;
 
 function processFeedItem(item) {
     const date = item.date || '';
-    const content = item.content || '';
     const needsMetaToggle = date.length > META_TRUNCATE_LEN;
     const metaShort = needsMetaToggle ? date.substring(0, META_TRUNCATE_LEN) + '...' : date;
-    const needsContentToggle = content.length > CONTENT_TRUNCATE_LEN;
-    const contentShort = needsContentToggle ? content.substring(0, CONTENT_TRUNCATE_LEN) + '...' : content;
+
     return {
         ...item,
         metaExpanded: false,
@@ -24,10 +39,16 @@ function processFeedItem(item) {
         metaDisplayText: metaShort,
         metaShowToggle: needsMetaToggle,
         contentExpanded: false,
-        contentShort,
-        contentDisplayText: contentShort,
-        contentShowToggle: needsContentToggle
+        // Whether the body is actually clipped depends on width, font and zoom, so
+        // it is measured from the rendered element rather than guessed from a
+        // character count - a short post that fits the clamp must show no toggle.
+        contentShowToggle: false,
+        textClass: textClassFor(false)
     };
+}
+
+function textClassFor(expanded) {
+    return expanded ? 'feed-item-text' : 'feed-item-text is-collapsed';
 }
 
 function toYouTubeEmbed(url) {
@@ -97,11 +118,40 @@ export default class KenPortalHomeFeed extends LightningElement {
         return this.feedItems.length > 0;
     }
 
-    get displayFeedItems() {
-        if (!this.isMobile || this.mobileFeedShowAll) {
-            return this.feedItems;
+    feedFilter = FILTER_ALL;
+
+    get filterOptions() {
+        return [
+            { label: 'All', value: FILTER_ALL, selected: this.feedFilter === FILTER_ALL },
+            { label: 'Groups', value: FILTER_GROUPS, selected: this.feedFilter === FILTER_GROUPS },
+            { label: 'Social Media', value: FILTER_SOCIAL, selected: this.feedFilter === FILTER_SOCIAL }
+        ];
+    }
+
+    get filteredFeedItems() {
+        if (this.feedFilter === FILTER_SOCIAL) {
+            return this.feedItems.filter((item) => item.isSocial);
         }
-        return this.feedItems.length ? [this.feedItems[0]] : [];
+        if (this.feedFilter === FILTER_GROUPS) {
+            return this.feedItems.filter((item) => !item.isSocial);
+        }
+        return this.feedItems;
+    }
+
+    handleFeedFilterChange(event) {
+        this.feedFilter = event.target.value;
+        // A filtered-out card leaves the DOM, so one coming back needs its body
+        // painted again - without clearing these it would render empty.
+        this._paintedBodies = new Set();
+        this._measuredBodies = new Set();
+    }
+
+    get displayFeedItems() {
+        const items = this.filteredFeedItems;
+        if (!this.isMobile || this.mobileFeedShowAll) {
+            return items;
+        }
+        return items.length ? [items[0]] : [];
     }
 
     get showFeedViewMore() {
@@ -145,10 +195,45 @@ export default class KenPortalHomeFeed extends LightningElement {
         this.feedItems = this.feedItems.map((item) => {
             if (String(item.id) === id) {
                 const contentExpanded = !item.contentExpanded;
-                const contentDisplayText = contentExpanded ? (item.content || '') : item.contentShort;
-                return { ...item, contentExpanded, contentDisplayText };
+                return { ...item, contentExpanded, textClass: textClassFor(contentExpanded) };
             }
             return item;
+        });
+    }
+
+    _paintedBodies = new Set();
+    _measuredBodies = new Set();
+
+    renderedCallback() {
+        this._paintBodies();
+    }
+
+    _paintBodies() {
+        const nodes = this.template.querySelectorAll('[data-body-id]');
+        const overflowById = {};
+        let changed = false;
+        nodes.forEach((el) => {
+            const id = el.dataset.bodyId;
+            const item = this.feedItems.find((i) => String(i.id) === id);
+            if (!item) return;
+            if (!this._paintedBodies.has(id)) {
+                setSafeHtml(el, item.content);
+                this._paintedBodies.add(id);
+            }
+            if (this._measuredBodies.has(id) || item.contentExpanded) return;
+            const overflows = el.scrollHeight - el.clientHeight > 1;
+            this._measuredBodies.add(id);
+            if (overflows !== item.contentShowToggle) {
+                overflowById[id] = overflows;
+                changed = true;
+            }
+        });
+        if (!changed) return;
+        this.feedItems = this.feedItems.map((item) => {
+            const key = String(item.id);
+            return Object.prototype.hasOwnProperty.call(overflowById, key)
+                ? { ...item, contentShowToggle: overflowById[key] }
+                : item;
         });
     }
 
@@ -241,14 +326,26 @@ export default class KenPortalHomeFeed extends LightningElement {
         try {
             const data = await getHomeData();
             const posts = (data && data.feed) || [];
-            this.feedItems = posts.map((p) => processFeedItem({
-                id: p.id,
-                title: p.authorName || 'Alumni',
-                icon: p.authorPhotoUrl || SofiaProfilePhoto,
-                tag: p.groupName || '',
-                content: p.body || '',
-                date: p.dateLabel || '',
-                hashtags: []
+            this._paintedBodies = new Set();
+            this._measuredBodies = new Set();
+            this.feedItems = posts.map((p) => ({
+                ...processFeedItem({
+                    id: p.id,
+                    title: p.authorName || 'Alumni',
+                    icon: p.authorPhotoUrl || (p.platform && PLATFORM_LOGOS[p.platform]) || defaultProfileImage,
+                    tag: p.groupName || '',
+                    content: p.body || '',
+                    date: p.dateLabel || '',
+                    hashtags: []
+                }),
+                imageUrl: p.imageUrl || null,
+                hasImage: Boolean(p.hasImage && p.imageUrl),
+                postUrl: p.postUrl || null,
+                hasPostUrl: Boolean(p.postUrl),
+                postLinkLabel: p.platform ? `View on ${p.platform}` : 'View post',
+                isSocial: Boolean(p.platform),
+                platformLogo: (p.platform && PLATFORM_LOGOS[p.platform]) || null,
+                hasPlatformLogo: Boolean(p.platform && PLATFORM_LOGOS[p.platform])
             }));
         } catch (e) {
             this.feedItems = [];

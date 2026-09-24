@@ -3,6 +3,7 @@
         <div class="rte-area" contenteditable="true" data-placeholder={placeholder}
             oninput={handleInput} onfocus={handleFocus}
             onmouseup={handleSelection} onkeyup={handleSelection}
+            onpaste={handlePaste} ondrop={handleDrop} ondragover={allowDrop}
             onblur={handleBlur} lwc:dom="manual"></div>
         <template if:true={hasCounter}>
             <p class="rte-charcount"><span class="rte-charcount-current">{currentLength}</span>/{maxLength} characters</p>
@@ -143,6 +144,20 @@
                     </div>
                 </template>
             </span>
+
+            <template if:true={showImageButton}>
+                <span class="rte-sep"></span>
+                <button type="button" class="rte-btn rte-image-btn" onmousedown={saveCurrentSelection}
+                    onclick={handleClickImage} disabled={imageBusy} aria-label="Insert image" title="Insert image">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                </button>
+                <input type="file" class="rte-image-input" accept={imageAccept} multiple
+                    onchange={handleImageFiles} />
+            </template>
 
             <span class="rte-sep"></span>
 

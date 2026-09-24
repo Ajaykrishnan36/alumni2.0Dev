@@ -191,6 +191,9 @@
                                                     variant="label-hidden"
                                                     class="custom-input">
                                                 </lightning-input>
+                                                <template if:true={question.textError}>
+                                                    <span class="inline-error">* {question.textError}</span>
+                                                </template>
                                             </div>
                                         </div>
                                         <div class="question-right-section">
@@ -228,16 +231,21 @@
                                                         <span class="option-letter">{option.letter}</span>
                                                         <span>)</span>
                                                     </div>
-                                                    <lightning-input
-                                                        type="text"
-                                                        value={option.text}
-                                                        placeholder="Add option"
-                                                        onchange={handleOptionChange}
-                                                        data-question-id={question.id}
-                                                        data-option-id={option.id}
-                                                        variant="label-hidden"
-                                                        class="option-input">
-                                                    </lightning-input>
+                                                    <div class="option-input-wrap">
+                                                        <lightning-input
+                                                            type="text"
+                                                            value={option.text}
+                                                            placeholder="Add option"
+                                                            onchange={handleOptionChange}
+                                                            data-question-id={question.id}
+                                                            data-option-id={option.id}
+                                                            variant="label-hidden"
+                                                            class="option-input">
+                                                        </lightning-input>
+                                                        <template if:true={option.optionError}>
+                                                            <span class="option-required">* {option.optionError}</span>
+                                                        </template>
+                                                    </div>
                                                     <button 
                                                         type="button" 
                                                         class="delete-option-btn"
@@ -249,18 +257,18 @@
                                                     </button>
                                                 </div>
                                             </template>
-                                            <template if:true={question.hasInsufficientOptions}>
-                                                <div class="option-error-message">
-                                                    Single Select and Checkbox questions must have at least 2 options.
-                                                </div>
-                                            </template>
-                                            <button 
-                                                type="button" 
-                                                class="add-option-btn"
-                                                onclick={handleAddOption}
-                                                data-question-id={question.id}>
-                                                Add option {question.nextOptionNumber}
-                                            </button>
+                                            <div class="add-option-row">
+                                                <button
+                                                    type="button"
+                                                    class="add-option-btn"
+                                                    onclick={handleAddOption}
+                                                    data-question-id={question.id}>
+                                                    Add option {question.nextOptionNumber}
+                                                </button>
+                                                <template if:true={question.optionsError}>
+                                                    <span class="option-inline-error">* {question.optionsError}</span>
+                                                </template>
+                                            </div>
                                         </div>
                                     </template>
 
@@ -268,49 +276,32 @@
                                     <template if:true={question.showLinearScale}>
                                         <div class="question-scale">
                                             <div class="scale-range">
+                                                <span class="scale-to">1 to</span>
                                                 <lightning-combobox
-                                                    value={question.scaleMin}
+                                                    value={question.scalePointCount}
                                                     options={scaleNumberOptions}
-                                                    onchange={handleScaleMinChange}
-                                                    data-question-id={question.id}
-                                                    variant="label-hidden"
-                                                    class="scale-input custom-select">
-                                                </lightning-combobox>
-                                                <span class="scale-to">to</span>
-                                                <lightning-combobox
-                                                    value={question.scaleMax}
-                                                    options={scaleNumberOptions}
-                                                    onchange={handleScaleMaxChange}
+                                                    onchange={handleScalePointCountChange}
                                                     data-question-id={question.id}
                                                     variant="label-hidden"
                                                     class="scale-input custom-select">
                                                 </lightning-combobox>
                                             </div>
                                             <div class="scale-labels">
-                                                <div class="scale-label-item">
-                                                    <span class="scale-label-number">{question.scaleMin}</span>
-                                                    <lightning-input
-                                                        type="text"
-                                                        value={question.scaleMinLabel}
-                                                        placeholder="Label(Optional)"
-                                                        onchange={handleScaleMinLabelChange}
-                                                        data-question-id={question.id}
-                                                        variant="label-hidden"
-                                                        class="scale-label-input">
-                                                    </lightning-input>
-                                                </div>
-                                                <div class="scale-label-item">
-                                                    <span class="scale-label-number">{question.scaleMax}</span>
-                                                    <lightning-input
-                                                        type="text"
-                                                        value={question.scaleMaxLabel}
-                                                        placeholder="Label(Optional)"
-                                                        onchange={handleScaleMaxLabelChange}
-                                                        data-question-id={question.id}
-                                                        variant="label-hidden"
-                                                        class="scale-label-input">
-                                                    </lightning-input>
-                                                </div>
+                                                <template for:each={question.options} for:item="point">
+                                                    <div key={point.id} class="scale-label-item">
+                                                        <span class="scale-label-number">{point.value}</span>
+                                                        <lightning-input
+                                                            type="text"
+                                                            value={point.text}
+                                                            placeholder="Label(Optional)"
+                                                            onchange={handleScalePointLabelChange}
+                                                            data-question-id={question.id}
+                                                            data-option-id={point.id}
+                                                            variant="label-hidden"
+                                                            class="scale-label-input">
+                                                        </lightning-input>
+                                                    </div>
+                                                </template>
                                             </div>
                                         </div>
                                     </template>
@@ -451,13 +442,12 @@
                                                     <!-- Linear Scale Preview -->
                                                     <template if:true={question.showLinearScale}>
                                                         <div class="question-summary-scale">
-                                                            <span class="scale-preview">Linear Scale: {question.scaleMin} to {question.scaleMax}</span>
-                                                            <template if:true={question.hasLabels}>
-                                                                <div class="scale-labels-preview">
-                                                                    <span>{question.scaleMinLabel}</span>
-                                                                    <span>{question.scaleMaxLabel}</span>
-                                                                </div>
-                                                            </template>
+                                                            <span class="scale-preview">{question.scalePointsLabel}</span>
+                                                            <div class="scale-labels-preview">
+                                                                <template for:each={question.scalePoints} for:item="point">
+                                                                    <span key={point.id}>{point.value} {point.label}</span>
+                                                                </template>
+                                                            </div>
                                                         </div>
                                                     </template>
 

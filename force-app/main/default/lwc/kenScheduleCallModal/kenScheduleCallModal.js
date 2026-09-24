@@ -1,5 +1,10 @@
 import { LightningElement, api, track } from 'lwc';
+import {
+    replaceElementHtml,
+    serializeElementHtml
+} from 'c/kenHtmlSanitizer';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import { toUtcInstant, localDateKey } from 'c/kenDateTime';
 import getMentorAvailabilityDays from '@salesforce/apex/KenMentorshipController.getMentorAvailabilityDays';
 
 const SLOT_MINUTES = 15;
@@ -116,8 +121,7 @@ export default class KenScheduleCallModal extends LightningElement {
     }
 
     get minimumDate() {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
+        return localDateKey();
     }
 
     get isSelectedDateInPast() {
@@ -260,8 +264,7 @@ export default class KenScheduleCallModal extends LightningElement {
             return;
         }
 
-        const today = new Date();
-        this.selectedDate = today.toISOString().split('T')[0];
+        this.selectedDate = localDateKey();
     }
 
     renderedCallback() {
@@ -269,15 +272,15 @@ export default class KenScheduleCallModal extends LightningElement {
         if (editor) {
             if (editor !== this.richTextEditor) {
                 this.richTextEditor = editor;
-                if (this.descriptionHtml && editor.innerHTML !== this.descriptionHtml) {
-                    editor.innerHTML = this.descriptionHtml;
+                if (this.descriptionHtml && serializeElementHtml(editor) !== this.descriptionHtml) {
+                    replaceElementHtml(editor, this.descriptionHtml);
                 }
                 editor.addEventListener('keyup', () => this.updateButtonStates());
                 editor.addEventListener('mouseup', () => this.updateButtonStates());
-            } else if (this.descriptionHtml && editor.innerHTML !== this.descriptionHtml) {
-                editor.innerHTML = this.descriptionHtml;
-            } else if (!this.descriptionHtml && editor.innerHTML) {
-                editor.innerHTML = '';
+            } else if (this.descriptionHtml && serializeElementHtml(editor) !== this.descriptionHtml) {
+                replaceElementHtml(editor, this.descriptionHtml);
+            } else if (!this.descriptionHtml && serializeElementHtml(editor)) {
+                replaceElementHtml(editor, '');
             }
             this.ensureListFormatting();
         }
@@ -353,7 +356,7 @@ export default class KenScheduleCallModal extends LightningElement {
     }
 
     handleRichTextInput(event) {
-        this.descriptionHtml = event.target.innerHTML || '';
+        this.descriptionHtml = serializeElementHtml(event.target) || '';
         setTimeout(() => {
             this.updateButtonStates();
         }, 50);
@@ -370,7 +373,7 @@ export default class KenScheduleCallModal extends LightningElement {
     }
 
     handleRichTextBlur(event) {
-        this.descriptionHtml = event.target.innerHTML || '';
+        this.descriptionHtml = serializeElementHtml(event.target) || '';
     }
 
     handleRichTextSelection() {
@@ -442,7 +445,7 @@ export default class KenScheduleCallModal extends LightningElement {
             this.isUnorderedListActive = isInUnorderedList;
             this.isOrderedListActive = isInOrderedList;
             
-        } catch {}
+        } catch (e) {}
     }
 
     executeCommand(command) {
@@ -465,7 +468,7 @@ export default class KenScheduleCallModal extends LightningElement {
         document.execCommand(command, false, null);
         
         setTimeout(() => {
-            this.descriptionHtml = this.richTextEditor.innerHTML;
+            this.descriptionHtml = serializeElementHtml(this.richTextEditor);
             this.updateButtonStates();
             
             if (command === 'insertUnorderedList' || command === 'insertOrderedList') {
@@ -524,8 +527,7 @@ export default class KenScheduleCallModal extends LightningElement {
 
     handleClose() {
         this.dispatchEvent(new CustomEvent('close', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -548,6 +550,12 @@ export default class KenScheduleCallModal extends LightningElement {
             return;
         }
 
+        // The comboboxes hand back local "HH:mm" slots, so pairing them with the
+        // picked date is what recovers the real instant. Apex prefers these over
+        // the meetingDate + bare time pair, which only reads correctly here.
+        const startDateTime = toUtcInstant(normalizedMeetingDate, this.startTime);
+        const endDateTime = toUtcInstant(normalizedMeetingDate, this.endTime);
+
         const requestData = {
             participantType: this.selectedParticipantType,
             participantId: this.selectedMentor,
@@ -559,6 +567,8 @@ export default class KenScheduleCallModal extends LightningElement {
             meetingDate: normalizedMeetingDate,
             startTime: this.startTime,
             endTime: this.endTime,
+            startDateTime: startDateTime,
+            endDateTime: endDateTime,
             description: this.descriptionHtml,
             meetingType: this.meetingType,
             meetLink: this.meetLink
@@ -794,8 +804,10 @@ export default class KenScheduleCallModal extends LightningElement {
             return '';
         }
 
+        // Local throughout: this date is later paired with a local slot time to
+        // build the instant, so a UTC-shifted day here would move the meeting.
         if (value instanceof Date && !Number.isNaN(value.getTime())) {
-            return value.toISOString().slice(0, 10);
+            return localDateKey(value);
         }
 
         const asString = String(value).trim();
@@ -818,6 +830,6 @@ export default class KenScheduleCallModal extends LightningElement {
         if (Number.isNaN(parsedDate.getTime())) {
             return '';
         }
-        return parsedDate.toISOString().slice(0, 10);
+        return localDateKey(parsedDate);
     }
 }

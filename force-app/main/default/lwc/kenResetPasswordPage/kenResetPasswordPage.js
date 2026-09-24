@@ -6,11 +6,14 @@ import resetPassword from '@salesforce/apex/KenCommunityLoginController.resetPas
 import basePath from '@salesforce/community/basePath';
 import KenPoweredbyLogo from '@salesforce/resourceUrl/kenPoweredbyLogo';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+// Keep in sync with KenCommunityLoginController.RESET_OTP_EXPIRY_MINUTES.
+const OTP_TIMER_SECONDS = 60;
 export default class KenResetPasswordPage extends NavigationMixin(LightningElement) {
     @api startUrl = '';
     email = '';
     newPassword = '';
     confirmPassword = '';
+    verifiedOtp = '';
     errorMessage = '';
     isLoading = false;
     @track isSuccessToastVisible = false;
@@ -32,7 +35,7 @@ export default class KenResetPasswordPage extends NavigationMixin(LightningEleme
         { id: '2', value: '' },
         { id: '3', value: '' }
     ];
-    @track timerSeconds = 120; // 2 minutes
+    @track timerSeconds = OTP_TIMER_SECONDS;
     @track canResend = false;
     timerInterval;
     
@@ -250,7 +253,7 @@ export default class KenResetPasswordPage extends NavigationMixin(LightningEleme
     }
 
     startTimer() {
-        this.timerSeconds = 120;
+        this.timerSeconds = OTP_TIMER_SECONDS;
         this.canResend = false;
         
         if (this.timerInterval) {
@@ -355,7 +358,8 @@ export default class KenResetPasswordPage extends NavigationMixin(LightningEleme
 
         try {
             await verifyResetOtp({ email: this.email, otpEntered: otpCode });
-            
+
+            this.verifiedOtp = otpCode;
             this.showOTPStep = false;
             this.showPasswordStep = true;
             if (this.timerInterval) {
@@ -419,12 +423,16 @@ export default class KenResetPasswordPage extends NavigationMixin(LightningEleme
         this.errorMessage = '';
 
         try {
-            await resetPassword({ email: this.email, newPassword: this.newPassword });
+            await resetPassword({
+                email: this.email,
+                newPassword: this.newPassword,
+                otpEntered: this.verifiedOtp
+            });
+            this.verifiedOtp = '';
             
             this.dispatchEvent(new CustomEvent('passwordresetcomplete', {
                 detail: { email: this.email },
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
             this.showSuccessToast('Password reset', 'Your password has been updated. Signing you out...');
             window.setTimeout(() => {

@@ -31,6 +31,12 @@ const MAX_TEXT_LENGTH = 100;
 export default class KenEducationInformationModal extends LightningElement {
     @api educationData = null;
     @api modalTitleOverride = '';
+    // Opened straight from Save & Next on an incomplete record: flag what is
+    // missing immediately, so the alumnus sees which fields to fill.
+    @api validateOnOpen = false;
+    // Org opt-in (Ken_Alm_Org_Parameters__c.Lock_Registration_Details__c).
+    @api lockRegistrationDetails = false;
+
 
     @track degree = '';
     @track institution = '';
@@ -81,6 +87,17 @@ export default class KenEducationInformationModal extends LightningElement {
 
     get institutionErrorClass() {
         return `custom-input${this.errors.institution ? ' error' : ''}`;
+    }
+
+    /**
+     * Locks only the card seeded from registration: the org has opted in, the card
+     * is the institute one, and it already exists. A card being added now has no id,
+     * so 'Add More' stays fully editable however the org is configured.
+     */
+    get isRegistrationFieldLocked() {
+        return this.lockRegistrationDetails === true
+            && this.isInstituteType
+            && !!this.educationData?.id;
     }
 
     get isInstituteType() {
@@ -170,6 +187,9 @@ export default class KenEducationInformationModal extends LightningElement {
         } else {
             this.syncInstitutionType();
         }
+        if (this.validateOnOpen) {
+            this.validate();
+        }
     }
 
     handleInstitutionTypeChange(event) {
@@ -207,7 +227,7 @@ export default class KenEducationInformationModal extends LightningElement {
     }
 
     handleClose() {
-        this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('close', { bubbles: true }));
     }
 
     handleInput(event) {
@@ -295,7 +315,7 @@ export default class KenEducationInformationModal extends LightningElement {
         }
 
         if (this.isInstituteType && (!this.programPlan || !this.programPlan.trim())) {
-            nextErrors.programPlan = 'Program plan is required';
+            nextErrors.programPlan = 'Program is required';
             isValid = false;
         }
 
@@ -371,8 +391,7 @@ export default class KenEducationInformationModal extends LightningElement {
                 gradingFormat: this.gradingFormat || 'CGPA',
                 cgpa: (this.cgpa || '').trim()
             },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 }

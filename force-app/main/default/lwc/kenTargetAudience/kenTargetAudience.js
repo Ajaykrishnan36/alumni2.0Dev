@@ -247,8 +247,7 @@ export default class KenTargetAudience extends LightningElement {
                 selectedAudienceData: this.selectedAudienceData,
                 selectedAudience: this.selectedAudienceData
             },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

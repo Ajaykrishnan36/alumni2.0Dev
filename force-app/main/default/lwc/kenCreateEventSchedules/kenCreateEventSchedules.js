@@ -9,9 +9,11 @@ import createEventSchedule from "@salesforce/apex/KenEventFormController.createE
 //import searchContacts from '@salesforce/apex/KenEventFormController.searchContacts';
 //import getContactDetails from '@salesforce/apex/KenEventFormController.getContactDetails';
 //import createContact from '@salesforce/apex/KenEventFormController.createContact';
-import getFileUploadSettings from '@salesforce/apex/KenEventFormController.getFileUploadSettings';
+import { toUtcInstant, fromUtcInstant, localDateKey } from 'c/kenDateTime';
 
 const SESSION_STORAGE_KEY = 'eventScheduleState_';
+const BROCHURE_FILE_TYPES = ['pdf', 'png', 'jpg', 'jpeg'];
+const BROCHURE_MAX_BYTES = 2 * 1024 * 1024;
 
 export default class KenCreateEventSchedules extends NavigationMixin(LightningElement) {
 	// Public properties
@@ -36,8 +38,8 @@ export default class KenCreateEventSchedules extends NavigationMixin(LightningEl
 
 
 	// File upload settings
-	allowedBrochureFileTypes;
-	maxBrochureSize;
+	allowedBrochureFileTypes = BROCHURE_FILE_TYPES;
+	maxBrochureSize = BROCHURE_MAX_BYTES;
 
 	// Location type constants
 	LOCATION_TYPES = {
@@ -48,22 +50,6 @@ export default class KenCreateEventSchedules extends NavigationMixin(LightningEl
 
 	get showRemoveSessionButton() {
 		return this.eventScheduleRecords && this.eventScheduleRecords.length > 1;
-	}
-
-	@wire(getFileUploadSettings, {
-		allowedFileTypes: 'Session_Brochure_File_Types__c',
-		maxFileSize: 'Session_Brochure_File_Size_MB__c'
-	})
-	FileSettings({ error, data }) {
-		if (data) {
-			this.allowedBrochureFileTypes = data.allowedFileTypes?.toLowerCase().split(',') || [];
-			this.maxBrochureSize = parseInt(data.maxFileSize) * 1024 * 1024 || 2 * 1024 * 1024; // Default 5MB
-		} else if (error) {
-			console.error('Error loading file settings:', JSON.stringify(error));
-			//default values as fallback
-			this.allowedBrochureFileTypes = ['pdf', 'png', 'jpg', 'jpeg'];
-			this.maxBrochureSize = 2 * 1024 * 1024; // 5MB default
-		}
 	}
 
 	/*@wire(searchContacts)
@@ -123,7 +109,9 @@ export default class KenCreateEventSchedules extends NavigationMixin(LightningEl
 		const datesWithSchedules = new Set();
 		this.savedEventSchedules.forEach(schedule => {
 			if (schedule.startDate) {
-				const scheduleDate = new Date(schedule.startDate).toISOString().split('T')[0];
+				// localDateKey, not toISOString — the latter converts to UTC first
+				// and so returns yesterday for any IST moment before 05:30.
+				const scheduleDate = localDateKey(new Date(schedule.startDate));
 				datesWithSchedules.add(scheduleDate);
 			}
 		});
@@ -167,7 +155,7 @@ export default class KenCreateEventSchedules extends NavigationMixin(LightningEl
 
 		let currentDate = new Date(start);
 		while (currentDate <= end) {
-			const dateString = currentDate.toISOString().split('T')[0];
+			const dateString = localDateKey(currentDate);
 			this.datePath.push({
 				date: dateString,
 				variant: dateString === this.selectedDate ? 'brand' : 'neutral',
@@ -217,8 +205,16 @@ export default class KenCreateEventSchedules extends NavigationMixin(LightningEl
 				index,
 				...record,
 				uniqueKey: sessionIdentifier,
-				startTime: this.formatTime(record.startTime),
-				endTime: this.formatTime(record.endTime),
+				// Seed the pickers from the stored instant so an editor sees the
+				// session in their own timezone. formatTime reads the legacy Time
+				// column — an IST wall clock with no zone — and is the fallback
+				// only for rows saved before the migration.
+				startTime: record.startDateTime
+					? fromUtcInstant(record.startDateTime).time
+					: this.formatTime(record.startTime),
+				endTime: record.endDateTime
+					? fromUtcInstant(record.endDateTime).time
+					: this.formatTime(record.endTime),
 				eventId: this.eventRecordId,
 				isOnSite: record.locationType === this.LOCATION_TYPES.ONSITE,
 				isHybrid: record.locationType === this.LOCATION_TYPES.HYBRID,
@@ -803,26 +799,48 @@ export default class KenCreateEventSchedules extends NavigationMixin(LightningEl
 		const updatedRecords = [...this.eventScheduleRecords];
 		updatedRecords[sessionIndex].isCard = true;
 		this.eventScheduleRecords = updatedRecords;
-		const currentRecord = this.eventScheduleRecords[sessionIndex];
-		const uniqueKey = currentRecord.uniqueKey;
+		this.mergeSessionIntoSaved(this.eventScheduleRecords[sessionIndex]);
+	}
 
-		// Check if record exists in savedEventSchedules
-		const existingRecordIndex = this.savedEventSchedules.findIndex(record => record.uniqueKey === uniqueKey);
-		if (existingRecordIndex !== -1) {
-			// Update existing record
-			this.savedEventSchedules = this.savedEventSchedules.map(record => {
-				if (record.uniqueKey === uniqueKey) {
-					return {
-						...record,
-						...currentRecord
-					};
-				}
-				return record;
-			});
+	// savedEventSchedules is the list handleSave actually sends to Apex, so
+	// anything the admin typed has to reach it or it is silently discarded.
+	mergeSessionIntoSaved(record) {
+		const uniqueKey = record.uniqueKey;
+		const alreadySaved = this.savedEventSchedules.some(r => r.uniqueKey === uniqueKey);
+		if (alreadySaved) {
+			this.savedEventSchedules = this.savedEventSchedules.map(r =>
+				r.uniqueKey === uniqueKey ? { ...r, ...record } : r
+			);
 		} else {
-			// Add new record
-			this.savedEventSchedules = [...this.savedEventSchedules, { ...currentRecord }];
+			this.savedEventSchedules = [...this.savedEventSchedules, { ...record }];
 		}
+	}
+
+	// A card the admin never touched. addEmptySession() seeds one of these
+	// whenever the selected date has no sessions, so it must stay ignorable —
+	// committing it would fail validation and block an otherwise valid save.
+	isBlankSession(record) {
+		return !record.name && !record.startTime && !record.endTime;
+	}
+
+	/**
+	 * Commits every session card still open on screen. A card only joined
+	 * savedEventSchedules when its own "Save Session" button was clicked, so a
+	 * session that was filled in and left open never reached Apex — the event
+	 * saved with no sessions at all and still reported success. Returns false if
+	 * any non-blank card fails validation, so the caller can stop.
+	 */
+	commitOpenSessions() {
+		let allValid = true;
+		this.eventScheduleRecords.forEach((record, index) => {
+			if (this.isBlankSession(record)) return;
+			if (!this.validateSessionFields(index)) {
+				allValid = false;
+				return;
+			}
+			this.mergeSessionIntoSaved(record);
+		});
+		return allValid;
 	}
 
 	//Save event schedules
@@ -830,15 +848,42 @@ export default class KenCreateEventSchedules extends NavigationMixin(LightningEl
 		try {
 			this.showSpinner = true;
 
+			// Pull in anything still open on screen before deciding what to send.
+			if (!this.commitOpenSessions()) {
+				this.showToast('Error', 'Please fix the errors before saving the session details', 'error');
+				return;
+			}
+
+			// A session with no start date can't be stored (the date is half of
+			// every stored instant), and silently dropping it is what let events
+			// save with nothing attached. Say so instead.
+			if (this.savedEventSchedules.some(record => !record.startDate)) {
+				this.showToast('Error', 'Every session needs a start date before saving.', 'error');
+				return;
+			}
+
 			// Prepare data for saving
 			const preparedRecords = this.savedEventSchedules
-				.filter(record => record.startDate) // Ensure records have startDate
 				.map((record, index) => ({
 					...record,
 					eventId: this.eventRecordId,
 					IsPortal: false,
-					index
+					index,
+					// Pair each time with its own session date, not today's. A bare
+					// time cannot say which day it belongs to, so a 00:30 session
+					// used to land on the wrong date once stored.
+					startDateTime: toUtcInstant(record.startDate, record.startTime),
+					endDateTime: toUtcInstant(record.endDate || record.startDate, record.endTime),
+					feedbackEndDateTime: toUtcInstant(record.feedbackEndDate, record.feedbackEndTime)
 				}));
+
+			// Apex returns silently on an empty list, so sending one used to look
+			// exactly like a successful save — green toast, wizard advanced, and an
+			// event left with zero sessions. Refuse it here instead.
+			if (preparedRecords.length === 0) {
+				this.showToast('Error', 'Add at least one session before saving.', 'error');
+				return;
+			}
 
 			await createEventSchedule({ records: JSON.stringify(preparedRecords) });
 

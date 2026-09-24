@@ -10,7 +10,7 @@ export default class KenAchievementCard extends LightningElement {
     showDeleteConfirm = false;
 
     handleEdit() {
-        this.dispatchEvent(new CustomEvent('edit', { detail: { id: this.recordId }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('edit', { detail: { id: this.recordId }, bubbles: true }));
     }
 
     handleDelete() {
@@ -19,7 +19,7 @@ export default class KenAchievementCard extends LightningElement {
 
     handleConfirmDelete() {
         this.showDeleteConfirm = false;
-        this.dispatchEvent(new CustomEvent('delete', { detail: { id: this.recordId }, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('delete', { detail: { id: this.recordId }, bubbles: true }));
     }
 
     handleCancelDelete() {

@@ -12,11 +12,13 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
         getPrimaryColor().then(color => {
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
-            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);  
+            document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);
+            this.canCreateSurvey = color?.createSurvey !== false;
         }).catch(() => {
             console.log('Error getting primary color');
         });
     }
+    @track canCreateSurvey = false;
     listYourBusinessImageUrl = listYourBusinessImage;
     SurveyEmptyImageUrl = SurveyEmptyImage;
     @track searchTerm = '';
@@ -149,7 +151,7 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
         const submittedDate = survey.submittedDate ? new Date(survey.submittedDate) : null;
         const rejectedDate = survey.rejectedDate ? new Date(survey.rejectedDate) : null;
         const questions = this.mapQuestionsFromSurvey(survey.questionnaire?.parameters);
-        const title = survey.name || survey.sectionName || '';
+        const title = survey.name || '';
         const isFeedback = title.toLowerCase().includes('feedback');
         return {
             id: survey.id,
@@ -185,8 +187,8 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
 
     mapQuestion(question, index) {
         const type = this.mapQuestionType(question.questionType);
-        const options = this.buildOptions(question.questionType, question.mcqOptions);
-        const scale = this.buildScale(question);
+        const options = this.buildOptions(question.questionType, question.options);
+        const scale = type === 'rating' ? this.buildScale(options) : null;
         const displayOrder = question.displayOrder != null ? Number(question.displayOrder) : index + 1;
 
         return {
@@ -204,14 +206,18 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
         };
     }
 
+    /**
+     * Single Select is stored as 'Dropdown' and Checkbox (multi-select) as 'Multiple Choice';
+     * Yes/No is mutually exclusive, so it takes the single-choice path.
+     */
     mapQuestionType(questionType) {
         switch (questionType) {
             case 'Multiple Choice':
-                return 'radio';
+                return 'checkbox';
             case 'Dropdown':
                 return 'radio';
             case 'Yes/No':
-                return 'checkbox';
+                return 'radio';
             case 'Rating':
             case 'Linear Scale':
                 return 'rating';
@@ -222,31 +228,37 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
         }
     }
 
-    buildOptions(questionType, mcqOptions) {
-        if (!mcqOptions) {
-            return [];
+    /**
+     * Normalises the question's stored choices into { value, text } pairs. `value` is what
+     * gets submitted, `text` is what the respondent reads.
+     */
+    buildOptions(questionType, rawOptions) {
+        const options = (rawOptions || [])
+            .filter((option) => option)
+            .map((option) => {
+                const text = String(option.text ?? option.label ?? '').trim();
+                const value = String(option.value ?? '').trim() || text;
+                return { value: value, text: text || value };
+            })
+            .filter((option) => option.value);
+        if (!options.length && questionType === 'Yes/No') {
+            return [
+                { value: 'Yes', text: 'Yes' },
+                { value: 'No', text: 'No' }
+            ];
         }
-
-        return mcqOptions
-            .split(/[\n;,]+/)
-            .map((option) => option.trim())
-            .filter((option) => option);
+        return options;
     }
 
-    buildScale(question) {
-        if (question.questionType === 'Rating' || question.questionType === 'Linear Scale') {
-            const min = question.minGrade || 1;
-            const max = question.maxGrade || 5;
-            const minLabel = question.minGradeLabel || '';
-            const maxLabel = question.maxGradeLabel || '';
-
-            const scale = [];
-            for (let i = min; i <= max; i++) {
-                scale.push({ value: i, label: i === min ? minLabel : i === max ? maxLabel : '' });
-            }
-            return scale;
-        }
-        return null;
+    /**
+     * A linear scale is its options in order — each point carries its own label, and a label
+     * that merely repeats the point is dropped so the number is not printed twice.
+     */
+    buildScale(options) {
+        return (options || []).map((option) => ({
+            value: option.value,
+            label: option.text && option.text !== option.value ? option.text : ''
+        }));
     }
 
     formatDate(dateValue) {
@@ -673,8 +685,7 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
             const selectedValue = this.surveyAnswers[questionId];
             if (ratingButtons && ratingButtons.length > 0) {
                 ratingButtons.forEach((btn) => {
-                    const btnValue = parseInt(btn.getAttribute('data-rating-value'), 10);
-                    if (btnValue === selectedValue) {
+                    if (btn.getAttribute('data-rating-value') === String(selectedValue)) {
                         btn.classList.add('selected');
                     } else {
                         btn.classList.remove('selected');
@@ -691,7 +702,7 @@ export default class KenSurveys extends NavigationMixin(LightningElement) {
     }
 
     handleRatingClick(event) {
-        const value = parseInt(event.currentTarget.getAttribute('data-rating-value'));
+        const value = event.currentTarget.getAttribute('data-rating-value');
         const questionId =
             event.currentTarget.getAttribute('data-question-id') || (this.currentQuestion ? this.currentQuestion.id : null);
         if (!questionId) {

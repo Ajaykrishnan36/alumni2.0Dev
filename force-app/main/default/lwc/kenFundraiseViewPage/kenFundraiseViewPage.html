@@ -73,14 +73,23 @@
 
             <!-- Footer -->
             <div class="footer">
-                <template if:true={campaign.dateRange}>
-                    <div class="date">
+                <div class="footer-meta">
+                    <template if:true={campaign.dateRange}>
+                        <div class="date">
+                            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M7 4a1 1 0 012 0h6a1 1 0 112 0h1a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h1zm12 6H5v8a1 1 0 001 1h12a1 1 0 001-1v-8zM5 8h14V6H5v2z" fill="currentColor"></path>
+                            </svg>
+                            <span>{campaign.dateRange}</span>
+                        </div>
+                    </template>
+
+                    <div class="date donor-count">
                         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M7 4a1 1 0 012 0h6a1 1 0 112 0h1a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h1zm12 6H5v8a1 1 0 001 1h12a1 1 0 001-1v-8zM5 8h14V6H5v2z" fill="currentColor"></path>
+                            <path d="M9 11a4 4 0 100-8 4 4 0 000 8zm7 1a3 3 0 100-6 3 3 0 000 6zM2 19a7 7 0 0114 0v1H2v-1zm15.5-5A5.5 5.5 0 0122 19.5V20h-4v-1a8.9 8.9 0 00-1.2-4.5c.2 0 .5-.5.7-.5z" fill="currentColor"></path>
                         </svg>
-                        <span>{campaign.dateRange}</span>
+                        <span>{donorCountLabel}</span>
                     </div>
-                </template>
+                </div>
 
                 <div class="actions">
                     <!-- Countdown (upcoming < 24h) -->
@@ -136,6 +145,11 @@
 
                     <template if:true={_adminActionError}>
                         <span class="admin-error">{_adminActionError}</span>
+                    </template>
+
+                    <!-- Contribute — ongoing campaigns collecting in-portal -->
+                    <template if:true={showContribute}>
+                        <button class="action-btn contribute-btn" onclick={openContributeModal}>Contribute To This Cause</button>
                     </template>
                 </div>
             </div>
@@ -240,6 +254,78 @@
                             <template if:false={_isDeleting}>Request Deletion</template>
                         </button>
                     </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Contribute modal -->
+        <template if:true={_showContributeModal}>
+            <div class="modal-overlay" onclick={closeContributeModal}>
+                <div class="modal contribute-modal" onclick={_stopPropagation}>
+                    <h3 class="contribute-title">Contribute to This Cause</h3>
+
+                    <span class="contribute-label">Contribution Amount<span class="req">*</span></span>
+
+                    <div class="amount-row">
+                        <template for:each={amountOptions} for:item="option">
+                            <button
+                                key={option.value}
+                                class={option.cssClass}
+                                data-amount={option.value}
+                                onclick={handleAmountSelect}
+                            >{option.label}</button>
+                        </template>
+                        <div class="custom-amount">
+                            <input
+                                type="number"
+                                class="custom-amount-input"
+                                placeholder="Custom Amount"
+                                min={minimumAmount}
+                                value={_customAmount}
+                                oninput={handleCustomAmountChange}
+                            />
+                            <span class="custom-amount-symbol">{currencySymbol}</span>
+                        </div>
+                    </div>
+
+                    <p class="contribute-hint">Minimum contribution {minimumLabel}</p>
+
+                    <label class="anon-row">
+                        <input type="checkbox" class="anon-check" checked={_isAnonymous} onchange={handleAnonymousChange}/>
+                        <span>Contribute Anonymously</span>
+                    </label>
+
+                    <template if:true={_isAnonymous}>
+                        <p class="anon-note">Your name will not appear against this contribution. The institute keeps an encrypted record so your contribution can still be receipted.</p>
+                    </template>
+
+                    <template if:true={_contributeError}>
+                        <p class="modal-error contribute-error">{_contributeError}</p>
+                    </template>
+
+                    <div class="modal-actions contribute-actions">
+                        <button class="modal-btn go-back-btn" onclick={closeContributeModal} disabled={_isContributing}>Cancel</button>
+                        <button class="modal-btn continue-payment-btn" onclick={handleContinueToPayment} disabled={_isContributing}>
+                            <template if:true={_isContributing}>Saving…</template>
+                            <template if:false={_isContributing}>Continue To Payment</template>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Contribution recorded popup -->
+        <template if:true={_showContributeSuccess}>
+            <div class="success-popup-overlay" onclick={handleCloseContributeSuccess}>
+                <div class="success-popup" onclick={_stopPropagation}>
+                    <div class="success-icon-wrap">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <circle cx="12" cy="12" r="12" fill="#1b8457"/>
+                            <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3 class="success-title">Contribution Recorded</h3>
+                    <p class="success-body">{contributeSuccessMessage}</p>
                 </div>
             </div>
         </template>

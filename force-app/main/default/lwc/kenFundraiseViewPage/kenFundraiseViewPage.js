@@ -9,11 +9,15 @@ import approveCampaign from '@salesforce/apex/KenFundraiseController.approveCamp
 import rejectCampaign  from '@salesforce/apex/KenFundraiseController.rejectCampaign';
 import approveDeletion from '@salesforce/apex/KenFundraiseController.approveDeletion';
 import rejectDeletion  from '@salesforce/apex/KenFundraiseController.rejectDeletion';
+import getContributionConfig from '@salesforce/apex/KenFundraiseController.getContributionConfig';
+import getDonationSummary    from '@salesforce/apex/KenFundraiseController.getDonationSummary';
+import submitDonation        from '@salesforce/apex/KenFundraiseController.submitDonation';
 
 const DEFAULT_BACK_PAGE  = 'all_campaigns__c';
 const CURRENCY_SYMBOLS   = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 const MS_PER_HOUR        = 3_600_000;
 const MS_PER_MIN         = 60_000;
+const DEFAULT_MINIMUM    = 100;
 
 export default class KenFundraiseViewPage extends NavigationMixin(LightningElement) {
     @api campaign;
@@ -31,10 +35,22 @@ export default class KenFundraiseViewPage extends NavigationMixin(LightningEleme
     @track _showCloseModal              = false;
     @track _closeError                  = null;
     @track _isClosing                   = false;
+    @track _showContributeModal         = false;
+    @track _showContributeSuccess       = false;
+    @track _selectedAmount              = null;
+    @track _customAmount                = '';
+    @track _isAnonymous                 = false;
+    @track _isContributing              = false;
+    @track _contributeError             = null;
+    @track _contributionConfig          = null;
+    @track _donationSummary             = null;
     backPageName = DEFAULT_BACK_PAGE;
-    _countdownTimer      = null;
-    _successPopupTimer   = null;
-    _wiredCampaignResult = null;
+    _countdownTimer        = null;
+    _successPopupTimer     = null;
+    _contributePopupTimer  = null;
+    _wiredCampaignResult   = null;
+    _wiredSummaryResult    = null;
+    _lastContributionWasAnonymous = false;
 
     @wire(CurrentPageReference)
     parseState(ref) {
@@ -52,6 +68,17 @@ export default class KenFundraiseViewPage extends NavigationMixin(LightningEleme
             this.campaign = this._mapDto(result.data);
             this._scheduleCountdown();
         }
+    }
+
+    @wire(getContributionConfig, { campaignId: '$_campaignId' })
+    wiredContributionConfig({ data }) {
+        if (data) this._contributionConfig = data;
+    }
+
+    @wire(getDonationSummary, { campaignId: '$_campaignId' })
+    wiredDonationSummary(result) {
+        this._wiredSummaryResult = result;
+        if (result.data) this._donationSummary = result.data;
     }
 
     _mapDto(raw) {
@@ -123,8 +150,9 @@ export default class KenFundraiseViewPage extends NavigationMixin(LightningEleme
     }
 
     disconnectedCallback() {
-        if (this._countdownTimer)    clearInterval(this._countdownTimer);
-        if (this._successPopupTimer) clearTimeout(this._successPopupTimer);
+        if (this._countdownTimer)       clearInterval(this._countdownTimer);
+        if (this._successPopupTimer)    clearTimeout(this._successPopupTimer);
+        if (this._contributePopupTimer) clearTimeout(this._contributePopupTimer);
     }
 
     // ── Countdown logic ──────────────────────────────────────────────────────
@@ -233,6 +261,47 @@ export default class KenFundraiseViewPage extends NavigationMixin(LightningEleme
 
     get hasExternalLink() {
         return !!this.campaign?.externalLink;
+    }
+
+    // ── Contribution getters ─────────────────────────────────────────────────
+
+    get showContribute() {
+        return !!this._contributionConfig?.acceptingContributions && !this.hasExternalLink;
+    }
+
+    get donorCount() {
+        return this._donationSummary?.donorCount || 0;
+    }
+
+    get donorCountLabel() {
+        return `${this.donorCount} Donated`;
+    }
+
+    get currencySymbol() {
+        return CURRENCY_SYMBOLS[this._contributionConfig?.currencyCode] || '₹';
+    }
+
+    get minimumAmount() {
+        return this._contributionConfig?.minimumAmount ?? DEFAULT_MINIMUM;
+    }
+
+    get minimumLabel() {
+        return this.currencySymbol + Number(this.minimumAmount).toLocaleString('en-IN');
+    }
+
+    get amountOptions() {
+        const presets = this._contributionConfig?.suggestedAmounts || [];
+        return presets.map((value) => ({
+            value,
+            label: this.currencySymbol + Number(value).toLocaleString('en-IN'),
+            cssClass: Number(value) === Number(this._selectedAmount) ? 'amount-chip selected' : 'amount-chip'
+        }));
+    }
+
+    get contributeSuccessMessage() {
+        return this._lastContributionWasAnonymous
+            ? 'Your anonymous contribution has been recorded and is awaiting payment confirmation. Your name is not stored against it in readable form.'
+            : 'Your contribution has been recorded and is awaiting payment confirmation.';
     }
 
     get hasOwner() {
@@ -420,6 +489,82 @@ export default class KenFundraiseViewPage extends NavigationMixin(LightningEleme
         } finally {
             this._isClosing = false;
         }
+    }
+
+    // ── Contribution handlers ────────────────────────────────────────────────
+
+    openContributeModal() {
+        this._selectedAmount     = null;
+        this._customAmount       = '';
+        this._isAnonymous        = false;
+        this._contributeError    = null;
+        this._showContributeModal = true;
+    }
+
+    closeContributeModal() {
+        this._showContributeModal = false;
+        this._contributeError     = null;
+    }
+
+    handleAmountSelect(event) {
+        this._selectedAmount  = Number(event.currentTarget.dataset.amount);
+        this._customAmount    = '';
+        this._contributeError = null;
+    }
+
+    handleCustomAmountChange(event) {
+        this._customAmount    = event.target.value;
+        this._selectedAmount  = null;
+        this._contributeError = null;
+    }
+
+    handleAnonymousChange(event) {
+        this._isAnonymous = event.target.checked;
+    }
+
+    get _effectiveAmount() {
+        if (this._customAmount !== '' && this._customAmount !== null) return Number(this._customAmount);
+        return this._selectedAmount === null ? null : Number(this._selectedAmount);
+    }
+
+    async handleContinueToPayment() {
+        const amount = this._effectiveAmount;
+        if (amount === null || Number.isNaN(amount) || amount <= 0) {
+            this._contributeError = 'Select or enter a contribution amount.';
+            return;
+        }
+        if (amount < Number(this.minimumAmount)) {
+            this._contributeError = `The minimum contribution is ${this.minimumLabel}.`;
+            return;
+        }
+
+        this._isContributing  = true;
+        this._contributeError = null;
+        try {
+            await submitDonation({
+                request: {
+                    campaignId:  this.campaign.id,
+                    amount,
+                    isAnonymous: this._isAnonymous
+                }
+            });
+            this._lastContributionWasAnonymous = this._isAnonymous;
+            this._showContributeModal   = false;
+            this._showContributeSuccess = true;
+            this._contributePopupTimer  = setTimeout(() => {
+                this._showContributeSuccess = false;
+            }, 5000);
+            await refreshApex(this._wiredSummaryResult);
+        } catch (e) {
+            this._contributeError = e?.body?.message || 'We could not record your contribution. Please try again.';
+        } finally {
+            this._isContributing = false;
+        }
+    }
+
+    handleCloseContributeSuccess() {
+        if (this._contributePopupTimer) clearTimeout(this._contributePopupTimer);
+        this._showContributeSuccess = false;
     }
 
     _stopPropagation(event) {

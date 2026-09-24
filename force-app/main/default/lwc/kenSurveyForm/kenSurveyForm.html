@@ -59,14 +59,14 @@
                     <template if:true={question.isRadio}>
                         <div class="options-container">
                             <template for:each={question.options} for:item="option">
-                                <label key={option} class="option-item radio-option-item">
-                                    <input 
-                                        type="radio" 
+                                <label key={option.value} class="option-item radio-option-item">
+                                    <input
+                                        type="radio"
                                         name={question.id}
-                                        value={option}
+                                        value={option.value}
                                         data-question-id={question.id}
                                         onchange={handleAnswerChange} />
-                                    <span class="option-label">{option}</span>
+                                    <span class="option-label">{option.text}</span>
                                 </label>
                             </template>
                         </div>
@@ -76,13 +76,13 @@
                     <template if:true={question.isCheckbox}>
                         <div class="options-container">
                             <template for:each={question.options} for:item="option">
-                                <label key={option} class="option-item checkbox-option-item">
-                                    <input 
-                                        type="checkbox" 
-                                        value={option}
+                                <label key={option.value} class="option-item checkbox-option-item">
+                                    <input
+                                        type="checkbox"
+                                        value={option.value}
                                         data-question-id={question.id}
                                         onchange={handleAnswerChange} />
-                                    <span class="option-label">{option}</span>
+                                    <span class="option-label">{option.text}</span>
                                 </label>
                             </template>
                         </div>

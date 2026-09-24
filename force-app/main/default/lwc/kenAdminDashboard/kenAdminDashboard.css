@@ -9,11 +9,15 @@
    ============================================================ */
 :host {
     /* SF-injectable brand tokens — runtime overrides land here */
-    --brand-primary: #B91C5C;
-    --brand-secondary: #102659;
-    --brand-tertiary: #FDF2F4;
+    /* WHITE is the fallback when no custom colour is configured, and it is
+       also what paints for the moment before the getPortalConfigs wire
+       resolves on a page load. A coloured default flashed the wrong brand
+       there; white shows nothing instead. Same choice as kenAdminAlumni360. */
+    --brand-primary: #FFFFFF;
+    --brand-secondary: #FFFFFF;
+    --brand-tertiary: #FFFFFF;
     --brand-primary-hover: color-mix(in srgb, var(--brand-primary) 88%, #000);
-    --brand-primary-soft: rgba(185,28,92,.10);
+    --brand-primary-soft: color-mix(in srgb, var(--brand-primary) 10%, #FFFFFF);
     --brand-on-primary: #FFFFFF;
 
     /* Neutral palette */

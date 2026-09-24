@@ -1,6 +1,6 @@
 import { LightningElement, api, track } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
-import uploadAttachment from '@salesforce/apex/KenGroupFeedController.uploadAttachment';
+import uploadInlineImage from '@salesforce/apex/KenGroupFeedController.uploadInlineImage';
 
 const MAX_LENGTH = 4000;
 
@@ -10,9 +10,13 @@ export default class KenGroupPostComposer extends LightningElement {
 
     @track body = '';
     @track isExpanded = false;
-    @track attachments = [];
+    // Uploaded images, keyed by the preview URL that is sitting in the editor
+    // right now. On submit each preview URL is swapped for sfdc://<docId>,
+    // which is the only image reference Chatter will store.
+    @track inlineImages = [];
     @track showPollModal = false;
     @track isUploading = false;
+    @track commentsEnabled = true;
 
     // Allow the full default toolbar — no disabledCategories so B/I/U/S, list, align, link, etc. all show.
     enabledFormats = ['bold', 'italic', 'underline', 'strike',
@@ -21,7 +25,8 @@ export default class KenGroupPostComposer extends LightningElement {
     @api reset() {
         this.body = '';
         this.isExpanded = false;
-        this.attachments = [];
+        this.inlineImages = [];
+        this.commentsEnabled = true;
     }
 
     handleRichTextChange(event) {
@@ -38,25 +43,61 @@ export default class KenGroupPostComposer extends LightningElement {
 
     handleSubmit() {
         const text = (this.plainText || '').trim();
-        const docIds = this.attachments.map(a => a.contentDocumentId);
+        const used = [];
+        const body = this.buildBody(used);
+        const docIds = used.map(img => img.contentDocumentId);
         if (!text && docIds.length === 0) return;
         if (text.length > MAX_LENGTH) return;
+        // The document Ids still go to Apex even though the images are inline:
+        // they are what creates the ContentDocumentLink, without which other
+        // members of the group have no access to the file.
         this.dispatchEvent(new CustomEvent('submit', {
-            detail: { body: this.body, contentDocumentIds: docIds }
+            detail: { body, contentDocumentIds: docIds, commentsEnabled: this.commentsEnabled }
         }));
     }
 
-    // ─── Attachment handling (custom button + hidden file input) ──────────
+    /**
+     * Editor HTML with every uploaded image rewritten to its sfdc:// reference,
+     * which is the only image form Chatter stores. Images that are not backed by
+     * an upload (a paste that failed) are removed here, since Apex would strip
+     * them anyway - dropping them explicitly lets us say so.
+     *
+     * @param collect receives the images that were actually used, so the caller
+     *        can link their ContentDocuments to the post.
+     */
+    buildBody(collect) {
+        const editor = this.template.querySelector('c-ken-rich-text-editor');
+        if (!editor || !editor.resolveImages) return this.body || '';
 
-    handleClickAttach() {
-        this.isExpanded = true;
-        const input = this.template.querySelector('input.hidden-file-input');
-        if (input) input.click();
+        let dropped = 0;
+        const html = editor.resolveImages(src => {
+            const match = this.inlineImages.find(img => img.previewUrl === src);
+            if (!match) {
+                dropped++;
+                return null;
+            }
+            if (collect.indexOf(match) === -1) collect.push(match);
+            return `sfdc://${match.contentDocumentId}`;
+        });
+
+        if (dropped > 0) {
+            this.dispatchEvent(new ShowToastEvent({
+                title: 'Image not included',
+                message: 'An image could not be uploaded and was left out. Add it again with the image button.',
+                variant: 'warning'
+            }));
+        }
+        return html;
     }
 
-    async handleFileChange(event) {
-        const files = Array.from(event.target.files || []);
-        if (files.length === 0) return;
+    // ─── Inline image handling ────────────────────────────────────────────
+
+    handleImageSelect(event) {
+        this.uploadImages(Array.from((event.detail && event.detail.files) || []));
+    }
+
+    async uploadImages(files) {
+        if (!files || files.length === 0) return;
         this.isExpanded = true;
 
         const MAX_BYTES = 4 * 1024 * 1024; // 4 MB — base64 + Apex AuraEnabled payload cap
@@ -68,26 +109,28 @@ export default class KenGroupPostComposer extends LightningElement {
                 variant: 'error',
                 mode: 'sticky'
             }));
-            event.target.value = '';
             return;
         }
 
         this.isUploading = true;
         let uploadedCount = 0;
         try {
+            const editor = this.template.querySelector('c-ken-rich-text-editor');
             for (const file of files) {
                 const base64 = await this.readAsBase64(file);
-                const documentId = await uploadAttachment({ fileName: file.name, base64Data: base64 });
-                this.attachments = [...this.attachments, {
-                    contentDocumentId: documentId,
+                const result = await uploadInlineImage({ fileName: file.name, base64Data: base64 });
+                this.inlineImages = [...this.inlineImages, {
+                    contentDocumentId: result.contentDocumentId,
+                    previewUrl: result.previewUrl,
                     name: file.name
                 }];
+                if (editor && editor.insertImage) editor.insertImage(result.previewUrl, file.name);
                 uploadedCount++;
             }
             if (uploadedCount > 0) {
                 this.dispatchEvent(new ShowToastEvent({
-                    title: 'Image attached',
-                    message: `${uploadedCount} image${uploadedCount > 1 ? 's' : ''} ready — hit Post to publish.`,
+                    title: 'Image added',
+                    message: `${uploadedCount} image${uploadedCount > 1 ? 's' : ''} added — hit Post to publish.`,
                     variant: 'success'
                 }));
             }
@@ -104,7 +147,6 @@ export default class KenGroupPostComposer extends LightningElement {
             }));
         } finally {
             this.isUploading = false;
-            event.target.value = '';
         }
     }
 
@@ -117,12 +159,21 @@ export default class KenGroupPostComposer extends LightningElement {
         });
     }
 
-    handleRemoveAttachment(event) {
-        const id = event.currentTarget.dataset.id;
-        this.attachments = this.attachments.filter(a => a.contentDocumentId !== id);
+    // ─── Poll modal ───────────────────────────────────────────────────────
+
+    // ─── Comments toggle ──────────────────────────────────────────────────
+
+    handleToggleCommentsSetting() {
+        this.commentsEnabled = !this.commentsEnabled;
     }
 
-    // ─── Poll modal ───────────────────────────────────────────────────────
+    get commentsToggleLabel() {
+        return this.commentsEnabled ? 'Comments On' : 'Comments Off';
+    }
+
+    get commentsToggleClass() {
+        return `pill-btn${this.commentsEnabled ? '' : ' is-off'}`;
+    }
 
     handleOpenPoll() {
         this.showPollModal = true;
@@ -149,13 +200,13 @@ export default class KenGroupPostComposer extends LightningElement {
     get charCount()    { return (this.plainText || '').length; }
     get charLimit()    { return MAX_LENGTH; }
     get counterLabel() { return `${this.charCount}/${this.charLimit}`; }
-    get hasAttachments() { return this.attachments && this.attachments.length > 0; }
 
     get postDisabled() {
         const text = (this.plainText || '');
         if (this.isPosting || this.isUploading) return true;
         if (text.length > MAX_LENGTH) return true;
-        return text.length === 0 && this.attachments.length === 0;
+        // An image-only post is valid: plain text is empty but the body is not.
+        return text.length === 0 && this.inlineImages.length === 0;
     }
 
     get composerClass() {

@@ -219,7 +219,10 @@
                                         </button>
                                     </span>
                                 </template>
-                                <span class="placeholder" if:false={selectedLanguages.length}>Select languages</span>
+                                <input type="text" class="language-search-input"
+                                    placeholder={languagePlaceholder} value={languageSearch}
+                                    oninput={handleLanguageSearch} onfocus={handleLanguageInputFocus}
+                                    onclick={handleLanguageInputClick} aria-label="Search languages" />
                             </div>
                             <div class="dropdown-arrow">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -228,12 +231,13 @@
                             </div>
                         </div>
                         <div class="dropdown-options" if:true={showLanguageDropdown}>
-                            <template for:each={languageOptions} for:item="option">
+                            <template for:each={filteredLanguageOptions} for:item="option">
                                 <div key={option.key} class="dropdown-option" onclick={handleLanguageSelect} data-value={option.value}>
                                     <span class="option-label">{option.label}</span>
                                     <span class="option-check" if:true={option.selected}>✓</span>
                                 </div>
                             </template>
+                            <div class="dropdown-empty" if:true={hasNoLanguageMatches}>No languages found</div>
                         </div>
                     </div>
                 </div>

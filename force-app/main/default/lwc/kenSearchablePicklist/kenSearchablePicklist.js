@@ -21,6 +21,8 @@ export default class KenSearchablePicklist extends LightningElement {
     @api searchPlaceholder = 'Search...';
     @api noResultsText = 'No results found';
     @api disabled = false;
+    // Border-only error state: red box border without an inline message.
+    @api hasError = false;
 
     @track isOpen = false;
     @track searchText = '';
@@ -67,7 +69,7 @@ export default class KenSearchablePicklist extends LightningElement {
     }
 
     get controlClass() {
-        return this.spError ? 'sp-control sp-control-error' : 'sp-control';
+        return this.spError || this.hasError ? 'sp-control sp-control-error' : 'sp-control';
     }
 
     /**

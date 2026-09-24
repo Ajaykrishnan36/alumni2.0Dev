@@ -1,4 +1,8 @@
 import { LightningElement, api, track } from 'lwc';
+import {
+    replaceElementHtml,
+    serializeElementHtml
+} from 'c/kenHtmlSanitizer';
 import aiStar from '@salesforce/resourceUrl/aiStar';
 
 export default class KenEventSetup extends LightningElement {
@@ -21,7 +25,23 @@ export default class KenEventSetup extends LightningElement {
     @api languageOptions = [];
     @api showCategoryDropdown = false;
     @api showSuitableForDropdown = false;
-    @api showLanguageDropdown = false;
+    _showLanguageDropdown = false;
+
+    /**
+     * Mirrors the parent's open/closed state, but clears the filter on the way out so a
+     * fresh open always shows the whole list rather than the last thing that was typed.
+     */
+    @api
+    get showLanguageDropdown() {
+        return this._showLanguageDropdown;
+    }
+
+    set showLanguageDropdown(value) {
+        this._showLanguageDropdown = value;
+        if (!value) {
+            this.languageSearch = '';
+        }
+    }
     @api isPicklistDataLoaded = false;
     @api hasCoverPhoto = false;
     @api hasBrochureFile = false;
@@ -36,6 +56,7 @@ export default class KenEventSetup extends LightningElement {
     @track descriptionHtml = '';
     @track agendaHtml = '';
     @track expectationsHtml = '';
+    @track languageSearch = '';
     @track canBringGuests = 'yes';
     @track maxGuestsPerParticipant = 1;
 
@@ -121,8 +142,8 @@ export default class KenEventSetup extends LightningElement {
             const div = this.template.querySelector(`[data-id="${id}"]`);
             if (!div) continue;
             if (this.template.activeElement === div) continue;
-            if (div.innerHTML !== value) {
-                div.innerHTML = value;
+            if (serializeElementHtml(div) !== value) {
+                replaceElementHtml(div, value);
             }
         }
     }
@@ -131,8 +152,7 @@ export default class KenEventSetup extends LightningElement {
         const value = event.target.value;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'title', value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -140,16 +160,14 @@ export default class KenEventSetup extends LightningElement {
         const value = event.target.value;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'maxParticipants', value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     // Helper function to strip HTML and get plain text
     stripHtml(html) {
-        const tmp = document.createElement('DIV');
-        tmp.innerHTML = html;
-        return tmp.textContent || tmp.innerText || '';
+        const parsed = new DOMParser().parseFromString(String(html == null ? '' : html), 'text/html');
+        return (parsed.body && parsed.body.textContent) || '';
     }
 
     // Helper function to get plain text length
@@ -164,8 +182,7 @@ export default class KenEventSetup extends LightningElement {
         this.descriptionValue = text;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'description', value: text, html },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -176,8 +193,7 @@ export default class KenEventSetup extends LightningElement {
         this.agendaValue = text;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'agenda', value: text, html },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -188,20 +204,19 @@ export default class KenEventSetup extends LightningElement {
         this.expectationsValue = text;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'expectations', value: text, html },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleDescriptionInput(event) {
-        const html = event.target.innerHTML;
+        const html = serializeElementHtml(event.target);
         const text = this.stripHtml(html);
         
         // Check character limit (500)
         if (text.length > 500) {
             event.preventDefault();
             const truncated = text.substring(0, 500);
-            event.target.innerHTML = truncated;
+            replaceElementHtml(event.target, truncated);
             return;
         }
         
@@ -209,8 +224,7 @@ export default class KenEventSetup extends LightningElement {
         this.descriptionValue = text;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'description', value: text, html: html },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -221,7 +235,7 @@ export default class KenEventSetup extends LightningElement {
     }
 
     handleDescriptionKeydown(event) {
-        const html = event.target.innerHTML;
+        const html = serializeElementHtml(event.target);
         const text = this.stripHtml(html);
         
         // Allow backspace, delete, arrow keys, etc.
@@ -237,14 +251,14 @@ export default class KenEventSetup extends LightningElement {
     }
 
     handleAgendaInput(event) {
-        const html = event.target.innerHTML;
+        const html = serializeElementHtml(event.target);
         const text = this.stripHtml(html);
         
         // Check character limit (300)
         if (text.length > 300) {
             event.preventDefault();
             const truncated = text.substring(0, 300);
-            event.target.innerHTML = truncated;
+            replaceElementHtml(event.target, truncated);
             return;
         }
         
@@ -252,8 +266,7 @@ export default class KenEventSetup extends LightningElement {
         this.agendaValue = text;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'agenda', value: text, html: html },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -264,7 +277,7 @@ export default class KenEventSetup extends LightningElement {
     }
 
     handleAgendaKeydown(event) {
-        const html = event.target.innerHTML;
+        const html = serializeElementHtml(event.target);
         const text = this.stripHtml(html);
         
         // Allow backspace, delete, arrow keys, etc.
@@ -280,14 +293,14 @@ export default class KenEventSetup extends LightningElement {
     }
 
     handleExpectationsInput(event) {
-        const html = event.target.innerHTML;
+        const html = serializeElementHtml(event.target);
         const text = this.stripHtml(html);
 
         // Check character limit (1000)
         if (text.length > 1000) {
             event.preventDefault();
             const truncated = text.substring(0, 1000);
-            event.target.innerHTML = truncated;
+            replaceElementHtml(event.target, truncated);
             return;
         }
 
@@ -295,8 +308,7 @@ export default class KenEventSetup extends LightningElement {
         this.expectationsValue = text;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'expectations', value: text, html: html },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -307,7 +319,7 @@ export default class KenEventSetup extends LightningElement {
     }
 
     handleExpectationsKeydown(event) {
-        const html = event.target.innerHTML;
+        const html = serializeElementHtml(event.target);
         const text = this.stripHtml(html);
 
         // Allow backspace, delete, arrow keys, etc.
@@ -382,15 +394,13 @@ export default class KenEventSetup extends LightningElement {
         const file = event.target.files[0];
         this.dispatchEvent(new CustomEvent('coverphotoupload', {
             detail: { file },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleDeleteCoverImage() {
         this.dispatchEvent(new CustomEvent('deletecoverimage', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -398,22 +408,19 @@ export default class KenEventSetup extends LightningElement {
         const file = event.target.files[0];
         this.dispatchEvent(new CustomEvent('brochureupload', {
             detail: { file },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleChangeBrochure() {
         this.dispatchEvent(new CustomEvent('changebrochure', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleRemoveBrochure() {
         this.dispatchEvent(new CustomEvent('removebrochure', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -421,16 +428,14 @@ export default class KenEventSetup extends LightningElement {
         const file = event.target.files[0];
         this.dispatchEvent(new CustomEvent('brochureupload', {
             detail: { file },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleCategoryDropdownToggle(event) {
         event.stopPropagation();
         this.dispatchEvent(new CustomEvent('categorytoggle', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -439,8 +444,7 @@ export default class KenEventSetup extends LightningElement {
         const value = event.currentTarget.dataset.value;
         this.dispatchEvent(new CustomEvent('categoryselect', {
             detail: { value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -449,16 +453,14 @@ export default class KenEventSetup extends LightningElement {
         const value = event.currentTarget.dataset.value;
         this.dispatchEvent(new CustomEvent('removecategory', {
             detail: { value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleSuitableForDropdownToggle(event) {
         event.stopPropagation();
         this.dispatchEvent(new CustomEvent('suitablefortoggle', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -467,8 +469,7 @@ export default class KenEventSetup extends LightningElement {
         const value = event.currentTarget.dataset.value;
         this.dispatchEvent(new CustomEvent('suitableforselect', {
             detail: { value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -477,26 +478,73 @@ export default class KenEventSetup extends LightningElement {
         const value = event.currentTarget.dataset.value;
         this.dispatchEvent(new CustomEvent('removesuitablefor', {
             detail: { value },
-            bubbles: true,
-            composed: true
+            bubbles: true
+        }));
+    }
+
+    /** The language picklist runs to 46 entries, so the panel carries its own filter. */
+    get filteredLanguageOptions() {
+        const term = (this.languageSearch || '').trim().toLowerCase();
+        if (!term) {
+            return this.languageOptions;
+        }
+        return (this.languageOptions || []).filter(
+            (option) => (option.label || '').toLowerCase().includes(term)
+        );
+    }
+
+    get hasNoLanguageMatches() {
+        return this.filteredLanguageOptions.length === 0;
+    }
+
+    /** Blank once something is chosen, so the prompt does not crowd the tags. */
+    get languagePlaceholder() {
+        return this.selectedLanguages && this.selectedLanguages.length ? '' : 'Select languages';
+    }
+
+    handleLanguageSearch(event) {
+        event.stopPropagation();
+        this.languageSearch = event.target.value || '';
+        this.openLanguageDropdown();
+    }
+
+    /** Focusing the field opens the list; the click handler below stops it closing again. */
+    handleLanguageInputFocus(event) {
+        event.stopPropagation();
+        this.openLanguageDropdown();
+    }
+
+    /**
+     * The wrapper toggles the panel, so without this a click on the input — landing on the
+     * field to type — would immediately close what focus had just opened.
+     */
+    handleLanguageInputClick(event) {
+        event.stopPropagation();
+    }
+
+    openLanguageDropdown() {
+        if (this._showLanguageDropdown) {
+            return;
+        }
+        this.dispatchEvent(new CustomEvent('languagetoggle', {
+            bubbles: true
         }));
     }
 
     handleLanguageDropdownToggle(event) {
         event.stopPropagation();
         this.dispatchEvent(new CustomEvent('languagetoggle', {
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleLanguageSelect(event) {
         event.stopPropagation();
         const value = event.currentTarget.dataset.value;
+        this.languageSearch = '';
         this.dispatchEvent(new CustomEvent('languageselect', {
             detail: { value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -505,8 +553,7 @@ export default class KenEventSetup extends LightningElement {
         const value = event.currentTarget.dataset.value;
         this.dispatchEvent(new CustomEvent('removelanguage', {
             detail: { value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -514,8 +561,7 @@ export default class KenEventSetup extends LightningElement {
         event.stopPropagation();
         this.dispatchEvent(new CustomEvent('dropdownclick', {
             detail: { field: event.currentTarget.dataset.field },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -524,8 +570,7 @@ export default class KenEventSetup extends LightningElement {
         const date = event.currentTarget.dataset.date;
         this.dispatchEvent(new CustomEvent('datechange', {
             detail: { date },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -534,8 +579,7 @@ export default class KenEventSetup extends LightningElement {
         const date = event.currentTarget.dataset.date;
         this.dispatchEvent(new CustomEvent('removedate', {
             detail: { date },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -544,8 +588,7 @@ export default class KenEventSetup extends LightningElement {
         this.canBringGuests = value;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'canBringGuests', value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -554,8 +597,7 @@ export default class KenEventSetup extends LightningElement {
         this.maxGuestsPerParticipant = value;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'maxGuestsPerParticipant', value },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -564,8 +606,7 @@ export default class KenEventSetup extends LightningElement {
         this.maxGuestsPerParticipant = (this.maxGuestsPerParticipant || 0) + 1;
         this.dispatchEvent(new CustomEvent('datachange', {
             detail: { field: 'maxGuestsPerParticipant', value: this.maxGuestsPerParticipant },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -575,8 +616,7 @@ export default class KenEventSetup extends LightningElement {
             this.maxGuestsPerParticipant = this.maxGuestsPerParticipant - 1;
             this.dispatchEvent(new CustomEvent('datachange', {
                 detail: { field: 'maxGuestsPerParticipant', value: this.maxGuestsPerParticipant },
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
         }
     }
@@ -584,16 +624,14 @@ export default class KenEventSetup extends LightningElement {
     handlePrevMonth() {
         this.dispatchEvent(new CustomEvent('monthchange', {
             detail: { direction: 'prev' },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
     handleNextMonth() {
         this.dispatchEvent(new CustomEvent('monthchange', {
             detail: { direction: 'next' },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 }

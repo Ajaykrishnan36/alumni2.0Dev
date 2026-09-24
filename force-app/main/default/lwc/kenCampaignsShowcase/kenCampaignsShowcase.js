@@ -6,9 +6,12 @@ import getFundraiseCategories    from '@salesforce/apex/KenFundraiseController.g
 
 const CURRENCY_SYMBOLS = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
 const BATCH_SIZE = 6;
+// Matches the breakpoint the rest of the portal's mobile layouts use.
+const MOBILE_QUERY = '(max-width: 767px)';
 
 export default class KenCampaignsShowcase extends NavigationMixin(LightningElement) {
     @track _campaigns   = [];
+    @track isMobile     = false;
     @track isLoading    = true;
     @track loadError    = null;
 
@@ -202,10 +205,54 @@ export default class KenCampaignsShowcase extends NavigationMixin(LightningEleme
                 if (color?.secondaryColor) document.documentElement.style.setProperty('--secondary-color', color.secondaryColor);
             })
             .catch(() => {});
+
+        this._boundSyncMobile = this.syncIsMobile.bind(this);
+        if (typeof window !== 'undefined' && window.matchMedia) {
+            this._mediaQuery = window.matchMedia(MOBILE_QUERY);
+            this.isMobile = this._mediaQuery.matches;
+            // MediaQueryList.addEventListener is missing on older WebKit, which
+            // is precisely where this matters - mobile Safari.
+            if (this._mediaQuery.addEventListener) {
+                this._mediaQuery.addEventListener('change', this._boundSyncMobile);
+            } else if (this._mediaQuery.addListener) {
+                this._mediaQuery.addListener(this._boundSyncMobile);
+            }
+        }
+        if (typeof window !== 'undefined') {
+            window.addEventListener('resize', this._boundSyncMobile);
+        }
     }
 
     disconnectedCallback() {
         if (this._scrollObserver) this._scrollObserver.disconnect();
+        if (this._mediaQuery) {
+            if (this._mediaQuery.removeEventListener) {
+                this._mediaQuery.removeEventListener('change', this._boundSyncMobile);
+            } else if (this._mediaQuery.removeListener) {
+                this._mediaQuery.removeListener(this._boundSyncMobile);
+            }
+        }
+        if (typeof window !== 'undefined' && this._boundSyncMobile) {
+            window.removeEventListener('resize', this._boundSyncMobile);
+        }
+    }
+
+    syncIsMobile() {
+        this.isMobile = this._mediaQuery
+            ? this._mediaQuery.matches
+            : typeof window !== 'undefined' && window.innerWidth <= 767;
+    }
+
+    /**
+     * Back goes to Fundraise, not through history: this page is also reachable
+     * from a "View all" link and from a direct URL, so browser history is not a
+     * reliable place to return to.
+     */
+    handleBack() {
+        this[NavigationMixin.Navigate]({
+            type: 'comm__namedPage',
+            attributes: { name: 'fundraise__c' }
+        });
     }
 
     // ── Infinite scroll ──────────────────────────────────────────────────────

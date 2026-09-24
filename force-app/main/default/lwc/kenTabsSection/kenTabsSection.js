@@ -1,15 +1,15 @@
 ﻿import { LightningElement, api, track } from 'lwc';
-import getColors from '@salesforce/apex/KenSnSColorController.getColors'; 
+import { getPortalConfigs } from 'c/kenThemeConfig';
 export default class KenTabsSection extends LightningElement {
     @api activeTab = 'all';
 
     connectedCallback() {
-        getColors().then(colors => {
-            if (colors?.primary) {
-                document.documentElement.style.setProperty('--primary-color', colors.primary);
+        getPortalConfigs().then(colors => {
+            if (colors?.primaryColor) {
+                document.documentElement.style.setProperty('--primary-color', colors.primaryColor);
             }
-            if (colors?.secondary) {
-                document.documentElement.style.setProperty('--secondary-color', colors.secondary);
+            if (colors?.secondaryColor) {
+                document.documentElement.style.setProperty('--secondary-color', colors.secondaryColor);
             }
         }).catch(() => {
             console.log('Error getting colors');

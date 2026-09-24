@@ -1,13 +1,19 @@
+/* Dropped straight onto an Experience Builder page, so there is no flex parent
+   to stretch against - flex:1 alone left the card hugging its content. Same
+   viewport calc kenPhotoGallery and kenBusinessDirectory use. min-height rather
+   than height so it still grows if it is ever nested in a taller parent. */
 :host {
     display: flex;
     flex-direction: column;
     flex: 1;
-    min-height: 0;
+    min-height: calc(100vh - var(--portal-header-height, 160px));
 }
 
 .album-detail-container {
     width: 100%;
     height: 100%;
+    flex: 1;
+    min-height: 0;
     box-sizing: border-box;
     padding: 24px;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
@@ -108,11 +114,15 @@
     margin: 0;
 }
 
+/* Capped track instead of 1fr: with 1fr a row of two files stretched each card
+   to half the page. Cards now stay a consistent size and the row fills left to
+   right, with the grid itself scrolling once it outgrows the container. */
 .album-photos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 280px));
     grid-auto-rows: min-content;
     align-content: start;
+    justify-content: start;
     gap: 24px;
     flex: 1;
     min-height: 0;

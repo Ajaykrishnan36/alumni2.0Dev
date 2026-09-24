@@ -106,31 +106,23 @@
                     <template if:true={question.showLinearScale}>
                         <div class="question-scale">
                             <div class="scale-range">
-                                <lightning-combobox value={question.scaleMin} options={scaleNumberOptions}
-                                    onchange={handleScaleMinChange} data-question-id={question.id}
-                                    variant="label-hidden" class="scale-input custom-select">
-                                </lightning-combobox>
-                                <span class="scale-to">to</span>
-                                <lightning-combobox value={question.scaleMax} options={scaleNumberOptions}
-                                    onchange={handleScaleMaxChange} data-question-id={question.id}
+                                <span class="scale-to">1 to</span>
+                                <lightning-combobox value={question.scalePointCount} options={scaleNumberOptions}
+                                    onchange={handleScalePointCountChange} data-question-id={question.id}
                                     variant="label-hidden" class="scale-input custom-select">
                                 </lightning-combobox>
                             </div>
                             <div class="scale-labels">
-                                <div class="scale-label-item">
-                                    <span class="scale-label-number">{question.scaleMin}</span>
-                                    <lightning-input type="text" value={question.scaleMinLabel} placeholder="Label (Optional)"
-                                        onchange={handleScaleMinLabelChange} data-question-id={question.id}
-                                        variant="label-hidden" class="scale-label-input">
-                                    </lightning-input>
-                                </div>
-                                <div class="scale-label-item">
-                                    <span class="scale-label-number">{question.scaleMax}</span>
-                                    <lightning-input type="text" value={question.scaleMaxLabel} placeholder="Label (Optional)"
-                                        onchange={handleScaleMaxLabelChange} data-question-id={question.id}
-                                        variant="label-hidden" class="scale-label-input">
-                                    </lightning-input>
-                                </div>
+                                <template for:each={question.options} for:item="point">
+                                    <div key={point.id} class="scale-label-item">
+                                        <span class="scale-label-number">{point.value}</span>
+                                        <lightning-input type="text" value={point.text} placeholder="Label (Optional)"
+                                            onchange={handleOptionTextChange} data-question-id={question.id}
+                                            data-option-id={point.id}
+                                            variant="label-hidden" class="scale-label-input">
+                                        </lightning-input>
+                                    </div>
+                                </template>
                             </div>
                         </div>
                     </template>

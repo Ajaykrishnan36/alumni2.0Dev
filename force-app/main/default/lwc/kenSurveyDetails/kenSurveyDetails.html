@@ -1,5 +1,29 @@
 <template>
     <div class="survey-details-page">
+        <!-- Mobile only: this page fills the screen and covers the portal
+             navigation, so the browser's back button was the only way out.
+             Returns to the surveys list, which is where this component already
+             sends you after a delete. Desktop keeps the surrounding navigation,
+             so it needs nothing. Matches the event, alumni-profile, campaigns
+             and business detail pages. -->
+        <template if:true={isMobile}>
+            <div class="mobile-header">
+                <div class="mobile-header-content">
+                    <button
+                        type="button"
+                        class="mobile-back-btn"
+                        onclick={handleBack}
+                        aria-label="Back to surveys"
+                    >
+                        <svg class="back-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <h1 class="mobile-header-title">{surveyData.title}</h1>
+                </div>
+            </div>
+        </template>
+
         <div class="component-container">
             <!-- Header Section with Title, Status Badge, and Action Buttons -->
             <div class="survey-details-header">
@@ -143,12 +167,6 @@
                 </div>
             </template> -->
 
-            <template if:true={showNeedHelpModal}>
-                <c-ken-need-help-modal
-                    onclose={handleCloseNeedHelpModal}
-                    onsubmit={handleNeedHelpSubmit}>
-                </c-ken-need-help-modal>
-            </template>
 
             
             <!-- Component Scrollable Content -->
@@ -188,7 +206,12 @@
                                         <div class="summary-field">
                                             <label class="summary-field-label">Survey Description</label>
                                             <div class="summary-field-value">
-                                                <template if:true={hasSurveyDescription}>{surveyData.description}</template>
+                                                <template if:true={hasSurveyDescription}>
+                                                    <lightning-formatted-rich-text
+                                                        class="survey-description-rich"
+                                                        value={surveyData.description}>
+                                                    </lightning-formatted-rich-text>
+                                                </template>
                                                 <template if:false={hasSurveyDescription}>-</template>
                                             </div>
                                         </div>
@@ -314,13 +337,8 @@
                                                                             <span class="scale-count">{s.count}</span>
                                                                             <span class="scale-percent">({s.percent}%)</span>
                                                                         </div>
-                                                                        <template if:true={question.hasLabels}>
-                                                                            <template if:true={s.isFirst}>
-                                                                                <div class="scale-label">{question.scaleMinLabel}</div>
-                                                                            </template>
-                                                                            <template if:true={s.isLast}>
-                                                                                <div class="scale-label">{question.scaleMaxLabel}</div>
-                                                                            </template>
+                                                                        <template if:true={s.label}>
+                                                                            <div class="scale-label">{s.label}</div>
                                                                         </template>
                                                                     </div>
                                                                 </template>

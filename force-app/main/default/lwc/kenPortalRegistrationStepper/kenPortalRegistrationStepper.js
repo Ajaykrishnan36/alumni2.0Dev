@@ -11,6 +11,7 @@ export default class KenPortalRegistrationStepper extends LightningElement {
     headerFirstName = '';
     headerLastName = '';
     @track institutionName = '';
+    @track lockRegistrationDetails = false;
     headerProfileImageUrl = '';
     showStepper = true;
     userEmail = '';
@@ -34,7 +35,7 @@ export default class KenPortalRegistrationStepper extends LightningElement {
         document.documentElement.style.setProperty('--tertiary-color', '#FFFFFF');
         getPrimaryColor().then(color => {
             // console.log(color,'color1234567890');
-            this.institutionName = color?.institutionName?color.institutionName:'Somaiya Vidyavihar University';
+            this.institutionName = color?.institutionName?color.institutionName:'Institute Name';
             document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
             document.documentElement.style.setProperty('--secondary-color', color?.secondaryColor);
             document.documentElement.style.setProperty('--tertiary-color', color?.tertiaryColor);  
@@ -78,11 +79,11 @@ export default class KenPortalRegistrationStepper extends LightningElement {
     }
 
     handleLogout() {
-        this.dispatchEvent(new CustomEvent('logout', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('logout', { bubbles: true }));
     }
 
     handleComplete() {
-        this.dispatchEvent(new CustomEvent('registrationcomplete', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('registrationcomplete', { bubbles: true }));
     }
 
     handleProfileChange(event) {
@@ -156,6 +157,9 @@ export default class KenPortalRegistrationStepper extends LightningElement {
             if (state && state.email) {
                 this.userEmail = state.email;
             }
+            // Org opt-in: freeze the details carried over from registration so the
+            // alumnus cannot edit them here. Read once and handed down to the steps.
+            this.lockRegistrationDetails = state ? state.lockRegistrationDetails === true : false;
             if (!state || !state.isVerified) {
                 // Clicking the magic link is the only proof required. Complete
                 // verification server-side (marks the role Verified and logs the

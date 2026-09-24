@@ -206,3 +206,12 @@
     color: #4f46e5;
     font-weight: 600;
 }
+
+/* Images embedded in the post body, sized like the attachment thumbnails. */
+.post-body img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0.5rem 0;
+    border-radius: 8px;
+}

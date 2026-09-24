@@ -1,7 +1,4 @@
-import { LightningElement, track, api, wire } from 'lwc';
-import { getObjectInfo, getPicklistValues } from 'lightning/uiObjectInfoApi';
-import KEN_ALUMNI_CRM_OBJECT from '@salesforce/schema/Ken_Alumni_CRM__c';
-import PREF_FIELD from '@salesforce/schema/Ken_Alumni_CRM__c.Preferences__c';
+import { LightningElement, track, api } from 'lwc';
 import donateImg from '@salesforce/resourceUrl/donateImg';
 import eventTest1 from '@salesforce/resourceUrl/eventTest1';
 import eventTest2 from '@salesforce/resourceUrl/eventTest2';
@@ -54,21 +51,6 @@ export default class KenEngagementContributions extends LightningElement {
 
     get activityOptions() {
         return this.baseActivities;
-    }
-
-    @wire(getObjectInfo, { objectApiName: KEN_ALUMNI_CRM_OBJECT })
-    objectInfo;
-
-    @wire(getPicklistValues, {
-        recordTypeId: '$objectInfo.data.defaultRecordTypeId',
-        fieldApiName: PREF_FIELD
-    })
-    wiredPreferences({ data, error }) {
-        if (data && data.values) {
-            this.activityOptions = data.values.map(v => ({ label: v.label, value: v.value }));
-        } else if (error) {
-            console.error('Error loading engagement picklist', error);
-        }
     }
 
     rebuildActivities() {
@@ -174,7 +156,7 @@ export default class KenEngagementContributions extends LightningElement {
     }
 
     handlePrevious() {
-        this.dispatchEvent(new CustomEvent('previous', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('previous', { bubbles: true }));
     }
 
     handleSaveAndNext() {
@@ -195,8 +177,7 @@ export default class KenEngagementContributions extends LightningElement {
 
         this.dispatchEvent(new CustomEvent('saveandnext', {
             detail: formData,
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

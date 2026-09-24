@@ -182,8 +182,7 @@ export default class KenImageCropModal extends LightningElement {
         const dataUrl = canvas.toDataURL('image/png');
         this.dispatchEvent(new CustomEvent('upload', {
             detail: { imageUrl: dataUrl },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -198,7 +197,7 @@ export default class KenImageCropModal extends LightningElement {
     }
 
     handleClose() {
-        this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('close', { bubbles: true }));
     }
 
     showToast(title, message, variant) {
@@ -250,8 +249,7 @@ export default class KenImageCropModal extends LightningElement {
                 reader.onload = (event) => {
                     this.dispatchEvent(new CustomEvent('imagechanged', {
                         detail: { imageUrl: event.target.result },
-                        bubbles: true,
-                        composed: true
+                        bubbles: true
                     }));
                 };
                 reader.readAsDataURL(file);

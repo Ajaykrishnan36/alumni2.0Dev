@@ -1,492 +1,1091 @@
-/* Page: very light gray background */
+/*
+ * Desktop chat: the conversation rail and the thread, two cards on the portal ground.
+ *
+ * Every colour, border, radius and weight here comes from the portal-level style config in
+ * digitalExperiences/site/Alumni1/sfdc_cms__styles/styles_css/styles.css, plus --primary-color,
+ * which kenThemeConfig writes onto the document from the org's parameters. Nothing in this file
+ * hard-codes a brand value, so a re-skin is a change to that sheet and not to this component.
+ * Each var() still carries a fallback, so the component renders correctly on its own in Jest and
+ * in a site where that sheet has not been deployed yet.
+ */
+
+/*
+ * Every colour, weight, radius, border and shadow the chat uses is resolved ONCE here and then
+ * referred to by name below, so there is exactly one place in this file where anything visual is
+ * decided - and each of them comes from the portal style config or the org's own palette
+ * (Portal_Primary/Secondary/Tertiary_colour__c, published by kenThemeConfig).
+ *
+ * The last resort in every chain is a NEUTRAL - inherit, transparent, currentColor, white - never
+ * an invented colour. getPortalConfigs is cacheable, so the defaults paint for a beat before the
+ * org's colour arrives; a hard-coded blue there paints the wrong company's brand, which is the
+ * trade made in commit 049518b2 ("fall back to white, not magenta"). Painting nothing is the
+ * lesser fault, and a chat with no org colour set degrades to legible greyscale.
+ */
+:host {
+  --chat-accent: var(--primary-color, currentColor);
+  --chat-on-accent: var(--portal-on-primary, #ffffff);
+  --chat-surface: var(--portal-surface, #ffffff);
+  --chat-tint: var(--secondary-color, var(--portal-divider-color, transparent));
+  --chat-tint-hover: color-mix(
+    in srgb,
+    var(--chat-tint) 90%,
+    var(--portal-text-primary, transparent)
+  );
+  --chat-ink: var(--portal-text-primary, inherit);
+  --chat-ink-muted: var(--portal-text-muted, inherit);
+  --chat-ink-meta: var(--portal-text-muted, inherit);
+  --chat-border: var(--portal-border-color, transparent);
+  --chat-divider: var(--portal-divider-color, transparent);
+  --chat-presence: var(--portal-presence, currentColor);
+  --chat-badge-bg: var(
+    --primary-color,
+    var(--portal-text-primary, transparent)
+  );
+  --chat-badge-ink: var(--portal-on-primary, #ffffff);
+
+  --chat-weight-medium: var(--portal-font-weight-medium, 500);
+  --chat-weight-semibold: var(--portal-font-weight-semibold, 600);
+  --chat-weight-bold: var(--portal-font-weight-bold, 700);
+
+  --chat-radius: var(--portal-radius, 12px);
+  --chat-field-radius: var(--portal-field-radius, 8px);
+  --chat-bubble-radius: var(--portal-chat-bubble-radius, 10px);
+  --chat-border-width: var(--portal-border-width, 1px);
+  --chat-ring-width: var(--portal-chat-selected-border-width, 1.5px);
+  --chat-shadow: var(--portal-shadow, none);
+  --chat-focus-ring: var(--portal-focus-ring, none);
+}
 .ken-chat {
-    display: flex;
-    gap: 12px;
-    height: calc(100vh - 146.5px);
-    background-color: #f7f8fb;
-    border-radius: 12px;
-    overflow: hidden;
+  position: relative; /* the image preview overlay is positioned against this */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /*
+     * The rail is sized against the CHAT's width, not the viewport, because the portal's left
+     * navigation makes the two differ by ~285px - at a 1100px viewport this component only gets
+     * 783px, so a viewport media query fires at the wrong moment every time. A container query
+     * asks the only question that matters: how much room do I actually have.
+     */
+  container-type: inline-size;
+  /* dvh first-wins order: browsers without dvh keep the vh line. vh on mobile measures the
+       viewport with the URL bar retracted, which pushes the composer under it. */
+  height: calc(100vh - 146.5px);
+  height: calc(100dvh - 146.5px);
+  min-height: 420px;
+  background: var(--portal-bg, transparent);
+  font-family: var(--portal-font-family, inherit);
+  font-size: var(--portal-font-size, inherit);
+  color: var(--chat-ink);
+  overflow: hidden;
 }
 
-/* Left panel - fixed width */
+.chat-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: var(--portal-gap-x, 1rem);
+  overflow: hidden;
+}
+
+/*
+ * Single-thread mode, used by the Network profile's floating window: no rail, and the host window
+ * owns the size, so the fixed page height and the card chrome both come off.
+ */
+.ken-chat-single {
+  /*
+     * width:100% is load-bearing, not tidiness. .ken-chat sets container-type: inline-size, which
+     * computes its own inline size WITHOUT looking at its contents - so as a shrink-to-fit flex
+     * item inside the profile's floating window it resolved to zero and the whole chat vanished.
+     * Taking the width from the parent instead gives containment something real to resolve.
+     */
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  gap: 0;
+  background: transparent;
+}
+
+.ken-chat-single .chat-right-panel {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Tighter gutters in the floating window - 24px each side of a ~370px panel is most of the
+   room a bubble has. */
+@container (max-width: 420px) {
+  .chat-messages {
+    padding: 8px 12px 12px;
+  }
+
+  .chat-composer {
+    padding: 10px 12px 12px;
+  }
+
+  .chat-pending-files,
+  .chat-upload-status {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* ---- conversation rail -------------------------------------------------------- */
+/* Holds the full rail width whenever the chat is wide enough for it (>= ~1075px, which is every
+   normal desktop) and gives ground to the conversation below that, down to a floor that still fits
+   an avatar, a name and a timestamp. The design is unchanged where there is room for it. */
 .chat-left-panel {
-    width: 400px;
-    min-width: 400px;
-    background: #ffffff;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    flex-shrink: 0;
+  width: var(--portal-chat-rail-width, 344px);
+  width: clamp(248px, 32cqi, var(--portal-chat-rail-width, 344px));
+  min-width: 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--chat-surface);
+  border-radius: var(--chat-radius);
+  box-shadow: var(--chat-shadow);
 }
 
+/* Two tabs, each half the rail, label centred. The even split IS the spacing in the design -
+   packing both labels against the left edge is what made ours read as cramped. */
 .chat-tabs {
-    display: flex;
-    gap: 0;
-    padding: 32px 22px 0px 20px;
-    border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0;
+  display: flex;
+  padding: 0 16px;
+  border-bottom: var(--chat-border-width) solid var(--chat-divider);
+  flex-shrink: 0;
 }
 
 .chat-tab {
-    padding: 12px 16px;
-    border: none;
-    background: none;
-    font-size: 15px;
-    font-weight: 500;
-    color: #6b7280;
-    cursor: pointer;
-    position: relative;
-    margin-bottom: -1px;
+  flex: 1 1 0;
+  position: relative;
+  padding: 18px 8px 14px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 15px;
+  font-weight: var(--chat-weight-medium);
+  color: var(--chat-ink-muted);
+  text-align: center;
+  cursor: pointer;
+}
+
+/* The rule is present on both tabs and merely transparent on the inactive one, so switching
+   tabs cannot nudge the labels by a pixel. */
+.chat-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
 }
 
 .chat-tab:hover {
-    color: #111827;
+  color: var(--chat-ink);
 }
 
 .chat-tab[aria-pressed="true"] {
-    color: var(--primary-color);
-    font-weight: 600;
+  color: var(--chat-accent);
+  font-weight: var(--chat-weight-semibold);
 }
 
 .chat-tab[aria-pressed="true"]::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: var(--primary-color);
-    border-radius: 2px 2px 0 0;
+  background: var(--chat-accent);
 }
 
 .chat-search-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    margin: 12px 16px;
-    background: #ffffff;
-    border: 1px solid #d1d5db;
-    border-radius: 12px;
-    flex-shrink: 0;
-    min-height: 44px;
-    box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: var(--portal-field-height, 44px);
+  margin: 14px 16px 4px;
+  padding: 0 var(--portal-field-padding-x, 0.75rem);
+  box-sizing: border-box;
+  background: var(--chat-surface);
+  border: var(--chat-border-width) solid var(--chat-border);
+  border-radius: var(--chat-field-radius);
+  flex-shrink: 0;
+}
+
+.chat-search-wrap:focus-within {
+  border-color: var(--chat-accent);
+  box-shadow: var(--chat-focus-ring);
 }
 
 .chat-search-icon {
-    color: #6b7280;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .chat-search-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: 0;
-    font-size: 14px;
-    color: #111827;
-    min-width: 0;
-    outline: none;
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: var(--portal-font-size, inherit);
+  color: var(--chat-ink);
+  outline: none;
 }
 
 .chat-search-input::placeholder {
-    color: #9ca3af;
-}
-
-.chat-mic-btn {
-    border: none;
-    background: none;
-    padding: 6px;
-    cursor: pointer;
-    color: #6b7280;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.chat-mic-btn:hover {
-    background: #f3f4f6;
-    color: #374151;
+  color: var(--chat-ink-meta);
 }
 
 .chat-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0 8px 8px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 10px 16px 16px;
 }
 
+/* overflow:hidden is what lets the role badge sit flush in the corner: it is clipped to the
+   card's own radius instead of poking a square edge past it. */
 .chat-card {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-    position: relative;
-    margin-bottom: 12px;
-    border: 2px solid transparent;
-    background: #f7f8fb;
-    transition: background 0.15s, border-color 0.15s;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border-radius: var(--chat-radius);
+  border: var(--chat-ring-width) solid transparent;
+  background: var(--chat-tint);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
 }
 
 .chat-card:hover {
-    background: #e5e7eb;
+  background: var(--chat-tint-hover);
 }
 
 .chat-card[data-selected="true"] {
-    background: #ffffff;
-    border-color: var(--primary-color);
+  background: var(--chat-surface);
+  border-color: var(--chat-accent);
 }
 
+/* ---- role badge --------------------------------------------------------------- */
+/* "Mentor" on a 1:1, "You are the Admin" on a group. Deliberately not --primary-color: it
+   states a role, and a brand-coloured pill on a brand-bordered selected row would read as
+   part of the selection rather than as a fact about the person.
+
+   nowrap + ellipsis because the group variant is four words long and must never become two
+   lines - that would change the row height and break the rhythm of the list. */
 .chat-pill {
-    position: absolute;
-    top: 8px;
-    right: 12px;
-    background: #7c3aed;
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 600;
-    padding: 3px 8px;
-    border-radius: 12px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  max-width: 62%;
+  padding: 3px 10px;
+  background: var(--chat-badge-bg);
+  color: var(--chat-badge-ink);
+  font-size: var(--portal-chat-badge-size, 10px);
+  font-weight: var(--chat-weight-semibold);
+  line-height: 1.6;
+  border-radius: 0 var(--chat-radius) 0 var(--chat-radius);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
 }
 
 .chat-card-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-    flex-shrink: 0;
-    overflow: hidden;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--chat-tint);
+  overflow: hidden;
 }
 
 .chat-card-avatar .chat-avatar-img,
 .chat-card-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .chat-card-body {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }
 
 .chat-card-name {
-    font-size: 15px;
-    font-weight: 600;
-    color: #111827;
-    margin-bottom: 2px;
+  font-size: 15px;
+  font-weight: var(--chat-weight-semibold);
+  color: var(--chat-ink);
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* A paperclip in front of the preview, so a room whose last message was a file reads as
+   an attachment rather than as a line of text. */
+.chat-card-clip {
+  display: inline-flex;
+  vertical-align: -2px;
+  margin-right: 4px;
+  color: var(--chat-ink-meta);
+}
+
+/* One line, clipped. A two-line preview made neighbouring rows different heights, which is
+   the main reason our list did not sit on the design's even grid. */
 .chat-card-preview {
-    font-size: 13px;
-    color: #6b7280;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    word-break: break-word;
+  font-size: 13px;
+  color: var(--chat-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* Sits on the name's line rather than centred against the avatar, as in the design. */
 .chat-card-time {
-    font-size: 12px;
-    color: #9ca3af;
-    flex-shrink: 0;
+  align-self: flex-start;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--chat-ink-meta);
+  white-space: nowrap;
 }
 
-/* Right panel */
+/* A badged row pushes its timestamp clear of the corner pill. The card's own padding is left
+   alone so every row keeps the same height - the avatar, not the text column, sets it. */
+.chat-card-pill .chat-card-time {
+  margin-top: 16px;
+}
+
+/* ---- unread ------------------------------------------------------------------- */
+/* A dot, not a count: the chat list compares two timestamps it already has, so it never has to
+   query messages just to draw a badge.
+
+   The read/unread contrast has to survive a glance down a long list, so it is carried by three
+   cues at once - weight, colour and the dot. Weight alone was 600 vs 700, which is invisible at
+   13-15px and read as "the bold is not working". */
+.chat-card-unread .chat-card-name {
+  font-weight: var(--chat-weight-bold);
+}
+
+.chat-card-unread .chat-card-preview {
+  font-weight: var(--chat-weight-semibold);
+  color: var(--chat-ink);
+}
+
+.chat-card-unread .chat-card-time {
+  font-weight: var(--chat-weight-bold);
+  color: var(--chat-accent);
+}
+
+.chat-unread-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--chat-accent);
+  vertical-align: middle;
+}
+
+/* ---- online presence on the avatar -------------------------------------------- */
+/* The wrapper exists because .chat-card-avatar sets overflow:hidden to crop the photo into a
+   circle - a dot placed inside it would be clipped away at the edge.
+
+   Green here is presence; the unread dot next to the timestamp is --primary-color. Two
+   different facts, so deliberately two different colours and two different positions. */
+.chat-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.chat-online-dot {
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--chat-presence);
+  border: 2px solid var(--chat-surface);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+/* ---- thread ------------------------------------------------------------------- */
 .chat-right-panel {
-    flex: 1;
-    min-width: 0;
-    background: #ffffff;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--chat-surface);
+  border-radius: var(--chat-radius);
+  box-shadow: var(--chat-shadow);
 }
 
 .chat-placeholder {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9ca3af;
-    font-size: 15px;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--chat-ink-muted);
+  font-size: 15px;
 }
 
 .chat-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid #e5e7eb;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: var(--chat-border-width) solid var(--chat-divider);
+  flex-shrink: 0;
 }
 
 .chat-header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .chat-header-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-    flex-shrink: 0;
-    overflow: hidden;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--chat-tint);
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
 .chat-header-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .chat-header-info {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
 }
 
 .chat-header-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: #111827;
-    margin: 0;
+  margin: 0;
+  font-size: var(--portal-title-size, 1rem);
+  font-weight: var(--chat-weight-semibold);
+  color: var(--chat-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.chat-header-status,
-.chat-header-members {
-    font-size: 13px;
-    color: #6b7280;
-}
-
-.chat-header-online-right {
-    font-size: 13px;
-    color: #6b7280;
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    margin-right: 8px;
-}
-
-.chat-header-online-right .status-dot {
-    margin-right: 6px;
+.chat-header-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--chat-ink-muted);
 }
 
 .status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: #10b981;
-    border-radius: 50%;
-    vertical-align: middle;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--chat-presence);
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .chat-header-action {
-    width: 36px;
-    height: 36px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #ffffff;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--chat-border-width) solid var(--chat-border);
+  border-radius: var(--chat-field-radius);
+  background: var(--chat-surface);
+  color: var(--chat-ink-muted);
+  cursor: pointer;
 }
 
 .chat-header-action:hover {
-    background: #f9fafb;
-    color: #374151;
+  background: var(--chat-tint-hover);
+  color: var(--chat-ink);
 }
 
-/* Message area */
+/*
+ * container-type makes this the sizing reference for attachments. A card or thumbnail sized
+ * against the BUBBLE is circular - the bubble is fit-content, so it grows to whatever the card
+ * asks for and `max-width: 100%` never bites. In the profile's floating window that overflowed:
+ * a fixed 240px card inside a ~370px window pushed past the bubble's edge.
+ */
 .chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px 20px;
-    min-height: 0;
+  container-type: inline-size;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 8px 24px 12px;
 }
 
+/* Just a centred label. The rules that used to flank it read as a section break in the middle
+   of a conversation, which the design does not have. */
 .chat-date-sep {
-    text-align: center;
-    font-size: 12px;
-    color: #9ca3af;
-    margin: 16px 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  text-align: center;
+  margin: 20px 0 12px;
+  font-size: 12px;
+  color: var(--chat-ink-meta);
 }
 
-.chat-date-sep::before,
-.chat-date-sep::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: #e5e7eb;
-}
-
+/* A row that continues the same person's run sits tight under the previous bubble; a change of
+   speaker opens the gap. That single distinction is what turns our evenly-spaced wall of
+   messages into the design's grouped conversation. */
 .chat-msg-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 10px;
-    margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.chat-msg-row-cont {
+  margin-top: 4px;
 }
 
 .chat-msg-row[data-outgoing="true"] {
-    flex-direction: row-reverse;
+  flex-direction: row-reverse;
+}
+
+/* Always rendered, even when empty, so the later bubbles of a run line up with the first one
+   instead of sliding underneath its avatar. */
+.chat-msg-gutter {
+  width: 28px;
+  flex-shrink: 0;
 }
 
 .chat-msg-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-    flex-shrink: 0;
-    overflow: hidden;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--chat-tint);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chat-msg-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-msg-avatar-initial {
+  font-size: 11px;
+  font-weight: var(--chat-weight-semibold);
+  color: var(--chat-ink-muted);
 }
 
 .chat-msg-block {
-    max-width: 70%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+  max-width: 68%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .chat-msg-row[data-outgoing="true"] .chat-msg-block {
-    align-items: flex-end;
+  align-items: flex-end;
 }
 
 .chat-msg-sender {
-    font-size: 12px;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: var(--chat-weight-semibold);
+  color: var(--chat-ink-muted);
+  margin: 0 4px 4px;
 }
 
-.chat-msg-row[data-outgoing="true"] .chat-msg-sender {
-    color: #374151;
-}
-
+/* Text and timestamp share the bubble's first line and wrap together, which is what keeps a
+   short message a short pill instead of a two-line box with a stranded time underneath. */
+/*
+ * A COLUMN, with text+time on their own row inside. It was a wrapping row, and max-content on a
+ * wrap container measures every item as if it were on one line - so a bubble holding a 240px
+ * thumbnail sized itself as "thumbnail + timestamp side by side" and left a half-screen of empty
+ * colour beside the image. A column's max-content is the widest child, which is the thumbnail.
+ */
 .chat-msg-bubble {
-    padding: 10px 14px;
-    border-radius: 16px;
-    background: #f3f4f6;
-    color: #111827;
-    font-size: 14px;
-    line-height: 1.4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  /* fit-content is what stops a bubble holding an attachment from stretching to the whole 68%
+       allowance: .chat-msg-files needs flex-basis:100% to take its own line, and against an
+       unconstrained bubble that resolved to "as wide as possible" - a 240px thumbnail sitting in
+       a half-screen of empty colour. */
+  width: fit-content;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--chat-bubble-radius);
+  background: var(--chat-tint);
+  color: var(--chat-ink);
+  font-size: var(--portal-font-size, inherit);
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 .chat-msg-row[data-outgoing="true"] .chat-msg-bubble {
-    background: var(--primary-color);
-    color: #ffffff;
-    border-bottom-right-radius: 4px;
+  background: var(--chat-accent);
+  color: var(--chat-on-accent);
 }
 
-.chat-msg-row:not([data-outgoing="true"]) .chat-msg-bubble {
-    border-bottom-left-radius: 4px;
+/* stretch, not width:100%, so the row fills the bubble without a percentage that would feed
+   back into the bubble's own fit-content sizing. */
+.chat-msg-line {
+  align-self: stretch;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
 }
 
 .chat-msg-text {
-    display: block;
+  min-width: 0;
 }
 
 .chat-msg-time {
-    font-size: 11px;
-    color: #9ca3af;
-    display: block;
-    margin-top: 4px;
-    text-align: right;
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--chat-ink-meta);
+  white-space: nowrap;
 }
 
 .chat-msg-row[data-outgoing="true"] .chat-msg-time {
-    color: rgba(255, 255, 255, 0.85);
-    text-align: left;
+  color: color-mix(in srgb, var(--chat-on-accent) 78%, transparent);
 }
 
-/* Composer */
+/* ---- read receipts ------------------------------------------------------------ */
+/* Only ever rendered on your own bubbles, and only in a 1:1 - a group carries no read state at
+   all, so a tick there would be a lie. */
+.chat-msg-tick {
+  margin-left: 4px;
+  letter-spacing: -2px;
+  opacity: 0.6;
+}
+
+.chat-msg-tick-read {
+  opacity: 1;
+  color: var(--chat-presence);
+}
+
+/* ---- attachments -------------------------------------------------------------- */
+/* flex-basis:100% takes a full line inside the bubble, so a file chip never tries to share the
+   row with the message text. */
+/* order:-1 puts the attachment above the text/time row, so the timestamp and ticks sit UNDER the
+   image the way they do on a text bubble - they were landing on top of it. */
+.chat-msg-files {
+  order: -1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+/*
+ * A document card: type badge, filename, size. Two lines, and the same 240px as an image
+ * thumbnail, so a file reads as a thing that was sent rather than as a line of text.
+ *
+ * The colour is pinned on :link and :visited, not left to `color: inherit`. This is an <a>, and
+ * SLDS styles links as `a:link` - specificity 0,1,1, which beats a single class - so the chip
+ * was being painted Salesforce link-blue on a blue bubble and the filename disappeared. That is
+ * why it looked empty on the sender's side only: the incoming bubble is pale, so link-blue
+ * happened to still be readable there.
+ */
+.chat-msg-file,
+.chat-msg-file:link,
+.chat-msg-file:visited,
+.chat-msg-file:hover,
+.chat-msg-file:active,
+.chat-msg-file:focus {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: min(240px, 62cqi);
+  max-width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: var(--chat-bubble-radius);
+  background: color-mix(in srgb, var(--chat-ink) 10%, transparent);
+  color: var(--chat-ink);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.chat-msg-row[data-outgoing="true"] .chat-msg-file,
+.chat-msg-row[data-outgoing="true"] .chat-msg-file:link,
+.chat-msg-row[data-outgoing="true"] .chat-msg-file:visited,
+.chat-msg-row[data-outgoing="true"] .chat-msg-file:hover,
+.chat-msg-row[data-outgoing="true"] .chat-msg-file:active,
+.chat-msg-row[data-outgoing="true"] .chat-msg-file:focus {
+  background: color-mix(in srgb, var(--chat-ink) 30%, transparent);
+  color: var(--chat-on-accent);
+}
+
+.chat-msg-file:hover {
+  background: color-mix(in srgb, var(--chat-ink) 18%, transparent);
+}
+
+.chat-msg-row[data-outgoing="true"] .chat-msg-file:hover {
+  background: color-mix(in srgb, var(--chat-ink) 42%, transparent);
+}
+
+/* Nothing to open, so the card names the file without inviting a click. */
+.chat-msg-file-dead {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.chat-msg-file-item {
+  min-width: 0;
+}
+
+/* The badge is a block, standing in for the page thumbnail a document does not get here. */
+.chat-msg-file-ext {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+  font-size: 9.5px;
+  font-weight: var(--chat-weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.chat-msg-file-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chat-msg-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: var(--chat-weight-medium);
+}
+
+.chat-msg-file-size {
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.chat-msg-image {
+  display: block;
+  width: min(240px, 62cqi);
+  max-width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  text-decoration: none;
+  border-radius: var(--chat-bubble-radius);
+  overflow: hidden;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.chat-msg-image img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--chat-tint);
+}
+
+/* ---- composer ----------------------------------------------------------------- */
+/* The paperclip sits outside the field and Send sits inside it, as in the design - one bordered
+   box for the message, with the action that commits it on its trailing edge. */
+/* The strip's border moves to the wrapper so attached-file chips sit inside the composer area
+   rather than floating in the message list above it. */
+.chat-composer-wrap {
+  flex-shrink: 0;
+  border-top: var(--chat-border-width) solid var(--chat-divider);
+}
+
 .chat-composer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 12px 20px 16px;
-    border-top: 1px solid #e5e7eb;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px 16px;
+}
+
+/* Opened by the paperclip, never shown. display:none still accepts a programmatic .click(). */
+.chat-file-input {
+  display: none;
+}
+
+.chat-composer-send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ---- files waiting to be sent ------------------------------------------------- */
+.chat-pending-files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 20px 0;
+}
+
+.chat-pending-file {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 240px;
+  padding: 6px 8px;
+  background: var(--chat-tint);
+  border: var(--chat-border-width) solid var(--chat-border);
+  border-radius: var(--chat-field-radius);
+  font-size: 12px;
+}
+
+.chat-pending-icon {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--chat-ink-muted);
+}
+
+.chat-pending-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--chat-ink);
+}
+
+.chat-pending-size {
+  flex-shrink: 0;
+  color: var(--chat-ink-meta);
+}
+
+.chat-pending-remove {
+  flex-shrink: 0;
+  padding: 0 2px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--chat-ink-muted);
+  cursor: pointer;
+}
+
+.chat-pending-remove:hover {
+  color: var(--chat-ink);
+}
+
+.chat-upload-status {
+  padding: 8px 20px 0;
+  font-size: 12px;
+  color: var(--chat-ink-meta);
+}
+
+/* Inline SVGs, so they inherit `color` directly instead of going through the SLDS
+   custom-property hooks - which is also why they cannot be resized by community
+   styles the way lightning-icon was inside the file chip. */
+.chat-icon {
+  display: block;
+  flex-shrink: 0;
 }
 
 .chat-composer-attach {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: none;
-    color: #6b7280;
-    cursor: pointer;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--chat-ink-muted);
+  cursor: pointer;
+  border-radius: var(--chat-field-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chat-composer-attach:hover {
-    background: #f3f4f6;
-    color: #374151;
+  background: var(--chat-tint-hover);
+  color: var(--chat-ink);
+}
+
+.chat-composer-field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--portal-field-height, 44px);
+  padding: 0 4px 0 var(--portal-field-padding-x, 0.75rem);
+  box-sizing: border-box;
+  background: var(--chat-surface);
+  border: var(--chat-border-width) solid var(--chat-border);
+  border-radius: var(--chat-field-radius);
+}
+
+.chat-composer-field:focus-within {
+  border-color: var(--chat-accent);
+  box-shadow: var(--chat-focus-ring);
 }
 
 .chat-composer-input {
-    flex: 1;
-    border: 1px solid #e5e7eb;
-    border-radius: 20px;
-    padding: 10px 18px;
-    font-size: 14px;
-    color: #111827;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: var(--portal-font-size, inherit);
+  color: var(--chat-ink);
+  outline: none;
 }
 
 .chat-composer-input::placeholder {
-    color: #9ca3af;
+  color: var(--chat-ink-meta);
 }
 
+/* Send is its own filled button beside the field, not an icon inside it - the arrangement in the
+   design. The brand colour carries it, so it reads as the action rather than as decoration. */
 .chat-composer-send {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background: transparent;
-    color: var(--primary-color);
-    cursor: pointer;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  width: var(--portal-field-height, 44px);
+  height: var(--portal-field-height, 44px);
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--chat-field-radius);
+  background: var(--chat-accent);
+  color: var(--chat-on-accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chat-composer-send:hover {
-    background: rgba(0, 0, 0, 0.05);
+  background: color-mix(in srgb, var(--chat-accent) 88%, var(--chat-ink));
 }
 
-.chat-composer-send lightning-icon {
-    --sds-c-icon-color-foreground: var(--primary-color);
+/* ---- icon colours ------------------------------------------------------------- */
+/* SLDS icons ignore `color`; they read these two hooks, and which one applies depends on the
+   icon's variant, so both are set. */
+/* The composer's paperclip is an inline SVG now, so it is not in this list. */
+.chat-search-icon lightning-icon,
+.chat-header-action lightning-icon {
+  --sds-c-icon-color-foreground: var(--chat-ink-muted);
+  --sds-c-icon-color-foreground-default: var(--chat-ink-muted);
 }
 
+/* ---- scrollbars --------------------------------------------------------------- */
+.chat-list,
+.chat-messages {
+  scrollbar-width: thin;
+  scrollbar-color: var(--chat-border) transparent;
+}
 
+.chat-list::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-list::-webkit-scrollbar-thumb,
+.chat-messages::-webkit-scrollbar-thumb {
+  background: var(--chat-border);
+  border-radius: 3px;
+}
+
+/* ---- error -------------------------------------------------------------------- */
+/* A row of its own above the panels. It used to carry grid-column:1/-1 into a flex row, where
+   that means nothing, so the banner became a third column and squeezed both panels sideways. */
+.chat-error {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  background: var(--portal-warning-bg, transparent);
+  border: var(--chat-border-width) solid
+    var(--portal-warning-border, currentColor);
+  border-radius: var(--chat-field-radius);
+  color: var(--portal-warning-text, inherit);
+  font-size: 13px;
+}
+
+/* ---- full-size image preview -------------------------------------------------- */
+/* Absolute, not fixed: .ken-chat sets container-type, which establishes a containing block for
+   fixed descendants as well - so `fixed` would resolve against this component anyway. Being
+   explicit about it is better than relying on that. It covers the conversation, which is what the
+   viewer is looking at, and leaves the portal's own navigation reachable. */
+.chat-lightbox {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: color-mix(in srgb, var(--chat-ink) 78%, transparent);
+  cursor: zoom-out;
+}
+
+.chat-lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: var(--chat-radius);
+  background: var(--chat-surface);
+  cursor: default;
+}
+
+.chat-lightbox-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--chat-surface);
+  color: var(--chat-ink);
+  font: inherit;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
 
 /* Hide on mobile; use kenMobileChat for <= 768px */
 @media (max-width: 768px) {
-    .ken-chat {
-        display: none;
-    }
+  .ken-chat {
+    display: none;
+  }
+
+  /*
+     * ...except in single-thread mode. That instance lives inside the profile's floating window
+     * and is the only chat on the screen - there is no kenMobileChat behind it to take over, so
+     * hiding it would leave the Message window empty on a phone.
+     */
+  .ken-chat-single {
+    display: flex;
+  }
 }

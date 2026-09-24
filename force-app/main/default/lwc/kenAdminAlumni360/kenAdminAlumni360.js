@@ -31,7 +31,7 @@ import getFieldUpdateHistory from '@salesforce/apex/KenAdminAlumniController.get
  *   - Right rail: Needs Attention, Recent Activity, Quick Actions, Record Health
  */
 export default class KenAdminAlumni360 extends LightningElement {
-    // Ken_Alumni_CRM__c Id of the alumnus to render.
+    // ConstituentRole Id of the alumnus to render.
     @api recordId;
 
     // Which tab to open on first render — set from the URL by the host so a
@@ -84,7 +84,11 @@ export default class KenAdminAlumni360 extends LightningElement {
         'Blood group':      { key: 'bloodGroup',  type: 'select', optionsKey: 'bloodGroupOptions' },
         'Nationality':      { key: 'nationality', type: 'select', optionsKey: 'nationalityOptions' },
         'Languages':        { key: 'languages',   type: 'text' },
-        'Address':          { key: 'address',     type: 'text', address: true }
+        // The address arrives one component per row, so each part is an
+        // ordinary editable field — no special-cased sub-grid needed.
+        'City':             { key: 'city',        type: 'text' },
+        'State':            { key: 'state',       type: 'text' },
+        'Country':          { key: 'country',     type: 'text' }
     };
 
     /* ---- Child-record edit state (Education / Employment) ---- */
@@ -427,7 +431,6 @@ export default class KenAdminAlumni360 extends LightningElement {
             value: (row.value === null || row.value === undefined || row.value === '') ? '—' : row.value,
             emphasis: row.emphasis,
             editableNow,
-            isAddress: !!(cfg && cfg.address),
             isSelect,
             options,
             fieldKey: cfg ? cfg.key : null,
@@ -435,13 +438,6 @@ export default class KenAdminAlumni360 extends LightningElement {
             editValue: cfg ? (this.edit[cfg.key] == null ? '' : this.edit[cfg.key]) : ''
         };
     }
-
-    // Address sub-fields (bound directly in the Address row when editing).
-    get addrStreet()  { return this.edit.street || ''; }
-    get addrCity()    { return this.edit.city || ''; }
-    get addrState()   { return this.edit.state || ''; }
-    get addrPostal()  { return this.edit.postalCode || ''; }
-    get addrCountry() { return this.edit.country || ''; }
 
     handleEditOverview() { this._beginEdit('overview'); }
     handleEditContact()  { this._beginEdit('contact'); }

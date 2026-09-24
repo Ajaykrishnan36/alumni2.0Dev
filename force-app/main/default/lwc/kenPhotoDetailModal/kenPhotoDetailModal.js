@@ -1,4 +1,5 @@
 import { LightningElement, api, track } from 'lwc';
+import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
 
 export default class KenPhotoDetailModal extends LightningElement {
     @api showModal = false;
@@ -45,12 +46,14 @@ export default class KenPhotoDetailModal extends LightningElement {
         return this.photo;
     }
 
+    // Absolute link first - the root-relative shepherd URL does not resolve
+    // inside the Experience Cloud site, which left the lightbox blank.
     get photoImageUrl() {
-        return this.currentPhoto?.imageUrl || '';
+        return this.currentPhoto?.publicUrl || this.currentPhoto?.imageUrl || '';
     }
 
     get profileImageUrl() {
-        return this.currentPhoto?.profileImageUrl || '/assets/images/default-profile.png';
+        return this.currentPhoto?.profileImageUrl || defaultProfileImage;
     }
 
     get personName() {
@@ -140,7 +143,7 @@ export default class KenPhotoDetailModal extends LightningElement {
     }
 
     handleProfileImageError(event) {
-        event.target.src = '/assets/images/default-profile.png';
+        event.target.src = defaultProfileImage;
     }
 
     handleThumbnailError() {

@@ -1,0 +1,75 @@
+<template>
+    <section class="panel" tabindex="-1" onkeydown={handleKeyDown} role="dialog" aria-label="Choose a date">
+        <div class="head">
+            <button type="button" class="nav" onclick={handlePrevMonth} disabled={isPrevDisabled}
+                if:true={showSteppers} aria-label="Previous month">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <polyline points="15 5 8 12 15 19" />
+                </svg>
+            </button>
+
+            <button type="button" class="title" onclick={handleToggleView} aria-expanded={isYearView}>
+                <span>{title}</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </button>
+
+            <button type="button" class="nav" onclick={handleNextMonth} disabled={isNextDisabled}
+                if:true={showSteppers} aria-label="Next month">
+                <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <polyline points="9 5 16 12 9 19" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Day grid -->
+        <div class="body" if:true={isDayView}>
+            <table class="grid" role="grid">
+                <thead>
+                    <tr>
+                        <template for:each={weekdays} for:item="weekday">
+                            <th key={weekday.key} scope="col" abbr={weekday.label}>{weekday.label}</th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={weeks} for:item="week">
+                        <tr key={week.key}>
+                            <template for:each={week.days} for:item="day">
+                                <td key={day.key}>
+                                    <button type="button" class={day.cssClass} data-iso={day.iso}
+                                        disabled={day.disabled} tabindex={day.tabIndex} onclick={handleSelectDay}>
+                                        {day.label}
+                                    </button>
+                                </td>
+                            </template>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Month grid -->
+        <div class="body months" if:true={isMonthView}>
+            <template for:each={monthCells} for:item="month">
+                <button key={month.key} type="button" class={month.cssClass} data-value={month.value}
+                    disabled={month.disabled} onclick={handleSelectMonth}>
+                    {month.label}
+                </button>
+            </template>
+        </div>
+
+        <!-- Year grid, scrolling inside the panel rather than over the page -->
+        <div class="body scroller" if:true={isYearView}>
+            <div class="years">
+                <template for:each={yearCells} for:item="year">
+                    <button key={year.key} type="button" class={year.cssClass} data-value={year.value}
+                        onclick={handleSelectYear}>
+                        {year.label}
+                    </button>
+                </template>
+            </div>
+        </div>
+    </section>
+</template>

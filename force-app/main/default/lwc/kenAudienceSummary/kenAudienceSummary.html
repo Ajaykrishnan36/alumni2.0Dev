@@ -1,0 +1,72 @@
+<template>
+    <div class="aud-card">
+        <div class="aud-head">
+            <p class="aud-title">{title}</p>
+            <template if:true={reachLabel}>
+                <span class="aud-reach">{reachLabel}</span>
+            </template>
+        </div>
+
+        <template if:true={isLoading}>
+            <div class="aud-loading">
+                <lightning-spinner alternative-text="Loading audience" size="small"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:true={error}>
+            <p class="aud-empty">{error}</p>
+        </template>
+
+        <template if:false={error}>
+            <template if:false={hasAudience}>
+                <p class="aud-empty">No audience has been set, so nobody is targeted yet.</p>
+            </template>
+
+            <template if:true={hasAudience}>
+                <template if:true={segmentationName}>
+                    <p class="aud-name">{segmentationName}</p>
+                </template>
+
+                <template if:true={showMatchLabel}>
+                    <p class="aud-match">{matchLabel}</p>
+                </template>
+
+                <template if:true={hasBlocks}>
+                    <template for:each={blocks} for:item="b">
+                        <div key={b.key} class="aud-block">
+                            <div class="aud-block-head">
+                                <span class="aud-block-title">{b.title}</span>
+                                <span class="aud-type">{b.typeLabel}</span>
+                                <template if:true={b.memberLabel}>
+                                    <span class="aud-count">{b.memberLabel}</span>
+                                </template>
+                            </div>
+                            <template if:true={b.roleLabel}>
+                                <p class="aud-role">Audience type: {b.roleLabel}</p>
+                            </template>
+                            <template if:true={b.hasCriteria}>
+                                <ul class="aud-criteria">
+                                    <template for:each={b.criteria} for:item="c">
+                                        <li key={c.key} class="aud-criterion">{c.text}</li>
+                                    </template>
+                                </ul>
+                            </template>
+                        </div>
+                    </template>
+                </template>
+
+                <template if:true={hasSimpleAudience}>
+                    <div class="aud-chips">
+                        <template for:each={simpleAudienceList} for:item="a">
+                            <span key={a} class="aud-chip">{a}</span>
+                        </template>
+                    </div>
+                </template>
+
+                <template if:true={hasBlocks}>
+                    <p class="aud-note">Member counts are from when the audience was last saved.</p>
+                </template>
+            </template>
+        </template>
+    </div>
+</template>

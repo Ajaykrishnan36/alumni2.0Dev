@@ -1,3 +1,4 @@
+import { formatTimeRange } from 'c/kenDateTime';
 import { LightningElement, track, wire } from 'lwc';
 import { NavigationMixin, CurrentPageReference } from 'lightning/navigation';
 import AlumniAlt from '@salesforce/resourceUrl/AlumniAlt';
@@ -317,7 +318,13 @@ export default class KenMentorship extends NavigationMixin(LightningElement) {
             id: raw?.id,
             date: parseLocalIsoDate(raw?.dateIso),
             dateIso: raw?.dateIso || '',
-            time: raw?.timeLabel || '',
+            // Format from the instant so the call time follows the viewer's
+            // device timezone. timeLabel is built server-side in the running
+            // user's zone — Asia/Kolkata for every portal user — so it is the
+            // fallback only, for rows saved before the migration.
+            time: raw?.startInstant
+                ? formatTimeRange(raw.startInstant, raw.endInstant)
+                : (raw?.timeLabel || ''),
             startTime: raw?.startTime || '',
             endTime: raw?.endTime || '',
             title: raw?.title || 'Mentorship Call',
@@ -480,13 +487,18 @@ export default class KenMentorship extends NavigationMixin(LightningElement) {
         const meetingDate = event?.detail?.meetingDate;
         const startTime = event?.detail?.startTime;
         const endTime = event?.detail?.endTime;
+        // UTC instants built by the child from the picked date + time. These are
+        // what gets stored; the bare date/time above are passed through only for
+        // the readers still on the old fields.
+        const startDateTime = event?.detail?.startDateTime ?? null;
+        const endDateTime = event?.detail?.endDateTime ?? null;
         if (!callRequestId || !meetingDate || !startTime || !endTime) {
             this.showToastNotification('Error', 'Reschedule payload is missing.', 'error');
             return;
         }
 
         this.isRespondingCallRequest = true;
-        rescheduleCallRequest({ callRequestId: String(callRequestId), meetingDate, startTime, endTime })
+        rescheduleCallRequest({ callRequestId: String(callRequestId), meetingDate, startTime, endTime, startDateTime, endDateTime })
             .then(() => {
                 this.showToastNotification('Success', 'Call request updated and accepted successfully.', 'success');
                 this.loadScheduledCalls();

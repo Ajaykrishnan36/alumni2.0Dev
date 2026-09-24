@@ -105,10 +105,9 @@
                             </div>
                             <div class="form-field">
                                 <label>Phone (Not visible publicly)</label>
-                                <div class="phone-input-wrapper">
-                                    <span class="phone-prefix">&#127470;&#127475; +91 &#9660;</span>
-                                    <input type="tel" class="phone-input" placeholder="Enter Phone" value={guestPhone} onchange={handleGuestPhoneChange} />
-                                </div>
+                                <c-ken-custom-phone-input class="guest-phone-input" value={guestPhone}
+                                    placeholder="Enter Phone" onphonechange={handleGuestPhoneChange}>
+                                </c-ken-custom-phone-input>
                             </div>
                             <button class="add-guest-btn" onclick={handleAddGuest}>Add Guest</button>
                         </div>

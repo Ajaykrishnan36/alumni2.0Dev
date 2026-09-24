@@ -1,3 +1,26 @@
 <template>
+    <!-- Mobile only: the alumni detail view fills the screen and covers the
+         portal's own navigation, so without this there is no way back to the
+         network list except the browser's back button. Desktop keeps the list
+         visible alongside, so it needs no header. Mirrors the sticky back header
+         on the event detail page. -->
+    <template if:true={isMobile}>
+        <div class="mobile-header">
+            <div class="mobile-header-content">
+                <button
+                    type="button"
+                    class="mobile-back-btn"
+                    onclick={handleBack}
+                    aria-label="Back to network"
+                >
+                    <svg class="back-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <h1 class="mobile-header-title">{headerTitle}</h1>
+            </div>
+        </div>
+    </template>
+
     <c-ken-alumni-detail-view profile-id={profileId}></c-ken-alumni-detail-view>
 </template>

@@ -1,4 +1,4 @@
-import { LightningElement, track } from 'lwc';
+import { LightningElement, api, track } from 'lwc';
 import basePath from '@salesforce/community/basePath';
 import registrationHeaderImage from '@salesforce/resourceUrl/registrationHeader';
 import saveEmploymentDetails from '@salesforce/apex/KenPortalOnbordingController.saveEmploymentDetails';
@@ -9,6 +9,9 @@ import getEngagementPreferences from '@salesforce/apex/KenPortalOnbordingControl
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
 export default class KenRegistrationStepper extends LightningElement {
     registrationHeaderImage = registrationHeaderImage;
+    // Set by kenPortalRegistrationStepper from the org parameter; handed to the
+    // steps that render registration-derived fields.
+    @api lockRegistrationDetails = false;
     @track institutionAlias = '';
     @track currentStep = 1;
     @track showOptInModal = false;
@@ -370,12 +373,14 @@ export default class KenRegistrationStepper extends LightningElement {
             lastName: profile?.lastName || '',
             profileImageUrl: profile?.profileImageUrl || ''
         };
-        this.dispatchEvent(new CustomEvent('profilechange', { detail, bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent('profilechange', { detail, bubbles: true }));
     }
 
     handleNotify(event) {
         const detail = event.detail || {};
-        this.toastVariant = detail.type === 'error' ? 'error' : 'success';
+        // The toast component also renders 'warning' and 'info'; anything else
+        // (including a missing type) stays on the success styling as before.
+        this.toastVariant = ['error', 'warning', 'info'].includes(detail.type) ? detail.type : 'success';
         this.toastTitle = detail.title || (this.toastVariant === 'error' ? 'Error' : 'Success');
         this.toastMessage = detail.message || '';
         this.showToast = true;

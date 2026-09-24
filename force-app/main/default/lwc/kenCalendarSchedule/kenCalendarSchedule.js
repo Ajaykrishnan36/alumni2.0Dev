@@ -2,6 +2,7 @@ import { LightningElement, api, track } from 'lwc';
 import CalendarEmptyState from '@salesforce/resourceUrl/CalendarEmptyState';
 import AlumniAlt from '@salesforce/resourceUrl/AlumniAlt';
 import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import { toUtcInstant, fromUtcInstant, localDateKey } from 'c/kenDateTime';
 
 function normalizeDate(d) {
     if (!d) return null;
@@ -40,8 +41,6 @@ export default class KenCalendarSchedule extends LightningElement {
 
     _previousScheduleEvents = null;
     _previousSelectedDate = null;
-    // Once the user clicks a day themselves we stop auto-selecting.
-    _userPickedDate = false;
 
     get eventDates() {
         if (!this.scheduleEvents || !this.scheduleEvents.length) return [];
@@ -91,43 +90,10 @@ export default class KenCalendarSchedule extends LightningElement {
                 this.currentMonth = this.internalSelectedDate.getMonth();
                 this.currentYear = this.internalSelectedDate.getFullYear();
             }
-            // The list is day-scoped, so a default of "today" reads as empty
-            // whenever the calls sit on other days (while the calendar dots show
-            // them). Until the user picks a day, follow the nearest day that
-            // actually has a call.
-            if (scheduleEventsChanged && !this._userPickedDate && this.scheduleEvents.length) {
-                const hasEventsOnSelected = this.scheduleEvents.some(
-                    evt => evt && evt.date && sameDay(normalizeDate(evt.date), this.internalSelectedDate)
-                );
-                if (!hasEventsOnSelected) {
-                    const nearest = this._nearestEventDate();
-                    if (nearest) {
-                        this.internalSelectedDate = nearest;
-                        this.currentMonth = nearest.getMonth();
-                        this.currentYear = nearest.getFullYear();
-                    }
-                }
-            }
             this.generateCalendar();
             this._previousScheduleEvents = this.scheduleEvents;
             this._previousSelectedDate = this.selectedDate ? normalizeDate(this.selectedDate) : null;
         }
-    }
-
-    // Nearest day with a call: the next upcoming one, or the most recent past
-    // one when nothing upcoming exists.
-    _nearestEventDate() {
-        const today = normalizeDate(new Date());
-        let nextUpcoming = null;
-        let latestPast = null;
-        this.eventDates.forEach(d => {
-            if (d >= today) {
-                if (!nextUpcoming || d < nextUpcoming) nextUpcoming = d;
-            } else if (!latestPast || d > latestPast) {
-                latestPast = d;
-            }
-        });
-        return nextUpcoming || latestPast;
     }
 
     get currentMonthYear() {
@@ -309,8 +275,7 @@ export default class KenCalendarSchedule extends LightningElement {
     }
 
     get minimumDate() {
-        const today = new Date();
-        return today.toISOString().split('T')[0];
+        return localDateKey();
     }
 
     formatDateForDisplay(dateIso) {
@@ -355,14 +320,12 @@ export default class KenCalendarSchedule extends LightningElement {
         const [day, month, year] = dateString.split('-').map(Number);
         const selectedDate = new Date(year, month, day);
 
-        this._userPickedDate = true;
         this.internalSelectedDate = selectedDate;
         this.generateCalendar();
 
         this.dispatchEvent(new CustomEvent('datechange', {
             detail: { date: selectedDate },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -377,8 +340,7 @@ export default class KenCalendarSchedule extends LightningElement {
         this.generateCalendar();
         this.dispatchEvent(new CustomEvent('datechange', {
             detail: { date: selectedDate },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -401,8 +363,7 @@ export default class KenCalendarSchedule extends LightningElement {
         }
         this.dispatchEvent(new CustomEvent('sendrequest', {
             detail: requestData,
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -414,8 +375,7 @@ export default class KenCalendarSchedule extends LightningElement {
         }
         this.dispatchEvent(new CustomEvent('showtoast', {
             detail: toastDetail,
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -430,8 +390,7 @@ export default class KenCalendarSchedule extends LightningElement {
         if (!link) {
             this.dispatchEvent(new CustomEvent('showtoast', {
                 detail: { title: 'No meeting link', message: 'No video link is available for this call yet.', variant: 'error' },
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
             return;
         }
@@ -449,8 +408,7 @@ export default class KenCalendarSchedule extends LightningElement {
         // The parent navigates there with this call's id and a returnUrl.
         this.dispatchEvent(new CustomEvent('takefeedback', {
             detail: { recordId: callRequestId },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 
@@ -487,8 +445,7 @@ export default class KenCalendarSchedule extends LightningElement {
         }
         this.dispatchEvent(new CustomEvent('respondcallrequest', {
             detail: { callRequestId: this.selectedRequestEvent.id, action: 'accept' },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
         this.handleCloseRequestModal();
     }
@@ -499,8 +456,7 @@ export default class KenCalendarSchedule extends LightningElement {
         }
         this.dispatchEvent(new CustomEvent('respondcallrequest', {
             detail: { callRequestId: this.selectedRequestEvent.id, action: 'reject' },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
         this.handleCloseRequestModal();
     }
@@ -541,8 +497,7 @@ export default class KenCalendarSchedule extends LightningElement {
         if (selected < today) {
             this.dispatchEvent(new CustomEvent('showtoast', {
                 detail: { title: 'Error', message: 'You cannot schedule a call for a past date.', variant: 'error' },
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
             return;
         }
@@ -550,8 +505,7 @@ export default class KenCalendarSchedule extends LightningElement {
         if (this.timeToMinutes(this.rescheduleEndTime) <= this.timeToMinutes(this.rescheduleStartTime)) {
             this.dispatchEvent(new CustomEvent('showtoast', {
                 detail: { title: 'Error', message: 'End time must be after start time.', variant: 'error' },
-                bubbles: true,
-                composed: true
+                bubbles: true
             }));
             return;
         }
@@ -561,10 +515,15 @@ export default class KenCalendarSchedule extends LightningElement {
                 callRequestId: this.selectedRequestEvent.id,
                 meetingDate: this.rescheduleDate,
                 startTime: this.rescheduleStartTime,
-                endTime: this.rescheduleEndTime
+                endTime: this.rescheduleEndTime,
+                // The pickers here are <lightning-input type="time">, whose value
+                // is a UTC wall clock. Pairing it with the chosen date is the only
+                // way to know which day it belongs to — a bare time cannot say,
+                // which is how rescheduling used to shift a call by the offset.
+                startDateTime: toUtcInstant(this.rescheduleDate, this.rescheduleStartTime),
+                endDateTime: toUtcInstant(this.rescheduleDate, this.rescheduleEndTime)
             },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
         this.handleCloseRequestModal();
     }
@@ -586,8 +545,7 @@ export default class KenCalendarSchedule extends LightningElement {
         }
         this.dispatchEvent(new CustomEvent('respondcallrequest', {
             detail: { callRequestId, action },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 }

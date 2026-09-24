@@ -1,9 +1,14 @@
 import { LightningElement, api, track } from 'lwc';
+import FilePreviewPlaceholder from '@salesforce/resourceUrl/FilePreviewPlaceholder';
+import defaultProfileImage from '@salesforce/resourceUrl/defaultProfileImage';
+
+const DEFAULT_AVATAR = defaultProfileImage;
 
 export default class KenPhotoCard extends LightningElement {
     @api photo;
     @track showMenu = false;
     @track thumbnailFailed = false;
+    @track imageFailed = false;
 
     constructor() {
         super();
@@ -37,12 +42,33 @@ export default class KenPhotoCard extends LightningElement {
         }
     }
 
+    // The absolute ContentDistribution link wins over the shepherd URL: the
+    // latter is root-relative and does not resolve inside the Experience Cloud
+    // site, so it comes back as a broken image in the portal.
     get photoImageUrl() {
-        return this.photo?.imageUrl || '';
+        return this.photo?.publicUrl || this.photo?.imageUrl || '';
     }
 
+    // Document art, NOT the album placeholder - that one reads "No files yet",
+    // which is plainly wrong on a card where the file is sitting right there.
+    get placeholderImageUrl() {
+        return FilePreviewPlaceholder;
+    }
+
+    // Only attempt an <img> when there is something to point it at and the load
+    // has not already failed; otherwise fall through to the placeholder.
+    get showImage() {
+        return this.isImage && !!this.photoImageUrl && !this.imageFailed;
+    }
+
+    handleImageError() {
+        this.imageFailed = true;
+    }
+
+    // Falls back to the same silhouette the album cards use. Returning '' left
+    // an empty <img> behind, which rendered as a blank white circle.
     get profileImageUrl() {
-        return this.photo?.profileImageUrl || '';
+        return this.photo?.profileImageUrl || DEFAULT_AVATAR;
     }
 
     get personName() {
@@ -61,8 +87,10 @@ export default class KenPhotoCard extends LightningElement {
         return !this.isImage && !!this.thumbnailUrl && !this.thumbnailFailed;
     }
 
+    // Catches both a document with no usable thumbnail and an image whose URL
+    // would not load, so the grid never shows a broken frame.
     get showPlaceholder() {
-        return !this.isImage && !this.showThumbnail;
+        return !this.showImage && !this.showThumbnail;
     }
 
     get fileName() {
@@ -120,7 +148,7 @@ export default class KenPhotoCard extends LightningElement {
     }
 
     handleProfileImageError(event) {
-        event.target.src = '/assets/images/default-profile.png';
+        event.target.src = DEFAULT_AVATAR;
     }
 
     handleThumbnailError() {

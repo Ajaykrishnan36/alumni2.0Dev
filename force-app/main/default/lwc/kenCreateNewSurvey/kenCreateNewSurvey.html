@@ -1,4 +1,5 @@
 <template>
+    <template if:true={canCreateSurvey}>
     <button type="button" class="create-survey-card" onclick={handleCardClick} aria-label="Create New Survey">
         <div class="card-header">
             <p class="card-title">Create New Survey</p>
@@ -52,4 +53,5 @@
             </div>
         </div>
     </button>
+    </template>
 </template>

@@ -1,0 +1,14 @@
+.ker-stat-label {
+    font-size: 0.75rem;
+    color: #5c5c66;
+    font-weight: 500;
+}
+.ker-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #181818;
+}
+.ker-table {
+    max-height: 32rem;
+    overflow-y: auto;
+}

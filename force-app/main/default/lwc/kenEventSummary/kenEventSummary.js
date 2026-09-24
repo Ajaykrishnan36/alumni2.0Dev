@@ -1,4 +1,5 @@
 import { LightningElement, wire, api, track } from 'lwc';
+import { formatTime24 } from 'c/kenDateTime';
 import { NavigationMixin } from "lightning/navigation";
 import getEventSessions from '@salesforce/apex/KenEventFormController.getEventSessions';
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
@@ -33,8 +34,10 @@ export default class KenEventSummary extends NavigationMixin(LightningElement) {
       .then(result => {
         this.sessions = result.map((record) => ({
           ...record,
-          Start_Time__c: this.formatTime(record.Start_Time__c),
-          End_Time__c: this.formatTime(record.End_Time__c),
+          // Formatted from the stored UTC instant, so the time follows the
+          // viewer's device timezone. The legacy zoneless Time columns are gone.
+          Start_Time__c: formatTime24(record.Start_DateTime__c),
+          End_Time__c: formatTime24(record.End_DateTime__c),
         }));
         console.log('sessions--' + JSON.stringify(this.sessions));
         if (result.length > 0) {

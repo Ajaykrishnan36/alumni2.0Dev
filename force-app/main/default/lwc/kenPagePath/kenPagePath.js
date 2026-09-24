@@ -82,8 +82,7 @@ export default class KenBreadcrumb extends NavigationMixin(LightningElement) {
     dispatchBreadcrumbVisibility(isVisible) {
         this.dispatchEvent(new CustomEvent('breadcrumbvisibilitychange', {
             detail: { isVisible },
-            bubbles: true,
-            composed: true
+            bubbles: true
         }));
     }
 

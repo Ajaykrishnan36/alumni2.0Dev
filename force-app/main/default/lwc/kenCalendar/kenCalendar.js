@@ -1,9 +1,14 @@
 import { LightningElement, track, wire, api } from 'lwc';
+import { replaceElementHtml } from 'c/kenHtmlSanitizer';
 import { loadScript, loadStyle } from 'lightning/platformResourceLoader';
 import FullCalendarJSFromResource from '@salesforce/resourceUrl/FullCalendarJs';
 import { NavigationMixin } from 'lightning/navigation';
 import FORM_FACTOR from '@salesforce/client/formFactor';
-import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig'; 
+import { getPortalConfigs as getPrimaryColor } from 'c/kenThemeConfig';
+import { localDateKey } from 'c/kenDateTime';
+import getAcceptedMentorsForCurrentMentee from '@salesforce/apex/KenMentorshipController.getAcceptedMentorsForCurrentMentee';
+import getAcceptedMenteesForCurrentMentor from '@salesforce/apex/KenMentorshipController.getAcceptedMenteesForCurrentMentor';
+import scheduleCallForCurrentMentee from '@salesforce/apex/KenMentorshipController.scheduleCallForCurrentMentee';
 // Static JSON data for calendar events
 const SCHEDULED_EVENTS_JSON = [
     {
@@ -545,14 +550,14 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
 
   // Schedule a Call modal state
   @track showScheduleModal = false;
-  @track scIsOnline = true;
-  scMentorMentee = '';
-  scTitle = '';
-  scDate = '';
-  scStartTime = '';
-  scEndTime = '';
-  scDescription = '';
-  scMeetLink = '';
+  @track mentorOptions = [];
+  @track menteeOptions = [];
+  @track isSubmittingCallRequest = false;
+  @track showToast = false;
+  @track toastTitle = '';
+  @track toastMessage = '';
+  @track toastVariant = 'success';
+  toastTimeout;
 
   // Add flags to track loading state
   fullCalendarLoaded = false;
@@ -563,6 +568,8 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
     this.isMobile = FORM_FACTOR === 'Small';
     this.loadCustomFonts();
     this.loadScheduledEvents();
+    this.loadAcceptedMentors();
+    this.loadAcceptedMentees();
 
     getPrimaryColor().then(color => {
       document.documentElement.style.setProperty('--primary-color', color?.primaryColor);
@@ -659,6 +666,7 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
 
   disconnectedCallback() {
     this.cleanupCalendarArtifacts();
+    window.clearTimeout(this.toastTimeout);
   }
 
   // Fixed resource loading method
@@ -1242,20 +1250,23 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
     this.isCalendarLoading = false; // Set calendar loading to false
     const calendarContainer = this.template.querySelector('.calendar-container');
     if (calendarContainer) {
-      calendarContainer.innerHTML = `
+      replaceElementHtml(
+        calendarContainer,
+        `
         <div style="padding: 20px; text-align: center; border: 1px solid #ddd; border-radius: 8px; background-color: #f8f9fa;">
           <div style="color: #dc3545; font-size: 1.1rem; margin-bottom: 10px;">⚠️ Calendar Loading Error</div>
           <p style="color: #666; margin-bottom: 15px;">${message}</p>
           <button onclick="location.reload()" style="
-            background-color: #0070d2; 
-            color: white; 
-            border: none; 
-            padding: 8px 16px; 
-            border-radius: 4px; 
+            background-color: #0070d2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
             cursor: pointer;
           ">Refresh Page</button>
         </div>
-      `;
+      `
+      );
     }
   }
 
@@ -1263,7 +1274,7 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
   datesetup() {
     const input = this.template.querySelector('.date-picker');
     if (input) {
-      const isoDate = new Date().toISOString().split('T')[0];
+      const isoDate = localDateKey();
       input.value = isoDate;
     }
   }
@@ -1341,7 +1352,7 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
 
       const titleContainer = this.template.querySelector('.calendar-title');
       if (titleContainer) {
-        titleContainer.innerHTML = `<div style="font-weight:600; font-size:18px;">${formatted}</div>`;
+        replaceElementHtml(titleContainer, `<div style="font-weight:600; font-size:18px;">${formatted}</div>`);
       }
     } catch (error) {
       console.error('Error updating title:', error);
@@ -1388,7 +1399,7 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
     const currentDate = calendar.fullCalendar('getDate');
     const input = this.template.querySelector('.date-picker-hidden-input');
     if (input && currentDate) {
-      const isoDate = currentDate.toISOString().split('T')[0];
+      const isoDate = localDateKey(currentDate);
       input.value = isoDate;
     }
   }
@@ -1412,77 +1423,84 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
     this.showScheduleModal = true;
   }
 
-  handleScheduleCancel() {
+  handleCloseScheduleModal() {
     this.showScheduleModal = false;
-    this._resetScheduleForm();
   }
 
-  handleModalOverlayClick() {
-    this.showScheduleModal = false;
-    this._resetScheduleForm();
+  get scheduleModalInitialDate() {
+    return localDateKey();
   }
 
-  handleModalContentClick(event) {
-    event.stopPropagation();
+  loadAcceptedMentors() {
+    getAcceptedMentorsForCurrentMentee()
+      .then((result) => {
+        const options = Array.isArray(result) ? result : [];
+        this.mentorOptions = options
+          .filter((option) => option?.value && option?.label)
+          .map((option) => ({ value: option.value, label: option.label }));
+      })
+      .catch(() => {
+        this.mentorOptions = [];
+      });
   }
 
-  handleScMentorChange(event) {
-    this.scMentorMentee = event.target.value;
+  loadAcceptedMentees() {
+    getAcceptedMenteesForCurrentMentor()
+      .then((result) => {
+        const options = Array.isArray(result) ? result : [];
+        this.menteeOptions = options
+          .filter((option) => option?.value && option?.label)
+          .map((option) => ({ value: option.value, label: option.label }));
+      })
+      .catch(() => {
+        this.menteeOptions = [];
+      });
   }
 
-  handleScTitleChange(event) {
-    this.scTitle = event.target.value;
+  handleShowToast(event) {
+    const detail = event?.detail;
+    if (!detail?.message) {
+      return;
+    }
+    this.showToastNotification(detail.title || 'Error', detail.message, detail.variant || 'error');
   }
 
-  handleScDateChange(event) {
-    this.scDate = event.target.value;
+  handleSendRequest(event) {
+    if (this.isSubmittingCallRequest) {
+      return;
+    }
+
+    const requestPayload = event?.detail || null;
+    if (!requestPayload) {
+      this.showToastNotification('Error', 'Schedule request payload is missing.', 'error');
+      return;
+    }
+
+    this.isSubmittingCallRequest = true;
+    scheduleCallForCurrentMentee({ request: requestPayload })
+      .then(() => {
+        this.showToastNotification('Success', 'Call request sent successfully.', 'success');
+        this.showScheduleModal = false;
+        this.loadScheduledEvents();
+      })
+      .catch((error) => {
+        const message = error?.body?.message || 'Unable to schedule this call right now.';
+        this.showToastNotification('Error', message, 'error');
+      })
+      .finally(() => {
+        this.isSubmittingCallRequest = false;
+      });
   }
 
-  handleScStartTimeChange(event) {
-    this.scStartTime = event.target.value;
-  }
-
-  handleScEndTimeChange(event) {
-    this.scEndTime = event.target.value;
-  }
-
-  handleScDescriptionChange(event) {
-    this.scDescription = event.detail.value;
-  }
-
-  handleScMeetTypeChange(event) {
-    this.scIsOnline = event.target.value === 'online';
-  }
-
-  handleScMeetLinkChange(event) {
-    this.scMeetLink = event.target.value;
-  }
-
-  handleScheduleSend() {
-    // TODO: wire up Apex call to save the scheduled call
-    console.log('Schedule request:', {
-      mentorMentee: this.scMentorMentee,
-      title: this.scTitle,
-      date: this.scDate,
-      startTime: this.scStartTime,
-      endTime: this.scEndTime,
-      description: this.scDescription,
-      isOnline: this.scIsOnline,
-      meetLink: this.scMeetLink
-    });
-    this.showScheduleModal = false;
-    this._resetScheduleForm();
-  }
-
-  _resetScheduleForm() {
-    this.scMentorMentee = '';
-    this.scTitle = '';
-    this.scDate = '';
-    this.scStartTime = '';
-    this.scEndTime = '';
-    this.scDescription = '';
-    this.scMeetLink = '';
-    this.scIsOnline = true;
+  showToastNotification(title, message, variant) {
+    this.toastTitle = title;
+    this.toastMessage = message;
+    this.toastVariant = variant;
+    this.showToast = true;
+    window.clearTimeout(this.toastTimeout);
+    this.toastTimeout = window.setTimeout(() => {
+      this.showToast = false;
+    }, 2000);
   }
 
   handleMonthChange(event) {
@@ -1554,7 +1572,7 @@ export default class KenCalendar extends NavigationMixin(LightningElement) {
       return '';
     }
     const textarea = document.createElement('textarea');
-    textarea.innerHTML = value;
+    replaceElementHtml(textarea, value);
     return textarea.value;
   }
 
