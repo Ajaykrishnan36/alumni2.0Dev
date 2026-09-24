@@ -1,6 +1,23 @@
 @isTest
 private class KenSpeakerInviteEmailServiceTest {
 
+    private static void ensureInviteTemplate() {
+        if (![SELECT Id FROM EmailTemplate WHERE DeveloperName = 'Speaker_Invite' LIMIT 1].isEmpty()) {
+            return;
+        }
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            insert new EmailTemplate(
+                DeveloperName = 'Speaker_Invite',
+                Name = 'Speaker Invite',
+                TemplateType = 'text',
+                FolderId = UserInfo.getUserId(),
+                Subject = 'You are invited to speak',
+                Body = 'Hello {!Ken_Events_Sessions_Enrollment__c.Speaker_Name__c}',
+                IsActive = true
+            );
+        }
+    }
+
     private static Ken_Events_Sessions_Enrollment__c buildSpeaker(Boolean sendInvite, String email) {
         Id eventRt = Schema.SObjectType.Ken_Event_Master__c
             .getRecordTypeInfosByDeveloperName().get('Event').getRecordTypeId();
@@ -29,6 +46,7 @@ private class KenSpeakerInviteEmailServiceTest {
 
     @isTest
     static void testInviteSentOnEnqueue() {
+        ensureInviteTemplate();
         Ken_Events_Sessions_Enrollment__c spk = buildSpeaker(true, 'jane@example.com');
         Id eventId = [SELECT Event_Reference__c FROM Ken_Events_Sessions_Enrollment__c WHERE Id = :spk.Id].Event_Reference__c;
 
@@ -59,9 +77,9 @@ private class KenSpeakerInviteEmailServiceTest {
 
     @isTest
     static void testBypass() {
-        Alumni_Email_Settings__c s = new Alumni_Email_Settings__c(
+        Ken_Alm_Bypass_Settings__c s = new Ken_Alm_Bypass_Settings__c(
             SetupOwnerId = UserInfo.getOrganizationId(),
-            Bypass_Speaker_Invite_Email__c = true
+            Skip_Speaker_Invite_Email__c = true
         );
         insert s;
         Ken_Events_Sessions_Enrollment__c spk = buildSpeaker(true, 'jane@example.com');

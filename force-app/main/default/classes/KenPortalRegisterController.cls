@@ -5,10 +5,9 @@
 public without sharing class KenPortalRegisterController {
 
     private static final String DUPLICATE_REGNUM_MESSAGE = 'An account with this Registration number already exists. Please login or reset your password.';
-    @TestVisible private static final Integer OTP_EXPIRY_MINUTES = 2;
+    @TestVisible private static final Integer OTP_EXPIRY_MINUTES = 1;
     @TestVisible private static final String OTP_EMAIL_TEMPLATE = 'Otp_Email_Template_1703842542947';
-    @TestVisible private static final String ORG_WIDE_NAME = 'Alumni Management';
-    @TestVisible private static final String PERSON_ACCOUNT_RT = 'Alumni_Person_Account';
+    @TestVisible private static final String ORG_WIDE_NAME = KenMessagingService.orgWideAddressName();
     @TestVisible private static Boolean bypassEmailGuardInTests = false;
     @TestVisible private static final String MSG_MISSING_EMAIL = 'Please provide an email address.';
     @TestVisible private static final String MSG_MISSING_OTP = 'Please enter the OTP sent to your email.';
@@ -34,6 +33,7 @@ public without sharing class KenPortalRegisterController {
         @AuraEnabled public String phone;
         @AuraEnabled public String regNumber;
         @AuraEnabled public String gradYear;
+        @AuraEnabled public String yearOfEnrollment;
         @AuraEnabled public String otpEntered;
         // Extended fields — institute (free-text dropdown), program plan (Id from picklist).
         @AuraEnabled public String institutionName;
@@ -49,6 +49,9 @@ public without sharing class KenPortalRegisterController {
     public class RegistrationOptions {
         @AuraEnabled public List<OptionDTO> institutes;
         @AuraEnabled public List<OptionDTO> programs;
+        // Programs grouped by their institute (provider name) so the register page
+        // can offer a dependent picker — only the selected institute's programs.
+        @AuraEnabled public Map<String, List<OptionDTO>> programsByInstitute;
         @AuraEnabled public Integer fromGradYear;
         @AuraEnabled public String defaultDialCountry;
     }
@@ -58,10 +61,12 @@ public without sharing class KenPortalRegisterController {
 
     /**
      * Options for the Lead-register page combobox fields. Institutes are the
-     * distinct Institution_Name__c values found on existing ConstituentRoles
-     * (a formula field, so we de-dupe in-memory). Programs are
-     * LearningProgramPlan rows (label = Name, value = Id) — same source as the
-     * onboarding flow's program-plan picker.
+     * distinct Learning Program Plan providers — the same source the
+     * ConstituentRole.Institution_Name__c formula (Program_Plan__r.Provider.Name)
+     * resolves to. Sourcing from the provider (not from whatever alumni already
+     * exist) means the list is complete even in a fresh org with no alumni data.
+     * Programs are LearningProgramPlan rows (label = Name, value = Id) — same
+     * source as the onboarding flow's program-plan picker.
      */
     @AuraEnabled(cacheable=true)
     public static RegistrationOptions getRegistrationOptions() {
@@ -69,31 +74,40 @@ public without sharing class KenPortalRegisterController {
         out.institutes = new List<OptionDTO>();
         out.programs   = new List<OptionDTO>();
 
-        // Institutes — distinct from existing alumni data.
-        Set<String> seen = new Set<String>();
-        for (ConstituentRole cr : [
-            SELECT Institution_Name__c FROM ConstituentRole
-            WHERE Institution_Name__c != null LIMIT 5000
+        // One pass over the learning program plans: build the flat program list,
+        // group each program under its provider (institute), and derive the
+        // institute list from those providers. Sourcing from the provider — not
+        // from existing alumni — keeps the list complete in a fresh org, and the
+        // grouping powers the register page's dependent institute→program picker.
+        out.programsByInstitute = new Map<String, List<OptionDTO>>();
+        for (LearningProgramPlan p : [
+            SELECT Id, Name, Provider.Name
+            FROM LearningProgramPlan
+            WHERE Name != null
+            WITH SYSTEM_MODE
+            ORDER BY Provider.Name, Name
+            LIMIT 10000
         ]) {
-            String n = cr.Institution_Name__c;
-            if (String.isNotBlank(n) && !seen.contains(n)) {
-                seen.add(n);
-                out.institutes.add(new OptionDTO(n, n));
+            OptionDTO dto = new OptionDTO(p.Name, p.Id);
+            out.programs.add(dto);
+            String inst = (p.Provider != null) ? p.Provider.Name : null;
+            if (String.isNotBlank(inst)) {
+                if (!out.programsByInstitute.containsKey(inst)) {
+                    out.programsByInstitute.put(inst, new List<OptionDTO>());
+                }
+                out.programsByInstitute.get(inst).add(dto);
             }
         }
-        // Stable alphabetical order.
-        out.institutes.sort(new InstituteByLabel());
-
-        // Programs — LearningProgramPlan rows (Id is the value).
-        for (LearningProgramPlan p : [
-            SELECT Id, Name FROM LearningProgramPlan WHERE Name != null ORDER BY Name LIMIT 500
-        ]) {
-            out.programs.add(new OptionDTO(p.Name, p.Id));
+        // Institutes = providers that actually offer programs, alpha-sorted.
+        List<String> instituteNames = new List<String>(out.programsByInstitute.keySet());
+        instituteNames.sort();
+        for (String inst : instituteNames) {
+            out.institutes.add(new OptionDTO(inst, inst));
         }
 
         out.fromGradYear = DEFAULT_FROM_GRAD_YEAR;
         out.defaultDialCountry = DEFAULT_DIAL_NONE;
-        Alumni_Org_Parameters__c orgParam = Alumni_Org_Parameters__c.getOrgDefaults();
+        Ken_Alm_Org_Parameters__c orgParam = Ken_Alm_Org_Parameters__c.getOrgDefaults();
         if (orgParam != null) {
             if (orgParam.From_Graduation_Year__c != null) {
                 Integer configured = Integer.valueOf(orgParam.From_Graduation_Year__c);
@@ -147,8 +161,9 @@ public without sharing class KenPortalRegisterController {
         checkEmailProgramDuplicate(request.email, resolvedPlanId);
 
         String otpCode = generateOtp();
-        Id otpId = saveOtpInformation(request.email, otpCode, null);
+        Id otpId = saveOtpInformation(request.email, otpCode, null, request.phone);
         sendEmail(request.email, otpId);
+        KenMessagingService.sendOtpToPhone(KenMessagingService.TYPE_OTP_EMAIL, request.phone, null, otpCode);
 
         SignupResult result = new SignupResult();
         result.success = true;
@@ -187,6 +202,7 @@ public without sharing class KenPortalRegisterController {
             SELECT Id, Expiry__c, OTP__c, IsActive__c
             FROM Ken_One_Time_Password__c
             WHERE Email__c = :request.email
+            WITH SECURITY_ENFORCED
             ORDER BY CreatedDate DESC 
             LIMIT 1
         ];
@@ -200,7 +216,7 @@ public without sharing class KenPortalRegisterController {
         }
 
         otps[0].IsActive__c = false;
-        update otps[0];
+        Database.update(otps[0], true, AccessLevel.SYSTEM_MODE);
 
         // programPlan now arrives as a LearningProgramPlan.Id from the combobox.
         Id resolvedPlanId = resolveProgramPlanId(request.programPlan);
@@ -208,9 +224,6 @@ public without sharing class KenPortalRegisterController {
         // Safety-net dedup (primary check is in requestSignupOtp).
         checkEmailProgramDuplicate(request.email, resolvedPlanId);
 
-        if (!Schema.sObjectType.Lead.isCreateable()) {
-            throw new AuraHandledException('INSUFFICIENT_CREATE_ACCESS');
-        }
 
         // Resolve referral code to the referring alumni's Account ID
         Id referredById = KenReferralService.resolveReferrerAccountId(request.referalCode);
@@ -224,6 +237,7 @@ public without sharing class KenPortalRegisterController {
             Phone = request.phone,
             Registration_Number__c = String.isNotBlank(request.regNumber) ? request.regNumber : null,
             Year_of_Graduation__c = request.gradYear,
+            Year_of_Enrollment__c = String.isNotBlank(request.yearOfEnrollment) ? request.yearOfEnrollment : null,
             Institution_Name__c = String.isNotBlank(request.institutionName) ? request.institutionName : null,
             Program_Plan__c = resolvedPlanId,
             Status = 'new',
@@ -231,6 +245,9 @@ public without sharing class KenPortalRegisterController {
             Referred_By__c = referredById,
             RecordTypeId = Schema.SObjectType.Lead.getRecordTypeInfosByName().get('Alumni Lead').getRecordTypeId()
         );
+        if (!Schema.sObjectType.Lead.isCreateable()) {
+            throw new KenCrudException('Lead is not createable by the current user.');
+        }
         insert leadRecord;
 
         SignupResult result = new SignupResult();
@@ -245,15 +262,15 @@ public without sharing class KenPortalRegisterController {
         pp = pp.trim();
         try { return (Id) pp; } catch (Exception e) { /* not an Id — fall through to name lookup */ }
         String ppLike = '%' + String.escapeSingleQuotes(pp) + '%';
-        List<LearningProgramPlan> plans = [SELECT Id FROM LearningProgramPlan WHERE Name LIKE :ppLike LIMIT 1];
+        List<LearningProgramPlan> plans = [SELECT Id FROM LearningProgramPlan WHERE Name LIKE :ppLike WITH SYSTEM_MODE LIMIT 1];
         return plans.isEmpty() ? null : plans[0].Id;
     }
 
     private static void checkEmailProgramDuplicate(String email, Id planId) {
         if (String.isBlank(email)) return;
         List<Lead> dup = planId != null
-            ? [SELECT Id FROM Lead WHERE Email = :email AND Program_Plan__c = :planId LIMIT 1]
-            : [SELECT Id FROM Lead WHERE Email = :email AND Program_Plan__c = null LIMIT 1];
+            ? [SELECT Id FROM Lead WHERE Email = :email AND Program_Plan__c = :planId WITH SYSTEM_MODE LIMIT 1]
+            : [SELECT Id FROM Lead WHERE Email = :email AND Program_Plan__c = null WITH SYSTEM_MODE LIMIT 1];
         if (!dup.isEmpty()) {
             throw new AuraHandledException('An account with this email and program already exists. Please login.');
         }
@@ -265,6 +282,7 @@ public without sharing class KenPortalRegisterController {
             SELECT Id
             FROM User
             WHERE Username = :email OR Email = :email
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
 
@@ -284,6 +302,15 @@ public without sharing class KenPortalRegisterController {
 
     @TestVisible
     private static Id saveOtpInformation(String email, String otpNumberEmail, Id accountId) {
+        return saveOtpInformation(email, otpNumberEmail, accountId, null);
+    }
+
+    /**
+     * @description Records the code, and the number it was texted to when the alumnus supplied
+     *              one, so support can tell which channel a missing code was sent on.
+     */
+    @TestVisible
+    private static Id saveOtpInformation(String email, String otpNumberEmail, Id accountId, String mobile) {
         if (!Schema.sObjectType.Ken_One_Time_Password__c.isCreateable()) {
         return null;
     }
@@ -291,6 +318,7 @@ public without sharing class KenPortalRegisterController {
         otp.Email__c = email;
         otp.Person_Account__c = accountId;
         otp.OTP__c = otpNumberEmail;
+        otp.Mobile_Number__c = mobile;
         otp.Expiry__c = System.now().addMinutes(OTP_EXPIRY_MINUTES);
 
         insert otp;
@@ -303,8 +331,8 @@ public without sharing class KenPortalRegisterController {
             return;
         }
 
-        Alumni_Email_Settings__c emailSettings = Alumni_Email_Settings__c.getOrgDefaults();
-        if (emailSettings != null && emailSettings.Bypass_Otp_Email_Template__c) {
+        Ken_Alm_Bypass_Settings__c emailSettings = KenSettings.bypass();
+        if (emailSettings != null && emailSettings.Skip_Otp_Email_Template__c) {
             return;
         }
 
@@ -312,13 +340,29 @@ public without sharing class KenPortalRegisterController {
             SELECT Id, OTP__c
             FROM Ken_One_Time_Password__c
             WHERE Id = :otpId
+            WITH SECURITY_ENFORCED
             LIMIT 1
         ];
+
+        if (!otp.isEmpty()) {
+            Ken_Alm_Org_Parameters__c routingParams = Ken_Alm_Org_Parameters__c.getOrgDefaults();
+            KenMessagingService.Result routed = KenMessagingService.send(
+                new KenMessagingService.Request(KenMessagingService.TYPE_OTP_EMAIL)
+                    .toEmail(email)
+                    .attribute('otp', otp[0].OTP__c)
+                    .attribute('One_Time_Password__c.OTP__c', otp[0].OTP__c)
+                    .attribute('Institution_Alias', routingParams == null ? '' : routingParams.Institution_Alias__c)
+            );
+            if (routed.handled) {
+                return;
+            }
+        }
 
         List<EmailTemplate> templates = [
             SELECT Id,HtmlValue
             FROM EmailTemplate
             WHERE DeveloperName = :OTP_EMAIL_TEMPLATE
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
 
@@ -330,6 +374,7 @@ public without sharing class KenPortalRegisterController {
             SELECT Id
             FROM OrgWideEmailAddress
             WHERE DisplayName = :ORG_WIDE_NAME
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
 
@@ -339,6 +384,7 @@ public without sharing class KenPortalRegisterController {
                 SELECT LetterheadHeader, LetterheadFooter
                 FROM EnhancedLetterhead
                 WHERE Name = 'Alumni Letterhead'
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
         } catch (Exception e) {
@@ -350,7 +396,7 @@ public without sharing class KenPortalRegisterController {
         String letterheadFooter = lh != null && lh.LetterheadFooter != null ? lh.LetterheadFooter : '';
 
          // Fetch Custom Setting once
-        Alumni_Org_Parameters__c orgParam = Alumni_Org_Parameters__c.getOrgDefaults();
+        Ken_Alm_Org_Parameters__c orgParam = Ken_Alm_Org_Parameters__c.getOrgDefaults();
         String institutionAlias = orgParam != null && String.isNotBlank(orgParam.Institution_Alias__c) ? orgParam.Institution_Alias__c : '';
 
         EmailTemplate template = templates[0];

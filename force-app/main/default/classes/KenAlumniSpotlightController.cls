@@ -3,18 +3,19 @@ public without sharing class KenAlumniSpotlightController {
     @AuraEnabled(cacheable=true)
     public static List<SpotlightRow> getAlumniSpotlights() {
         Date today = Date.today();
-        List<KenAlumniSpotlight__c> records = [
+        List<Ken_Alumni_Spotlight__c> records = [
             SELECT Id, Name, Title__c, Description__c, Content_Link__c, Display_Order__c, Type__c
-            FROM KenAlumniSpotlight__c
+            FROM Ken_Alumni_Spotlight__c
             WHERE Is_Active__c = true
               AND (Featured_From__c = null OR Featured_From__c <= :today)
               AND (Featured_To__c   = null OR Featured_To__c   >= :today)
+            WITH SECURITY_ENFORCED
             ORDER BY Display_Order__c ASC NULLS LAST
             LIMIT 20
         ];
 
         List<SpotlightRow> rows = new List<SpotlightRow>();
-        for (KenAlumniSpotlight__c r : records) {
+        for (Ken_Alumni_Spotlight__c r : records) {
             SpotlightRow row    = new SpotlightRow();
             row.id              = r.Id;
             row.name            = r.Name;

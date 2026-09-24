@@ -9,6 +9,14 @@ public without sharing class KenSurveyTriggerHandler extends KenTriggerHandler {
     private static final String TPL_SURVEY_APPROVED  = 'Survey_Approved';
     private static final String TPL_SURVEY_REJECTED  = 'Survey_Rejected';
 
+    public override void processBeforeInsert() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
+    public override void processBeforeUpdate() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
     public override void processAfterInsert() {
         submitSurveyForApproval();
         notifyAdminOnSubmission();

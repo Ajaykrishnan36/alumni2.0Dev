@@ -5,11 +5,37 @@
  * demo data — all section methods return empty DTOs when called with a null
  * recordId or when the SOQL produces no rows. These tests therefore verify
  * the empty-shape contract for null calls, and a single comprehensive test
- * seeds a real Ken_Alumni_CRM__c + Person Account + employment + booking +
+ * seeds a real ConstituentRole + Person Account + employment + booking +
  * mentorship + case to exercise the build*FromOrg paths.
  */
 @IsTest
 private class KenAdminAlumni360ControllerTest {
+
+    private static Id kenCampusId;
+
+    /**
+     * KJS orgs add a required Campus__c lookup (-> Location) on LearningProgram.
+     * Populate it only where the field exists so the tests still run in every
+     * other org, and reuse one Location so a helper called in a loop does not
+     * spend a DML statement per programme.
+     */
+    private static void kenAssignCampus(SObject record) {
+        if (!record.getSObjectType().getDescribe().fields.getMap().containsKey('campus__c')) {
+            return;
+        }
+        if (kenCampusId == null) {
+            Schema.Location campus = new Schema.Location(Name = 'Ken Test Campus');
+            for (Schema.PicklistEntry entry : Schema.Location.LocationType.getDescribe().getPicklistValues()) {
+                if (entry.isActive()) {
+                    campus.LocationType = entry.getValue();
+                    break;
+                }
+            }
+            insert campus;
+            kenCampusId = campus.Id;
+        }
+        record.put('Campus__c', kenCampusId);
+    }
 
     /* ============================================================
        NULL recordId — every section returns a non-null but empty DTO
@@ -203,9 +229,9 @@ private class KenAdminAlumni360ControllerTest {
     }
 
     /* ============================================================
-       Comprehensive real-data test: Account + Ken_Alumni_CRM__c
+       Comprehensive real-data test: Account + ConstituentRole
        + PersonEmployment + Ken_Event_Booking__c + Ken_Mentorship__c
-       + Case — exercises every build*FromOrg path.
+       exercises every build*FromOrg path.
        ============================================================ */
 
     @IsTest
@@ -214,7 +240,7 @@ private class KenAdminAlumni360ControllerTest {
         Id paRtId = null;
         for (RecordType rt : [
             SELECT Id FROM RecordType
-            WHERE SobjectType = 'Account' AND IsPersonType = true LIMIT 1
+            WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
         ]) { paRtId = rt.Id; }
 
         // Seed a Person Account (alumna)
@@ -229,29 +255,28 @@ private class KenAdminAlumni360ControllerTest {
         }
         insert person;
 
-        // Bridge ConstituentRole
+        // Programme plan so the role's programme name resolves
+        Learning l = new Learning(Name = 'BTech CS Learning');
+        insert l;
+        // Program_Name__c on the role is a formula over the LearningProgram name,
+        // so that is the name the header displays.
+        LearningProgram lp = new LearningProgram(Name = 'B.Tech CS', LearningId = l.Id);
+        kenAssignCampus(lp);
+        insert lp;
+        LearningProgramPlan plan = new LearningProgramPlan(Name = 'B.Tech CS Plan', LearningProgramId = lp.Id);
+        insert plan;
+
+        // ConstituentRole — the master record the 360 is anchored on
         ConstituentRole role = new ConstituentRole(
             PersonId = person.Id,
-            RoleType = 'Alumni'
+            RoleType = 'Alumni',
+            Registration_Status__c = 'Initial Login Done',
+            Graduation_Year__c = '2018',
+            Registration_Number__c = 'CS-360-TEST',
+            Program_Plan__c = plan.Id
         );
         try { role.put('Status', 'Active'); } catch (Exception ignored) {}
         insert role;
-
-        // Ken_Alumni_CRM__c master row
-        Ken_Alumni_CRM__c crm = new Ken_Alumni_CRM__c(
-            Program__c = 'B.Tech CS',
-            Year_of_Graduation__c = '2018',
-            Registration_Number__c = 'CS-360-TEST',
-            Current_Company__c = 'TestCorp',
-            Current_Location__c = 'Bangalore',
-            Industry__c = 'Engineering',
-            Approval_Status__c = 'Approved',
-            Is_Active__c = true,
-            ConstituentRole__c = role.Id,
-            Person_Account__c = person.Id,
-            Registration_Date__c = Date.today().addYears(-8)
-        );
-        insert crm;
 
         // PersonEmployment (current role)
         try {
@@ -281,31 +306,20 @@ private class KenAdminAlumni360ControllerTest {
                 Mentor__c = person.Id,
                 Mentee__c = person.Id,
                 Mentorship_Status__c = 'Accepted',
-                Meet_Date__c = Date.today().addDays(-30)
+                Meet_Start_DateTime__c = DateTime.newInstance(Date.today().addDays(-30), Time.newInstance(10, 0, 0, 0))
             );
             insert m;
         } catch (Exception ex) { /* skip if required fields differ */ }
 
-        // Case (one open support ticket)
-        try {
-            Case c = new Case(
-                Subject = 'Test 360 ticket',
-                Status = 'New',
-                Priority = 'High',
-                Constituent_Role__c = role.Id
-            );
-            insert c;
-        } catch (Exception ex) { /* skip if required fields differ */ }
-
         Test.startTest();
         KenAdminAlumni360Controller.Alumni360DTO dto =
-            KenAdminAlumni360Controller.getAlumni360(crm.Id);
+            KenAdminAlumni360Controller.getAlumni360(role.Id);
         Test.stopTest();
 
         // Header binds to the Person Account name
         System.assertNotEquals(null, dto, 'DTO returned for real recordId.');
         System.assertNotEquals(null, dto.header, 'Header populated.');
-        System.assertEquals(crm.Id, dto.header.alumniId, 'Header.alumniId echoes recordId.');
+        System.assertEquals(role.Id, dto.header.alumniId, 'Header.alumniId echoes the role recordId.');
         // Account.Name on a person account is "FirstName LastName"
         if (paRtId != null) {
             System.assertEquals('Test Alumnus360', dto.header.name,
@@ -316,7 +330,9 @@ private class KenAdminAlumni360ControllerTest {
         System.assertEquals('B.Tech CS', dto.header.program);
         System.assertEquals('2018', dto.header.classOf);
         System.assertEquals('CS-360-TEST', dto.header.registrationNumber);
-        System.assertEquals('Active Alumna', dto.header.status);
+        System.assertEquals('Active', dto.header.status,
+            'Header status derives from KenLeadLifecycleService.resolveStage() ' +
+            'against the ConstituentRole Registration_Status__c field.');
 
         // Snapshot — only currentCareer + engagement are wired
         System.assertNotEquals(null, dto.snapshot);
@@ -376,7 +392,7 @@ private class KenAdminAlumni360ControllerTest {
         // data flip) instead of the CRM Id.
         Id paRtId = null;
         for (RecordType rt : [
-            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true LIMIT 1
+            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
         ]) { paRtId = rt.Id; }
 
         Account person = new Account();
@@ -394,31 +410,63 @@ private class KenAdminAlumni360ControllerTest {
         try { role.put('Status', 'Active'); } catch (Exception ignored) {}
         insert role;
 
-        insert new Ken_Alumni_CRM__c(
-            Program__c = 'MBA', Year_of_Graduation__c = '2020',
-            Registration_Number__c = 'MBA-LINK', Is_Active__c = true,
-            ConstituentRole__c = role.Id, Person_Account__c = person.Id
-        );
-
         Test.startTest();
         KenAdminAlumni360Controller.Alumni360DTO dto =
             KenAdminAlumni360Controller.getAlumni360(role.Id);
         Test.stopTest();
 
         System.assertNotEquals(null, dto.header);
-        System.assertEquals('MBA', dto.header.program,
-            'When called with a ConstituentRole Id linked to a CRM row, the resolver should hop through the linkage.');
-        System.assertEquals('2020', dto.header.classOf);
+        System.assertEquals('2020', dto.header.classOf,
+            'Class-of reads Graduation_Year__c straight off the ConstituentRole.');
+        System.assertEquals('MBA-LINK', dto.header.registrationNumber,
+            'Registration number reads straight off the ConstituentRole.');
+    }
+
+    @IsTest
+    static void getAlumni360_constituentRoleId_fallsBackToAccountLevelCrm() {
+        // Bulk-imported alumni: the CRM row hangs off the Person Account only
+        // (ConstituentRole__c = null). A role-Id open must still find it.
+        Id paRtId = null;
+        for (RecordType rt : [
+            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
+        ]) { paRtId = rt.Id; }
+
+        Account person = new Account();
+        if (paRtId != null) {
+            person.RecordTypeId = paRtId;
+            person.FirstName = 'Acct'; person.LastName = 'LevelCrm';
+            person.PersonEmail = 'acct.levelcrm@example.com';
+        } else { person.Name = 'Acct LevelCrm'; }
+        insert person;
+
+        ConstituentRole role = new ConstituentRole(
+            PersonId = person.Id, RoleType = 'Alumni',
+            Graduation_Year__c = '2019', Registration_Number__c = 'IMP-ACCT'
+        );
+        try { role.put('Status', 'Active'); } catch (Exception ignored) {}
+        insert role;
+
+        Test.startTest();
+        KenAdminAlumni360Controller.CrmView resolved =
+            KenAdminAlumni360Controller.resolveCrmRow(role.Id);
+        Test.stopTest();
+
+        System.assertNotEquals(null, resolved, 'A view should be resolved for a role Id.');
+        System.assertEquals(role.Id, resolved.id, 'The view anchors on the ConstituentRole.');
+        System.assertEquals('IMP-ACCT', resolved.registrationNumber,
+            'The view carries the role data.');
+        System.assertEquals(person.Id, resolved.personAccountId,
+            'The view resolves the Person Account through the role.');
     }
 
     @IsTest
     static void getAlumni360_constituentRoleId_synthesisesWhenNoCrm() {
         // The user's actual scenario: ConstituentRole exists, Person Account
-        // exists, but no Ken_Alumni_CRM__c row links them. The synthesizer
+        // exists. The view assembler
         // must build a transient CRM-shaped row so the modal still populates.
         Id paRtId = null;
         for (RecordType rt : [
-            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true LIMIT 1
+            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
         ]) { paRtId = rt.Id; }
 
         Account person = new Account();
@@ -470,7 +518,7 @@ private class KenAdminAlumni360ControllerTest {
     static void updateAlumniProfile_updatesAccountAndCrm_onlyChangedFields() {
         Id paRtId = null;
         for (RecordType rt : [
-            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true LIMIT 1
+            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
         ]) { paRtId = rt.Id; }
 
         Account person = new Account();
@@ -482,40 +530,46 @@ private class KenAdminAlumni360ControllerTest {
         } else { person.Name = 'Edit Target'; }
         insert person;
 
-        ConstituentRole role = new ConstituentRole(PersonId = person.Id, RoleType = 'Alumni');
+        ConstituentRole role = new ConstituentRole(
+            PersonId = person.Id, RoleType = 'Alumni',
+            Graduation_Year__c = '2015', Registration_Number__c = 'OLD-REG'
+        );
         try { role.put('Status', 'Active'); } catch (Exception ignored) {}
         insert role;
 
-        Ken_Alumni_CRM__c crm = new Ken_Alumni_CRM__c(
-            Program__c = 'B.Tech', Year_of_Graduation__c = '2015',
-            Registration_Number__c = 'OLD-REG', Current_Company__c = 'OldCo',
-            Is_Active__c = true, ConstituentRole__c = role.Id, Person_Account__c = person.Id
+        insert new PersonEmployment(
+            AccountId = person.Id, RelatedPersonId = person.Id,
+            Name = 'OldCo', Company_Name__c = 'OldCo',
+            Currently_Employed__c = true, Is_Archived__c = false
         );
-        insert crm;
 
         Test.startTest();
         // Baseline read
-        Map<String, Object> editable = KenAdminAlumni360Controller.getEditableFields(crm.Id);
-        System.assertEquals(true, editable.get('crmEditable'), 'Real CRM row is editable.');
+        Map<String, Object> editable = KenAdminAlumni360Controller.getEditableFields(role.Id);
+        System.assertEquals(true, editable.get('crmEditable'), 'Academic fields are editable via the role.');
         System.assertEquals(true, editable.get('accountEditable'), 'Person Account is editable.');
-        System.assertEquals('2015', editable.get('classOf'), 'classOf reads Year_of_Graduation__c.');
+        System.assertEquals('2015', editable.get('classOf'), 'classOf reads Graduation_Year__c off the role.');
+        System.assertEquals('OldCo', editable.get('currentCompany'),
+            'currentCompany resolves from the current PersonEmployment row.');
         System.assert(editable.containsKey('nationalityOptions'),
             'Nationality options should always be present.');
         List<Object> natOpts = (List<Object>) editable.get('nationalityOptions');
         System.assert(natOpts != null && !natOpts.isEmpty(),
             'nationalityOptions should be populated (picklist describe, or constant fallback for Text fields).');
 
-        // Change one CRM field + one Account field
+        // Change one academic field + one Account field
         String changes = JSON.serialize(new Map<String, Object>{
             'classOf' => '2016',
             'phone'   => '999-000'
         });
-        KenAdminAlumni360Controller.updateAlumniProfile(crm.Id, changes);
+        KenAdminAlumni360Controller.updateAlumniProfile(role.Id, changes);
         Test.stopTest();
 
-        Ken_Alumni_CRM__c after = [SELECT Year_of_Graduation__c, Current_Company__c FROM Ken_Alumni_CRM__c WHERE Id = :crm.Id];
-        System.assertEquals('2016', after.Year_of_Graduation__c, 'classOf was updated.');
-        System.assertEquals('OldCo', after.Current_Company__c, 'Unchanged field left intact.');
+        ConstituentRole after = [SELECT Graduation_Year__c FROM ConstituentRole WHERE Id = :role.Id];
+        System.assertEquals('2016', after.Graduation_Year__c, 'classOf was updated on the role.');
+
+        PersonEmployment emp = [SELECT Company_Name__c FROM PersonEmployment WHERE AccountId = :person.Id LIMIT 1];
+        System.assertEquals('OldCo', emp.Company_Name__c, 'Untouched employment left intact.');
 
         Account a = [SELECT PersonMobilePhone FROM Account WHERE Id = :person.Id];
         System.assertEquals('999-000', a.PersonMobilePhone, 'phone was updated on the Person Account.');
@@ -557,7 +611,7 @@ private class KenAdminAlumni360ControllerTest {
     static void saveEducationAndEmployment_upsertAddAndDelete() {
         Id paRtId = null;
         for (RecordType rt : [
-            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true LIMIT 1
+            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
         ]) { paRtId = rt.Id; }
 
         Account person = new Account();
@@ -626,5 +680,55 @@ private class KenAdminAlumni360ControllerTest {
 
         List<PersonEmployment> emps = [SELECT Designation__c, Currently_Employed__c FROM PersonEmployment WHERE AccountId = :person.Id ORDER BY Designation__c];
         System.assertEquals(2, emps.size(), 'One updated + one added employment row.');
+    }
+
+    @IsTest
+    static void saveEducationRows_idlessDuplicatesCollapseOntoExistingRow() {
+        Id paRtId = null;
+        for (RecordType rt : [
+            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
+        ]) { paRtId = rt.Id; }
+
+        Account person = new Account();
+        if (paRtId != null) {
+            person.RecordTypeId = paRtId;
+            person.FirstName = 'Dup'; person.LastName = 'Education';
+            person.PersonEmail = 'dup.education@example.com';
+        } else { person.Name = 'Dup Education'; }
+        insert person;
+
+        PersonEducation existingEdu;
+        try {
+            existingEdu = new PersonEducation(
+                Name = 'B.E', AccountId = person.Id, Institute_Name__c = 'Anna university',
+                Degree_Name__c = 'B.E', Year_of_Completion__c = '2020', Is_Archived__c = false
+            );
+            insert existingEdu;
+        } catch (Exception ex) { return; } // org schema differs — skip
+
+        // Two id-less rows for the qualification already on file: one must land on
+        // the existing record, the other is dropped as a within-batch duplicate.
+        String rowsJson = JSON.serialize(new List<Map<String, Object>>{
+            new Map<String, Object>{
+                'id' => null, 'institute' => ' anna University ', 'degree' => 'b.e',
+                'gradeType' => 'CGPA', 'grade' => '7.9', 'yearOfCompletion' => '2020'
+            },
+            new Map<String, Object>{
+                'id' => null, 'institute' => 'Anna university', 'degree' => 'B.E',
+                'gradeType' => 'CGPA', 'grade' => '8.1', 'yearOfCompletion' => '2020'
+            }
+        });
+
+        Test.startTest();
+        KenAdminAlumni360Controller.saveEducationRows(person.Id, rowsJson, '[]');
+        Test.stopTest();
+
+        List<PersonEducation> edus = [
+            SELECT Id, Grade__c FROM PersonEducation
+            WHERE AccountId = :person.Id AND Is_Archived__c = false
+        ];
+        System.assertEquals(1, edus.size(), 'Id-less duplicates must not create extra education rows.');
+        System.assertEquals(existingEdu.Id, edus[0].Id, 'The duplicate should have updated the existing record.');
+        System.assertEquals('7.9', edus[0].Grade__c, 'The first matching row wins.');
     }
 }

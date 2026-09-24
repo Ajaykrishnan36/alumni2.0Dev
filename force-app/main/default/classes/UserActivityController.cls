@@ -1,4 +1,10 @@
 public without sharing class UserActivityController {
+    /**
+     * @description Stamps the heartbeat time on the logged-in user's Person
+     *              Account. Update-only: the Account always exists for a portal
+     *              user, so this path never inserts. Previously wrote (and
+     *              created) Ken_Alumni_CRM__c rows; that object is retired.
+     */
     @AuraEnabled
     public static void updateLastActive() {
         List<User> users = [
@@ -11,27 +17,13 @@ public without sharing class UserActivityController {
             return;
         }
 
-        Id accountId = users[0].Contact.AccountId;
-        Datetime nowValue = System.now();
-
-        List<Ken_Alumni_CRM__c> existing = [
-            SELECT Id, Last_Active__c
-            FROM Ken_Alumni_CRM__c
-            WHERE Person_Account__c = :accountId
-            ORDER BY LastModifiedDate DESC
-        ];
-
-        if (!existing.isEmpty()) {
-            for (Ken_Alumni_CRM__c rec : existing) {
-                rec.Last_Active__c = nowValue;
-            }
-            update existing;
-            return;
+        try {
+            update new Account(
+                Id = users[0].Contact.AccountId,
+                Last_Active__c = System.now()
+            );
+        } catch (DmlException e) {
+            System.debug(LoggingLevel.WARN, 'updateLastActive skipped: ' + e.getMessage());
         }
-
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c = accountId,
-            Last_Active__c = nowValue
-        );
     }
 }

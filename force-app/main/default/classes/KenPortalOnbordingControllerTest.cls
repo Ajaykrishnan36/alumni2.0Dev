@@ -1,5 +1,4 @@
 @IsTest
-@SuppressWarnings('PMD.ApexAssertionsShouldIncludeMessage,PMD.MethodNamingConventions,PMD.ApexUnitTestClassShouldHaveRunAs,PMD.EmptyCatchBlock,PMD.AnnotationsNamingConventions,PMD.NcssCount,PMD.IfStmtsMustUseBraces,PMD.IfElseStmtsMustUseBraces')
 private class KenPortalOnbordingControllerTest {
 
     // -------------------------
@@ -34,18 +33,33 @@ private class KenPortalOnbordingControllerTest {
     // -------------------------
     // autoVerifyOnboarding (magic-link path) coverage
     // -------------------------
+    /**
+     * The kill-switch silences the ConstituentRole provisioning side effects this
+     * fixture cannot support. The status move makes the trigger create a community
+     * user, and System.setPassword refuses in an org whose Experience site has no
+     * email settings, which rolls the status change back. What is under test here is
+     * that autoVerifyOnboarding advances the role, not that provisioning succeeds.
+     */
     @IsTest
     static void testAutoVerifyOnboarding() {
+        Ken_Alm_Bypass_Settings__c triggerSettings = KenSettings.bypass();
+        if (triggerSettings == null || triggerSettings.Id == null) {
+            triggerSettings = new Ken_Alm_Bypass_Settings__c(SetupOwnerId = UserInfo.getOrganizationId());
+        }
+        triggerSettings.Skip_ConstituentRole_Trigger__c = true;
+        upsert triggerSettings;
+
         Account pa = [SELECT Id, PersonEmail FROM Account WHERE FirstName = 'Alumni' AND LastName = 'User' LIMIT 1];
         ConstituentRole cr = [SELECT Id FROM ConstituentRole WHERE PersonId = :pa.Id AND RoleType = 'Alumni' LIMIT 1];
+        update new ConstituentRole(Id = cr.Id, Registration_Status__c = 'Unregistered');
 
         Test.startTest();
         String result = KenPortalOnbordingController.autoVerifyOnboarding(pa.PersonEmail, pa.Id, cr.Id, 'tok');
         Test.stopTest();
 
         ConstituentRole updated = [SELECT Registration_Status__c FROM ConstituentRole WHERE Id = :cr.Id LIMIT 1];
-        System.assertEquals('Verified', updated.Registration_Status__c,
-            'autoVerifyOnboarding should mark the alumni role Verified.');
+        System.assertEquals('Onboarding In Progress', updated.Registration_Status__c,
+            'autoVerifyOnboarding should move the role to Onboarding In Progress.');
     }
 
     @IsTest
@@ -83,7 +97,7 @@ private class KenPortalOnbordingControllerTest {
         insert l;
 
         // Person Account
-        Id paRtId = getRecordTypeId('Account', 'Alumni_Person_Account');
+        Id paRtId = getRecordTypeId('Account', 'PersonAccount');
         Account pa = new Account(
             RecordTypeId = paRtId,
             FirstName = 'Alumni',
@@ -111,14 +125,8 @@ private class KenPortalOnbordingControllerTest {
         safePut(cr, 'Lead__c', l.Id);
         insert cr;
 
-        // CRM
-        Ken_Alumni_CRM__c crm = new Ken_Alumni_CRM__c(
-            Person_Account__c = pa.Id,
-            Agree_to_T_C__c = true
-            // IMPORTANT: do NOT set Program__c to 'Program A' if it maps to lookup fields later
-        );
-        prepForInsert(crm);
-        insert crm;
+        // Person-level onboarding facts now live on the Person Account.
+        update new Account(Id = pa.Id, Agree_to_T_C__c = true);
 
         // Address
         Ken_Address__c addr = new Ken_Address__c(
@@ -147,7 +155,7 @@ private class KenPortalOnbordingControllerTest {
     // -------------------------
 
     @IsTest
-    static void testOtpHelpersAndLeadSync_NoInvalidId() {
+    static void testOnboardingHelpersAndLeadSync_NoInvalidId() {
         Account pa = getPA();
         ConstituentRole cr = [
             SELECT Id, Registration_Status__c
@@ -160,16 +168,6 @@ private class KenPortalOnbordingControllerTest {
         Boolean statusUpdateSucceeded = true;
         String statusUpdateMessage = null;
         Test.startTest();
-
-        // OTP helper coverage
-        String otpCode = KenPortalOnbordingController.generateOtp();
-        System.assertEquals(4, otpCode.length());
-
-        Id otpId = KenPortalOnbordingController.saveOtp(pa.PersonEmail, otpCode, pa.Id);
-        System.assertNotEquals(null, otpId);
-
-        Ken_One_Time_Password__c latest = KenPortalOnbordingController.fetchLatestActiveOtp(pa.PersonEmail, pa.Id);
-        System.assertNotEquals(null, latest);
 
         // Status update helper coverage
         try {
@@ -190,10 +188,6 @@ private class KenPortalOnbordingControllerTest {
                 'Unexpected failure while updating constituent role email: ' + ex.getMessage()
             );
         }
-
-        // Lead token expiry helper coverage via safe no-op inputs.
-        KenPortalOnbordingController.expireLeadTokenByToken('NON_MATCHING_TOKEN');
-        KenPortalOnbordingController.expireLeadTokenByCriteria(pa.Id, cr.Id, 'no.match@example.com');
 
         // IMPORTANT: Skip updateLeadDetails because your org maps program fields to lookup
         // and requires valid Ids. That method cannot be safely covered without creating
@@ -306,41 +300,17 @@ private class KenPortalOnbordingControllerTest {
 
         Test.startTest();
 
-        // OTP request + verify path
-        Ken_One_Time_Password__c otp = null;
+        // Magic-link verification (the OTP step was removed)
         try {
-            KenPortalOnbordingController.sendOnboardingOtp(pa.PersonEmail, pa.Id, cr.Id, null);
-            otp = KenPortalOnbordingController.fetchLatestActiveOtp(pa.PersonEmail, pa.Id);
-        } catch (Exception sendEx) {
+            KenPortalOnbordingController.autoVerifyOnboarding(pa.PersonEmail, pa.Id, cr.Id, null);
+        } catch (Exception verifyEx) {
             System.assert(
-                sendEx.getMessage().contains('UNABLE_TO_LOCK_ROW')
-                || sendEx.getMessage().contains('CANNOT_INSERT_UPDATE_ACTIVATE_ENTITY')
-                || sendEx.getMessage().contains('INVALID_CROSS_REFERENCE_KEY')
-                || sendEx.getMessage().contains('INSUFFICIENT_ACCESS')
-                || sendEx.getMessage().contains('portal user email settings'),
-                'Unexpected sendOnboardingOtp failure: ' + sendEx.getMessage()
-            );
-        }
-
-        try {
-            if (otp != null) {
-                KenPortalOnbordingController.verifyOnboardingOtp(pa.PersonEmail, otp.OTP__c, pa.Id, cr.Id, null);
-            }
-        } catch (AuraHandledException ex) {
-            System.assert(
-                ex.getMessage().contains('Script-thrown exception')
-                || ex.getMessage().contains('Wrong Email or Password')
-                || ex.getMessage().contains('UNABLE_TO_LOCK_ROW')
-                || ex.getMessage().contains('CANNOT_INSERT_UPDATE_ACTIVATE_ENTITY')
-                || ex.getMessage().contains('INVALID_CROSS_REFERENCE_KEY'),
-                'Unexpected verifyOnboardingOtp failure: ' + ex.getMessage()
-            );
-        } catch (DmlException ex) {
-            System.assert(
-                ex.getMessage().contains('UNABLE_TO_LOCK_ROW')
-                    || ex.getMessage().contains('CANNOT_INSERT_UPDATE_ACTIVATE_ENTITY')
-                    || ex.getMessage().contains('INVALID_CROSS_REFERENCE_KEY'),
-                'Unexpected verifyOnboardingOtp DML failure: ' + ex.getMessage()
+                verifyEx.getMessage().contains('Script-thrown exception')
+                || verifyEx.getMessage().contains('Wrong Email or Password')
+                || verifyEx.getMessage().contains('UNABLE_TO_LOCK_ROW')
+                || verifyEx.getMessage().contains('CANNOT_INSERT_UPDATE_ACTIVATE_ENTITY')
+                || verifyEx.getMessage().contains('INVALID_CROSS_REFERENCE_KEY'),
+                'Unexpected autoVerifyOnboarding failure: ' + verifyEx.getMessage()
             );
         }
 
@@ -363,6 +333,11 @@ private class KenPortalOnbordingControllerTest {
         payload.state = 'TN';
         payload.currentCity = 'Chennai';
         payload.graduationYear = '2020';
+        payload.dateOfBirth = Date.newInstance(1995, 5, 20);
+        payload.nationality = 'Indian';
+        payload.languages = 'English, Hindi';
+        payload.gender = 'Male';
+        payload.bloodGroup = 'O+';
         payload.agreeToTerms = true;
 
         KenPortalOnbordingController.ProfilePayload saveResp = null;
@@ -391,6 +366,14 @@ private class KenPortalOnbordingControllerTest {
             getResp = KenPortalOnbordingController.getBasicProfile(cr.Id);
         } catch (Exception getEx) {
             System.assertNotEquals(null, getEx.getMessage(), 'getBasicProfile path executed: ' + getEx.getMessage());
+        }
+        if (getResp != null && saveResp != null && saveResp.success == true) {
+            System.assertEquals(Date.newInstance(1995, 5, 20), getResp.dateOfBirth,
+                'Date of birth should round-trip through save + get.');
+            System.assertEquals('English, Hindi', getResp.languages,
+                'Languages should round-trip through save + get.');
+            System.assertEquals('O+', getResp.bloodGroup,
+                'Blood group should round-trip through save + get.');
         }
 
         // Employment flow
@@ -571,37 +554,6 @@ private class KenPortalOnbordingControllerTest {
         Test.stopTest();
     }
 
-    @IsTest
-    static void testOnboardingValidationAndSendOtpEmailNoOpInTests() {
-        Account pa = getPA();
-        ConstituentRole cr = [
-            SELECT Id
-            FROM ConstituentRole
-            WHERE PersonId = :pa.Id
-            AND RoleType = 'Alumni'
-            LIMIT 1
-        ];
-
-        Boolean missingEmailThrown = false;
-        try {
-            KenPortalOnbordingController.sendOnboardingOtp('', pa.Id, cr.Id, null);
-        } catch (AuraHandledException ex) {
-            missingEmailThrown = true;
-        }
-        System.assertEquals(true, missingEmailThrown, 'Blank email should fail for sendOnboardingOtp.');
-
-        Boolean missingOtpThrown = false;
-        try {
-            KenPortalOnbordingController.verifyOnboardingOtp(pa.PersonEmail, '', pa.Id, cr.Id, null);
-        } catch (AuraHandledException ex) {
-            missingOtpThrown = true;
-        }
-        System.assertEquals(true, missingOtpThrown, 'Blank otp should fail for verifyOnboardingOtp.');
-
-        Id otpId = KenPortalOnbordingController.saveOtp(pa.PersonEmail, '9999', pa.Id);
-        KenPortalOnbordingController.sendOtpEmail(pa.PersonEmail, otpId);
-        System.assert(true, 'sendOtpEmail should no-op in test context.');
-    }
 
     @IsTest
     static void testGetBasicProfileViaStubbedAccount() {
@@ -673,11 +625,7 @@ private class KenPortalOnbordingControllerTest {
             SELECT Id FROM ConstituentRole
             WHERE PersonId = :pa.Id AND RoleType = 'Alumni' LIMIT 1
         ];
-        // Link the CRM to this constituent role so the alumniList branch executes with data.
-        Ken_Alumni_CRM__c crm = [SELECT Id FROM Ken_Alumni_CRM__c WHERE Person_Account__c = :pa.Id LIMIT 1];
-        crm.ConstituentRole__c = cr.Id;
-        crm.Profile_Photo_URL__c = 'https://example.com/profile.png';
-        update crm;
+        update new Account(Id = pa.Id, Profile_Photo_URL__c = 'https://example.com/profile.png');
 
         Test.startTest();
         KenPortalOnbordingController.ProfilePayload data =
@@ -702,37 +650,60 @@ private class KenPortalOnbordingControllerTest {
         System.assertNotEquals(null, result, 'Address update should return a record');
         System.assertEquals('Mumbai', result.City__c, 'City should be updated');
     }
-
     @IsTest
-    static void testUpsertKenAlumniProfileExistingPath() {
+    static void testUpsertKenAlumniProfileWritesToAccount() {
         Account pa = getPA();
-        ConstituentRole cr = [
-            SELECT Id FROM ConstituentRole
-            WHERE PersonId = :pa.Id AND RoleType = 'Alumni' LIMIT 1
-        ];
-        // Pre-link the CRM record to the role so the existing-update branch executes.
-        Ken_Alumni_CRM__c crm = [SELECT Id FROM Ken_Alumni_CRM__c WHERE Person_Account__c = :pa.Id LIMIT 1];
-        crm.ConstituentRole__c = cr.Id;
-        update crm;
 
         KenPortalOnbordingController.ProfilePayload payload = new KenPortalOnbordingController.ProfilePayload();
         payload.agreeToTerms = true;
         payload.profileImageUrl = 'https://example.com/new.png';
 
         Test.startTest();
-        Ken_Alumni_CRM__c result = KenPortalOnbordingController.upsertKenAlumniProfile(pa.Id, cr.Id, payload);
+        KenPortalOnbordingController.upsertKenAlumniProfile(pa.Id, payload);
         Test.stopTest();
 
-        System.assertNotEquals(null, result, 'CRM upsert should return a record');
+        Account after = [SELECT Agree_to_T_C__c, Profile_Photo_URL__c FROM Account WHERE Id = :pa.Id];
+        System.assertEquals(true, after.Agree_to_T_C__c, 'Consent should land on the Person Account');
+        System.assertEquals('https://example.com/new.png', after.Profile_Photo_URL__c,
+            'Profile photo should land on the Person Account');
+    }
+
+    @IsTest
+    static void testSaveEmploymentDetailsCreatesEmployment() {
+        Account pa = getPA();
+        ConstituentRole cr = [
+            SELECT Id FROM ConstituentRole
+            WHERE PersonId = :pa.Id AND RoleType = 'Alumni' LIMIT 1
+        ];
+
+        KenPortalOnbordingController.EmploymentRecord rec = new KenPortalOnbordingController.EmploymentRecord();
+        rec.jobTitle = 'Engineer';
+        rec.organization = 'Acme Corp';
+        rec.isCurrentJob = true;
+        rec.startDate = '2024-02-01';
+        rec.employmentType = 'Full Time';
+
+        Test.startTest();
+        KenPortalOnbordingController.saveEmploymentDetails(
+            JSON.serialize(new List<KenPortalOnbordingController.EmploymentRecord>{ rec }), cr.Id);
+        Test.stopTest();
+
+        List<PersonEmployment> emp = [
+            SELECT Company_Name__c, Currently_Employed__c
+            FROM PersonEmployment WHERE AccountId = :pa.Id AND Company_Name__c = 'Acme Corp'
+        ];
+        System.assertEquals(1, emp.size(), 'The current job should be stored as a PersonEmployment row');
+        System.assertEquals(true, emp[0].Currently_Employed__c, 'It should be flagged as the current job');
     }
 
     @IsTest
     static void testUpsertKenAlumniProfileNullInputs() {
         Test.startTest();
-        Ken_Alumni_CRM__c nullAccount = KenPortalOnbordingController.upsertKenAlumniProfile(null,
+        KenPortalOnbordingController.upsertKenAlumniProfile(null,
             new KenPortalOnbordingController.ProfilePayload());
+        KenPortalOnbordingController.upsertKenAlumniProfile(null, null);
         Test.stopTest();
-        System.assertEquals(null, nullAccount, 'Null accountId should return null');
+        System.assert(true, 'Null inputs should be a safe no-op');
     }
 
     @IsTest
@@ -960,6 +931,7 @@ private class KenPortalOnbordingControllerTest {
         p2.state = 'KA';
         p2.currentCity = 'Bengaluru';
         p2.graduationYear = '2019';
+        p2.dateOfBirth = Date.newInstance(1990, 12, 1);
         p2.agreeToTerms = true;
         try {
             KenPortalOnbordingController.saveBasicProfile(JSON.serialize(p2), cr.Id);
@@ -1291,33 +1263,6 @@ private class KenPortalOnbordingControllerTest {
     }
 
     @IsTest
-    static void testExpireLeadTokenByTokenMatch() {
-        // Drives expireLeadTokenByToken matching-lead branch (lines ~1273-1286) using
-        // the seed Lead's Verification_Token__c = 'tok'.
-        Test.startTest();
-        KenPortalOnbordingController.expireLeadTokenByToken('tok');
-        Test.stopTest();
-        Lead refreshed = [SELECT Verification_Token__c, Token_Expiration_Date__c FROM Lead WHERE Email = 'alumni.test@ken.org' LIMIT 1];
-        System.assertEquals(null, refreshed.Verification_Token__c, 'Token should be cleared');
-        System.assertEquals(null, refreshed.Token_Expiration_Date__c, 'Expiration should be cleared');
-    }
-
-    @IsTest
-    static void testExpireLeadTokenByCriteriaHappyPath() {
-        // Drives expireLeadTokenByCriteria find+update branch where findLeadForRole
-        // resolves the seed lead via Registration_Number__c.
-        Account pa = getPA();
-        ConstituentRole cr = [
-            SELECT Id FROM ConstituentRole
-            WHERE PersonId = :pa.Id AND RoleType = 'Alumni' LIMIT 1
-        ];
-        Test.startTest();
-        KenPortalOnbordingController.expireLeadTokenByCriteria(pa.Id, cr.Id, pa.PersonEmail);
-        Test.stopTest();
-        System.assert(true, 'expireLeadTokenByCriteria happy path executed');
-    }
-
-    @IsTest
     static void testFindUserByEmailNoMatch() {
         // findUserByEmail throws AuraHandledException when no matching active user exists
         // — covers lines 1261-1263.
@@ -1348,80 +1293,7 @@ private class KenPortalOnbordingControllerTest {
         System.assert(true, 'data-URI resolve path executed (result=' + result + ')');
     }
 
-    @IsTest
-    static void testVerifyOnboardingOtpHappyPath() {
-        // Drives verifyOnboardingOtp through the valid-OTP branch (lines 122-153) so the
-        // update-otp + lead/role sync + login resolution code executes.
-        Account pa = getPA();
-        ConstituentRole cr = [
-            SELECT Id FROM ConstituentRole
-            WHERE PersonId = :pa.Id AND RoleType = 'Alumni' LIMIT 1
-        ];
 
-        insert new Ken_One_Time_Password__c(
-            Email__c = pa.PersonEmail,
-            Person_Account__c = pa.Id,
-            OTP__c = '4321',
-            IsActive__c = true,
-            Expiry__c = System.now().addMinutes(5)
-        );
-
-        Test.startTest();
-        try {
-            KenPortalOnbordingController.verifyOnboardingOtp(pa.PersonEmail, '4321', pa.Id, cr.Id, 'tok');
-        } catch (Exception ex) {
-            // Login may fail in test context; coverage still recorded for the executed branches.
-        }
-        Test.stopTest();
-        System.assert(true, 'verifyOnboardingOtp valid-otp branch executed');
-    }
-
-    @IsTest
-    static void testSendVerifyOtpExpiredAndInvalid() {
-        // Walks verifyOnboardingOtp through the expired-OTP branch (line ~115-117) and the
-        // invalid-OTP branch (line ~119-121) without coupling to the heavy happy path.
-        Account pa = getPA();
-        ConstituentRole cr = [
-            SELECT Id FROM ConstituentRole
-            WHERE PersonId = :pa.Id AND RoleType = 'Alumni' LIMIT 1
-        ];
-
-        // Insert an expired OTP for the email/account.
-        insert new Ken_One_Time_Password__c(
-            Email__c = pa.PersonEmail,
-            Person_Account__c = pa.Id,
-            OTP__c = '1234',
-            IsActive__c = true,
-            Expiry__c = System.now().addMinutes(-5)
-        );
-
-        Test.startTest();
-        Boolean expiredThrown = false;
-        try {
-            KenPortalOnbordingController.verifyOnboardingOtp(pa.PersonEmail, '1234', pa.Id, cr.Id, null);
-        } catch (AuraHandledException ex) {
-            expiredThrown = true;
-        }
-
-        // Insert a new active OTP and try a wrong value.
-        insert new Ken_One_Time_Password__c(
-            Email__c = pa.PersonEmail,
-            Person_Account__c = pa.Id,
-            OTP__c = '5678',
-            IsActive__c = true,
-            Expiry__c = System.now().addMinutes(5)
-        );
-        Boolean invalidThrown = false;
-        try {
-            KenPortalOnbordingController.verifyOnboardingOtp(pa.PersonEmail, '9999', pa.Id, cr.Id, null);
-        } catch (AuraHandledException ex) {
-            invalidThrown = true;
-        }
-        Test.stopTest();
-
-        System.assertEquals(true, expiredThrown, 'expired OTP branch should throw.');
-        System.assertEquals(true, invalidThrown, 'invalid OTP branch should throw.');
-    }
 
     @IsTest
     static void testEngagementPreferenceSavedAsText() {
@@ -1438,13 +1310,71 @@ private class KenPortalOnbordingControllerTest {
         KenPortalOnbordingController.saveEngagementPreferences(prefs, String.valueOf(cr.Id));
         Test.stopTest();
 
-        Ken_Alumni_CRM__c crm = [
-            SELECT Engagement_Preferences__c FROM Ken_Alumni_CRM__c
-            WHERE ConstituentRole__c = :cr.Id LIMIT 1
+        Account crm = [
+            SELECT Engagement_Preferences__c FROM Account
+            WHERE Id = :pa.Id LIMIT 1
         ];
         System.assertEquals(prefs, crm.Engagement_Preferences__c,
             'Preferences should be stored verbatim as semicolon-separated text (no picklist restriction).');
         System.assertEquals(prefs, KenPortalOnbordingController.getEngagementPreferences(String.valueOf(cr.Id)),
             'Read-back should come from the text field.');
+    }
+
+    @isTest
+    static void bloodGroupOptionsNeverEmpty() {
+        List<KenPortalOnbordingController.OptionValue> options = KenPortalOnbordingController.getBloodGroupOptions();
+        System.assert(!options.isEmpty(),
+            'Blood group options must come from the picklist or fall back to the standard groups.');
+        Set<String> values = new Set<String>();
+        for (KenPortalOnbordingController.OptionValue opt : options) {
+            values.add(opt.value);
+        }
+        System.assert(values.contains('O+'), 'The standard O+ group should always be offered.');
+    }
+
+    /**
+     * The org parameter is the only thing that decides whether the details carried
+     * over from registration are editable, so both directions are asserted here —
+     * and the unset case, which must stay editable so deploying the field alone
+     * never changes an org that has not opted in.
+     */
+    @isTest
+    static void registrationDetailsLockFollowsOrgParameter() {
+        Account pa = getPA();
+        ConstituentRole cr = [
+            SELECT Id FROM ConstituentRole
+            WHERE PersonId = :pa.Id AND RoleType = 'Alumni' LIMIT 1
+        ];
+
+        Test.startTest();
+
+        // No org-parameters record at all: an org that never configured the setting
+        // must behave exactly as it did before the field existed.
+        delete [SELECT Id FROM Ken_Alm_Org_Parameters__c];
+        System.assertEquals(false, KenPortalOnbordingController.isRegistrationDetailsLocked(),
+            'A missing org-parameters record must leave registration details editable.');
+
+        // Explicitly off.
+        Ken_Alm_Org_Parameters__c params = new Ken_Alm_Org_Parameters__c(
+            SetupOwnerId = UserInfo.getOrganizationId(),
+            Lock_Registration_Details__c = false
+        );
+        insert params;
+        System.assertEquals(false, KenPortalOnbordingController.isRegistrationDetailsLocked(),
+            'Unchecked must leave registration details editable.');
+        System.assertEquals(false,
+            KenPortalOnbordingController.getOnboardingState(pa.Id, cr.Id).lockRegistrationDetails,
+            'The onboarding state must report the unlocked setting to the form.');
+
+        // Switched on.
+        params.Lock_Registration_Details__c = true;
+        update params;
+        System.assertEquals(true, KenPortalOnbordingController.isRegistrationDetailsLocked(),
+            'Checked must lock the registration details.');
+        System.assertEquals(true,
+            KenPortalOnbordingController.getOnboardingState(pa.Id, cr.Id).lockRegistrationDetails,
+            'The onboarding state must carry the lock down to the form.');
+
+        Test.stopTest();
     }
 }

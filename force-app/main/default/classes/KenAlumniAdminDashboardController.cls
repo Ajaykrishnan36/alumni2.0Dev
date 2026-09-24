@@ -5,6 +5,9 @@ public with sharing class KenAlumniAdminDashboardController {
         @AuraEnabled public Integer institutionVerified;
         @AuraEnabled public Integer portalRegistered;
         @AuraEnabled public Integer pendingActivation;
+        @AuraEnabled public Integer unverifiedLeads;
+        @AuraEnabled public Integer registeredAlumni;
+        @AuraEnabled public Integer activeAlumni;
     }
 
     public class FunnelStep {
@@ -120,20 +123,42 @@ public with sharing class KenAlumniAdminDashboardController {
     @AuraEnabled(cacheable=true)
     public static DashboardMetrics getDashboardMetrics() {
         DashboardMetrics m = new DashboardMetrics();
-        m.totalAlumni        = [SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni'];
+        m.totalAlumni        = [SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni' WITH USER_MODE];
         m.institutionVerified = [
             SELECT COUNT() FROM ConstituentRole
             WHERE RoleType = 'Alumni'
-            AND Registration_Status__c IN ('Verified', 'Registered', 'Initial Login Done')
+            AND Registration_Status__c IN ('Onboarding In Progress', 'Registered', 'Initial Login Done')
+        WITH USER_MODE
         ];
         m.portalRegistered = [
             SELECT COUNT() FROM ConstituentRole
             WHERE RoleType = 'Alumni'
-            AND Registration_Status__c IN ('Registered', 'Initial Login Done')
+            AND Registration_Status__c IN ('Registered', 'Onboarding In Progress', 'Initial Login Done')
+        WITH USER_MODE
         ];
         m.pendingActivation = m.institutionVerified - m.portalRegistered;
         if (m.pendingActivation < 0) m.pendingActivation = 0;
+        m.unverifiedLeads = KenLeadLifecycleService.countFor('life-leads');
+        m.registeredAlumni = m.portalRegistered;
+        m.activeAlumni = KenLeadLifecycleService.countFor('life-active');
         return m;
+    }
+
+    /**
+     * @description Single lifecycle funnel that walks the seven canonical stages
+     *              defined in KenLeadLifecycleService (Lead -> Active). Replaces
+     *              the previous source-specific funnels on the dashboard.
+     */
+    @AuraEnabled(cacheable=true)
+    public static FunnelData getLifecycleFunnel() {
+        FunnelData f = new FunnelData();
+        f.funnelKey = 'lifecycle';
+        f.title = 'Lead Lifecycle';
+        f.steps = new List<FunnelStep>();
+        for (KenLeadLifecycleService.StageMeta s : KenLeadLifecycleService.getFunnelSteps()) {
+            f.steps.add(new FunnelStep(s.label, KenLeadLifecycleService.countFor(s.filterKey)));
+        }
+        return f;
     }
 
     @AuraEnabled(cacheable=true)
@@ -144,17 +169,23 @@ public with sharing class KenAlumniAdminDashboardController {
 
         if (funnelKey == 'transition') {
             f.title = 'Student-to-Alumni Transition';
-            Integer cohort = [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE ConstituentRole__r.Source_Funnel__c = 'Student-to-Alumni Transition'];
+            Integer cohort = [
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Source_Funnel__c = 'Student-to-Alumni Transition'
+            WITH USER_MODE
+            ];
             Integer invited = cohort;
             Integer registered = [
-                SELECT COUNT() FROM Ken_Alumni_CRM__c
-                WHERE ConstituentRole__r.Source_Funnel__c = 'Student-to-Alumni Transition'
-                AND Has_Logged_In_Once__c = true
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Source_Funnel__c = 'Student-to-Alumni Transition'
+                AND Last_Login__c != null
+            WITH USER_MODE
             ];
             Integer active = [
-                SELECT COUNT() FROM Ken_Alumni_CRM__c
-                WHERE ConstituentRole__r.Source_Funnel__c = 'Student-to-Alumni Transition'
-                AND Is_Active__c = true
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Source_Funnel__c = 'Student-to-Alumni Transition'
+                AND Status != 'Former'
+            WITH USER_MODE
             ];
             f.steps.add(new FunnelStep('Graduating Cohort', cohort));
             f.steps.add(new FunnelStep('Invited to Portal', invited));
@@ -164,18 +195,28 @@ public with sharing class KenAlumniAdminDashboardController {
         } else if (funnelKey == 'leads') {
             f.title = 'Leads & Referrals';
             Set<String> leadSources = new Set<String>{'Self-Declared Lead', 'Campaign Lead', 'Alumni Referral'};
-            Integer leads = [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE ConstituentRole__r.Source_Funnel__c IN :leadSources];
+            Integer leads = [
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Source_Funnel__c IN :leadSources
+            WITH USER_MODE
+            ];
             Integer verified = [
-                SELECT COUNT() FROM Ken_Alumni_CRM__c
-                WHERE ConstituentRole__r.Source_Funnel__c IN :leadSources AND Approval_Status__c = 'Approved'
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Source_Funnel__c IN :leadSources
+                AND Registration_Status__c != null
+            WITH USER_MODE
             ];
             Integer registered = [
-                SELECT COUNT() FROM Ken_Alumni_CRM__c
-                WHERE ConstituentRole__r.Source_Funnel__c IN :leadSources AND Has_Logged_In_Once__c = true
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Source_Funnel__c IN :leadSources
+                AND Last_Login__c != null
+            WITH USER_MODE
             ];
             Integer active = [
-                SELECT COUNT() FROM Ken_Alumni_CRM__c
-                WHERE ConstituentRole__r.Source_Funnel__c IN :leadSources AND Is_Active__c = true
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Source_Funnel__c IN :leadSources
+                AND Status != 'Former'
+            WITH USER_MODE
             ];
             f.steps.add(new FunnelStep('Leads', leads));
             f.steps.add(new FunnelStep('Verified', verified));
@@ -184,21 +225,24 @@ public with sharing class KenAlumniAdminDashboardController {
 
         } else {
             f.title = 'All Data Upload';
-            Integer uploaded = [SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni'];
+            Integer uploaded = [SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni' WITH USER_MODE];
             Integer available = [
                 SELECT COUNT() FROM ConstituentRole
                 WHERE RoleType = 'Alumni'
-                AND Registration_Status__c IN ('Verified', 'Registered', 'Initial Login Done')
+                AND Registration_Status__c IN ('Onboarding In Progress', 'Registered', 'Initial Login Done')
+            WITH USER_MODE
             ];
             Integer registered = [
                 SELECT COUNT() FROM ConstituentRole
                 WHERE RoleType = 'Alumni'
                 AND Registration_Status__c IN ('Registered', 'Initial Login Done')
+            WITH USER_MODE
             ];
             Integer active = [
                 SELECT COUNT() FROM ConstituentRole
                 WHERE RoleType = 'Alumni'
                 AND Registration_Status__c = 'Initial Login Done'
+            WITH USER_MODE
             ];
             f.steps.add(new FunnelStep('Records Uploaded', uploaded));
             f.steps.add(new FunnelStep('Data Available', available));
@@ -212,9 +256,11 @@ public with sharing class KenAlumniAdminDashboardController {
     public static List<SourceSlice> getSourceDistribution() {
         List<SourceSlice> slices = new List<SourceSlice>();
         AggregateResult[] rows = [
-            SELECT ConstituentRole__r.Source_Funnel__c src, COUNT(Id) cnt
-            FROM Ken_Alumni_CRM__c
-            GROUP BY ConstituentRole__r.Source_Funnel__c
+            SELECT Source_Funnel__c src, COUNT(Id) cnt
+            FROM ConstituentRole
+            WHERE RoleType = 'Alumni'
+            WITH USER_MODE
+            GROUP BY Source_Funnel__c
             ORDER BY COUNT(Id) DESC
             LIMIT 10
         ];
@@ -229,17 +275,51 @@ public with sharing class KenAlumniAdminDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<HealthBar> getDataHealthBreakdown() {
         List<HealthBar> bars = new List<HealthBar>();
-        Integer total = [SELECT COUNT() FROM Ken_Alumni_CRM__c];
+        Integer total = [SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni' WITH USER_MODE];
         if (total == 0) return bars;
         Date twelveMonthsAgo = Date.today().addMonths(-12);
-        bars.add(pct('Valid Email',    [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Person_Account__r.PersonEmail != null], total));
-        bars.add(pct('Phone',          [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Person_Account__r.PersonMobilePhone != null], total));
-        bars.add(pct('LinkedIn',       [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Person_Account__r.Linkedin_Profile_URL__c != null], total));
-        bars.add(pct('Location',       [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Current_Location__c != null], total));
-        bars.add(pct('Company',        [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Current_Company__c != null], total));
-        bars.add(pct('Program/Batch',  [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Program__c != null], total));
-        bars.add(pct('Consent',        [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Agree_to_T_C__c = true], total));
-        bars.add(pct('Updated <12mo',  [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE LastModifiedDate >= :twelveMonthsAgo], total));
+        bars.add(pct('Valid Email', [
+            SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni'
+            AND PersonId IN (SELECT Id FROM Account WHERE PersonEmail != null)
+        WITH USER_MODE
+        ], total));
+        bars.add(pct('Phone', [
+            SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni'
+            AND PersonId IN (SELECT Id FROM Account WHERE PersonMobilePhone != null)
+        WITH USER_MODE
+        ], total));
+        bars.add(pct('LinkedIn', [
+            SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni'
+            AND PersonId IN (SELECT Id FROM Account WHERE Linkedin_Profile_URL__c != null)
+        WITH USER_MODE
+        ], total));
+        bars.add(pct('Location', [
+            SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni'
+            AND PersonId IN (SELECT Person_Account__c FROM Ken_Address__c WHERE Address_Type__c = 'Mailing')
+        WITH USER_MODE
+        ], total));
+        bars.add(pct('Company', [
+            SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni'
+            AND PersonId IN (
+                SELECT AccountId FROM PersonEmployment
+                WHERE Company_Name__c != null AND (Is_Archived__c = false OR Is_Archived__c = null)
+            )
+        WITH USER_MODE
+        ], total));
+        bars.add(pct('Program/Batch', [
+            SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni' AND Program_Plan__c != null
+        WITH USER_MODE
+        ], total));
+        bars.add(pct('Consent', [
+            SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni'
+            AND PersonId IN (SELECT Id FROM Account WHERE Agree_to_T_C__c = true)
+        WITH USER_MODE
+        ], total));
+        bars.add(pct('Updated <12mo', [
+            SELECT COUNT() FROM ConstituentRole
+            WHERE RoleType = 'Alumni' AND LastModifiedDate >= :twelveMonthsAgo
+        WITH USER_MODE
+        ], total));
         return bars;
     }
 
@@ -251,13 +331,17 @@ public with sharing class KenAlumniAdminDashboardController {
             Date monthStart = today.toStartOfMonth().addMonths(-i);
             Date monthEnd = monthStart.addMonths(1).addDays(-1);
             Integer registered = [
-                SELECT COUNT() FROM Ken_Alumni_CRM__c
-                WHERE Registration_Date__c >= :monthStart AND Registration_Date__c <= :monthEnd
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni'
+                AND EffectiveStartDate >= :monthStart AND EffectiveStartDate <= :monthEnd
+            WITH USER_MODE
             ];
             Integer active = [
-                SELECT COUNT() FROM Ken_Alumni_CRM__c
-                WHERE Registration_Date__c >= :monthStart AND Registration_Date__c <= :monthEnd
-                AND Is_Active__c = true
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni'
+                AND EffectiveStartDate >= :monthStart AND EffectiveStartDate <= :monthEnd
+                AND Status != 'Former'
+            WITH USER_MODE
             ];
             series.add(new TrendPoint(shortMonth(monthStart.month()), registered, registered, active));
         }
@@ -266,11 +350,10 @@ public with sharing class KenAlumniAdminDashboardController {
 
     @AuraEnabled(cacheable=true)
     public static List<EngagementChannel> getEngagementSummary() {
-        Integer totalAlumni = [SELECT COUNT() FROM Ken_Alumni_CRM__c];
+        Integer totalAlumni = [SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni' WITH USER_MODE];
         List<EngagementChannel> channels = new List<EngagementChannel>();
         channels.add(buildEvents(totalAlumni));
         channels.add(buildMentorship(totalAlumni));
-        channels.add(buildHiringSupport(totalAlumni));
         channels.add(buildDonations(totalAlumni));
         channels.add(buildSurveys(totalAlumni));
         channels.add(buildGroups(totalAlumni));
@@ -294,6 +377,7 @@ public with sharing class KenAlumniAdminDashboardController {
             WHERE RoleType = 'Alumni'
             AND PersonId != null
             AND LastModifiedDate >= :lookback
+            WITH USER_MODE
             ORDER BY LastModifiedDate DESC LIMIT 20
         ]) {
             alumniAccountIds.add(cr.PersonId);
@@ -309,6 +393,7 @@ public with sharing class KenAlumniAdminDashboardController {
                 FROM Account
                 WHERE Id IN :alumniAccountIds
                 AND LastModifiedDate >= :lookback
+                WITH USER_MODE
                 ORDER BY LastModifiedDate DESC LIMIT 20
             ]) {
                 items.add(new ActivityItem('Profile updated: ' + acc.Name,
@@ -316,10 +401,11 @@ public with sharing class KenAlumniAdminDashboardController {
                     acc.LastModifiedDate));
             }
         }
-        for (Ken_Alumni_CRM__c row : [
+        for (ConstituentRole row : [
             SELECT Id, Name, LastModifiedDate, CreatedDate, LastModifiedBy.Name
-            FROM Ken_Alumni_CRM__c
-            WHERE LastModifiedDate >= :lookback
+            FROM ConstituentRole
+            WHERE RoleType = 'Alumni' AND LastModifiedDate >= :lookback
+            WITH USER_MODE
             ORDER BY LastModifiedDate DESC LIMIT 10
         ]) {
             String actor = row.LastModifiedBy != null ? row.LastModifiedBy.Name : 'System';
@@ -333,7 +419,8 @@ public with sharing class KenAlumniAdminDashboardController {
                 SELECT Id, Title, Body, Type, CreatedDate, CreatedBy.Name, ParentId
                 FROM FeedItem
                 WHERE CreatedDate >= :lookback
-                AND Parent.Type = 'Ken_Alumni_CRM__c'
+                AND Parent.Type = 'ConstituentRole'
+                WITH USER_MODE
                 ORDER BY CreatedDate DESC LIMIT 10
             ]) {
                 String t = String.isBlank(fi.Title)
@@ -365,13 +452,24 @@ public with sharing class KenAlumniAdminDashboardController {
     public static List<ActionItem> getSuggestedActions() {
         List<ActionItem> actions = new List<ActionItem>();
         Integer pending = [
-            SELECT COUNT() FROM Ken_Alumni_CRM__c
-            WHERE Has_Logged_In_Once__c = false AND Approval_Status__c = 'Approved'
+            SELECT COUNT() FROM ConstituentRole
+            WHERE RoleType = 'Alumni' AND Last_Login__c = null AND Registration_Status__c != null
+        WITH USER_MODE
         ];
-        Integer dataMissing = [
-            SELECT COUNT() FROM Ken_Alumni_CRM__c
-            WHERE Current_Company__c = null OR Current_Location__c = null
+        Integer totalRoles = [SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni' WITH USER_MODE];
+        Integer haveCompanyAndLocation = [
+            SELECT COUNT() FROM ConstituentRole
+            WHERE RoleType = 'Alumni'
+            AND PersonId IN (
+                SELECT AccountId FROM PersonEmployment
+                WHERE Company_Name__c != null AND (Is_Archived__c = false OR Is_Archived__c = null)
+            )
+            AND PersonId IN (
+                SELECT Person_Account__c FROM Ken_Address__c WHERE Address_Type__c = 'Mailing'
+            )
+        WITH USER_MODE
         ];
+        Integer dataMissing = totalRoles - haveCompanyAndLocation;
         if (pending > 0) {
             actions.add(new ActionItem(
                 'Invite ' + pending + ' verified alumni who have not activated their portal account',
@@ -389,37 +487,68 @@ public with sharing class KenAlumniAdminDashboardController {
 
     @AuraEnabled(cacheable=true)
     public static List<CompletenessBucket> getProfileCompleteness(String audience) {
-        List<Ken_Alumni_CRM__c> rows;
+        List<ConstituentRole> rows;
         if (isActiveAudience(audience)) {
             Set<Id> personIds = activeAudiencePersonIds();
             rows = [
-                SELECT Program__c, Year_of_Graduation__c, Registration_Number__c,
-                       Current_Company__c, Current_Location__c,
-                       Person_Account__c, Person_Account__r.PersonEmail
-                FROM Ken_Alumni_CRM__c
-                WHERE Person_Account__c IN :personIds
+                SELECT PersonId, Program_Plan__c, Graduation_Year__c, Registration_Number__c
+                FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND PersonId IN :personIds
+            WITH USER_MODE
             ];
         } else {
             rows = [
-                SELECT Program__c, Year_of_Graduation__c, Registration_Number__c,
-                       Current_Company__c, Current_Location__c,
-                       Person_Account__c, Person_Account__r.PersonEmail
-                FROM Ken_Alumni_CRM__c
+                SELECT PersonId, Program_Plan__c, Graduation_Year__c, Registration_Number__c
+                FROM ConstituentRole
+                WHERE RoleType = 'Alumni'
+            WITH USER_MODE
             ];
         }
+
+        Set<Id> rolePersonIds = new Set<Id>();
+        for (ConstituentRole r : rows) {
+            if (r.PersonId != null) rolePersonIds.add(r.PersonId);
+        }
+        Set<Id> withEmail = new Set<Id>();
+        Set<Id> withCompany = new Set<Id>();
+        Set<Id> withLocation = new Set<Id>();
+        if (!rolePersonIds.isEmpty()) {
+            for (Account a : [
+                SELECT Id FROM Account WHERE Id IN :rolePersonIds AND PersonEmail != null
+            WITH USER_MODE
+            ]) {
+                withEmail.add(a.Id);
+            }
+            for (PersonEmployment pe : [
+                SELECT AccountId FROM PersonEmployment
+                WHERE AccountId IN :rolePersonIds AND Company_Name__c != null
+                  AND (Is_Archived__c = false OR Is_Archived__c = null)
+            WITH USER_MODE
+            ]) {
+                withCompany.add(pe.AccountId);
+            }
+            for (Ken_Address__c addr : [
+                SELECT Person_Account__c FROM Ken_Address__c
+                WHERE Person_Account__c IN :rolePersonIds AND Address_Type__c = 'Mailing'
+            WITH USER_MODE
+            ]) {
+                withLocation.add(addr.Person_Account__c);
+            }
+        }
+
         Integer total = rows.size();
         Map<String, Integer> buckets = new Map<String, Integer>{
             '90–100%' => 0, '70–89%' => 0, '50–69%' => 0, '30–49%' => 0, '<30%' => 0
         };
-        for (Ken_Alumni_CRM__c r : rows) {
+        for (ConstituentRole r : rows) {
             Integer filled = 0;
             Integer slots = 6;
-            if (String.isNotBlank(r.Program__c)) filled++;
-            if (String.isNotBlank(r.Year_of_Graduation__c)) filled++;
+            if (r.Program_Plan__c != null) filled++;
+            if (String.isNotBlank(r.Graduation_Year__c)) filled++;
             if (String.isNotBlank(r.Registration_Number__c)) filled++;
-            if (String.isNotBlank(r.Current_Company__c)) filled++;
-            if (String.isNotBlank(r.Current_Location__c)) filled++;
-            if (r.Person_Account__c != null && String.isNotBlank(r.Person_Account__r.PersonEmail)) filled++;
+            if (withCompany.contains(r.PersonId)) filled++;
+            if (withLocation.contains(r.PersonId)) filled++;
+            if (withEmail.contains(r.PersonId)) filled++;
             Integer pct = (Integer) Math.round(100.0 * filled / slots);
             String key;
             if (pct >= 90) key = '90–100%';
@@ -446,22 +575,24 @@ public with sharing class KenAlumniAdminDashboardController {
         Map<String, Integer> counts = new Map<String, Integer>();
         for (String l : labels) counts.put(l, 0);
 
-        List<Ken_Alumni_CRM__c> rows;
+        List<ConstituentRole> rows;
         if (isActiveAudience(audience)) {
             Set<Id> personIds = activeAudiencePersonIds();
             rows = [
-                SELECT Year_of_Graduation__c FROM Ken_Alumni_CRM__c
-                WHERE Year_of_Graduation__c != null AND Person_Account__c IN :personIds
+                SELECT Graduation_Year__c FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Graduation_Year__c != null AND PersonId IN :personIds
+            WITH USER_MODE
             ];
         } else {
             rows = [
-                SELECT Year_of_Graduation__c FROM Ken_Alumni_CRM__c
-                WHERE Year_of_Graduation__c != null
+                SELECT Graduation_Year__c FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND Graduation_Year__c != null
+            WITH USER_MODE
             ];
         }
-        for (Ken_Alumni_CRM__c r : rows) {
+        for (ConstituentRole r : rows) {
             Integer grad;
-            try { grad = Integer.valueOf(r.Year_of_Graduation__c); } catch (Exception e) { continue; }
+            try { grad = Integer.valueOf(r.Graduation_Year__c); } catch (Exception e) { continue; }
             Integer age = (thisYear - grad) + 22;
             String key;
             if (age <= 25)      key = '21-25';
@@ -485,11 +616,31 @@ public with sharing class KenAlumniAdminDashboardController {
         Integer employed;
         if (activeOnly) {
             Set<Id> personIds = activeAudiencePersonIds();
-            total    = [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Person_Account__c IN :personIds];
-            employed = [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Person_Account__c IN :personIds AND Current_Company__c != null];
+            total    = [
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND PersonId IN :personIds
+            WITH USER_MODE
+            ];
+            employed = [
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni' AND PersonId IN :personIds
+                AND PersonId IN (
+                    SELECT AccountId FROM PersonEmployment
+                    WHERE Company_Name__c != null AND (Is_Archived__c = false OR Is_Archived__c = null)
+                )
+            WITH USER_MODE
+            ];
         } else {
-            total    = [SELECT COUNT() FROM Ken_Alumni_CRM__c];
-            employed = [SELECT COUNT() FROM Ken_Alumni_CRM__c WHERE Current_Company__c != null];
+            total    = [SELECT COUNT() FROM ConstituentRole WHERE RoleType = 'Alumni' WITH USER_MODE];
+            employed = [
+                SELECT COUNT() FROM ConstituentRole
+                WHERE RoleType = 'Alumni'
+                AND PersonId IN (
+                    SELECT AccountId FROM PersonEmployment
+                    WHERE Company_Name__c != null AND (Is_Archived__c = false OR Is_Archived__c = null)
+                )
+            WITH USER_MODE
+            ];
         }
         if (total == 0) return new List<EmploymentSlice>();
         Integer unknown = total - employed;
@@ -514,6 +665,7 @@ public with sharing class KenAlumniAdminDashboardController {
                 WHERE IsPersonAccount = true
                   AND PersonMailingCity != null
                   AND Id IN :personIds
+                WITH USER_MODE
                 GROUP BY PersonMailingCity
                 ORDER BY COUNT(Id) DESC LIMIT 8
             ];
@@ -522,6 +674,7 @@ public with sharing class KenAlumniAdminDashboardController {
             for (ConstituentRole cr : [
                 SELECT PersonId FROM ConstituentRole
                 WHERE RoleType = 'Alumni' AND PersonId != null
+                WITH USER_MODE
                 LIMIT 50000
             ]) alumniPersonIds.add(cr.PersonId);
             rows = [
@@ -530,6 +683,7 @@ public with sharing class KenAlumniAdminDashboardController {
                 WHERE IsPersonAccount = true
                   AND PersonMailingCity != null
                   AND Id IN :alumniPersonIds
+                WITH USER_MODE
                 GROUP BY PersonMailingCity
                 ORDER BY COUNT(Id) DESC LIMIT 8
             ];
@@ -581,6 +735,7 @@ public with sharing class KenAlumniAdminDashboardController {
             WHERE RoleType = 'Alumni'
             AND PersonId != null
             AND Registration_Status__c IN ('Registered', 'Initial Login Done')
+            WITH USER_MODE
             LIMIT 50000
         ]) {
             ids.add(cr.PersonId);
@@ -616,11 +771,11 @@ public with sharing class KenAlumniAdminDashboardController {
         Datetime d180 = Datetime.now().addDays(-180);
         Datetime d30  = Datetime.now().addDays(-30);
 
-        Integer engaged   = countDistinctAccounts([SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null]);
-        Integer active90  = countDistinctAccounts([SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null AND CreatedDate >= :d90]);
-        Integer prev90    = countDistinctAccounts([SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null AND CreatedDate >= :d180 AND CreatedDate < :d90]);
-        Integer newM      = countDistinctAccounts([SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null AND CreatedDate >= :d30]);
-        Integer repeated  = [SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null GROUP BY Person_Account__c HAVING COUNT(Id) >= 2].size();
+        Integer engaged   = countDistinctAccounts([SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null WITH USER_MODE]);
+        Integer active90  = countDistinctAccounts([SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null AND CreatedDate >= :d90 WITH USER_MODE]);
+        Integer prev90    = countDistinctAccounts([SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null AND CreatedDate >= :d180 AND CreatedDate < :d90 WITH USER_MODE]);
+        Integer newM      = countDistinctAccounts([SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null AND CreatedDate >= :d30 WITH USER_MODE]);
+        Integer repeated  = [SELECT Person_Account__c FROM Ken_Event_Booking__c WHERE Person_Account__c != null WITH USER_MODE GROUP BY Person_Account__c HAVING COUNT(Id) >= 2].size();
         return makeChannel('Events', engaged, active90, prev90, newM, repeated, baseTotal);
     }
 
@@ -634,7 +789,7 @@ public with sharing class KenAlumniAdminDashboardController {
         Set<Id> prev = new Set<Id>();
         Set<Id> news = new Set<Id>();
         Map<Id, Integer> counts = new Map<Id, Integer>();
-        for (Ken_Mentorship__c m : [SELECT Id, Mentor__c, Mentee__c, CreatedDate FROM Ken_Mentorship__c]) {
+        for (Ken_Mentorship__c m : [SELECT Id, Mentor__c, Mentee__c, CreatedDate FROM Ken_Mentorship__c WITH USER_MODE]) {
             for (Id a : new List<Id>{ m.Mentor__c, m.Mentee__c }) {
                 if (a == null) continue;
                 all.add(a);
@@ -654,11 +809,11 @@ public with sharing class KenAlumniAdminDashboardController {
         Datetime d180 = Datetime.now().addDays(-180);
         Datetime d30  = Datetime.now().addDays(-30);
 
-        Integer engaged   = countDistinctMembers([SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null]);
-        Integer active90  = countDistinctMembers([SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null AND CreatedDate >= :d90]);
-        Integer prev90    = countDistinctMembers([SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null AND CreatedDate >= :d180 AND CreatedDate < :d90]);
-        Integer newM      = countDistinctMembers([SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null AND CreatedDate >= :d30]);
-        Integer repeated  = [SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null GROUP BY Member__c HAVING COUNT(Id) >= 2].size();
+        Integer engaged   = countDistinctMembers([SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null WITH USER_MODE]);
+        Integer active90  = countDistinctMembers([SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null AND CreatedDate >= :d90 WITH USER_MODE]);
+        Integer prev90    = countDistinctMembers([SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null AND CreatedDate >= :d180 AND CreatedDate < :d90 WITH USER_MODE]);
+        Integer newM      = countDistinctMembers([SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null AND CreatedDate >= :d30 WITH USER_MODE]);
+        Integer repeated  = [SELECT Member__c FROM Ken_Group_Member__c WHERE Member__c != null WITH USER_MODE GROUP BY Member__c HAVING COUNT(Id) >= 2].size();
         return makeChannel('Groups & Chapters', engaged, active90, prev90, newM, repeated, baseTotal);
     }
 
@@ -667,25 +822,18 @@ public with sharing class KenAlumniAdminDashboardController {
         Datetime d180 = Datetime.now().addDays(-180);
         Datetime d30  = Datetime.now().addDays(-30);
 
-        Integer engaged   = countDistinctRespondents([SELECT Respondent__c FROM Ken_Questionnaire_Parameter_Response__c WHERE Respondent__c != null]);
-        Integer active90  = countDistinctRespondents([SELECT Respondent__c FROM Ken_Questionnaire_Parameter_Response__c WHERE Respondent__c != null AND CreatedDate >= :d90]);
-        Integer prev90    = countDistinctRespondents([SELECT Respondent__c FROM Ken_Questionnaire_Parameter_Response__c WHERE Respondent__c != null AND CreatedDate >= :d180 AND CreatedDate < :d90]);
-        Integer newM      = countDistinctRespondents([SELECT Respondent__c FROM Ken_Questionnaire_Parameter_Response__c WHERE Respondent__c != null AND CreatedDate >= :d30]);
-        Integer repeated  = [SELECT Respondent__c FROM Ken_Questionnaire_Parameter_Response__c WHERE Respondent__c != null GROUP BY Respondent__c HAVING COUNT(Id) >= 2].size();
-        return makeChannel('Surveys', engaged, active90, prev90, newM, repeated, baseTotal);
-    }
+        // Respondents are de-duplicated by account, so someone who submitted more than once
+        // counts as one engaged alumnus.
+        Set<Id> engagedIds  = assessmentRespondentIds([SELECT Respondent__c FROM Assessment WHERE Respondent__c != null WITH USER_MODE]);
+        Set<Id> active90Ids = assessmentRespondentIds([SELECT Respondent__c FROM Assessment WHERE Respondent__c != null AND CreatedDate >= :d90 WITH USER_MODE]);
+        Set<Id> prev90Ids   = assessmentRespondentIds([SELECT Respondent__c FROM Assessment WHERE Respondent__c != null AND CreatedDate >= :d180 AND CreatedDate < :d90 WITH USER_MODE]);
+        Set<Id> newIds      = assessmentRespondentIds([SELECT Respondent__c FROM Assessment WHERE Respondent__c != null AND CreatedDate >= :d30 WITH USER_MODE]);
 
-    private static EngagementChannel buildHiringSupport(Integer baseTotal) {
-        Datetime d90  = Datetime.now().addDays(-90);
-        Datetime d180 = Datetime.now().addDays(-180);
-        Datetime d30  = Datetime.now().addDays(-30);
-
-        Integer engaged   = countDistinctSubmitters([SELECT Submitter__c FROM Case WHERE Submitter__c != null]);
-        Integer active90  = countDistinctSubmitters([SELECT Submitter__c FROM Case WHERE Submitter__c != null AND CreatedDate >= :d90]);
-        Integer prev90    = countDistinctSubmitters([SELECT Submitter__c FROM Case WHERE Submitter__c != null AND CreatedDate >= :d180 AND CreatedDate < :d90]);
-        Integer newM      = countDistinctSubmitters([SELECT Submitter__c FROM Case WHERE Submitter__c != null AND CreatedDate >= :d30]);
-        Integer repeated  = [SELECT Submitter__c FROM Case WHERE Submitter__c != null GROUP BY Submitter__c HAVING COUNT(Id) >= 2].size();
-        return makeChannel('Hiring Support', engaged, active90, prev90, newM, repeated, baseTotal);
+        Set<Id> repeatedIds = new Set<Id>();
+        for (AggregateResult ar : [SELECT Respondent__c rid FROM Assessment WHERE Respondent__c != null WITH USER_MODE GROUP BY Respondent__c HAVING COUNT(Id) >= 2]) {
+            repeatedIds.add((Id) ar.get('rid'));
+        }
+        return makeChannel('Surveys', engagedIds.size(), active90Ids.size(), prev90Ids.size(), newIds.size(), repeatedIds.size(), baseTotal);
     }
 
     private static Integer countDistinctAccounts(List<Ken_Event_Booking__c> rows) {
@@ -698,15 +846,10 @@ public with sharing class KenAlumniAdminDashboardController {
         for (Ken_Group_Member__c r : rows) if (r.Member__c != null) s.add(r.Member__c);
         return s.size();
     }
-    private static Integer countDistinctRespondents(List<Ken_Questionnaire_Parameter_Response__c> rows) {
+    private static Set<Id> assessmentRespondentIds(List<Assessment> rows) {
         Set<Id> s = new Set<Id>();
-        for (Ken_Questionnaire_Parameter_Response__c r : rows) if (r.Respondent__c != null) s.add(r.Respondent__c);
-        return s.size();
-    }
-    private static Integer countDistinctSubmitters(List<Case> rows) {
-        Set<Id> s = new Set<Id>();
-        for (Case r : rows) if (r.Submitter__c != null) s.add(r.Submitter__c);
-        return s.size();
+        for (Assessment r : rows) if (r.Respondent__c != null) s.add(r.Respondent__c);
+        return s;
     }
 
     private static EngagementChannel makeChannel(String name, Integer engaged, Integer active90, Integer prev90, Integer newM, Integer repeated, Integer baseTotal) {

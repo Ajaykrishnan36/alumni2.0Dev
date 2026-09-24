@@ -1,6 +1,6 @@
 /**
  * @description Controller for the V2 Home Dashboard (LWC: ken42AlumniHomeV2).
- *              Resolves current user → Person Account → Ken_Alumni_CRM__c,
+ *              Resolves current user → Person Account → ConstituentRole,
  *              determines portal phase, and assembles dashboard state, action
  *              items, quick actions, and the home feed for the phase-based UI.
  *
@@ -128,7 +128,20 @@ public with sharing class KenHomeController {
         Id accountId;
         Id contactId;
         Account account;
-        Ken_Alumni_CRM__c crm;
+        CrmFacts crm;
+    }
+
+    // Flat profile facts assembled from ConstituentRole, Account, the current
+    // PersonEmployment and the Mailing address. Replaced the retired
+    // Ken_Alumni_CRM__c row this controller used to query.
+    private class CrmFacts {
+        String portalPhase;
+        String graduationYear;
+        String profilePhotoUrl;
+        String currentCompany;
+        String currentLocation;
+        String industry;
+        String interests;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -156,10 +169,10 @@ public with sharing class KenHomeController {
         }
 
         if (ctx.crm != null) {
-            String p = ctx.crm.Portal_Phase__c;
+            String p = ctx.crm.portalPhase;
             state.phase = (p == PHASE_CONNECT) ? PHASE_CONNECT : PHASE_VERIFY;
-            if (!String.isBlank(ctx.crm.Year_of_Graduation__c)) {
-                state.batchLabel = 'Batch ' + ctx.crm.Year_of_Graduation__c;
+            if (!String.isBlank(ctx.crm.graduationYear)) {
+                state.batchLabel = 'Batch ' + ctx.crm.graduationYear;
             }
         }
 
@@ -318,10 +331,11 @@ public with sharing class KenHomeController {
 
         try {
             List<Account> accs = [
-                SELECT Id, FirstName, LastName, PersonContactId, Linkedin_Profile_URL__c
+                SELECT Id, FirstName, LastName, PersonContactId, Linkedin_Profile_URL__c,
+                       Profile_Photo_URL__c
                 FROM Account
                 WHERE Id = :ctx.accountId
-               
+
                 LIMIT 1
             ];
             if (!accs.isEmpty()) {
@@ -333,20 +347,33 @@ public with sharing class KenHomeController {
         }
 
         try {
-            List<Ken_Alumni_CRM__c> crms = [
-                SELECT Id, Person_Account__c, Portal_Phase__c, Profile_Photo_URL__c,
-                       Current_Company__c, Current_Location__c, Year_of_Graduation__c,
-                       Specialization__c, Industry__c, Interests__c, Skills__c,
-                       Program__c
-                FROM Ken_Alumni_CRM__c
-                WHERE Person_Account__c = :ctx.accountId
-               
-                ORDER BY CreatedDate DESC
+            CrmFacts facts = new CrmFacts();
+            if (ctx.account != null) {
+                facts.profilePhotoUrl = ctx.account.Profile_Photo_URL__c;
+            }
+            List<ConstituentRole> roles = [
+                SELECT Registration_Status__c, Graduation_Year__c
+                FROM ConstituentRole
+                WHERE PersonId = :ctx.accountId AND RoleType = 'Alumni'
+                ORDER BY Last_Login__c DESC NULLS LAST, CreatedDate DESC
                 LIMIT 1
             ];
-            if (!crms.isEmpty()) ctx.crm = crms[0];
+            if (!roles.isEmpty()) {
+                facts.graduationYear = roles[0].Graduation_Year__c;
+                // An alumnus who has completed onboarding is past verification.
+                facts.portalPhase = roles[0].Registration_Status__c == 'Initial Login Done'
+                    ? PHASE_CONNECT : PHASE_VERIFY;
+            }
+            KenAlumniProfileService.EmploymentSnapshot emp =
+                KenAlumniProfileService.currentEmployment(ctx.accountId);
+            if (emp != null) {
+                facts.currentCompany = emp.company;
+                facts.industry = emp.industry;
+            }
+            facts.currentLocation = KenAlumniProfileService.currentLocation(ctx.accountId);
+            ctx.crm = facts;
         } catch (Exception ex) {
-            System.debug(LoggingLevel.WARN, 'KenHomeController.resolveContext crm: ' + ex.getMessage());
+            System.debug(LoggingLevel.WARN, 'KenHomeController.resolveContext facts: ' + ex.getMessage());
         }
         return ctx;
     }
@@ -357,7 +384,7 @@ public with sharing class KenHomeController {
 
     private static Integer computeCompleteness(UserContext ctx) {
         // True, dynamic calculation over 8 weighted fields (each = 12.5%), read
-        // from the user's actual Account + Ken_Alumni_CRM__c records:
+        // from the user's actual Account + ConstituentRole/PersonEmployment records:
         //   1. Name (First+Last)            5. City (Current_Location__c)
         //   2. LinkedIn (Account)           6. Graduation Year
         //   3. Photo (Profile_Photo_URL__c) 7. Industry
@@ -369,12 +396,12 @@ public with sharing class KenHomeController {
             if (!String.isBlank(ctx.account.Linkedin_Profile_URL__c)) filled++;
         }
         if (ctx.crm != null) {
-            if (!String.isBlank(ctx.crm.Profile_Photo_URL__c))    filled++;
-            if (!String.isBlank(ctx.crm.Current_Company__c))      filled++;
-            if (!String.isBlank(ctx.crm.Current_Location__c))     filled++;
-            if (!String.isBlank(ctx.crm.Year_of_Graduation__c))   filled++;
-            if (!String.isBlank(ctx.crm.Industry__c))             filled++;
-            if (!String.isBlank(ctx.crm.Interests__c))            filled++;
+            if (!String.isBlank(ctx.crm.profilePhotoUrl))    filled++;
+            if (!String.isBlank(ctx.crm.currentCompany))      filled++;
+            if (!String.isBlank(ctx.crm.currentLocation))     filled++;
+            if (!String.isBlank(ctx.crm.graduationYear))   filled++;
+            if (!String.isBlank(ctx.crm.industry))             filled++;
+            if (!String.isBlank(ctx.crm.interests))            filled++;
         }
         return Math.min(100, (Integer) Math.round((filled * 100.0) / TOTAL));
     }
@@ -469,12 +496,12 @@ public with sharing class KenHomeController {
 
     private static List<ActionItemDTO> buildVerifyActionItems(UserContext ctx) {
         List<ActionItemDTO> items = new List<ActionItemDTO>();
-        Ken_Alumni_CRM__c crm = (ctx == null) ? null : ctx.crm;
+        CrmFacts crm = (ctx == null) ? null : ctx.crm;
         Account acc = (ctx == null) ? null : ctx.account;
 
         items.add(action('v-company', 'Add current company',
             'Helps batchmates find you',
-            crm != null && !String.isBlank(crm.Current_Company__c),
+            crm != null && !String.isBlank(crm.currentCompany),
             'Add', '/my-profile?edit=company', 'high', 1));
 
         items.add(action('v-linkedin', 'Add LinkedIn URL',
@@ -484,17 +511,17 @@ public with sharing class KenHomeController {
 
         items.add(action('v-city', 'Confirm current city',
             'So we can suggest local meetups',
-            crm != null && !String.isBlank(crm.Current_Location__c),
+            crm != null && !String.isBlank(crm.currentLocation),
             'Confirm', '/my-profile?edit=city', 'medium', 3));
 
         items.add(action('v-photo', 'Upload photo',
             'Required for your alumni ID',
-            crm != null && !String.isBlank(crm.Profile_Photo_URL__c),
+            crm != null && !String.isBlank(crm.profilePhotoUrl),
             'Upload', '/my-profile?edit=photo', 'medium', 4));
 
         items.add(action('v-about', 'Add interests',
             'Powers smart introductions',
-            crm != null && !String.isBlank(crm.Interests__c),
+            crm != null && !String.isBlank(crm.interests),
             'Add', '/my-profile?tab=about', 'low', 5));
 
         // Achievements count
@@ -518,7 +545,7 @@ public with sharing class KenHomeController {
 
         items.add(action('v-grad', 'Set graduation year',
             'Find your batch',
-            crm != null && !String.isBlank(crm.Year_of_Graduation__c),
+            crm != null && !String.isBlank(crm.graduationYear),
             'Set', '/my-profile', 'medium', 7));
 
         return items;

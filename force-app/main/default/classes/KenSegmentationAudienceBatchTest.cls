@@ -1,5 +1,4 @@
 @IsTest(SeeAllData=true)
-@SuppressWarnings('PMD.ApexUnitTestShouldNotUseSeeAllDataTrue')
 private class KenSegmentationAudienceBatchTest {
 
     // Test processor: collects the base ids it receives so the test can assert on them.
@@ -23,7 +22,7 @@ private class KenSegmentationAudienceBatchTest {
         Id paRtId;
         try {
             paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-                .get('Alumni_Person_Account').getRecordTypeId();
+                .get('PersonAccount').getRecordTypeId();
         } catch (Exception e) { return null; }
         if (paRtId == null) return null;
         String stamp = String.valueOf(System.currentTimeMillis()) + tag;
@@ -37,15 +36,27 @@ private class KenSegmentationAudienceBatchTest {
         return role.Id;
     }
 
+    /**
+     * A test method may only ever drive ONE execute() — start() returning more rows
+     * than the scope size aborts the run with "No more than one executeBatch can be
+     * called from within a test method". An unfiltered ALUMNI audience is every
+     * alumnus in the org, which is a handful in a sandbox and thousands of rows in
+     * production, so the audience is narrowed to the single role created here. That
+     * keeps the test about the batch rather than about how much data happens to be
+     * sitting in the org it runs against.
+     */
     @IsTest
     static void testBatchStreamsIdsAndUpdatesCount() {
         Id roleId = provisionAlumniRole('A');
         if (roleId == null) { System.assert(true, 'Person Account RT unavailable; skip'); return; }
 
         String name = 'AudBatch Seg ' + String.valueOf(System.now().getTime());
-        // Single ALUMNI item; buildItemWhere => WHERE RoleType = 'ALUMNI'.
+        // Single ALUMNI item, narrowed to the one role this test just created.
+        ConstituentRole created = [SELECT Email__c FROM ConstituentRole WHERE Id = :roleId LIMIT 1];
         String payload = '{"targetObject":"ConstituentRole","items":[' +
-            '{"id":"a","type":"CUSTOM","role":"ALUMNI","criteria":[]}]}';
+            '{"id":"a","type":"CUSTOM","role":"ALUMNI","criteria":[' +
+            '{"key":"Email","fieldApi":"Email__c","objectApi":"ConstituentRole","values":["' +
+            created.Email__c + '"]}]}]}';
         Id segId = KenAudienceEngineService.saveAudiencePayload(name, payload, null, true, 'Active');
 
         Test.startTest();
@@ -55,6 +66,8 @@ private class KenSegmentationAudienceBatchTest {
         System.assert(handleCalls >= 1, 'processor.handle should be called at least once');
         System.assert(completeCalls >= 1, 'processor.onComplete should be called once');
         System.assert(completedTotal >= 1, 'resolved distinct people should be >= 1');
+        System.assertEquals(1, collected.size(),
+            'The narrowed audience must stream exactly the one role it matches.');
 
         Ken_Segmentation__c seg = [SELECT Member_Count__c FROM Ken_Segmentation__c WHERE Id = :segId];
         System.assertNotEquals(null, seg.Member_Count__c, 'Member_Count__c should be written on completion');

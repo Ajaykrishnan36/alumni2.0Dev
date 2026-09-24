@@ -1,7 +1,9 @@
 @IsTest
 private class KenGroupsControllerTest {
+    // Fixture day for the UTC instants that replaced the old Date+Time pairs.
+    private static final Date TZ_TEST_DAY = Date.today();
 
-    private static final String ALUMNI_RT = 'Alumni_Person_Account';
+    private static final String ALUMNI_RT = 'PersonAccount';
 
     private static Id getPersonAccountRtId() {
         List<RecordType> rts = [
@@ -11,7 +13,7 @@ private class KenGroupsControllerTest {
         if (!rts.isEmpty()) {
             return rts[0].Id;
         }
-        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account']) {
+        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account' AND IsActive = true]) {
             if (rt.IsPersonType) {
                 return rt.Id;
             }
@@ -470,13 +472,7 @@ private class KenGroupsControllerTest {
             Status__c = 'Accepted'
         );
 
-        // Ken_Alumni_CRM with a photo URL for the friend.
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c = creatorAcc.Id,
-            Profile_Photo_URL__c = 'https://example.com/friend.jpg',
-            Year_of_Graduation__c = '2020',
-            Is_Private__c = false
-        );
+        update new Account(Id = creatorAcc.Id, Profile_Photo_URL__c = 'https://example.com/friend.jpg');
 
         KenGroupsController.testCurrentAccountId = memberAcc.Id;
 
@@ -504,11 +500,7 @@ private class KenGroupsControllerTest {
             Is_Admin_Invite__c = false
         );
 
-        // CRM record for creator with a photo URL.
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c = creatorAcc.Id,
-            Profile_Photo_URL__c = 'https://example.com/creator.png'
-        );
+        update new Account(Id = creatorAcc.Id, Profile_Photo_URL__c = 'https://example.com/creator.png');
 
         KenGroupsController.testCurrentAccountId = memberAcc.Id;
 
@@ -535,11 +527,12 @@ private class KenGroupsControllerTest {
             Joined_Date__c = Date.today()
         );
 
-        // CRM record with photo + year of graduation so both batch and photo branches execute.
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c = memberAcc.Id,
-            Profile_Photo_URL__c = 'https://example.com/photo.png',
-            Year_of_Graduation__c = '2019'
+        // Photo + graduation year on their canonical homes so both batch and
+        // photo branches execute.
+        update new Account(Id = memberAcc.Id, Profile_Photo_URL__c = 'https://example.com/photo.png');
+        insert new ConstituentRole(
+            PersonId = memberAcc.Id, RoleType = 'Alumni',
+            Status = 'Active', Graduation_Year__c = '2019'
         );
 
         Test.startTest();
@@ -555,10 +548,10 @@ private class KenGroupsControllerTest {
         Account memberAcc = [SELECT Id FROM Account WHERE LastName = 'Member' LIMIT 1];
         Ken_Group__c grp  = [SELECT Id FROM Ken_Group__c WHERE Name = 'Public Test Group' LIMIT 1];
 
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c = memberAcc.Id,
-            Profile_Photo_URL__c = 'https://example.com/inv.png',
-            Year_of_Graduation__c = '2021'
+        update new Account(Id = memberAcc.Id, Profile_Photo_URL__c = 'https://example.com/inv.png');
+        insert new ConstituentRole(
+            PersonId = memberAcc.Id, RoleType = 'Alumni',
+            Status = 'Active', Graduation_Year__c = '2021'
         );
 
         Test.startTest();
@@ -585,12 +578,15 @@ private class KenGroupsControllerTest {
             seg = new Ken_Segmentation__c(Name = 'Test Segmentation');
             insert seg;
 
-            Id linkId = KenGroupsController.createGroupSegmentation(grpId, seg.Id);
-            System.assertNotEquals(null, linkId, 'Segmentation link should be created');
+            Id linked = KenGroupsController.createGroupSegmentation(grpId, seg.Id);
+            System.assertNotEquals(null, linked, 'Group audience should be set');
 
-            // Call again to exercise existing-link short-circuit.
-            Id linkId2 = KenGroupsController.createGroupSegmentation(grpId, seg.Id);
-            System.assertEquals(linkId, linkId2, 'Second call should return the same link id');
+            // Call again to exercise the unchanged-value short-circuit.
+            Id linked2 = KenGroupsController.createGroupSegmentation(grpId, seg.Id);
+            System.assertEquals(linked, linked2, 'Second call should be idempotent');
+            System.assertEquals(seg.Id,
+                [SELECT Segmentation__c FROM Ken_Group__c WHERE Id = :grpId].Segmentation__c,
+                'The group must carry the linked audience');
         } catch (Exception e) {
             // Ken_Segmentation__c may not exist in all orgs; just confirm createGroup succeeded.
             System.assertNotEquals(null, e.getMessage(), 'createGroupSegmentation path exercised');
@@ -683,8 +679,8 @@ private class KenGroupsControllerTest {
         );
         insert seg;
 
-        insert new Ken_Group_Segmentation__c(
-            Group__c = grp.Id,
+        update new Ken_Group__c(
+            Id = grp.Id,
             Segmentation__c = seg.Id
         );
 
@@ -727,15 +723,10 @@ private class KenGroupsControllerTest {
             Is_Active__c = true,
             Is_Archived__c = false,
             Start_Date__c = Date.today(),
-            End_Date__c = Date.today().addDays(1),
-            Start_Time__c = Time.newInstance(16, 0, 0, 0)
+            End_Date__c = Date.today().addDays(1)
         );
+        ev.Segmentation__c = seg.Id;
         insert ev;
-
-        insert new Ken_Event_Segmentation__c(
-            Event_Master__c = ev.Id,
-            Segmentation__c = seg.Id
-        );
 
         Test.startTest();
         List<KenGroupsController.GroupEventRow> rows = KenGroupsController.getEventsForGroup(grp.Id);
@@ -768,15 +759,10 @@ private class KenGroupsControllerTest {
             Name = 'Saved Aud Event ' + System.currentTimeMillis(),
             Is_Active__c = true,
             Is_Archived__c = false,
-            Start_Date__c = Date.today(),
-            Start_Time__c = Time.newInstance(10, 0, 0, 0)
+            Start_Date__c = Date.today()
         );
+        ev.Segmentation__c = seg.Id;
         insert ev;
-
-        insert new Ken_Event_Segmentation__c(
-            Event_Master__c = ev.Id,
-            Segmentation__c = seg.Id
-        );
 
         Test.startTest();
         List<KenGroupsController.GroupEventRow> rows = KenGroupsController.getEventsForGroup(grp.Id);
@@ -788,5 +774,87 @@ private class KenGroupsControllerTest {
         }
         System.assertEquals(true, found,
             'Event whose saved-audience wraps the group id must still surface');
+    }
+
+    @IsTest
+    static void testSaveDraftGroupInternalUserNoAccount() {
+        KenGroupsController.testCurrentAccountId = null;
+        KenGroupsController.testIsInternalUser = true;
+
+        Test.startTest();
+        Id groupId = KenGroupsController.saveDraftGroup(
+            null, 'Internal Admin Draft', 'Desc', 'Public', 'Group', null, null, null
+        );
+        Test.stopTest();
+
+        KenGroupsController.testIsInternalUser = null;
+
+        System.assertNotEquals(null, groupId, 'Internal user should save a group without an Account');
+        Ken_Group__c created = [SELECT Status__c, Created_By__c FROM Ken_Group__c WHERE Id = :groupId LIMIT 1];
+        System.assertEquals('Draft', created.Status__c, 'Draft status expected');
+        System.assertEquals(null, created.Created_By__c, 'Created_By__c should be null for an internal user');
+        List<Ken_Group_Member__c> members = [SELECT Id FROM Ken_Group_Member__c WHERE Group__c = :groupId];
+        System.assertEquals(0, members.size(), 'No admin member should be created for an internal user');
+    }
+
+    @IsTest
+    static void testInternalUserEditGetAndSubmitNoAccount() {
+        KenGroupsController.testCurrentAccountId = null;
+        KenGroupsController.testIsInternalUser = true;
+
+        Id groupId = KenGroupsController.saveDraftGroup(
+            null, 'Internal Admin Group', 'Desc', 'Private', 'Group', null, null, null
+        );
+
+        Test.startTest();
+        Id updatedId = KenGroupsController.saveDraftGroup(
+            groupId, 'Internal Admin Group Renamed', 'New Desc', 'Public', 'Group', null, 'tag', 'rule'
+        );
+        Ken_Group__c draft = KenGroupsController.getDraftGroup(groupId);
+        KenGroupsController.submitGroupForApproval(groupId);
+        Test.stopTest();
+
+        KenGroupsController.testIsInternalUser = null;
+
+        System.assertEquals(groupId, updatedId, 'Update should return the same group Id');
+        System.assertNotEquals(null, draft, 'Internal user should read the draft without an Account');
+        Ken_Group__c updated = [SELECT Status__c FROM Ken_Group__c WHERE Id = :groupId LIMIT 1];
+        System.assertEquals('In Review', updated.Status__c, 'Status should be In Review after submission');
+    }
+
+    @IsTest
+    static void testCreateGroupInternalUserNoAccount() {
+        KenGroupsController.testCurrentAccountId = null;
+        KenGroupsController.testIsInternalUser = true;
+
+        Test.startTest();
+        Id groupId = KenGroupsController.createGroup('Internal Created Group', 'Desc', 'Public', 'Group');
+        Test.stopTest();
+
+        KenGroupsController.testIsInternalUser = null;
+
+        System.assertNotEquals(null, groupId, 'Internal user should create a group without an Account');
+        List<Ken_Group_Member__c> members = [SELECT Id FROM Ken_Group_Member__c WHERE Group__c = :groupId];
+        System.assertEquals(0, members.size(), 'No admin member should be created for an internal user');
+    }
+
+    @IsTest
+    static void testSaveDraftGroupPortalUserNoAccountThrows() {
+        KenGroupsController.testCurrentAccountId = null;
+        KenGroupsController.testIsInternalUser = false;
+
+        try {
+            Test.startTest();
+            KenGroupsController.saveDraftGroup(
+                null, 'Portal No Account', 'Desc', 'Public', 'Group', null, null, null
+            );
+            Test.stopTest();
+            System.assert(false, 'Expected AuraHandledException for a portal user with no Account');
+        } catch (AuraHandledException ex) {
+            System.assertNotEquals(null, ex.getMessage(), 'Exception message should not be null');
+        } finally {
+            KenGroupsController.testCurrentAccountId = null;
+            KenGroupsController.testIsInternalUser = null;
+        }
     }
 }

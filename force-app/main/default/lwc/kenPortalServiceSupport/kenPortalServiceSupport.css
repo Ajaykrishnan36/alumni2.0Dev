@@ -29,7 +29,7 @@
 
 .service-support-container {
     background-color: #f6f8fb;
-    padding: 1rem;
+    /* padding: 1rem; */
     box-sizing: border-box;
     overflow: scroll;
     max-height: calc(100vh - 100px);

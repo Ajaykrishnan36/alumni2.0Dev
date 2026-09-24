@@ -3,14 +3,12 @@
     height: 100%;
     min-height: 200px;
     background: #FFFFFF;
-    border: 1px solid #DBE3EF;
     border-radius: 14px;
     padding: 1.25rem;
     cursor: pointer;
     text-align: left;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
     font-family: inherit;
     color: #111827;
     position: relative;

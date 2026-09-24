@@ -41,7 +41,6 @@
     border-radius: var(--portal-radius, 12px);
     padding: 16px;
     border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
     transition: transform 0.2s;
     position: relative;
 }

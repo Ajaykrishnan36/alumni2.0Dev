@@ -1,438 +1,441 @@
 :host {
-    display: block;
-    color: #333;
-    position: relative;
+  display: block;
+  color: #333;
+  position: relative;
 }
 
 .loading-spinner {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 9999;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 9999;
 }
 
 .error-banner {
-    background: #fef2f2;
-    border: 1px solid #fca5a5;
-    color: #dc2626;
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-size: 13px;
-    margin-bottom: 16px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
 }
 
 .header-title {
-    font-size: 18px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #4a5568;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #4a5568;
 }
 
 .card {
-    background-color: #fff;
-    border: 1px solid #e0e6ed;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    padding: 24px;
+  background-color: #fff;
+  border: 1px solid #e0e6ed;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  padding: 24px;
 }
 
 .section-title {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 20px;
-    color: #4a5568;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: #4a5568;
 }
 
 /* Basic Details */
 .profile-pic-section {
-    display: flex;
-    align-items: center;
-    margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
 }
 
 .profile-pic-wrapper {
-    position: relative;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    margin-right: 20px;
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-right: 20px;
 }
 
 .profile-img {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
 .edit-pic-btn {
-    position: absolute;
-    bottom: 0px;
-    right: 0px;
-    background: #fff;
-    border: 1px solid #e0e6ed;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  background: #fff;
+  border: 1px solid #e0e6ed;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .edit-pic-btn lightning-icon {
-    --sds-c-icon-color-foreground-default: #555;
+  --sds-c-icon-color-foreground-default: #555;
 }
 
 .pic-info h3 {
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #4a5568;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #4a5568;
 }
 
 .pic-info p {
-    font-size: 12px;
-    color: #8898aa;
+  font-size: 12px;
+  color: #8898aa;
 }
 
 .basic-details-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .form-group {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .half-width {
-    flex: 1 1 calc(50% - 10px);
-    min-width: 250px;
+  flex: 1 1 calc(50% - 10px);
+  min-width: 250px;
 }
 
 .field-label {
-    font-size: 13px;
-    font-weight: 500;
-    color: #4a5568;
-    margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 8px;
 }
 
 .text-input {
-    padding: 10px 12px;
-    border: 1px solid #e0e6ed;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #333;
-    outline: none;
-    transition: border-color 0.2s;
-    width: 100%;
-    box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #e0e6ed;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .text-input:focus {
-    border-color: #2f61d5;
+  border-color: #2f61d5;
 }
 
 .text-input:disabled {
-    background-color: transparent;
-    color: #4a5568;
+  background-color: transparent;
+  color: #4a5568;
 }
 
 .input-wrapper.disabled-wrapper {
-    display: flex;
-    align-items: center;
-    border: 1px solid #e0e6ed;
-    border-radius: 6px;
-    background-color: #f7f9fa;
-    padding-right: 12px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #e0e6ed;
+  border-radius: 6px;
+  background-color: #f7f9fa;
+  padding-right: 12px;
 }
 
 .input-wrapper.disabled-wrapper .text-input {
-    border: none;
-    background: transparent;
-    padding-right: 0;
-    flex: 1;
+  border: none;
+  background: transparent;
+  padding-right: 0;
+  flex: 1;
 }
 
 .input-suffix-text-btn {
-    background: none;
-    border: none;
-    color: #2f61d5;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    white-space: nowrap;
+  background: none;
+  border: none;
+  color: #2f61d5;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 /* Interests Grid */
 .interests-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .interest-card {
-    position: relative;
-    height: 140px;
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
+  position: relative;
+  height: 140px;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
 }
 
 .interest-bg-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .interest-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
 }
 
 .interest-checkbox-container {
-    position: absolute;
-    bottom: 8px;
-    left: 8px;
-    right: 8px;
-    background: #fff;
-    border-radius: 4px;
-    padding: 8px 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 2;
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  background: #fff;
+  border-radius: 4px;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 2;
 }
 
 .custom-checkbox {
-    width: 18px;
-    height: 18px;
-    border: 1px solid #caced4;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 1px solid #caced4;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  flex-shrink: 0;
 }
 
 .custom-checkbox.checked {
-    background: var(--primary-color, #ffffff);
-    border-color: var(--primary-color, #ffffff);
+  background: var(--primary-color, #ffffff);
+  border-color: var(--primary-color, #ffffff);
 }
 
 .custom-checkbox lightning-icon {
-    --sds-c-icon-color-foreground-default: #fff;
-    transform: scale(0.6);
+  --sds-c-icon-color-foreground-default: #fff;
+  transform: scale(0.6);
 }
 
 .interest-label {
-    font-size: 12px;
-    font-weight: 500;
-    color: #4a5568;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4a5568;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Footer Actions */
 .footer-actions {
-    position: sticky;
-    bottom: -21px;
-    background: #fff;
-    display: flex;
-    justify-content: flex-end;
-    gap: 16px;
-    padding: 16px 30px;
-    margin-top: 24px;
-    margin-left: -30px;
-    margin-right: -30px;
-    margin-bottom: -21px;
-    border-top: 1px solid #e5e7eb;
-    z-index: 10;
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
+  position: sticky;
+  bottom: -21px;
+  background: #fff;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  padding: 16px 30px;
+  margin-top: 24px;
+  margin-left: -30px;
+  margin-right: -30px;
+  margin-bottom: -21px;
+  border-top: 1px solid #e5e7eb;
+  z-index: 10;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
 }
 
 .btn {
-    padding: 8px 24px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition: all 0.2s;
+  padding: 8px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s;
 }
 
 .btn-outline {
-    background-color: var(--secondary-color, #ffffff);
-    border-color: var(--primary-color, #ffffff); 
-    color: var(--primary-color, #ffffff);
+  background-color: var(--secondary-color, #ffffff);
+  border-color: var(--primary-color, #ffffff);
+  color: var(--primary-color, #ffffff);
 }
 
 .btn-primary {
-    background-color: var(--primary-color, #ffffff);
-    color: #fff;
+  background-color: var(--primary-color, #ffffff);
+  color: #fff;
 }
 
 @media screen and (max-width: 768px) {
-    :host {
-        background-color: #ffffff;
-    }
-    .btn {
-        padding: 8px 14px;
-        font-size: 12px;
-        white-space: nowrap;
-    }
-    .basic-details-form {
-        flex-direction: column;
-        gap: 16px;
-    }
-    .half-width {
-        width: 100%;
-        min-width: unset;
-        flex: none;
-    }
-    .interests-grid {
-        grid-template-columns: 1fr;
-    }
-    .interest-card {
-        height: 120px;
-    }
-    .header-title {
-        margin-left: 0;
-        margin-right: 0;
-        padding-left: 0;
-        border-bottom: 1px solid #e5e7eb;
-        background-color: #ffffff;
-    }
-    .footer-actions {
-        margin-left: 0;
-        margin-right: 0;
-        padding: 16px 0;
-        justify-content: space-between;
-        gap: 8px;
-        background-color: #ffffff;
-        box-sizing: border-box;
-        width: 100%;
-        max-width: 100%;
-    }
+  :host {
+    background-color: #ffffff;
+  }
+  .btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .basic-details-form {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .half-width {
+    width: 100%;
+    min-width: unset;
+    flex: none;
+  }
+  .interests-grid {
+    grid-template-columns: 1fr;
+  }
+  .interest-card {
+    height: 120px;
+  }
+  .header-title {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #ffffff;
+  }
+  .footer-actions {
+    margin-left: 0;
+    margin-right: 0;
+    padding: 16px 0;
+    justify-content: space-between;
+    gap: 8px;
+    background-color: #ffffff;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+  }
 
-    .footer-actions .btn {
-        flex: 1 1 0;
-        min-width: 0;
-        padding: 8px 10px;
-        font-size: 12px;
-        white-space: nowrap;
-        box-sizing: border-box;
-    }
-    .card {
-        padding: 16px 0;
-        border: none;
-        border-bottom: 1px solid #e5e7eb;
-        border-radius: 0;
-        margin-bottom: 0;
-        background-color: #ffffff;
-    }
-    .card:last-child {
-        border-bottom: none;
-    }
+  .footer-actions .btn {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+  .card {
+    padding: 16px 0;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    border-radius: 0;
+    margin-bottom: 0;
+    background-color: #ffffff;
+  }
+  .card:last-child {
+    border-bottom: none;
+  }
 }
 /* Square icon button for the secondary action, so both rows end at the same
    width whether they show a tick or a Verify button. */
 .icon-action {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    flex: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    border: 1px solid #e0e6ed;
-    border-radius: 7px;
-    background: #ffffff;
-    color: #5b6a80;
-    cursor: pointer;
-    transition: border-color 0.12s ease, color 0.12s ease, background-color 0.12s ease;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #e0e6ed;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #5b6a80;
+  cursor: pointer;
+  transition:
+    border-color 0.12s ease,
+    color 0.12s ease,
+    background-color 0.12s ease;
 }
 
 .icon-action:hover {
-    border-color: #2f61d5;
-    color: #2f61d5;
-    background: #eef3fd;
+  border-color: #2f61d5;
+  color: #2f61d5;
+  background: #eef3fd;
 }
 
 .icon-action svg {
-    width: 15px;
-    height: 15px;
-    display: block;
+  width: 15px;
+  height: 15px;
+  display: block;
 }
 
 .verified-tick {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    margin-right: 10px;
-    cursor: default;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 10px;
+  cursor: default;
 }
 
 .verified-tick svg {
-    display: block;
+  display: block;
 }
 
 /* Hover label, shared by the verified tick and the icon action. Driven from
    data-tooltip so the native title can stay for assistive tech. */
 .verified-tick::after,
 .icon-action::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 6px);
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1f2937;
-    color: #ffffff;
-    font-size: 11px;
-    font-weight: 500;
-    line-height: 1;
-    padding: 5px 8px;
-    border-radius: 4px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.12s ease;
-    pointer-events: none;
-    z-index: 5;
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1f2937;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .verified-tick::before,
 .icon-action::before {
-    content: '';
-    position: absolute;
-    bottom: calc(100% + 2px);
-    left: 50%;
-    transform: translateX(-50%);
-    border: 4px solid transparent;
-    border-top-color: #1f2937;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.12s ease;
-    pointer-events: none;
-    z-index: 5;
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #1f2937;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .verified-tick:hover::after,
@@ -443,75 +446,77 @@
 .icon-action:hover::before,
 .icon-action:focus-visible::after,
 .icon-action:focus-visible::before {
-    opacity: 1;
-    visibility: visible;
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Primary action in the row. Given a bordered chip so it reads as a button
    rather than a second text link next to "Request to Change". */
 .input-suffix-text-btn.verify-cta {
-    font-weight: 600;
-    color: #2f61d5;
-    border: 1px solid #c3d0f0;
-    border-radius: 6px;
-    background: #ffffff;
-    padding: 5px 14px;
-    margin-right: 14px;
-    line-height: 1.2;
-    transition: background-color 0.12s ease, border-color 0.12s ease;
+  font-weight: 600;
+  color: #2f61d5;
+  border: 1px solid #c3d0f0;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 5px 14px;
+  margin-right: 14px;
+  line-height: 1.2;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
 }
 
 .input-suffix-text-btn.verify-cta:hover:not([disabled]) {
-    background: #eef3fd;
-    border-color: #2f61d5;
+  background: #eef3fd;
+  border-color: #2f61d5;
 }
 
 .input-suffix-text-btn.verify-cta[disabled] {
-    color: #9aa5b1;
-    border-color: #e6eaf0;
-    background: #f2f4f7;
+  color: #9aa5b1;
+  border-color: #e6eaf0;
+  background: #f2f4f7;
 }
 
 .input-suffix-text-btn[disabled] {
-    color: #9aa5b1;
-    cursor: default;
+  color: #9aa5b1;
+  cursor: default;
 }
 
 .input-wrapper.otp-wrapper {
-    display: flex;
-    align-items: center;
-    border: 1px solid #2f61d5;
-    border-radius: 6px;
-    background-color: #ffffff;
-    padding-right: 12px;
+  display: flex;
+  align-items: center;
+  border: 1px solid #2f61d5;
+  border-radius: 6px;
+  background-color: #ffffff;
+  padding-right: 12px;
 }
 
 .input-wrapper.otp-wrapper .text-input {
-    border: none;
-    background: transparent;
-    padding-right: 0;
-    flex: 1;
+  border: none;
+  background: transparent;
+  padding-right: 0;
+  flex: 1;
 }
 
 .otp-entry {
-    letter-spacing: 4px;
-    font-weight: 600;
+  letter-spacing: 4px;
+  font-weight: 600;
 }
 
 .otp-entry::placeholder {
-    letter-spacing: normal;
-    font-weight: 400;
-    color: #9aa5b1;
+  letter-spacing: normal;
+  font-weight: 400;
+  color: #9aa5b1;
 }
 
 .field-note {
-    font-size: 12px;
-    color: #0b7a52;
-    margin-top: 6px;
+  font-size: 12px;
+  color: #0b7a52;
+  margin-top: 6px;
 }
 
 .field-note_error {
-    color: #b42318;
+  color: #b42318;
 }
 
 /* The phone field now renders c-ken-custom-phone-input, which draws its own
@@ -519,12 +524,12 @@
    around it as a second box, and its flex:1 only applies to .text-input, so the
    component would collapse to its content width. */
 .input-wrapper.otp-wrapper.phone-otp-wrapper {
-    border: none;
-    padding-right: 0;
-    gap: 8px;
+  border: none;
+  padding-right: 0;
+  gap: 8px;
 }
 
 .input-wrapper.otp-wrapper.phone-otp-wrapper .settings-phone-input {
-    flex: 1;
-    min-width: 0;
+  flex: 1;
+  min-width: 0;
 }

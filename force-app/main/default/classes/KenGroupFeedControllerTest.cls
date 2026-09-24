@@ -172,6 +172,51 @@ private class KenGroupFeedControllerTest {
     }
 
     @IsTest
+    static void testCommentsDisabledBlocksAddComment() {
+        KenGroupFeedController.testCurrentAccountId = memberAccountId();
+        KenGroupFeedController.testCurrentUserId    = UserInfo.getUserId();
+        Id postId = KenGroupFeedController.createGroupPost(groupId(), 'Comments off', null, false);
+
+        KenGroupFeedController.FeedPage page = KenGroupFeedController.getFeed(groupId(), 0, 10);
+        Boolean found = false;
+        for (KenGroupFeedController.PostDTO dto : page.posts) {
+            if (dto.feedItemId == postId) {
+                found = true;
+                System.assertEquals(false, dto.commentsEnabled, 'Post should report comments disabled');
+            }
+        }
+        System.assert(found, 'Post should be in the feed');
+
+        Boolean blocked = false;
+        try {
+            KenGroupFeedController.addComment(postId, 'Should not be allowed');
+        } catch (AuraHandledException ex) {
+            blocked = true;
+        }
+        System.assert(blocked, 'Comment should be rejected when the post has comments disabled');
+    }
+
+    @IsTest
+    static void testCommentsEnabledDefaultsTrue() {
+        KenGroupFeedController.testCurrentAccountId = memberAccountId();
+        KenGroupFeedController.testCurrentUserId    = UserInfo.getUserId();
+        Id postId = KenGroupFeedController.createPost(groupId(), 'Comments on by default');
+
+        KenGroupFeedController.FeedPage page = KenGroupFeedController.getFeed(groupId(), 0, 10);
+        Boolean found = false;
+        for (KenGroupFeedController.PostDTO dto : page.posts) {
+            if (dto.feedItemId == postId) {
+                found = true;
+                System.assertEquals(true, dto.commentsEnabled, 'Post should default to comments enabled');
+            }
+        }
+        System.assert(found, 'Post should be in the feed');
+
+        Id commentId = KenGroupFeedController.addComment(postId, 'Allowed');
+        System.assertNotEquals(null, commentId, 'Comment should succeed when comments are enabled');
+    }
+
+    @IsTest
     static void testAddCommentRejectsEmpty() {
         KenGroupFeedController.testCurrentAccountId = memberAccountId();
         KenGroupFeedController.testCurrentUserId    = UserInfo.getUserId();
@@ -262,6 +307,18 @@ private class KenGroupFeedControllerTest {
 
     // ── Polls ──────────────────────────────────────────────────────────────────
 
+    /** The id the client knows a poll by: the question version behind the post's question set. */
+    private static Id pollVersionId(Id feedItemId) {
+        AssessmentQuestionSet qSet = [
+            SELECT Id FROM AssessmentQuestionSet
+            WHERE Feed_Item__c = :String.valueOf(feedItemId) LIMIT 1
+        ];
+        List<KenAssessmentSurveyService.QuestionRow> rows =
+            KenAssessmentSurveyService.questionsForSet(qSet.Id);
+        System.assertEquals(1, rows.size(), 'A poll should hold exactly one question');
+        return rows[0].id;
+    }
+
     @IsTest
     static void testCreatePollVoteAndFeed() {
         KenGroupFeedController.testCurrentAccountId = memberAccountId();
@@ -271,21 +328,50 @@ private class KenGroupFeedControllerTest {
         Id pollPostId = KenGroupFeedController.createPollPost(
             groupId(), 'Favourite language?', new List<String>{ 'Apex', 'JS' }, 5
         );
-        Ken_Questionnaire_Parameter__c qp = [
-            SELECT Id FROM Ken_Questionnaire_Parameter__c
-            WHERE Feed_Item__c = :String.valueOf(pollPostId) LIMIT 1
-        ];
-        KenGroupFeedController.PollDTO afterVote = KenGroupFeedController.votePoll(qp.Id, 'Apex');
-        KenGroupFeedController.FeedPage page = KenGroupFeedController.getFeed(groupId(), 0, 10);
+        Id pollId = pollVersionId(pollPostId);
+        KenGroupFeedController.PollDTO afterVote   = KenGroupFeedController.votePoll(pollId, 'Apex');
+        KenGroupFeedController.PollDTO afterRevote = KenGroupFeedController.votePoll(pollId, 'JS');
         Test.stopTest();
+
+        KenGroupFeedController.FeedPage page = KenGroupFeedController.getFeed(groupId(), 0, 10);
 
         System.assertNotEquals(null, pollPostId, 'Poll post should be created');
         System.assertNotEquals(null, afterVote, 'votePoll should return the poll state');
+        System.assertEquals(pollId, afterVote.pollId, 'The poll id is the question version id');
+        System.assertEquals('Favourite language?', afterVote.question, 'Question should round-trip');
+        System.assertEquals(2, afterVote.options.size(), 'Both options should be exposed');
         System.assertEquals(1, afterVote.totalVotes, 'One vote should be recorded');
+        System.assertEquals(true, afterVote.hasVoted, 'The voter should be flagged as having voted');
+
+        System.assertNotEquals(null, afterRevote, 'Re-voting should return the poll state');
+        System.assertEquals(1, afterRevote.totalVotes, 'Re-voting must not add a second vote');
+        for (KenGroupFeedController.PollOptionDTO o : afterRevote.options) {
+            if (o.optionText == 'JS') {
+                System.assertEquals('JS', o.optionId, 'The option text doubles as the option id');
+                System.assertEquals(1, o.voteCount, 'The new choice should carry the vote');
+                System.assertEquals(100, o.votePercent, 'The only vote is the whole poll');
+                System.assertEquals(true, o.votedByMe, 'The new choice should be flagged as mine');
+            } else {
+                System.assertEquals(0, o.voteCount, 'The abandoned choice should carry no votes');
+                System.assertEquals(false, o.votedByMe, 'The abandoned choice should not be mine');
+            }
+        }
+
+        System.assertEquals(1, [SELECT COUNT() FROM Assessment WHERE Response_Category__c = 'Poll'],
+            'One submission header per voter per poll');
+        System.assertEquals(1,
+            [SELECT COUNT() FROM AssessmentQuestionResponse WHERE AssessmentQuestionId = :pollId],
+            'One answer per voter per poll');
 
         Boolean foundPoll = false;
         for (KenGroupFeedController.PostDTO p : page.posts) {
-            if (p.feedItemId == pollPostId && p.pollState != null) foundPoll = true;
+            if (p.feedItemId == pollPostId && p.pollState != null) {
+                foundPoll = true;
+                System.assertEquals(pollId, p.pollState.pollId, 'Feed should carry the same poll id');
+                System.assertEquals(1, p.pollState.totalVotes, 'Feed tally should match the vote');
+                System.assertNotEquals(null, p.pollState.endsAt, 'The poll deadline should be exposed');
+                System.assertEquals(false, p.pollState.isClosed, 'A poll open for 5 days is not closed');
+            }
         }
         System.assert(foundPoll, 'Feed should expose the poll state on its post');
     }
@@ -310,17 +396,40 @@ private class KenGroupFeedControllerTest {
         Id pollPostId = KenGroupFeedController.createPollPost(
             groupId(), 'Pick one', new List<String>{ 'X', 'Y' }, 3
         );
-        Ken_Questionnaire_Parameter__c qp = [
-            SELECT Id FROM Ken_Questionnaire_Parameter__c
-            WHERE Feed_Item__c = :String.valueOf(pollPostId) LIMIT 1
-        ];
+        Id pollId = pollVersionId(pollPostId);
         Boolean rejected = false;
         try {
-            KenGroupFeedController.votePoll(qp.Id, 'Z-not-an-option');
+            KenGroupFeedController.votePoll(pollId, 'Z-not-an-option');
         } catch (AuraHandledException ex) {
             rejected = true;
         }
         System.assert(rejected, 'Voting for an option not on the poll should be rejected');
+    }
+
+    @IsTest
+    static void testDeletePostRemovesPollData() {
+        KenGroupFeedController.testCurrentAccountId = memberAccountId();
+        KenGroupFeedController.testCurrentUserId    = UserInfo.getUserId();
+        Id pollPostId = KenGroupFeedController.createPollPost(
+            groupId(), 'Should this go?', new List<String>{ 'Yes', 'No' }, 4
+        );
+        Id pollId = pollVersionId(pollPostId);
+        KenGroupFeedController.votePoll(pollId, 'Yes');
+
+        Test.startTest();
+        KenGroupFeedController.deletePost(pollPostId);
+        Test.stopTest();
+
+        System.assertEquals(0, [SELECT COUNT() FROM FeedItem WHERE Id = :pollPostId],
+            'Post should be deleted');
+        System.assertEquals(0,
+            [SELECT COUNT() FROM AssessmentQuestionSet WHERE Feed_Item__c = :String.valueOf(pollPostId)],
+            'The poll question set should be removed with the post');
+        System.assertEquals(0,
+            [SELECT COUNT() FROM AssessmentQuestionResponse WHERE AssessmentQuestionId = :pollId],
+            'Votes should be removed with the post');
+        System.assertEquals(0, [SELECT COUNT() FROM Assessment WHERE Response_Category__c = 'Poll'],
+            'Submission headers should be removed with the post');
     }
 
     // ── Attachments ──────────────────────────────────────────────────────────────
@@ -364,16 +473,18 @@ private class KenGroupFeedControllerTest {
         System.assert(rejected, 'Blank file name/data should be rejected');
     }
 
-    // ── Service lookups (CRM-backed) ───────────────────────────────────────────
+    // ── Service lookups (Account + ConstituentRole backed) ─────────────────────
 
     @IsTest
     static void testServiceProfileAndBatchLookups() {
         Id memberId = memberAccountId();
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c     = memberId,
-            Profile_Photo_URL__c  = 'https://example.com/p.jpg',
-            Year_of_Graduation__c = '2019'
+        insert new ConstituentRole(
+            PersonId           = memberId,
+            RoleType           = 'Alumni',
+            Status             = 'Active',
+            Graduation_Year__c = '2019'
         );
+        update new Account(Id = memberId, Profile_Photo_URL__c = 'https://example.com/p.jpg');
         Set<Id> accIds = new Set<Id>{ memberId };
 
         Test.startTest();
@@ -381,8 +492,10 @@ private class KenGroupFeedControllerTest {
         Map<Id, String> batches = KenGroupFeedService.lookupBatchLabels(accIds);
         Test.stopTest();
 
-        System.assertEquals('https://example.com/p.jpg', photos.get(memberId), 'CRM photo should resolve');
-        System.assertEquals('Batch - 2019', batches.get(memberId), 'CRM grad year should map to a batch label');
+        System.assertEquals('https://example.com/p.jpg', photos.get(memberId),
+            'Account.Profile_Photo_URL__c should resolve');
+        System.assertEquals('Batch - 2019', batches.get(memberId),
+            'ConstituentRole.Graduation_Year__c should map to a batch label');
     }
 
     @IsTest
@@ -417,7 +530,7 @@ private class KenGroupFeedControllerTest {
 
         Test.startTest();
         Map<Id, List<KenGroupFeedController.AttachmentDTO>> byItem =
-            KenGroupFeedService.lookupAttachments(new Set<Id>{ anchorId });
+            KenGroupFeedService.lookupAttachments(new Set<Id>{ anchorId }, null);
         Test.stopTest();
 
         System.assert(byItem.containsKey(anchorId), 'Attachments should resolve for the anchor record');
@@ -532,9 +645,9 @@ private class KenGroupFeedControllerTest {
     @IsTest
     static void testTriggerKillSwitch() {
         // When the kill-switch is on, the trigger should return before dispatching.
-        insert new Alumni_Trigger_Settings__c(
+        insert new Ken_Alm_Bypass_Settings__c(
             SetupOwnerId          = UserInfo.getOrganizationId(),
-            Feed_Item_Trigger__c  = true
+            Skip_Feed_Item_Trigger__c  = true
         );
 
         Test.startTest();
@@ -544,4 +657,122 @@ private class KenGroupFeedControllerTest {
 
         System.assertEquals(1, [SELECT COUNT() FROM FeedItem WHERE Id = :fi.Id], 'Post should still insert');
     }
+
+    // ─── Inline images in the post body ──────────────────────────────────────
+
+    @IsTest
+    static void testNormalizeRichTextStripsMarkupChatterRejects() {
+        // Chatter rejects <div>, <br>, <font> and style= outright, so the editor's
+        // output has to be coerced before it ever reaches FeedItem.Body.
+        String out = KenGroupFeedService.normalizeRichText(
+            '<div>line one</div><div>line two</div>'
+            + '<p style="text-align:center"><font size="5">big</font></p>'
+            + 'tail<br/>after<span class="x">spanned</span>'
+        );
+
+        System.assert(!out.contains('<div'),   'div should be rewritten: '   + out);
+        System.assert(!out.contains('<br'),    'br should be rewritten: '    + out);
+        System.assert(!out.contains('<font'),  'font should be unwrapped: '  + out);
+        System.assert(!out.contains('<span'),  'span should be unwrapped: '  + out);
+        System.assert(!out.contains('style='), 'style should be stripped: '  + out);
+        // The text itself must survive even though its formatting could not.
+        for (String word : new List<String>{ 'line one', 'line two', 'big', 'tail', 'after', 'spanned' }) {
+            System.assert(out.contains(word), word + ' should survive normalization: ' + out);
+        }
+    }
+
+    @IsTest
+    static void testNormalizeRichTextKeepsSupportedTags() {
+        String out = KenGroupFeedService.normalizeRichText(
+            '<p>a</p><b>b</b><i>i</i><u>u</u><s>s</s><ul><li>x</li></ul>'
+            + '<strong>st</strong><em>em</em><strike>sk</strike>'
+        );
+        for (String tag : new List<String>{ '<p>', '<b>', '<i>', '<u>', '<s>', '<ul>', '<li>' }) {
+            System.assert(out.contains(tag), tag + ' should be preserved: ' + out);
+        }
+        // Synonyms map onto the supported spelling rather than being dropped.
+        System.assert(!out.contains('<strong'), 'strong should become b: '  + out);
+        System.assert(!out.contains('<em'),     'em should become i: '      + out);
+        System.assert(!out.contains('<strike'), 'strike should become s: '  + out);
+    }
+
+    @IsTest
+    static void testNormalizeRichTextDropsNonSalesforceImages() {
+        // An external src fails Chatter's insert with INVALID_CROSS_REFERENCE_KEY
+        // and would take the whole post down, so it is removed here instead.
+        String out = KenGroupFeedService.normalizeRichText(
+            '<p>cap</p><img src="https://evil.example.com/x.png" onerror="alert(1)"/>'
+        );
+        System.assert(!out.contains('<img'), 'external image should be dropped: ' + out);
+        System.assert(out.contains('cap'),   'caption text should survive: '      + out);
+
+        String kept = KenGroupFeedService.normalizeRichText(
+            '<img src="sfdc://069000000000000AAA" width="500" class="z"/>'
+        );
+        System.assert(kept.contains('sfdc://069000000000000AAA'), 'sfdc image should survive: ' + kept);
+        System.assert(!kept.contains('width='), 'unsupported attributes should go: ' + kept);
+        System.assert(!kept.contains('class='), 'unsupported attributes should go: ' + kept);
+    }
+
+    @IsTest
+    static void testExtractAndRewriteInlineImages() {
+        Id docA = '069000000000000AAA';
+        Id docB = '069000000000000BBB';
+        String body = '<p>one</p><img src="sfdc://' + docA + '"></img>'
+                    + '<p>two</p><img src="sfdc://' + docB + '"></img>';
+
+        Set<Id> found = KenGroupFeedService.extractInlineImageIds(new List<String>{ body });
+        System.assertEquals(2, found.size(), 'Both document Ids should be extracted');
+        System.assert(found.contains(docA) && found.contains(docB), 'Both Ids should be present');
+
+        Map<Id, String> urls = new Map<Id, String>{ docA => '/sfc/servlet.shepherd/version/download/068A' };
+        String rewritten = KenGroupFeedService.rewriteInlineImages(body, urls);
+
+        System.assert(rewritten.contains('/sfc/servlet.shepherd/version/download/068A'), 'Resolved image should be rewritten: ' + rewritten);
+        // docB has no URL, meaning the file is gone — the tag is removed rather
+        // than left pointing at an unresolvable sfdc:// reference.
+        System.assert(!rewritten.contains('sfdc://'), 'Unresolved images should be removed: ' + rewritten);
+        System.assert(rewritten.contains('one') && rewritten.contains('two'), 'Text should survive: ' + rewritten);
+    }
+
+    @IsTest
+    static void testRewriteInlineImagesLeavesPlainBodyAlone() {
+        String body = '<p>no images here</p>';
+        System.assertEquals(body, KenGroupFeedService.rewriteInlineImages(body, new Map<Id, String>()),
+            'A body without inline images should be returned untouched');
+        System.assertEquals(null, KenGroupFeedService.normalizeRichText(null),
+            'Null should pass through normalization');
+    }
+
+    @IsTest
+    static void testUploadInlineImageReturnsPreviewUrl() {
+        Test.startTest();
+        KenGroupFeedController.InlineImageDTO dto =
+            KenGroupFeedController.uploadInlineImage('inline.png', EncodingUtil.base64Encode(Blob.valueOf('bytes')));
+        Test.stopTest();
+
+        System.assertNotEquals(null, dto.contentDocumentId, 'A ContentDocumentId is required to build the sfdc:// reference');
+        System.assertNotEquals(null, dto.contentVersionId,  'A ContentVersionId is required to build the preview URL');
+        System.assertNotEquals(null, dto.previewUrl, 'A preview URL is required for the composer');
+        System.assert(dto.previewUrl.contains('/sfc/'),
+            'The preview URL should be a Salesforce file URL: ' + dto.previewUrl);
+    }
+
+    @IsTest
+    static void testCreatePostNormalizesBodyBeforeInsert() {
+        // Guards the regression this whole change exists for: unnormalized editor
+        // output makes the FeedItem insert fail with INVALID_MARKUP.
+        KenGroupFeedController.testCurrentAccountId = memberAccountId();
+        KenGroupFeedController.testCurrentUserId    = UserInfo.getUserId();
+
+        Test.startTest();
+        Id postId = KenGroupFeedController.createPost(groupId(), '<div>first</div><div>second</div>');
+        Test.stopTest();
+
+        FeedItem fi = [SELECT Body FROM FeedItem WHERE Id = :postId];
+        System.assert(!fi.Body.contains('<div'), 'Stored body should carry no div: ' + fi.Body);
+        System.assert(fi.Body.contains('first') && fi.Body.contains('second'),
+            'Both lines should survive: ' + fi.Body);
+    }
+
 }

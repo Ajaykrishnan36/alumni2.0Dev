@@ -20,49 +20,30 @@ public without sharing class KenNavBarController {
                 SELECT Id, Name, AccountId, Profile.Name
                 FROM User
                 WHERE Id = :UserInfo.getUserId()
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
             
             if (currentUser.AccountId != null) {
                 Account pa = [
-                    SELECT Id, Name
+                    SELECT Id, Name, Profile_Photo_URL__c
                     FROM Account
                     WHERE Id = :currentUser.AccountId
+                    WITH SECURITY_ENFORCED
                     LIMIT 1
                 ];
                 
                 userDetails.studentName = pa.Name;
                 userDetails.profileName = currentUser.Profile.Name;
                     
-                // Prefer the CRM record linked to the user's most recently registered role
-                List<ConstituentRole> registeredRoles = [
-                    SELECT Id FROM ConstituentRole
-                    WHERE PersonId = :pa.Id AND RoleType = 'Alumni'
-                      AND Registration_Status__c = 'Registered'
-                    ORDER BY CreatedDate DESC LIMIT 1
-                ];
-                List<Ken_Alumni_CRM__c> alumniProfiles;
-                if (!registeredRoles.isEmpty()) {
-                    alumniProfiles = [
-                        SELECT Profile_Photo_URL__c FROM Ken_Alumni_CRM__c
-                        WHERE ConstituentRole__c = :registeredRoles[0].Id LIMIT 1
-                    ];
-                } else {
-                    alumniProfiles = [
-                        SELECT Profile_Photo_URL__c FROM Ken_Alumni_CRM__c
-                        WHERE Person_Account__c = :pa.Id LIMIT 1
-                    ];
-                }
-
-                if (!alumniProfiles.isEmpty()) {
-                    userDetails.profilePhotoUrl = alumniProfiles[0].Profile_Photo_URL__c;
-                }
+                userDetails.profilePhotoUrl = pa.Profile_Photo_URL__c;
 
                 List<ConstituentRole> roles = [
                     SELECT Graduation_Year__c
                     FROM ConstituentRole
                     WHERE PersonId = :pa.Id
                         AND RoleType = 'Alumni'
+                    WITH SECURITY_ENFORCED
                     ORDER BY CreatedDate DESC
                     LIMIT 1
                 ];
@@ -126,6 +107,7 @@ public without sharing class KenNavBarController {
             FROM NavigationLinkSet
             WHERE NetworkId = :networkId
               AND MasterLabel = :navigationLinkSetMasterLabel
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
         

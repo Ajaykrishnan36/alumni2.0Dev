@@ -5,7 +5,7 @@ private class KenGroupMemberTriggerHandlerTest {
     static void setupData() {
         Id paRtId = [
             SELECT Id FROM RecordType
-            WHERE SObjectType = 'Account' AND DeveloperName = 'Alumni_Person_Account' LIMIT 1
+            WHERE SObjectType = 'Account' AND DeveloperName = 'PersonAccount' LIMIT 1
         ].Id;
         List<Account> people = new List<Account>{
             new Account(RecordTypeId = paRtId, FirstName = 'Admin',  LastName = 'Test', PersonEmail = 'gmadmin@ttest.example'),
@@ -32,7 +32,7 @@ private class KenGroupMemberTriggerHandlerTest {
         Account admin  = [SELECT Id FROM Account WHERE FirstName = 'Admin'  LIMIT 1];
         Account member = [SELECT Id FROM Account WHERE FirstName = 'Member' LIMIT 1];
         Ken_Group__c grp = getGroup();
-        insert new Alumni_Trigger_Settings__c(Group_Member_Trigger__c = true);
+        insert new Ken_Alm_Bypass_Settings__c(Skip_Group_Member_Trigger__c = true);
         Test.startTest();
         insert new Ken_Group_Member__c(
             Group__c  = grp.Id,

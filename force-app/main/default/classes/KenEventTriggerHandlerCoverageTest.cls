@@ -23,7 +23,7 @@ private class KenEventTriggerHandlerCoverageTest {
             SELECT Id
             FROM RecordType
             WHERE SObjectType = 'Account'
-            AND IsPersonType = true
+            AND IsPersonType = true AND IsActive = true
             LIMIT 1
         ];
 

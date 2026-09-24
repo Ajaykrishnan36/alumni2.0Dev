@@ -1,4 +1,4 @@
-public class KenEventTriggerHandler extends KenTriggerHandler{
+public without sharing class KenEventTriggerHandler extends KenTriggerHandler{
 
     public static final String NOTIFICATION_CATEGORY = 'Event';
 
@@ -11,7 +11,16 @@ public class KenEventTriggerHandler extends KenTriggerHandler{
     private static final String TPL_EVENT_REJECTED  = 'Event_Rejected';
     private static final String TPL_EVENT_CANCELLED = 'Event_Cancelled';
 
+    public override void processBeforeInsert(){
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
+    public override void processBeforeUpdate(){
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
     public override void processAfterInsert(){
+        pushToExternalSystem();
     }
 
     public override void processAfterUpdate(){
@@ -19,6 +28,56 @@ public class KenEventTriggerHandler extends KenTriggerHandler{
         notifyOnApprovalDecision();
         notifyOnCancellation();
         sendSpeakerInvitesOnApproval();
+        activateApprovedEvents();
+        pushToExternalSystem();
+    }
+
+    // Hands the event to the external website when it goes live, stops being live, or changes
+    // while live. The service owns the whole decision — whether the feature is on, whether this
+    // org pushes at all, and what leaves the org — so there is deliberately no flag tested here.
+    // Tolerated on failure: publishing an event must not depend on somebody else's server.
+    private static void pushToExternalSystem() {
+        try {
+            if (Trigger.isInsert) {
+                KenEventExternalPushService.pushOnInsert((List<Ken_Event_Master__c>) Trigger.new);
+            } else {
+                KenEventExternalPushService.pushOnUpdate(
+                    (List<Ken_Event_Master__c>) Trigger.new,
+                    (Map<Id, Ken_Event_Master__c>) Trigger.oldMap
+                );
+            }
+        } catch (Exception ex) {
+            System.debug('Event external push tolerated — ' + ex.getMessage());
+        }
+    }
+
+    // Event_Status__c can be set to 'Approved' outside the real Approval Process
+    // (e.g. clicking directly on the record's Path component, or a data load), which
+    // skips the workflow field update that normally sets Is_Active__c. Keep it in sync
+    // regardless of how the record got approved, so it never silently drops off the
+    // portal's active-events list.
+    private static void activateApprovedEvents() {
+        Map<Id, Ken_Event_Master__c> oldMap = (Map<Id, Ken_Event_Master__c>) Trigger.oldMap;
+        if (oldMap == null) return;
+
+        List<Ken_Event_Master__c> toActivate = new List<Ken_Event_Master__c>();
+        for (Ken_Event_Master__c ev : (List<Ken_Event_Master__c>) Trigger.New) {
+            Ken_Event_Master__c old = oldMap.get(ev.Id);
+            if (old == null) continue;
+            if (ev.Event_Status__c == STATUS_APPROVED && old.Event_Status__c != STATUS_APPROVED && ev.Is_Active__c != true) {
+                toActivate.add(new Ken_Event_Master__c(Id = ev.Id, Is_Active__c = true));
+            }
+        }
+        if (!toActivate.isEmpty()) {
+            try {
+                if (!Schema.sObjectType.Ken_Event_Master__c.isUpdateable()) {
+                    throw new KenCrudException('Ken_Event_Master__c is not updateable by the current user.');
+                }
+                update toActivate;
+            } catch (Exception ex) {
+                System.debug('Event auto-activate on approval tolerated — ' + ex.getMessage());
+            }
+        }
     }
 
     // On approval, email the event's flagged speakers (async; tolerated on failure).

@@ -120,15 +120,14 @@ public with sharing class KenAudienceMetadataController {
             return new List<Option>();
         }
 
-        Map<String, Schema.SObjectType> globalDescribe = Schema.getGlobalDescribe();
-        Schema.SObjectType sobjectType = globalDescribe.get(objectApiName.trim());
+        Schema.SObjectType sobjectType = KenNamespaceUtil.resolveSObjectType(objectApiName.trim());
         if (sobjectType == null) {
             return new List<Option>();
         }
 
         Schema.DescribeSObjectResult dor = sobjectType.getDescribe();
         Map<String, Schema.SObjectField> fields = dor.fields.getMap();
-        Schema.SObjectField field = fields.get(fieldApiName.trim());
+        Schema.SObjectField field = fields.get(KenNamespaceUtil.qualifyCustom(fieldApiName.trim()));
         if (field == null) {
             return new List<Option>();
         }

@@ -1,7 +1,7 @@
 @IsTest
 private class KenFundraiseTriggerHandlerTest {
 
-    private static final String ALUMNI_RT = 'Alumni_Person_Account';
+    private static final String ALUMNI_RT = 'PersonAccount';
 
     /**
      * @description Resolves the Person Account record type, falling back to any person type.
@@ -14,7 +14,7 @@ private class KenFundraiseTriggerHandlerTest {
         if (!rts.isEmpty()) {
             return rts[0].Id;
         }
-        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account']) {
+        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account' AND IsActive = true]) {
             if (rt.IsPersonType) {
                 return rt.Id;
             }
@@ -68,7 +68,7 @@ private class KenFundraiseTriggerHandlerTest {
 
     @TestSetup
     static void setupData() {
-        insert new Alumni_Trigger_Settings__c(Fundraise_Trigger__c = false);
+        insert new Ken_Alm_Bypass_Settings__c(Skip_Fundraise_Trigger__c = false);
 
         Id paRtId = getPersonAccountRtId();
         Account ownerAcc = new Account(
@@ -212,10 +212,10 @@ private class KenFundraiseTriggerHandlerTest {
 
     @IsTest
     static void killSwitchSkipsHandler() {
-        Alumni_Trigger_Settings__c settings = [
-            SELECT Id, Fundraise_Trigger__c FROM Alumni_Trigger_Settings__c LIMIT 1
+        Ken_Alm_Bypass_Settings__c settings = [
+            SELECT Id, Skip_Fundraise_Trigger__c FROM Ken_Alm_Bypass_Settings__c LIMIT 1
         ];
-        settings.Fundraise_Trigger__c = true;
+        settings.Skip_Fundraise_Trigger__c = true;
         update settings;
 
         Id roleId = getOwnerRoleId();

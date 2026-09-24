@@ -8,7 +8,7 @@ private class KenLinkedInControllerTest {
         // Inserted in @testSetup so it's committed before each test method —
         // avoids "uncommitted work pending" before the callout in the
         // SYNCHRONOUS (non-@future) path.
-        RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true LIMIT 1];
+        RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1];
         Account pa = new Account(
             RecordTypeId = rt.Id,
             FirstName = 'Sync',
@@ -17,11 +17,10 @@ private class KenLinkedInControllerTest {
             Linkedin_Profile_URL__c = 'https://www.linkedin.com/in/test'
         );
         insert pa;
-        insert new Ken_Alumni_CRM__c(Person_Account__c = pa.Id);
-        LinkedIn_Config__c cfg = LinkedIn_Config__c.getOrgDefaults();
-        cfg.LinkedIn_Endpoint__c = 'https://linkedin-api.pichainlabs.com/api/v1/enrich/batch';
-        cfg.LinkedIn_Token__c = 'test-api-key';
-        upsert cfg;
+
+        Ken_Alm_Org_Parameters__c params = Ken_Alm_Org_Parameters__c.getOrgDefaults();
+        params.LinkedIn_Enrichment_Connection__c = 'LinkedIn_Enrichment';
+        upsert params;
     }
 
     private static final String PROFILE_JSON =
@@ -43,6 +42,7 @@ private class KenLinkedInControllerTest {
             if (req.getMethod() == 'GET') {
                 res.setBodyAsBlob(Blob.valueOf('x'.repeat(300)));
             } else {
+                System.assertEquals('{!$Credential.Password}', req.getHeader('X-API-Key'), 'Enrichment call must carry the API key from the Named Credential');
                 res.setHeader('Content-Type', 'application/json');
                 res.setBody(PROFILE_JSON);
             }
@@ -51,7 +51,7 @@ private class KenLinkedInControllerTest {
     }
 
     private static Id createAlumni(String email) {
-        RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true LIMIT 1];
+        RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1];
         Account pa = new Account(
             RecordTypeId = rt.Id,
             FirstName = 'Asha',
@@ -60,7 +60,7 @@ private class KenLinkedInControllerTest {
             Linkedin_Profile_URL__c = 'https://www.linkedin.com/in/test'
         );
         insert pa;
-        insert new Ken_Alumni_CRM__c(Person_Account__c = pa.Id);
+
         return pa.Id;
     }
 
@@ -118,7 +118,7 @@ private class KenLinkedInControllerTest {
 
     @isTest
     static void testNoUrlIsNoOp() {
-        RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true LIMIT 1];
+        RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1];
         Account pa = new Account(RecordTypeId = rt.Id, FirstName = 'No', LastName = 'Url', PersonEmail = 'nourl@example.test');
         insert pa;
 
@@ -171,7 +171,7 @@ private class KenLinkedInControllerTest {
 
     @isTest
     static void testSyncAlumniSyncNoUrl() {
-        RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true LIMIT 1];
+        RecordType rt = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1];
         Account pa = new Account(RecordTypeId = rt.Id, FirstName = 'No', LastName = 'Url', PersonEmail = 'nourl.sync@example.test');
         insert pa;
         Boolean threw = false;
@@ -300,5 +300,35 @@ private class KenLinkedInControllerTest {
         KenLinkedInController.syncAlumniBulk(new List<Id>());
         Test.stopTest();
         // Verifies the empty paths return cleanly with no exception.
+    }
+
+    /**
+     * @description Pins the callout-ordering fix. The onboarding import used to save
+     *              the LinkedIn URL first and then call the provider, which threw
+     *              "You have uncommitted work pending" every time, so nothing was ever
+     *              stored while the UI still reported the provider's counts. Passing
+     *              the URL as an override keeps all DML behind the callout.
+     */
+    @isTest
+    static void testOverrideUrlSyncsAfterCalloutAndReportsSavedCounts() {
+        Id accId = [SELECT Id FROM Account WHERE PersonEmail = :SYNC_EMAIL LIMIT 1].Id;
+        String overrideUrl = 'https://www.linkedin.com/in/test/?src=onboarding';
+        Test.setMock(HttpCalloutMock.class, new LinkedInMock());
+        Test.startTest();
+        KenLinkedInController.SyncResult res = KenLinkedInController.syncAccountSync(accId, overrideUrl);
+        Test.stopTest();
+
+        Integer emp = [SELECT COUNT() FROM PersonEmployment WHERE AccountId = :accId AND Is_Archived__c = false];
+        Integer edu = [SELECT COUNT() FROM PersonEducation WHERE AccountId = :accId AND Is_Archived__c = false];
+        System.assert(res.jobsSaved > 0, 'Override sync must actually persist employment rows');
+        System.assertEquals(emp, res.jobsSaved, 'Reported job count must equal the rows really inserted');
+        System.assertEquals(edu, res.educationSaved, 'Reported education count must equal the rows really inserted');
+        System.assertEquals(0, res.rowsFailed, 'A clean payload should report no failed rows');
+        System.assertEquals(null, res.firstError, 'No error should be recorded for a clean payload');
+        System.assertEquals(
+            overrideUrl,
+            [SELECT Linkedin_Profile_URL__c FROM Account WHERE Id = :accId].Linkedin_Profile_URL__c,
+            'The overridden URL is written with the synced rows, after the callout'
+        );
     }
 }

@@ -22,7 +22,8 @@ public without sharing class KenSettingsController {
 
         List<Account> accounts = [
             SELECT FirstName, LastName, PersonEmail, PersonMobilePhone,
-                   Linkedin_Profile_URL__c, Twitter_Profile_URL__c
+                   Linkedin_Profile_URL__c, Twitter_Profile_URL__c, Profile_Photo_URL__c,
+                   Engagement_Preferences__c
             FROM Account
             WHERE Id = :accountId AND IsPersonAccount = true
             LIMIT 1
@@ -36,13 +37,6 @@ public without sharing class KenSettingsController {
             LIMIT 1
         ];
 
-        Id constituentRoleId = getActiveConstituentRoleId(accountId);
-        List<Ken_Alumni_CRM__c> crms = constituentRoleId != null
-            ? [SELECT Profile_Photo_URL__c, Preferences__c FROM Ken_Alumni_CRM__c
-               WHERE ConstituentRole__c = :constituentRoleId LIMIT 1]
-            : [SELECT Profile_Photo_URL__c, Preferences__c FROM Ken_Alumni_CRM__c
-               WHERE Person_Account__c = :accountId LIMIT 1];
-
         PersonalDetailsPayload p = new PersonalDetailsPayload();
         p.firstName = acc.FirstName;
         p.lastName  = acc.LastName;
@@ -50,8 +44,9 @@ public without sharing class KenSettingsController {
         p.maskedPhone = maskPhone(acc.PersonMobilePhone);
         p.linkedinUrl = acc.Linkedin_Profile_URL__c;
         p.twitterUrl  = acc.Twitter_Profile_URL__c;
+        p.profileImageUrl = acc.Profile_Photo_URL__c;
         if (!addresses.isEmpty()) { p.city = addresses[0].City__c; p.country = addresses[0].Country__c; }
-        if (!crms.isEmpty())      { p.profileImageUrl = crms[0].Profile_Photo_URL__c; p.engagementPreferences = crms[0].Preferences__c; }
+        p.engagementPreferences = acc.Engagement_Preferences__c;
         return p;
     }
 
@@ -97,11 +92,7 @@ public without sharing class KenSettingsController {
             imageUrl = KenCreateContentVersion.createContentVersion(title, b64);
         }
 
-        Id constituentRoleId2 = getActiveConstituentRoleId(accountId);
-        List<Ken_Alumni_CRM__c> crms = constituentRoleId2 != null
-            ? [SELECT Id FROM Ken_Alumni_CRM__c WHERE ConstituentRole__c = :constituentRoleId2 LIMIT 1]
-            : [SELECT Id FROM Ken_Alumni_CRM__c WHERE Person_Account__c = :accountId LIMIT 1];
-        if (!crms.isEmpty()) { crms[0].Profile_Photo_URL__c = imageUrl; update crms[0]; }
+        update new Account(Id = accountId, Profile_Photo_URL__c = imageUrl);
         return imageUrl;
     }
 
@@ -109,15 +100,11 @@ public without sharing class KenSettingsController {
     public static void saveEngagementPreferences(String preferences) {
         Id accountId = getCurrentUserAccountId();
         if (accountId == null) throw new AuraHandledException('User not found');
-        Id constituentRoleId3 = getActiveConstituentRoleId(accountId);
-        List<Ken_Alumni_CRM__c> crms = constituentRoleId3 != null
-            ? [SELECT Id, Preferences__c FROM Ken_Alumni_CRM__c
-               WHERE ConstituentRole__c = :constituentRoleId3 LIMIT 1]
-            : [SELECT Id, Preferences__c FROM Ken_Alumni_CRM__c
-               WHERE Person_Account__c = :accountId LIMIT 1];
-        if (crms.isEmpty()) throw new AuraHandledException('Alumni record not found');
-        crms[0].Preferences__c = preferences;
-        update crms[0];
+        String prefText = preferences == null ? '' : preferences;
+        if (prefText.length() > 255) {
+            prefText = prefText.substring(0, 255);
+        }
+        update new Account(Id = accountId, Engagement_Preferences__c = prefText);
     }
 
     // ── Preferences (Notifications) ───────────────────────────────────────────
@@ -416,20 +403,12 @@ public without sharing class KenSettingsController {
         return '+**** *****' + digits.substring(digits.length() - 4);
     }
 
+    /**
+     * @description Effective ConstituentRole of the logged-in user, resolved via
+     *              KenConstituentRoleService (role with the latest Last_Login__c wins).
+     */
     private static Id getActiveConstituentRoleId(Id accountId) {
         if (accountId == null) return null;
-        List<ConstituentRole> registered = [
-            SELECT Id FROM ConstituentRole
-            WHERE PersonId = :accountId AND RoleType = 'Alumni'
-              AND Registration_Status__c = 'Registered'
-            ORDER BY CreatedDate DESC LIMIT 1
-        ];
-        if (!registered.isEmpty()) return registered[0].Id;
-        List<ConstituentRole> allRoles = [
-            SELECT Id FROM ConstituentRole
-            WHERE PersonId = :accountId AND RoleType = 'Alumni'
-            ORDER BY CreatedDate DESC LIMIT 1
-        ];
-        return allRoles.isEmpty() ? null : allRoles[0].Id;
+        return KenConstituentRoleService.getActiveConstituentRoleId();
     }
 }

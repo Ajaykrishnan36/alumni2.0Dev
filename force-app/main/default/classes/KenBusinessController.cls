@@ -1,8 +1,4 @@
 public without sharing class KenBusinessController {
-  @TestVisible
-  private static Id testCurrentAccountId;
-  @TestVisible
-  private static Id testCurrentRoleId;
   private static final String BUSINESS_ACCOUNT_RT_DEVNAME = 'Business';
   private static final String JUNCTION_RT_OWNER_DEVNAME = 'Business_Owner';
   private static final String JUNCTION_RT_PROSPECT_DEVNAME = 'Business_Prospect';
@@ -33,6 +29,12 @@ public without sharing class KenBusinessController {
     public String phone;
     @AuraEnabled
     public String email;
+    // The masking state itself, so the edit form can render the checkboxes from
+    // the saved value instead of guessing at it from whether phone/email is set.
+    @AuraEnabled
+    public Boolean hidePhone;
+    @AuraEnabled
+    public Boolean hideEmail;
     @AuraEnabled
     public String website;
     @AuraEnabled
@@ -67,9 +69,9 @@ public without sharing class KenBusinessController {
   }
 
   @AuraEnabled
-  public static List<BusinessRow> getAllBusinesses(Id constituentRoleId) {
+  public static List<BusinessRow> getAllBusinesses() {
     Id businessRtId = getBusinessAccountRecordTypeId();
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
 
     List<Account> rows = [
       SELECT
@@ -85,7 +87,7 @@ public without sharing class KenBusinessController {
         Hide_Business_Email__c,
         Website,
         Location_URL__c,
-        Description,
+        Business_Description__c,
         Cover_Image_Url__c,
         Logo_URL__c,
         Featured_Business__c,
@@ -101,6 +103,7 @@ public without sharing class KenBusinessController {
         AND Business_Approval__c = 'Approved'
         AND Is_Active__c = true
         AND (Business_Owner_Role__c = NULL OR Business_Owner_Role__c != :effectiveRoleId)
+      WITH SECURITY_ENFORCED
       ORDER BY CreatedDate DESC NULLS LAST
       LIMIT 500
     ];
@@ -113,8 +116,8 @@ public without sharing class KenBusinessController {
   }
 
   @AuraEnabled
-  public static List<BusinessRow> getMyBusinesses(Id constituentRoleId) {
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+  public static List<BusinessRow> getMyBusinesses() {
+    Id effectiveRoleId = resolveConstituentRoleId();
     if (effectiveRoleId == null) {
       return new List<BusinessRow>();
     }
@@ -127,6 +130,7 @@ public without sharing class KenBusinessController {
       SELECT Business_Account__c
       FROM Ken_Business_Directory__c
       WHERE Constituent_Role__c = :effectiveRoleId AND RecordTypeId = :ownerRtId
+    WITH SECURITY_ENFORCED
     ]) {
       if (link.Business_Account__c != null)
         businessAccountIds.add(link.Business_Account__c);
@@ -149,7 +153,7 @@ public without sharing class KenBusinessController {
         Hide_Business_Email__c,
         Website,
         Location_URL__c,
-        Description,
+        Business_Description__c,
         Cover_Image_Url__c,
         Logo_URL__c,
         Featured_Business__c,
@@ -162,6 +166,7 @@ public without sharing class KenBusinessController {
         Business_Owner_Role__c
       FROM Account
       WHERE Id IN :businessAccountIds AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
       ORDER BY CreatedDate DESC NULLS LAST
       LIMIT 200
     ];
@@ -198,11 +203,11 @@ public without sharing class KenBusinessController {
   }
 
   @AuraEnabled
-  public static BusinessRow getBusinessById(Id businessId, Id constituentRoleId) {
+  public static BusinessRow getBusinessById(Id businessId) {
     if (businessId == null)
       return null;
 
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     Id businessRtId = getBusinessAccountRecordTypeId();
     List<Account> rows = [
       SELECT
@@ -218,7 +223,7 @@ public without sharing class KenBusinessController {
         Hide_Business_Email__c,
         Website,
         Location_URL__c,
-        Description,
+        Business_Description__c,
         Cover_Image_Url__c,
         Logo_URL__c,
         Featured_Business__c,
@@ -231,6 +236,7 @@ public without sharing class KenBusinessController {
         Business_Owner_Role__c
       FROM Account
       WHERE Id = :businessId AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (rows.isEmpty())
@@ -238,6 +244,9 @@ public without sharing class KenBusinessController {
     Map<Id, String> ownerNameByBusinessId = fetchOwnerNameByBusinessId(new Set<Id>{ businessId });
     Map<Id, String> ownerPhotoByBusinessId = fetchOwnerPhotoByBusinessId(new Set<Id>{ businessId });
     BusinessRow row = buildBusinessRow(rows[0], ownerNameByBusinessId.get(businessId), ownerPhotoByBusinessId.get(businessId));
+    // Lets the detail page open a chat against the owner. buildBusinessRow leaves this
+    // null because the list views have no use for it and it costs a query.
+    row.ownerAccountId = fetchOwnerPersonIdByBusinessId(new Set<Id>{ businessId }).get(businessId);
     if (row.featureStatus == 'Rejected') {
       row.featureRejectionReason = fetchFeatureRejectionComment(businessId);
     }
@@ -252,6 +261,7 @@ public without sharing class KenBusinessController {
         WHERE Constituent_Role__c = :effectiveRoleId
           AND Business_Account__c = :businessId
           AND RecordTypeId = :prospectRtId
+      WITH SECURITY_ENFORCED
       ] > 0;
     }
     return row;
@@ -280,6 +290,7 @@ public without sharing class KenBusinessController {
       WHERE ProcessInstance.TargetObjectId IN :bizIds
         AND ProcessInstance.ProcessDefinition.DeveloperName = :processDevName
         AND StepStatus = 'Rejected'
+      WITH SYSTEM_MODE
       ORDER BY CreatedDate ASC
     ]) {
       out.put((Id) step.ProcessInstance.TargetObjectId, step.Comments);
@@ -290,11 +301,11 @@ public without sharing class KenBusinessController {
   // Approved businesses in the SAME category (for the "Similar businesses" panel),
   // excluding the business currently being viewed.
   @AuraEnabled
-  public static List<BusinessRow> getSimilarBusinesses(Id businessId, String category, Id constituentRoleId) {
+  public static List<BusinessRow> getSimilarBusinesses(Id businessId, String category) {
     if (String.isBlank(category)) {
       return new List<BusinessRow>();
     }
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     Id businessRtId = getBusinessAccountRecordTypeId();
     List<Account> rows = [
       SELECT
@@ -310,7 +321,7 @@ public without sharing class KenBusinessController {
         Hide_Business_Email__c,
         Website,
         Location_URL__c,
-        Description,
+        Business_Description__c,
         Cover_Image_Url__c,
         Logo_URL__c,
         Featured_Business__c,
@@ -327,6 +338,7 @@ public without sharing class KenBusinessController {
         AND Is_Active__c = true
         AND Business_Type__c = :category
         AND Id != :businessId
+      WITH SECURITY_ENFORCED
       ORDER BY CreatedDate DESC NULLS LAST
       LIMIT 20
     ];
@@ -336,7 +348,7 @@ public without sharing class KenBusinessController {
 
 
   @AuraEnabled
-  public static Id createBusiness(Map<String, Object> req, Id constituentRoleId) {
+  public static Id createBusiness(Map<String, Object> req) {
     if (req == null)
       throw new AuraHandledException('Request is required.');
     String businessName = getString(req, 'businessName');
@@ -346,7 +358,7 @@ public without sharing class KenBusinessController {
     if (String.isBlank(businessType))
       throw new AuraHandledException('Business type is required.');
 
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     if (effectiveRoleId == null && !isInternalUser())
       throw new AuraHandledException('ConstituentRoleId is required.');
 
@@ -363,7 +375,7 @@ public without sharing class KenBusinessController {
     b.Website = getString(req, 'website');
     b.Business_Address__c = getString(req, 'address');
     b.Location_URL__c = getString(req, 'mapUrl');
-    b.Description = getString(req, 'description');
+    b.Business_Description__c = getString(req, 'description');
     b.Business_Approval__c = 'Pending';
     b.Is_Active__c = false;
 
@@ -378,27 +390,35 @@ public without sharing class KenBusinessController {
       b.Logo_URL__c = uploadAndGetPublicUrl(logoName, logoBase64);
     }
 
+    if (!Schema.sObjectType.Account.isCreateable()) {
+        throw new KenCrudException('Account is not createable by the current user.');
+    }
     insert b;
 
     Id ownerRtId = getJunctionRecordTypeId(JUNCTION_RT_OWNER_DEVNAME);
-    insert new Ken_Business_Directory__c(
+    Ken_Business_Directory__c ownerLink = new Ken_Business_Directory__c(
       RecordTypeId = ownerRtId,
       Constituent_Role__c = effectiveRoleId,
       Business_Account__c = b.Id
     );
+    stampPersonAccount(ownerLink, effectiveRoleId);
+    if (!Schema.sObjectType.Ken_Business_Directory__c.isCreateable()) {
+        throw new KenCrudException('Ken_Business_Directory__c is not createable by the current user.');
+    }
+    insert ownerLink;
 
     return b.Id;
   }
 
   @AuraEnabled
-  public static Id updateBusiness(Map<String, Object> req, Id constituentRoleId) {
+  public static Id updateBusiness(Map<String, Object> req) {
     if (req == null)
       throw new AuraHandledException('Request is required.');
     Id businessId = getId(req, 'id');
     if (businessId == null)
       throw new AuraHandledException('Business ID is required.');
 
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     if (effectiveRoleId == null && !isInternalUser())
       throw new AuraHandledException('ConstituentRoleId is required.');
 
@@ -412,6 +432,7 @@ public without sharing class KenBusinessController {
         Constituent_Role__c = :effectiveRoleId
         AND Business_Account__c = :businessId
         AND RecordTypeId = :ownerRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (links.isEmpty())
@@ -421,6 +442,7 @@ public without sharing class KenBusinessController {
       SELECT Id, Name, OwnerId, Business_Approval__c, Business_Feature_Approval__c
       FROM Account
       WHERE Id = :businessId AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (existing.isEmpty())
@@ -440,7 +462,7 @@ public without sharing class KenBusinessController {
     b.Website = getString(req, 'website');
     b.Business_Address__c = getString(req, 'address');
     b.Location_URL__c = getString(req, 'mapUrl');
-    b.Description = getString(req, 'description');
+    b.Business_Description__c = getString(req, 'description');
 
     String coverName = getString(req, 'coverPictureName');
     String coverBase64 = getString(req, 'coverPictureBase64');
@@ -460,6 +482,7 @@ public without sharing class KenBusinessController {
       SELECT Id, (SELECT Id FROM Workitems)
       FROM ProcessInstance
       WHERE TargetObjectId = :businessId AND Status = 'Pending'
+    WITH SYSTEM_MODE
     ];
     for (ProcessInstance pi : allPending) {
       if (!pi.Workitems.isEmpty()) {
@@ -485,6 +508,9 @@ public without sharing class KenBusinessController {
       b.Business_Approval__c = 'Pending';
     }
 
+    if (!Schema.sObjectType.Account.isUpdateable()) {
+        throw new KenCrudException('Account is not updateable by the current user.');
+    }
     update b;
 
     if (priorApproval == 'Pending') {
@@ -500,7 +526,7 @@ public without sharing class KenBusinessController {
   // Keyed off Business_Feature_Approval__c (a SEPARATE field) so it never
   // disturbs the normal Business_Approval__c flow.
   @AuraEnabled
-  public static void requestFeature(Id businessId, String subject, String message, Date featuredFrom, Date featuredTo, Id constituentRoleId) {
+  public static void requestFeature(Id businessId, String subject, String message, Date featuredFrom, Date featuredTo) {
     if (businessId == null)
       throw new AuraHandledException('Business is required.');
     if (String.isBlank(subject) || String.isBlank(message))
@@ -510,7 +536,7 @@ public without sharing class KenBusinessController {
     if (featuredTo < featuredFrom)
       throw new AuraHandledException('End date must be on or after the start date.');
 
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     if (effectiveRoleId == null && !isInternalUser())
       throw new AuraHandledException('ConstituentRoleId is required.');
 
@@ -523,6 +549,7 @@ public without sharing class KenBusinessController {
       WHERE Constituent_Role__c = :effectiveRoleId
         AND Business_Account__c = :businessId
         AND RecordTypeId = :ownerRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (links.isEmpty())
@@ -532,6 +559,7 @@ public without sharing class KenBusinessController {
       SELECT Id, Business_Approval__c, Business_Feature_Approval__c
       FROM Account
       WHERE Id = :businessId AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (existing.isEmpty())
@@ -541,6 +569,9 @@ public without sharing class KenBusinessController {
     if (existing[0].Business_Feature_Approval__c == 'Pending Approval')
       throw new AuraHandledException('A feature request is already pending approval for this business.');
 
+    if (!Schema.sObjectType.Account.isUpdateable()) {
+        throw new KenCrudException('Account is not updateable by the current user.');
+    }
     update new Account(
       Id = businessId,
       Feature_Subject__c = subject,
@@ -554,11 +585,11 @@ public without sharing class KenBusinessController {
   // Toggle Is_Active__c — De-Activate (false) or Re-Activate (true).
   // Blocked while any approval is in-flight.
   @AuraEnabled
-  public static void setBusinessActive(Id businessId, Boolean isActive, Id constituentRoleId) {
+  public static void setBusinessActive(Id businessId, Boolean isActive) {
     if (businessId == null)
       throw new AuraHandledException('Business is required.');
 
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     if (effectiveRoleId == null && !isInternalUser())
       throw new AuraHandledException('ConstituentRoleId is required.');
 
@@ -570,6 +601,7 @@ public without sharing class KenBusinessController {
       WHERE Constituent_Role__c = :effectiveRoleId
         AND Business_Account__c = :businessId
         AND RecordTypeId = :ownerRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (links.isEmpty())
@@ -579,6 +611,7 @@ public without sharing class KenBusinessController {
       SELECT Id, Business_Approval__c, Business_Feature_Approval__c
       FROM Account
       WHERE Id = :businessId AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (existing.isEmpty())
@@ -588,17 +621,20 @@ public without sharing class KenBusinessController {
     if (existing[0].Business_Feature_Approval__c == 'Pending Approval')
       throw new AuraHandledException('A feature request is pending. The business cannot be modified until the admin decides.');
 
+    if (!Schema.sObjectType.Account.isUpdateable()) {
+        throw new KenCrudException('Account is not updateable by the current user.');
+    }
     update new Account(Id = businessId, Is_Active__c = (isActive == true));
   }
 
   // Owner-requested deletion — parks the business as Pending Deletion for admin review.
   // Blocked while any approval is in-flight.
   @AuraEnabled
-  public static void deleteBusiness(Id businessId, Id constituentRoleId) {
+  public static void deleteBusiness(Id businessId) {
     if (businessId == null)
       throw new AuraHandledException('Business is required.');
 
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     if (effectiveRoleId == null && !isInternalUser())
       throw new AuraHandledException('ConstituentRoleId is required.');
 
@@ -610,6 +646,7 @@ public without sharing class KenBusinessController {
       WHERE Constituent_Role__c = :effectiveRoleId
         AND Business_Account__c = :businessId
         AND RecordTypeId = :ownerRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (ownerLinks.isEmpty())
@@ -619,6 +656,7 @@ public without sharing class KenBusinessController {
       SELECT Id, Business_Approval__c, Business_Feature_Approval__c
       FROM Account
       WHERE Id = :businessId AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (existing.isEmpty())
@@ -635,14 +673,16 @@ public without sharing class KenBusinessController {
   }
 
   @AuraEnabled
-  public static void approveBusinessDeletion(Id businessId, Id constituentRoleId) {
+  public static void approveBusinessDeletion(Id businessId) {
     if (businessId == null)
       throw new AuraHandledException('Business is required.');
 
     Id businessRtId = getBusinessAccountRecordTypeId();
     List<Account> existing = [
       SELECT Id, Business_Approval__c, Is_Active__c FROM Account
-      WHERE Id = :businessId AND RecordTypeId = :businessRtId LIMIT 1
+      WHERE Id = :businessId AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
+      LIMIT 1
     ];
     if (existing.isEmpty())
       throw new AuraHandledException('Business not found.');
@@ -653,14 +693,16 @@ public without sharing class KenBusinessController {
   }
 
   @AuraEnabled
-  public static void dismissBusinessDeletion(Id businessId, Id constituentRoleId) {
+  public static void dismissBusinessDeletion(Id businessId) {
     if (businessId == null)
       throw new AuraHandledException('Business is required.');
 
     Id businessRtId = getBusinessAccountRecordTypeId();
     List<Account> existing = [
       SELECT Id, Business_Approval__c FROM Account
-      WHERE Id = :businessId AND RecordTypeId = :businessRtId LIMIT 1
+      WHERE Id = :businessId AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
+      LIMIT 1
     ];
     if (existing.isEmpty())
       throw new AuraHandledException('Business not found.');
@@ -672,11 +714,11 @@ public without sharing class KenBusinessController {
   // Remove the Featured status — clears Business_Feature_Approval__c back to null.
   // Only callable when the business is Featured (Approved); blocked while Pending.
   @AuraEnabled
-  public static void removeFeature(Id businessId, Id constituentRoleId) {
+  public static void removeFeature(Id businessId) {
     if (businessId == null)
       throw new AuraHandledException('Business is required.');
 
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     if (effectiveRoleId == null && !isInternalUser())
       throw new AuraHandledException('ConstituentRoleId is required.');
 
@@ -688,6 +730,7 @@ public without sharing class KenBusinessController {
       WHERE Constituent_Role__c = :effectiveRoleId
         AND Business_Account__c = :businessId
         AND RecordTypeId = :ownerRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (links.isEmpty())
@@ -697,6 +740,7 @@ public without sharing class KenBusinessController {
       SELECT Id, Business_Feature_Approval__c
       FROM Account
       WHERE Id = :businessId AND RecordTypeId = :businessRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
     if (existing.isEmpty())
@@ -706,6 +750,9 @@ public without sharing class KenBusinessController {
     if (existing[0].Business_Feature_Approval__c != 'Approved')
       throw new AuraHandledException('This business is not currently featured.');
 
+    if (!Schema.sObjectType.Account.isUpdateable()) {
+        throw new KenCrudException('Account is not updateable by the current user.');
+    }
     update new Account(
       Id = businessId,
       Business_Feature_Approval__c = null,
@@ -716,8 +763,7 @@ public without sharing class KenBusinessController {
 
   // Approved businesses currently within their featured window — for the carousel.
   @AuraEnabled
-  public static List<BusinessRow> getFeaturedBusinesses(Id constituentRoleId) {
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+  public static List<BusinessRow> getFeaturedBusinesses() {
     Id businessRtId = getBusinessAccountRecordTypeId();
     Integer lim = 10;
     List<Account> rows = [
@@ -734,7 +780,7 @@ public without sharing class KenBusinessController {
         Hide_Business_Email__c,
         Website,
         Location_URL__c,
-        Description,
+        Business_Description__c,
         Cover_Image_Url__c,
         Logo_URL__c,
         Featured_Business__c,
@@ -750,6 +796,7 @@ public without sharing class KenBusinessController {
         AND Business_Approval__c = 'Approved'
         AND Business_Feature_Approval__c = 'Approved'
         AND Is_Active__c = true
+      WITH SECURITY_ENFORCED
       ORDER BY LastModifiedDate DESC NULLS LAST
       LIMIT :lim
     ];
@@ -759,8 +806,7 @@ public without sharing class KenBusinessController {
 
   // Admin: all Business RT accounts regardless of owner or approval status.
   @AuraEnabled
-  public static List<BusinessRow> getAdminBusinessList(Id constituentRoleId) {
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+  public static List<BusinessRow> getAdminBusinessList() {
     Id businessRtId = getBusinessAccountRecordTypeId();
     List<Account> rows = [
         SELECT
@@ -768,7 +814,7 @@ public without sharing class KenBusinessController {
             Business_Approval__c, Is_Active__c,
             Phone, Hide_Business_Phone__c,
             Business_Email__c, Hide_Business_Email__c,
-            Website, Location_URL__c, Description,
+            Website, Location_URL__c, Business_Description__c,
             Cover_Image_Url__c, Logo_URL__c,
             Featured_Business__c, Business_Feature_Approval__c,
             Featured_From__c, Featured_To__c,
@@ -777,6 +823,7 @@ public without sharing class KenBusinessController {
             Business_Owner_Role__c
         FROM Account
         WHERE RecordTypeId = :businessRtId
+        WITH SECURITY_ENFORCED
         ORDER BY CreatedDate DESC NULLS LAST
         LIMIT 500
     ];
@@ -798,8 +845,7 @@ public without sharing class KenBusinessController {
 
   // Admin: all Business RT accounts that have any feature approval status set.
   @AuraEnabled
-  public static List<BusinessRow> getAdminFeatureList(Id constituentRoleId) {
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+  public static List<BusinessRow> getAdminFeatureList() {
     Id businessRtId = getBusinessAccountRecordTypeId();
     List<Account> rows = [
         SELECT
@@ -807,7 +853,7 @@ public without sharing class KenBusinessController {
             Business_Approval__c, Is_Active__c,
             Phone, Hide_Business_Phone__c,
             Business_Email__c, Hide_Business_Email__c,
-            Website, Location_URL__c, Description,
+            Website, Location_URL__c, Business_Description__c,
             Cover_Image_Url__c, Logo_URL__c,
             Featured_Business__c, Business_Feature_Approval__c,
             Featured_From__c, Featured_To__c,
@@ -817,6 +863,7 @@ public without sharing class KenBusinessController {
         FROM Account
         WHERE RecordTypeId = :businessRtId
             AND Business_Feature_Approval__c != null
+        WITH SECURITY_ENFORCED
         ORDER BY LastModifiedDate DESC NULLS LAST
         LIMIT 500
     ];
@@ -849,17 +896,19 @@ public without sharing class KenBusinessController {
   // Express interest in someone else's business — stored as a Business_Prospect junction.
   // The owner cannot express interest in their own business. No approval; just stored.
   @AuraEnabled
-  public static void expressInterest(Id businessId, String subject, String message, Id constituentRoleId) {
+  public static void expressInterest(Id businessId, String subject, String message) {
     if (businessId == null) {
       throw new AuraHandledException('Business is required.');
     }
-    Id effectiveRoleId = resolveConstituentRoleId(constituentRoleId);
+    Id effectiveRoleId = resolveConstituentRoleId();
     if (effectiveRoleId == null && !isInternalUser()) {
       throw new AuraHandledException('ConstituentRoleId is required.');
     }
 
     List<Account> bizList = [
-      SELECT Id, Business_Owner_Role__c FROM Account WHERE Id = :businessId LIMIT 1
+      SELECT Id, Name, Business_Owner_Role__c FROM Account WHERE Id = :businessId
+      WITH SECURITY_ENFORCED
+      LIMIT 1
     ];
     if (bizList.isEmpty()) {
       throw new AuraHandledException('Business not found.');
@@ -876,8 +925,10 @@ public without sharing class KenBusinessController {
       WHERE Business_Account__c = :businessId
         AND Constituent_Role__c = :effectiveRoleId
         AND RecordTypeId = :prospectRtId
+      WITH SECURITY_ENFORCED
       LIMIT 1
     ];
+    Boolean isNewInterest = existing.isEmpty();
     Ken_Business_Directory__c link = existing.isEmpty()
       ? new Ken_Business_Directory__c(
           RecordTypeId = prospectRtId,
@@ -885,9 +936,62 @@ public without sharing class KenBusinessController {
           Constituent_Role__c = effectiveRoleId
         )
       : existing[0];
+    stampPersonAccount(link, effectiveRoleId);
     link.Subject__c = subject;
     link.Message__c = message;
+    if (!Schema.sObjectType.Ken_Business_Directory__c.isCreateable() || !Schema.sObjectType.Ken_Business_Directory__c.isUpdateable()) {
+        throw new KenCrudException('Ken_Business_Directory__c is not upsertable by the current user.');
+    }
     upsert link;
+
+    // Tell the owner someone wants to talk to them. Only on the first expression of
+    // interest: the LWC flips its button to "Interest Expressed", so a repeat call is
+    // an edit of the same prospect record, not a new lead worth pinging them about.
+    if (isNewInterest) {
+      notifyOwnerOfInterest(bizList[0], effectiveRoleId, subject);
+    }
+  }
+
+  // The notification layer addresses people by Person Account while the business
+  // directory works in ConstituentRoles, so both sides are resolved here in one query.
+  // A business with no owner role, or an owner whose role carries no PersonId, simply
+  // gets no notification rather than failing the interest the alumnus just expressed.
+  private static void notifyOwnerOfInterest(Account business, Id senderRoleId, String subject) {
+    if (business == null || business.Business_Owner_Role__c == null) {
+      return;
+    }
+    Map<Id, Id> personByRole = new Map<Id, Id>();
+    for (ConstituentRole r : [
+      SELECT Id, PersonId
+      FROM ConstituentRole
+      WHERE Id = :business.Business_Owner_Role__c OR Id = :senderRoleId
+    WITH SECURITY_ENFORCED
+    ]) {
+      personByRole.put(r.Id, r.PersonId);
+    }
+    Id ownerAccountId = personByRole.get(business.Business_Owner_Role__c);
+    Id senderAccountId = senderRoleId == null ? null : personByRole.get(senderRoleId);
+    if (ownerAccountId == null) {
+      return;
+    }
+
+    KenNotificationFactory.Context ctx = new KenNotificationFactory.Context(
+      ownerAccountId,
+      senderAccountId,
+      business.Id
+    );
+    ctx.extras = new Map<String, String>{
+      'Business.Name' => String.isBlank(business.Name) ? 'your business' : business.Name,
+      'Interest.Subject' => String.isBlank(subject)
+        ? 'Open the listing to see their details.'
+        : subject
+    };
+    // A failed notification must not roll back the prospect record just created.
+    try {
+      KenNotificationFactory.create('Business_Interest_Received', ctx);
+    } catch (Exception ex) {
+      System.debug('Business_Interest_Received notification tolerated: ' + ex.getMessage());
+    }
   }
 
   private static List<BusinessRow> buildBusinessRows(
@@ -930,8 +1034,11 @@ public without sharing class KenBusinessController {
     r.ownerName = ownerName;
     r.ownerImage = ownerPhoto;
 
-    Boolean isOwner = (b.Business_Owner_Role__c != null && b.Business_Owner_Role__c == resolveConstituentRoleId(null));
+    Boolean isOwner = (b.Business_Owner_Role__c != null && b.Business_Owner_Role__c == resolveConstituentRoleId());
     r.isOwner = isOwner;
+    r.hidePhone = b.Hide_Business_Phone__c == true;
+    r.hideEmail = b.Hide_Business_Email__c == true;
+
     String phoneVal = (b.Hide_Business_Phone__c == true && !isOwner) ? maskPhone(b.Phone) : b.Phone;
     r.phone = String.isBlank(phoneVal) ? '—' : phoneVal;
     String emailVal = (b.Hide_Business_Email__c == true && !isOwner) ? maskEmail(b.Business_Email__c) : b.Business_Email__c;
@@ -940,7 +1047,7 @@ public without sharing class KenBusinessController {
     r.website = b.Website;
     r.address = b.Business_Address__c;
     r.mapUrl = b.Location_URL__c;
-    r.description = b.Description;
+    r.description = b.Business_Description__c;
 
     Boolean isActiveBusiness = (b.Business_Approval__c == 'Approved' && b.Is_Active__c == true);
     r.featureStatus = isActiveBusiness ? b.Business_Feature_Approval__c : null;
@@ -953,47 +1060,39 @@ public without sharing class KenBusinessController {
     return r;
   }
 
-  // Effective ConstituentRole for the running user — test hook first, then the explicit
-  // param from the LWC, else the latest Alumni role on the user's Person Account
-  // (resolved once per transaction).
-  private static Boolean currentRoleResolved = false;
-  private static Id currentRoleIdCache;
-  private static Id resolveConstituentRoleId(Id constituentRoleId) {
-    if (Test.isRunningTest() && testCurrentRoleId != null) {
-      currentRoleResolved = true;
-      currentRoleIdCache = testCurrentRoleId;
-      return currentRoleIdCache;
-    }
-    if (constituentRoleId != null) {
-      currentRoleResolved = true;
-      currentRoleIdCache = constituentRoleId;
-      return currentRoleIdCache;
-    }
-    if (!currentRoleResolved) {
-      currentRoleResolved = true;
-      currentRoleIdCache = fetchLatestAlumniRoleId(getCurrentUserAccountId());
-    }
-    return currentRoleIdCache;
+  /**
+   * @description Effective ConstituentRole for the running user, resolved server-side
+   *              from the logged-in user via KenConstituentRoleService (role with the
+   *              latest Last_Login__c wins).
+   */
+  private static Id resolveConstituentRoleId() {
+    return KenConstituentRoleService.getActiveConstituentRoleId();
   }
 
-  // Latest Alumni ConstituentRole for the given Person Account.
-  private static Id fetchLatestAlumniRoleId(Id accountId) {
-    if (accountId == null)
-      return null;
-    List<ConstituentRole> roles = [
-      SELECT Id
-      FROM ConstituentRole
-      WHERE PersonId = :accountId AND RoleType = 'Alumni'
-      ORDER BY CreatedDate DESC
-      LIMIT 1
-    ];
-    return roles.isEmpty() ? null : roles[0].Id;
+  private static Boolean hasJunctionPersonAccount = KenNamespaceUtil.hasField(
+    Ken_Business_Directory__c.SObjectType.getDescribe().fields.getMap(),
+    'Person_Account__c'
+  );
+
+  /**
+   * Stamps the person side of a business-directory junction. Person_Account__c is a
+   * required field in some client orgs and does not exist in others, so it is resolved
+   * from the constituent role and set dynamically rather than referenced statically.
+   */
+  private static void stampPersonAccount(Ken_Business_Directory__c link, Id roleId) {
+    if (!hasJunctionPersonAccount || link == null || roleId == null) {
+      return;
+    }
+    List<ConstituentRole> roles = [SELECT PersonId FROM ConstituentRole WHERE Id = :roleId WITH SECURITY_ENFORCED LIMIT 1];
+    if (!roles.isEmpty() && roles[0].PersonId != null) {
+      link.put(KenNamespaceUtil.qualifyCustom('Person_Account__c'), roles[0].PersonId);
+    }
   }
 
   // Internal Salesforce users (System Admin, internal staff) have no AccountId and no
   // ConstituentRole, so admin-facing flows tolerate a null role for them.
   private static Boolean isInternalUser() {
-    User u = [SELECT Id, UserType, AccountId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+    User u = [SELECT Id, UserType, AccountId FROM User WHERE Id = :UserInfo.getUserId() WITH SYSTEM_MODE LIMIT 1];
     return u.AccountId == null || u.UserType == 'Standard';
   }
 
@@ -1039,33 +1138,6 @@ public without sharing class KenBusinessController {
     if (isActive == false)
       return 'De-activated';
     return 'Active';
-  }
-
-  private static Id getCurrentUserAccountId() {
-    if (Test.isRunningTest() && testCurrentAccountId != null)
-      return testCurrentAccountId;
-    List<User> users = [
-      SELECT Id, AccountId, ContactId
-      FROM User
-      WHERE Id = :UserInfo.getUserId()
-      LIMIT 1
-    ];
-    if (users.isEmpty())
-      return null;
-    User u = users[0];
-    if (u.AccountId != null)
-      return u.AccountId;
-    if (u.ContactId != null) {
-      List<Contact> contacts = [
-        SELECT AccountId
-        FROM Contact
-        WHERE Id = :u.ContactId
-        LIMIT 1
-      ];
-      if (!contacts.isEmpty() && contacts[0].AccountId != null)
-        return contacts[0].AccountId;
-    }
-    return null;
   }
 
   private static String getString(Map<String, Object> m, String key) {
@@ -1134,6 +1206,7 @@ public without sharing class KenBusinessController {
       WHERE
         Business_Account__c IN :businessAccountIds
         AND RecordTypeId = :ownerRtId
+      WITH SECURITY_ENFORCED
       ORDER BY CreatedDate DESC
     ]) {
       if (link.Business_Account__c == null || link.Constituent_Role__c == null || link.Constituent_Role__r.PersonId == null)
@@ -1152,6 +1225,7 @@ public without sharing class KenBusinessController {
         SELECT Id, FirstName, LastName, Name
         FROM Account
         WHERE Id IN :personAccountIds
+      WITH SECURITY_ENFORCED
       ]
     );
 
@@ -1182,6 +1256,7 @@ public without sharing class KenBusinessController {
       SELECT Business_Account__c, Constituent_Role__c, Constituent_Role__r.PersonId
       FROM Ken_Business_Directory__c
       WHERE Business_Account__c IN :businessAccountIds AND RecordTypeId = :ownerRtId
+      WITH SECURITY_ENFORCED
       ORDER BY CreatedDate DESC
     ]) {
       if (link.Business_Account__c == null || link.Constituent_Role__c == null || link.Constituent_Role__r.PersonId == null) continue;
@@ -1192,13 +1267,46 @@ public without sharing class KenBusinessController {
     }
     if (personIds.isEmpty()) return result;
     Map<Id, Account> personById = new Map<Id, Account>(
-      [SELECT Id, PhotoUrl FROM Account WHERE Id IN :personIds]
+      [SELECT Id, PhotoUrl FROM Account WHERE Id IN :personIds WITH SECURITY_ENFORCED]
     );
     String baseUrl = URL.getOrgDomainUrl().toExternalForm();
     for (Id bizId : bizToPerson.keySet()) {
       Account p = personById.get(bizToPerson.get(bizId));
       if (p != null && String.isNotBlank(p.PhotoUrl))
         result.put(bizId, baseUrl + p.PhotoUrl);
+    }
+    return result;
+  }
+
+  // Business -> the owner's Person Account. Same Business_Owner junction that feeds
+  // ownerName and ownerImage, so the person the chat opens against is always the one
+  // whose name and photo sit next to the button. Falls back to Account.Business_Owner_Role__c
+  // for older listings recorded before the junction existed.
+  private static Map<Id, Id> fetchOwnerPersonIdByBusinessId(Set<Id> businessAccountIds) {
+    Map<Id, Id> result = new Map<Id, Id>();
+    if (businessAccountIds == null || businessAccountIds.isEmpty()) return result;
+    Id ownerRtId = getJunctionRecordTypeId(JUNCTION_RT_OWNER_DEVNAME);
+    for (Ken_Business_Directory__c link : [
+      SELECT Business_Account__c, Constituent_Role__r.PersonId
+      FROM Ken_Business_Directory__c
+      WHERE Business_Account__c IN :businessAccountIds AND RecordTypeId = :ownerRtId
+      WITH SECURITY_ENFORCED
+      ORDER BY CreatedDate DESC
+    ]) {
+      if (link.Business_Account__c == null || link.Constituent_Role__r.PersonId == null) continue;
+      if (!result.containsKey(link.Business_Account__c)) {
+        result.put(link.Business_Account__c, link.Constituent_Role__r.PersonId);
+      }
+    }
+    for (Account a : [
+      SELECT Id, Business_Owner_Role__r.PersonId
+      FROM Account
+      WHERE Id IN :businessAccountIds AND Business_Owner_Role__c != null
+    WITH SECURITY_ENFORCED
+    ]) {
+      if (!result.containsKey(a.Id) && a.Business_Owner_Role__r.PersonId != null) {
+        result.put(a.Id, a.Business_Owner_Role__r.PersonId);
+      }
     }
     return result;
   }

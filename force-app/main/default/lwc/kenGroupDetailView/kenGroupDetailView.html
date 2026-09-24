@@ -598,6 +598,31 @@
             </button>
           </template>
 
+          <!-- Any joined member (or admin): open this group's shared chat thread -->
+          <template if:true={isJoined}>
+            <button
+              type="button"
+              class="action-btn secondary-btn"
+              onclick={handleOpenGroupChat}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                ></path>
+              </svg>
+              Message
+            </button>
+          </template>
+
           <!-- Member (non-admin): Leave -->
           <template if:true={isJoined}>
             <template if:false={isAdmin}>
@@ -638,6 +663,41 @@
                 onclick={confirmLeave}
               >
                 Yes, Leave
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Connection Request Confirmation Modal (member "Message" icon, not yet connected) -->
+      <template if:true={showConnectionRequestModal}>
+        <div class="modal-overlay" onclick={cancelConnectionRequest}>
+          <div class="modal-card" onclick={stopPropagation}>
+            <p class="confirm-text">
+              Only connected alumni can chat. Connect with&nbsp;<strong
+                >{connectionRequestTarget.name}</strong
+              >?
+            </p>
+            <div class="confirm-actions">
+              <button
+                type="button"
+                class="cancel-btn"
+                onclick={cancelConnectionRequest}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="confirm-yes-btn confirm-yes-btn-primary"
+                onclick={confirmConnectionRequest}
+                disabled={isSendingConnectionRequest}
+              >
+                <template if:true={isSendingConnectionRequest}>
+                  <span class="btn-inline-spinner" aria-label="Sending"></span>
+                </template>
+                <template if:false={isSendingConnectionRequest}
+                  >Yes, Request</template
+                >
               </button>
             </div>
           </div>
@@ -716,6 +776,8 @@
                         type="button"
                         class="modal-chat-btn"
                         title="Message"
+                        data-account-id={m.accountId}
+                        onclick={handleMemberMessageClick}
                       >
                         <svg
                           width="18"
@@ -947,5 +1009,53 @@
           </div>
         </div>
       </template> </template><!-- end if:false={isLoading} -->
+
+    <!-- Floating 1:1 chatbox for an already-connected member's "Message" icon - same
+         widget/pattern as the Network profile page's chat popup (kenAlumniDetailView). -->
+    <template if:true={showChatbox}>
+      <div class={chatContainerClass}>
+        <div class="chatbox-header">
+          <div class="chat-user-info">
+            <div class="chat-avatar-container">
+              <img
+                src={chatboxMember.photoUrl}
+                alt={chatboxMember.name}
+                class="chat-avatar"
+                onerror={handleChatAvatarError}
+              />
+            </div>
+            <span class="chat-username">{chatboxMember.name}</span>
+          </div>
+          <div class="chat-actions">
+            <button
+              class="chat-action-btn"
+              onclick={handleToggleExpand}
+              title="Expand/Contract"
+            >
+              <lightning-icon
+                icon-name={chatExpandIcon}
+                size="x-small"
+              ></lightning-icon>
+            </button>
+            <button
+              class="chat-action-btn"
+              onclick={handleCloseChat}
+              title="Close"
+            >
+              <lightning-icon
+                icon-name="utility:close"
+                size="x-small"
+              ></lightning-icon>
+            </button>
+          </div>
+        </div>
+        <div class="chatbox-body">
+          <c-ken-chat
+            alumnus-id={chatboxMember.accountId}
+            hide-header
+          ></c-ken-chat>
+        </div>
+      </div>
+    </template>
   </div>
 </template>

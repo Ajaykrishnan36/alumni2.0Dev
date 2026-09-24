@@ -8,7 +8,9 @@
  * NO per-recipient custom records. Recipients are captured as an Account-Id snapshot
  * on the campaign and sent via setTargetObjectId so Salesforce logs each send as an
  * activity (EmailMessage) against the campaign, performs native open tracking
- * (EmailStatus) and bounce handling (Account.PersonEmailBouncedDate).
+ * (EmailMessage.IsOpened / FirstOpenedDate — the classic EmailStatus object is not
+ * queryable in orgs with Enhanced Email enabled) and bounce handling
+ * (Account.PersonEmailBouncedDate).
  *
  * Personalisation tokens in subject/body: {{FirstName}}, {{LastName}},
  * {{FullName}}, {{Email}}.
@@ -76,7 +78,8 @@ public with sharing class KenCommunicationController {
         String soql = 'SELECT Id, Name, Active__c, LastModifiedDate FROM Ken_Segmentation__c';
         if (!String.isBlank(term)) soql += ' WHERE Name LIKE :term';
         soql += ' ORDER BY LastModifiedDate DESC LIMIT 100';
-        for (Ken_Segmentation__c s : (List<Ken_Segmentation__c>)Database.query(soql)) {
+        Map<String, Object> binds = new Map<String, Object>{ 'term' => term };
+        for (Ken_Segmentation__c s : (List<Ken_Segmentation__c>)Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE)) {
             SegmentationOption opt = new SegmentationOption();
             opt.id = s.Id;
             opt.name = s.Name;
@@ -114,6 +117,9 @@ public with sharing class KenCommunicationController {
         c.Segmentation__c = segmentationId;
         c.From_Name__c = String.isBlank(fromName) ? null : fromName.left(120);
         c.From_Address__c = String.isBlank(fromAddress) ? null : fromAddress;
+        if (!Schema.sObjectType.Ken_Email_Campaign__c.isCreateable() || !Schema.sObjectType.Ken_Email_Campaign__c.isUpdateable()) {
+            throw new KenCrudException('Ken_Email_Campaign__c is not upsertable by the current user.');
+        }
         upsert c;
         return c.Id;
     }
@@ -123,7 +129,9 @@ public with sharing class KenCommunicationController {
         if (campaignId == null) throw new AuraHandledException('Campaign Id is required.');
         Ken_Email_Campaign__c camp = [
             SELECT Id, Subject__c, Body__c, Status__c, Segmentation__c
-            FROM Ken_Email_Campaign__c WHERE Id = :campaignId LIMIT 1
+            FROM Ken_Email_Campaign__c WHERE Id = :campaignId
+            WITH USER_MODE
+            LIMIT 1
         ];
         if (camp.Status__c == 'Sending' || camp.Status__c == 'Sent') {
             throw new AuraHandledException('Campaign has already been sent or is sending.');
@@ -139,6 +147,7 @@ public with sharing class KenCommunicationController {
         for (Account a : [
             SELECT Id FROM Account
             WHERE Id IN :accountIds AND IsPersonAccount = true AND PersonEmail != null
+        WITH USER_MODE
         ]) {
             sendable.add(a.Id);
         }
@@ -160,10 +169,16 @@ public with sharing class KenCommunicationController {
         if (scheduledFor != null && scheduledFor > Datetime.now()) {
             camp.Status__c = 'Scheduled';
             camp.Scheduled_DateTime__c = scheduledFor;
+            if (!Schema.sObjectType.Ken_Email_Campaign__c.isUpdateable()) {
+                throw new KenCrudException('Ken_Email_Campaign__c is not updateable by the current user.');
+            }
             update camp;
             return camp.Id;
         }
         camp.Status__c = 'Sending';
+        if (!Schema.sObjectType.Ken_Email_Campaign__c.isUpdateable()) {
+            throw new KenCrudException('Ken_Email_Campaign__c is not updateable by the current user.');
+        }
         update camp;
         if (!Test.isRunningTest()) {
             System.enqueueJob(new SendQueueable(camp.Id, 0));
@@ -178,7 +193,9 @@ public with sharing class KenCommunicationController {
                    Total_Recipients__c, Sent_Count__c, Delivered_Count__c,
                    Bounced_Count__c, Failed_Count__c, Sent_DateTime__c, Scheduled_DateTime__c,
                    CreatedDate, From_Name__c, From_Address__c, Error_Message__c
-            FROM Ken_Email_Campaign__c WHERE Id = :campaignId LIMIT 1
+            FROM Ken_Email_Campaign__c WHERE Id = :campaignId
+            WITH USER_MODE
+            LIMIT 1
         ];
         CampaignDTO d = toCampaignDTO(c);
         d.openedCount = countOpeners(campaignId);
@@ -198,7 +215,8 @@ public with sharing class KenCommunicationController {
         if (!String.isBlank(status)) soql += ' WHERE Status__c = :status';
         soql += ' ORDER BY CreatedDate DESC LIMIT ' + cap;
         List<CampaignDTO> out = new List<CampaignDTO>();
-        for (Ken_Email_Campaign__c c : (List<Ken_Email_Campaign__c>)Database.query(soql)) {
+        Map<String, Object> binds = new Map<String, Object>{ 'status' => status };
+        for (Ken_Email_Campaign__c c : (List<Ken_Email_Campaign__c>)Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE)) {
             out.add(toCampaignDTO(c));
         }
         return out;
@@ -211,7 +229,9 @@ public with sharing class KenCommunicationController {
 
         Ken_Email_Campaign__c camp = [
             SELECT Id, Sent_DateTime__c, Audience_Snapshot_JSON__c
-            FROM Ken_Email_Campaign__c WHERE Id = :campaignId LIMIT 1
+            FROM Ken_Email_Campaign__c WHERE Id = :campaignId
+            WITH USER_MODE
+            LIMIT 1
         ];
         Map<Id, Datetime> openedByContact = openedDateByContact(campaignId);
 
@@ -232,7 +252,7 @@ public with sharing class KenCommunicationController {
     // Send pipeline — chained queueable, BATCH_SIZE slices keyed by offset
     // ============================================================
 
-    public without sharing class SendQueueable implements Queueable {
+    public without sharing class SendQueueable implements Queueable, Database.AllowsCallouts {
         private final Id campaignId;
         private final Integer offset;
 
@@ -254,7 +274,9 @@ public with sharing class KenCommunicationController {
                            Sent_Count__c, Delivered_Count__c, Bounced_Count__c,
                            Failed_Count__c, Total_Recipients__c, Sent_DateTime__c,
                            Audience_Snapshot_JSON__c
-                    FROM Ken_Email_Campaign__c WHERE Id = :campaignId LIMIT 1
+                    FROM Ken_Email_Campaign__c WHERE Id = :campaignId
+                    WITH SECURITY_ENFORCED
+                    LIMIT 1
                 ];
             } catch (Exception e) {
                 return;
@@ -276,11 +298,15 @@ public with sharing class KenCommunicationController {
             for (Integer i = offset; i < endIdx; i++) slice.add(accountIds[i]);
 
             Map<Id, Account> accts = new Map<Id, Account>([
-                SELECT Id, Name, FirstName, LastName, PersonEmail, PersonContactId
+                SELECT Id, Name, FirstName, LastName, PersonEmail, PersonContactId,
+                       PersonMobilePhone, Phone
                 FROM Account WHERE Id IN :slice AND IsPersonAccount = true
+            WITH SECURITY_ENFORCED
             ]);
 
             List<Messaging.SingleEmailMessage> emails = new List<Messaging.SingleEmailMessage>();
+            KenMessagingService.Request routing =
+                new KenMessagingService.Request(KenMessagingService.TYPE_EMAIL_CAMPAIGN);
             Integer skipped = 0;
             for (Id accId : slice) {
                 Account a = accts.get(accId);
@@ -288,6 +314,15 @@ public with sharing class KenCommunicationController {
                     skipped++;
                     continue;
                 }
+                routing.recipient(
+                    a.PersonEmail,
+                    String.isNotBlank(a.PersonMobilePhone) ? a.PersonMobilePhone : a.Phone,
+                    new Map<String, String>{
+                        'Recipient_Name' => a.Name,
+                        'emailSubject' => personalise(camp.Subject__c, a),
+                        'emailBody' => personalise(camp.Body__c, a)
+                    }
+                );
                 Messaging.SingleEmailMessage msg = new Messaging.SingleEmailMessage();
                 msg.setTargetObjectId(a.PersonContactId);
                 msg.setWhatId(campaignId);
@@ -301,7 +336,12 @@ public with sharing class KenCommunicationController {
             }
 
             Integer sentDelta = 0, bouncedDelta = 0, failedDelta = skipped;
-            if (!emails.isEmpty()) {
+
+            KenMessagingService.sendToPhoneChannels(routing);
+            KenMessagingService.Result routed = KenMessagingService.send(routing.withNativeFallback(emails));
+            if (routed.sentViaSfmc) {
+                sentDelta = emails.size();
+            } else if (!routed.handled && !emails.isEmpty()) {
                 List<Messaging.SendEmailResult> results;
                 try {
                     results = Messaging.sendEmail(emails, false);
@@ -411,6 +451,7 @@ public with sharing class KenCommunicationController {
                 SELECT ToAddress, MessageDate, ActivityId
                 FROM EmailMessage
                 WHERE RelatedToId = :campaignId
+                WITH USER_MODE
                 ORDER BY MessageDate ASC
                 LIMIT :cap
             ];
@@ -426,7 +467,7 @@ public with sharing class KenCommunicationController {
         Map<Id, String> nameByActivity = new Map<Id, String>();
         Set<Id> whoIds = new Set<Id>();
         if (!activityIds.isEmpty()) {
-            for (Task t : [SELECT Id, WhoId, Who.Name FROM Task WHERE Id IN :activityIds]) {
+            for (Task t : [SELECT Id, WhoId, Who.Name FROM Task WHERE Id IN :activityIds WITH USER_MODE]) {
                 whoByActivity.put(t.Id, t.WhoId);
                 if (t.Who != null) nameByActivity.put(t.Id, t.Who.Name);
                 if (t.WhoId != null) whoIds.add(t.WhoId);
@@ -437,6 +478,7 @@ public with sharing class KenCommunicationController {
             for (Account a : [
                 SELECT Id, Name, PersonContactId, PersonEmailBouncedDate, PersonEmailBouncedReason
                 FROM Account WHERE PersonContactId IN :whoIds
+            WITH USER_MODE
             ]) {
                 acctByContact.put(a.PersonContactId, a);
             }
@@ -469,6 +511,7 @@ public with sharing class KenCommunicationController {
         for (Account a : [
             SELECT Id, Name, PersonEmail, PersonContactId, PersonEmailBouncedDate, PersonEmailBouncedReason
             FROM Account WHERE Id IN :accountIds
+        WITH USER_MODE
         ]) {
             Datetime openedAt = (a.PersonContactId != null) ? openedByContact.get(a.PersonContactId) : null;
             Boolean bounced = a.PersonEmailBouncedDate != null;
@@ -489,19 +532,31 @@ public with sharing class KenCommunicationController {
     private static Map<Id, Datetime> openedDateByContact(Id campaignId) {
         Map<Id, Datetime> out = new Map<Id, Datetime>();
         try {
-            String soql = 'SELECT WhoId, TimesOpened, FirstOpenDate FROM EmailStatus WHERE Task.WhatId = :campaignId';
-            for (SObject row : Database.query(soql)) {
-                Id whoId = (Id) row.get('WhoId');
+            List<EmailMessage> opened = [
+                SELECT ActivityId, FirstOpenedDate
+                FROM EmailMessage
+                WHERE RelatedToId = :campaignId AND IsOpened = true AND ActivityId != null
+            WITH USER_MODE
+            ];
+            if (opened.isEmpty()) return out;
+
+            Set<Id> activityIds = new Set<Id>();
+            for (EmailMessage em : opened) activityIds.add(em.ActivityId);
+
+            Map<Id, Id> whoByActivity = new Map<Id, Id>();
+            for (Task t : [SELECT Id, WhoId FROM Task WHERE Id IN :activityIds WITH USER_MODE]) {
+                whoByActivity.put(t.Id, t.WhoId);
+            }
+
+            for (EmailMessage em : opened) {
+                Id whoId = whoByActivity.get(em.ActivityId);
                 if (whoId == null) continue;
-                Object timesRaw = row.get('TimesOpened');
-                Integer t = timesRaw == null ? 0 : Integer.valueOf(timesRaw);
-                if (t <= 0) continue;
-                Datetime fo = (Datetime) row.get('FirstOpenDate');
+                Datetime fo = em.FirstOpenedDate;
                 Datetime existing = out.get(whoId);
                 if (existing == null || (fo != null && fo < existing)) out.put(whoId, fo);
             }
         } catch (Exception e) {
-            // Email tracking disabled — leave empty.
+            // Email tracking unavailable — leave empty.
         }
         return out;
     }

@@ -67,26 +67,36 @@ public with sharing class KenEventsDashboardController {
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private static String buildWhereClause(String fType, String fStatus, String fYear) {
+    // Filter values travel as bind variables rather than being escaped into the query
+    // text. Each bind is added to the map in the same branch that adds the condition
+    // referencing it, so a clause can never name a bind the map is missing.
+    private static String buildWhereClause(String fType, String fStatus, String fYear, Map<String, Object> binds) {
         String w = 'Is_Archived__c = false';
-        if (String.isNotBlank(fType))
-            w += ' AND Event_Type__c INCLUDES (\'' + String.escapeSingleQuotes(fType) + '\')';
-        if (String.isNotBlank(fStatus))
-            w += ' AND Event_Status__c = \'' + String.escapeSingleQuotes(fStatus) + '\'';
+        if (String.isNotBlank(fType)) {
+            binds.put('bType', fType);
+            w += ' AND Event_Type__c INCLUDES (:bType)';
+        }
+        if (String.isNotBlank(fStatus)) {
+            binds.put('bStatus', fStatus);
+            w += ' AND Event_Status__c = :bStatus';
+        }
         if (String.isNotBlank(fYear)) {
             try {
                 Integer yr = Integer.valueOf(fYear);
-                w += ' AND Start_Date__c >= ' + yr + '-01-01 AND Start_Date__c <= ' + yr + '-12-31';
+                binds.put('bFrom', Date.newInstance(yr, 1, 1));
+                binds.put('bTo', Date.newInstance(yr, 12, 31));
+                w += ' AND Start_Date__c >= :bFrom AND Start_Date__c <= :bTo';
             } catch (Exception e) { /* invalid year — skip */ }
         }
         return w;
     }
 
     private static List<Ken_Event_Master__c> queryEvents(String fType, String fStatus, String fYear, String extraFields) {
+        Map<String, Object> binds = new Map<String, Object>();
         String fields = 'Id' + (String.isNotBlank(extraFields) ? ', ' + extraFields : '');
         String q = 'SELECT ' + fields + ' FROM Ken_Event_Master__c WHERE '
-                 + buildWhereClause(fType, fStatus, fYear) + ' LIMIT 50000';
-        return Database.query(q);
+                 + buildWhereClause(fType, fStatus, fYear, binds) + ' LIMIT 50000';
+        return (List<Ken_Event_Master__c>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE);
     }
 
     private static Set<Id> toIdSet(List<Ken_Event_Master__c> events) {
@@ -100,7 +110,9 @@ public with sharing class KenEventsDashboardController {
         if (eventIds == null || eventIds.isEmpty()) return sIds;
         for (Ken_Schedule_Sessions__c s : [
             SELECT Id FROM Ken_Schedule_Sessions__c
-            WHERE Event_Reference__c IN :eventIds LIMIT 50000
+            WHERE Event_Reference__c IN :eventIds
+            WITH USER_MODE
+            LIMIT 50000
         ]) sIds.add(s.Id);
         return sIds;
     }
@@ -147,7 +159,9 @@ public with sharing class KenEventsDashboardController {
             Set<String> typeSet = new Set<String>();
             for (Ken_Event_Master__c e : [
                 SELECT Event_Type__c FROM Ken_Event_Master__c
-                WHERE Event_Type__c != null AND Is_Archived__c = false LIMIT 50000
+                WHERE Event_Type__c != null AND Is_Archived__c = false
+                WITH USER_MODE
+                LIMIT 50000
             ]) {
                 for (String t : e.Event_Type__c.split(';')) {
                     String k = t.trim();
@@ -168,7 +182,9 @@ public with sharing class KenEventsDashboardController {
             Set<String> yearSet = new Set<String>();
             for (Ken_Event_Master__c e : [
                 SELECT Start_Date__c FROM Ken_Event_Master__c
-                WHERE Start_Date__c != null AND Is_Archived__c = false LIMIT 50000
+                WHERE Start_Date__c != null AND Is_Archived__c = false
+                WITH USER_MODE
+                LIMIT 50000
             ]) yearSet.add(String.valueOf(e.Start_Date__c.year()));
             List<String> sortedYears = new List<String>(yearSet);
             sortedYears.sort();
@@ -193,10 +209,12 @@ public with sharing class KenEventsDashboardController {
                 stats.totalRegistrations = [
                     SELECT COUNT() FROM Ken_Event_Booking__c
                     WHERE Schedules_Sessions__c IN :sessionIds AND Type__c = 'Registered'
+                WITH USER_MODE
                 ];
                 stats.cancelledBookings = [
                     SELECT COUNT() FROM Ken_Event_Booking__c
                     WHERE Schedules_Sessions__c IN :sessionIds AND Type__c = 'Cancelled'
+                WITH USER_MODE
                 ];
             }
             return stats;
@@ -208,12 +226,13 @@ public with sharing class KenEventsDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getEventsByStatus(String filterType, String filterStatus, String filterYear) {
         try {
-            String wClause = buildWhereClause(filterType, filterStatus, filterYear);
+            Map<String, Object> binds = new Map<String, Object>();
+            String wClause = buildWhereClause(filterType, filterStatus, filterYear, binds);
             String q = 'SELECT Event_Status__c, COUNT(Id) cnt FROM Ken_Event_Master__c WHERE '
                      + wClause + ' GROUP BY Event_Status__c ORDER BY COUNT(Id) DESC LIMIT 50';
             List<ChartItem> items = new List<ChartItem>();
-            for (AggregateResult ar : Database.query(q))
-                items.add(new ChartItem((String)ar.get('Event_Status__c'), (Integer)ar.get('cnt')));
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE))
+                items.add(new ChartItem((String)ar.get(KenNamespaceUtil.qualifyCustom('Event_Status__c')), (Integer)ar.get('cnt')));
             return items;
         } catch (Exception e) { throw new AuraHandledException(e.getMessage()); }
     }
@@ -233,12 +252,13 @@ public with sharing class KenEventsDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getEventPricingDistribution(String filterType, String filterStatus, String filterYear) {
         try {
-            String wClause = buildWhereClause(filterType, filterStatus, filterYear);
+            Map<String, Object> binds = new Map<String, Object>();
+            String wClause = buildWhereClause(filterType, filterStatus, filterYear, binds);
             String q = 'SELECT No_Fee__c, COUNT(Id) cnt FROM Ken_Event_Master__c WHERE '
                      + wClause + ' GROUP BY No_Fee__c';
             List<ChartItem> items = new List<ChartItem>();
-            for (AggregateResult ar : Database.query(q)) {
-                Boolean isFree = (Boolean) ar.get('No_Fee__c');
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
+                Boolean isFree = (Boolean) ar.get(KenNamespaceUtil.qualifyCustom('No_Fee__c'));
                 items.add(new ChartItem(isFree == true ? 'Free' : 'Paid', (Integer) ar.get('cnt')));
             }
             return items;
@@ -256,15 +276,17 @@ public with sharing class KenEventsDashboardController {
             for (AggregateResult ar : [
                 SELECT Type__c, COUNT(Id) cnt FROM Ken_Event_Booking__c
                 WHERE Schedules_Sessions__c IN :sessionIds
+                WITH USER_MODE
                 GROUP BY Type__c ORDER BY COUNT(Id) DESC
-            ]) items.add(new ChartItem((String)ar.get('Type__c'), (Integer)ar.get('cnt')));
+            ]) items.add(new ChartItem((String)ar.get(KenNamespaceUtil.qualifyCustom('Type__c')), (Integer)ar.get('cnt')));
             return items;
         } catch (Exception e) { throw new AuraHandledException(e.getMessage()); }
     }
 
     // ── getRegistrationTrends ────────────────────────────────────────────────
-    // Groups by the session's event year (Start_Date__c) so backdated event data
-    // shows meaningful multi-year trends regardless of when bookings were created.
+    // Groups by the session's year, derived from Start_DateTime__c, so backdated
+    // event data shows meaningful multi-year trends regardless of when bookings
+    // were created.
 
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getRegistrationTrends(String filterType, String filterStatus, String filterYear) {
@@ -272,18 +294,21 @@ public with sharing class KenEventsDashboardController {
             Set<Id> sessionIds = getSessionIds(toIdSet(queryEvents(filterType, filterStatus, filterYear, null)));
             if (sessionIds.isEmpty()) return new List<ChartItem>();
 
-            // Map each session to its event's year
+            // Map each session to its year, derived from the stored instant so the
+            // year is the one the viewer would see rather than the UTC one.
             Map<Id, Integer> sessionYearMap = new Map<Id, Integer>();
             for (Ken_Schedule_Sessions__c s : [
-                SELECT Id, Start_Date__c FROM Ken_Schedule_Sessions__c
-                WHERE Id IN :sessionIds AND Start_Date__c != null
-            ]) sessionYearMap.put(s.Id, s.Start_Date__c.year());
+                SELECT Id, Start_DateTime__c FROM Ken_Schedule_Sessions__c
+                WHERE Id IN :sessionIds AND Start_DateTime__c != null
+            WITH USER_MODE
+            ]) sessionYearMap.put(s.Id, KenDateTimeUtil.localDate(s.Start_DateTime__c).year());
 
             // Aggregate registered bookings per session, then roll up by year
             Map<Integer, Integer> yearCounts = new Map<Integer, Integer>();
             for (AggregateResult ar : [
                 SELECT Schedules_Sessions__c sid, COUNT(Id) cnt FROM Ken_Event_Booking__c
                 WHERE Schedules_Sessions__c IN :sessionIds AND Type__c = 'Registered'
+                WITH USER_MODE
                 GROUP BY Schedules_Sessions__c
             ]) {
                 Integer yr = sessionYearMap.get((Id) ar.get('sid'));
@@ -313,6 +338,7 @@ public with sharing class KenEventsDashboardController {
             for (AggregateResult ar : [
                 SELECT Schedules_Sessions__c sid, COUNT(Id) cnt FROM Ken_Event_Booking__c
                 WHERE Schedules_Sessions__c IN :sessionIds AND Type__c = 'Registered'
+                WITH USER_MODE
                 GROUP BY Schedules_Sessions__c
             ]) sessionBookings.put((Id)ar.get('sid'), (Integer)ar.get('cnt'));
             if (sessionBookings.isEmpty()) return new List<ChartItem>();
@@ -322,6 +348,7 @@ public with sharing class KenEventsDashboardController {
             for (Ken_Schedule_Sessions__c s : [
                 SELECT Id, Event_Reference__c FROM Ken_Schedule_Sessions__c
                 WHERE Id IN :sessionBookings.keySet()
+            WITH USER_MODE
             ]) sessionToEvent.put(s.Id, s.Event_Reference__c);
 
             // Aggregate per event
@@ -342,7 +369,7 @@ public with sharing class KenEventsDashboardController {
             Set<Id> topIds = new Set<Id>();
             for (ChartItem ci : all) topIds.add(Id.valueOf(ci.label));
             Map<Id, String> names = new Map<Id, String>();
-            for (Ken_Event_Master__c e : [SELECT Id, Name FROM Ken_Event_Master__c WHERE Id IN :topIds])
+            for (Ken_Event_Master__c e : [SELECT Id, Name FROM Ken_Event_Master__c WHERE Id IN :topIds WITH USER_MODE])
                 names.put(e.Id, e.Name);
 
             List<ChartItem> items = new List<ChartItem>();
@@ -369,13 +396,14 @@ public with sharing class KenEventsDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getMonthlyEventActivity(String filterType, String filterStatus, String filterYear) {
         try {
-            String wClause = buildWhereClause(filterType, filterStatus, filterYear) + ' AND Start_Date__c != null';
+            Map<String, Object> binds = new Map<String, Object>();
+            String wClause = buildWhereClause(filterType, filterStatus, filterYear, binds) + ' AND Start_Date__c != null';
             String q = 'SELECT CALENDAR_YEAR(Start_Date__c) yr, CALENDAR_MONTH(Start_Date__c) mon, COUNT(Id) cnt'
                      + ' FROM Ken_Event_Master__c WHERE ' + wClause
                      + ' GROUP BY CALENDAR_YEAR(Start_Date__c), CALENDAR_MONTH(Start_Date__c)'
                      + ' ORDER BY CALENDAR_YEAR(Start_Date__c), CALENDAR_MONTH(Start_Date__c) LIMIT 36';
             List<ChartItem> items = new List<ChartItem>();
-            for (AggregateResult ar : Database.query(q)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 Integer mon = (Integer) ar.get('mon');
                 Integer yr  = (Integer) ar.get('yr');
                 String  lbl = MONTH_NAMES[mon - 1] + ' ' + yr;
@@ -390,13 +418,14 @@ public with sharing class KenEventsDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getEventLocationDistribution(String filterType, String filterStatus, String filterYear) {
         try {
-            String wClause = buildWhereClause(filterType, filterStatus, filterYear)
+            Map<String, Object> binds = new Map<String, Object>();
+            String wClause = buildWhereClause(filterType, filterStatus, filterYear, binds)
                            + ' AND Location__c != null AND Location__c != \'\'';
             String q = 'SELECT Location__c, COUNT(Id) cnt FROM Ken_Event_Master__c WHERE '
                      + wClause + ' GROUP BY Location__c ORDER BY COUNT(Id) DESC LIMIT 50';
             List<ChartItem> items = new List<ChartItem>();
-            for (AggregateResult ar : Database.query(q))
-                items.add(new ChartItem((String)ar.get('Location__c'), (Integer)ar.get('cnt')));
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE))
+                items.add(new ChartItem((String)ar.get(KenNamespaceUtil.qualifyCustom('Location__c')), (Integer)ar.get('cnt')));
             return trimChartItems(items);
         } catch (Exception e) { throw new AuraHandledException(e.getMessage()); }
     }
@@ -414,6 +443,7 @@ public with sharing class KenEventsDashboardController {
                 WHERE Schedules_Sessions__c IN :sessionIds
                   AND Type__c = 'Registered'
                   AND Person_Account__c != null
+                WITH USER_MODE
                 GROUP BY Person_Account__c
                 ORDER BY COUNT(Id) DESC
                 LIMIT 15
@@ -423,7 +453,7 @@ public with sharing class KenEventsDashboardController {
             Set<Id> accountIds = new Set<Id>();
             for (AggregateResult ar : results) accountIds.add((Id) ar.get('pid'));
             Map<Id, String> accountNames = new Map<Id, String>();
-            for (Account a : [SELECT Id, Name FROM Account WHERE Id IN :accountIds])
+            for (Account a : [SELECT Id, Name FROM Account WHERE Id IN :accountIds WITH USER_MODE])
                 accountNames.put(a.Id, a.Name);
 
             List<ChartItem> items = new List<ChartItem>();
@@ -464,14 +494,19 @@ public with sharing class KenEventsDashboardController {
             if (dimension == 'trends' && String.isNotBlank(dimensionValue)) {
                 try {
                     Integer yr = Integer.valueOf(dimensionValue);
-                    Date d1 = Date.newInstance(yr, 1, 1);
-                    Date d2 = Date.newInstance(yr, 12, 31);
+                    // A bare Date range became an instant range, so the year
+                    // boundaries have to be materialised. Half-open on purpose:
+                    // "<= 31 Dec" against a DateTime would silently drop
+                    // everything after midnight on the last day of the year.
+                    DateTime yearStart = KenDateTimeUtil.dayStart(Date.newInstance(yr, 1, 1));
+                    DateTime nextYearStart = KenDateTimeUtil.dayAfter(Date.newInstance(yr, 12, 31));
                     Set<Id> yearSessions = new Set<Id>();
                     for (Ken_Schedule_Sessions__c s : [
                         SELECT Id FROM Ken_Schedule_Sessions__c
                         WHERE Id IN :sessionIds
-                          AND Start_Date__c >= :d1
-                          AND Start_Date__c <= :d2
+                          AND Start_DateTime__c >= :yearStart
+                          AND Start_DateTime__c < :nextYearStart
+                    WITH USER_MODE
                     ]) yearSessions.add(s.Id);
                     sessionIds = yearSessions;
                 } catch (Exception ex) { /* invalid year — skip */ }
@@ -483,11 +518,12 @@ public with sharing class KenEventsDashboardController {
                 SELECT Id, Type__c, Booked_for_No_of_Attendees__c,
                        Person_Account__r.Name,
                        Schedules_Sessions__r.Event_Reference__r.Name,
-                       Schedules_Sessions__r.Start_Date__c
+                       Schedules_Sessions__r.Start_DateTime__c
                 FROM Ken_Event_Booking__c
                 WHERE Schedules_Sessions__c IN :sessionIds
                   AND Type__c = :bType
-                ORDER BY Schedules_Sessions__r.Start_Date__c DESC NULLS LAST
+                WITH USER_MODE
+                ORDER BY Schedules_Sessions__r.Start_DateTime__c DESC NULLS LAST
                 LIMIT 500
             ];
 
@@ -501,9 +537,11 @@ public with sharing class KenEventsDashboardController {
                                    && b.Schedules_Sessions__r.Event_Reference__r != null)
                                   ? b.Schedules_Sessions__r.Event_Reference__r.Name : '—';
                 r.bookingStatus = String.isNotBlank(b.Type__c) ? b.Type__c : '—';
+                // Date derived from the session's stored instant, so the day
+                // shown is the viewer's rather than UTC's.
                 r.bookedDate    = (b.Schedules_Sessions__r != null
-                                   && b.Schedules_Sessions__r.Start_Date__c != null)
-                                  ? b.Schedules_Sessions__r.Start_Date__c.format() : '—';
+                                   && b.Schedules_Sessions__r.Start_DateTime__c != null)
+                                  ? KenDateTimeUtil.localDate(b.Schedules_Sessions__r.Start_DateTime__c).format() : '—';
                 r.attendeeCount = (b.Booked_for_No_of_Attendees__c != null)
                                   ? Integer.valueOf(b.Booked_for_No_of_Attendees__c) : 1;
                 records.add(r);
@@ -519,25 +557,29 @@ public with sharing class KenEventsDashboardController {
             String dimension, String dimensionValue,
             String filterType, String filterStatus, String filterYear) {
         try {
-            String wClause = buildWhereClause(filterType, filterStatus, filterYear);
+            Map<String, Object> binds = new Map<String, Object>();
+            String wClause = buildWhereClause(filterType, filterStatus, filterYear, binds);
 
             if (String.isNotBlank(dimension) && String.isNotBlank(dimensionValue)) {
+                binds.put('bDim', dimensionValue);
                 if (dimension == 'status') {
-                    wClause += ' AND Event_Status__c = \'' + String.escapeSingleQuotes(dimensionValue) + '\'';
+                    wClause += ' AND Event_Status__c = :bDim';
                 } else if (dimension == 'type') {
-                    wClause += ' AND Event_Type__c INCLUDES (\'' + String.escapeSingleQuotes(dimensionValue) + '\')';
+                    wClause += ' AND Event_Type__c INCLUDES (:bDim)';
                 } else if (dimension == 'pricing') {
                     wClause += (dimensionValue == 'Free' ? ' AND No_Fee__c = true' : ' AND No_Fee__c = false');
                 } else if (dimension == 'location') {
-                    wClause += ' AND Location__c = \'' + String.escapeSingleQuotes(dimensionValue) + '\'';
+                    wClause += ' AND Location__c = :bDim';
                 } else if (dimension == 'audience') {
-                    wClause += ' AND Target_Audience_Applicable__c INCLUDES (\'' + String.escapeSingleQuotes(dimensionValue) + '\')';
+                    wClause += ' AND Target_Audience_Applicable__c INCLUDES (:bDim)';
                 } else if (dimension == 'top_events') {
-                    wClause += ' AND Name = \'' + String.escapeSingleQuotes(dimensionValue) + '\'';
+                    wClause += ' AND Name = :bDim';
                 } else if (dimension == 'trends') {
                     try {
                         Integer yr = Integer.valueOf(dimensionValue);
-                        wClause += ' AND Start_Date__c >= ' + yr + '-01-01 AND Start_Date__c <= ' + yr + '-12-31';
+                        binds.put('bDimFrom', Date.newInstance(yr, 1, 1));
+                        binds.put('bDimTo', Date.newInstance(yr, 12, 31));
+                        wClause += ' AND Start_Date__c >= :bDimFrom AND Start_Date__c <= :bDimTo';
                     } catch (Exception ex) { /* skip invalid year */ }
                 }
             }
@@ -545,7 +587,7 @@ public with sharing class KenEventsDashboardController {
             String q = 'SELECT Id, Name, Event_Type__c, Event_Status__c, Start_Date__c, Location__c, Is_Published__c'
                      + ' FROM Ken_Event_Master__c WHERE ' + wClause
                      + ' ORDER BY Start_Date__c DESC NULLS LAST LIMIT ' + MAX_EVENT_LIST;
-            List<Ken_Event_Master__c> events = Database.query(q);
+            List<Ken_Event_Master__c> events = (List<Ken_Event_Master__c>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE);
 
             // Fetch registration counts via sessions
             Set<Id> evIds      = toIdSet(events);
@@ -555,11 +597,13 @@ public with sharing class KenEventsDashboardController {
                 Map<Id, Id> sessionToEvent = new Map<Id, Id>();
                 for (Ken_Schedule_Sessions__c s : [
                     SELECT Id, Event_Reference__c FROM Ken_Schedule_Sessions__c WHERE Id IN :sessionIds
+                WITH USER_MODE
                 ]) sessionToEvent.put(s.Id, s.Event_Reference__c);
 
                 for (AggregateResult ar : [
                     SELECT Schedules_Sessions__c sid, COUNT(Id) cnt FROM Ken_Event_Booking__c
                     WHERE Schedules_Sessions__c IN :sessionIds AND Type__c = 'Registered'
+                    WITH USER_MODE
                     GROUP BY Schedules_Sessions__c
                 ]) {
                     Id eid = sessionToEvent.get((Id)ar.get('sid'));

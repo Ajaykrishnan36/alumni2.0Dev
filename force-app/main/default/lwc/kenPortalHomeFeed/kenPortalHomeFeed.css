@@ -90,6 +90,20 @@
     border-radius: 8px;
 }
 
+/* Image spotlight: capped at the video's 230px height, shown whole and left-aligned */
+.spotlight-image-container {
+    height: 230px;
+}
+
+.spotlight-image {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
 .spotlight-content {
     color: white;
 }
@@ -331,7 +345,6 @@
     text-align: center;
     background: var(--portal-surface, white);
     border-radius: var(--portal-radius, 12px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .feed-empty-img {

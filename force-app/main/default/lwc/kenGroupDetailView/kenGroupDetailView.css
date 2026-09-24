@@ -231,7 +231,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 24px;
+  /* Extra right clearance: the site-wide KAI chat launcher bubble sits fixed over the
+     bottom-right corner of every page, and with the Message button added there are now
+     up to three footer-right buttons that can otherwise render underneath it. */
+  padding: 0 96px 0 24px;
   box-sizing: border-box;
   z-index: 10;
   flex-shrink: 0;
@@ -811,6 +814,30 @@
 
 .confirm-yes-btn:hover {
   opacity: 0.88;
+}
+
+/* Non-destructive confirmations (e.g. "send a connection request?") use the org's brand
+   color instead of the red reserved for destructive actions like "Yes, Leave". */
+.confirm-yes-btn.confirm-yes-btn-primary {
+  background: var(--primary-color, #373a45);
+}
+
+/* lightning-spinner draws its own backdrop, which over a small solid-color button just
+   looks like a flat color block with no visible spinner - a plain CSS ring avoids that. */
+.btn-inline-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: btn-inline-spin 0.7s linear infinite;
+}
+
+@keyframes btn-inline-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Leave success modal */
@@ -1500,4 +1527,139 @@
 .send-invites-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* ── Floating 1:1 chatbox (member "Message" icon, already connected) ──
+   Mirrors kenAlumniDetailView's Network-profile chat popup so the same widget behaves
+   identically everywhere it appears. */
+.chatbox-container {
+  position: fixed;
+  bottom: 0;
+  right: 24px;
+  width: 380px;
+  height: 520px;
+  background-color: #ffffff;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  /* The KAI bot widget is injected onto document.body by its own SDK, outside this
+     shadow DOM, and its z-index isn't ours to chase a number against - so sit at the
+     32-bit ceiling: nothing can be above it. */
+  z-index: 2147483647;
+  overflow: hidden;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
+  border: 1px solid #e5e7eb;
+  transition:
+    width 0.3s ease,
+    height 0.3s ease;
+}
+
+.chatbox-container.expanded {
+  width: 600px;
+  height: 750px;
+  max-height: 90vh;
+  max-width: 90vw;
+}
+
+.chatbox-header {
+  background-color: var(--primary-color, #ffffff);
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chat-avatar-container {
+  position: relative;
+  width: 32px;
+  height: 32px;
+}
+
+.chat-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+}
+
+.chat-username {
+  font-size: 15px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.chat-action-btn lightning-icon {
+  --slds-c-icon-color-foreground-default: #ffffff;
+  --sds-c-icon-color-foreground-default: #ffffff;
+  --slds-c-icon-color-foreground: #ffffff;
+  --lwc-colorTextIconDefault: #ffffff;
+  fill: #ffffff;
+  color: #ffffff;
+}
+
+.chat-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.chatbox-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  background-color: var(--portal-surface, #ffffff);
+}
+
+.chatbox-body c-ken-chat {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .chatbox-container {
+    width: 100%;
+    height: 60vh;
+    right: 0;
+    bottom: 0;
+    border-radius: 12px 12px 0 0;
+    max-width: 100%;
+  }
+
+  .chatbox-container.expanded {
+    height: 90vh;
+    width: 100%;
+    max-width: 100%;
+  }
 }

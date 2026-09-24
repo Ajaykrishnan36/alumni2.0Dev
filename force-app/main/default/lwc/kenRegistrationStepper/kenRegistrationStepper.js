@@ -182,7 +182,6 @@ export default class KenRegistrationStepper extends LightningElement {
                 requestJson: JSON.stringify(careerData || []),
                 roleId: this.roleId || null
             });
-            this.handleNotify({ detail: { type: 'success', title: 'Success', message: 'Employment details saved successfully.' } });
             this.prefillStep4Attempted = false;
             this.currentStep = 4;
             await this.loadEngagementData();

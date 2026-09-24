@@ -22,6 +22,7 @@ public without sharing class KenEngagementPreferenceController {
             SELECT Id, Name, Description__c, Image_URL__c, Icon__c, Email__c
             FROM Ken_Engagement_Preference__c
             WHERE Is_Active__c = true
+            WITH SECURITY_ENFORCED
             ORDER BY Sort_Order__c ASC NULLS LAST, Name ASC
         ]) {
             PreferenceOption opt = new PreferenceOption();

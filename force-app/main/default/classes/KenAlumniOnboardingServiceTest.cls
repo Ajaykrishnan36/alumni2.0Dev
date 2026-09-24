@@ -1,8 +1,64 @@
 @IsTest
 private class KenAlumniOnboardingServiceTest {
 
+    private static Id kenCampusId;
+
+    /**
+     * KJS orgs add a required Campus__c lookup (-> Location) on LearningProgram.
+     * Populate it only where the field exists so the tests still run in every
+     * other org, and reuse one Location so a helper called in a loop does not
+     * spend a DML statement per programme.
+     */
+    private static void kenAssignCampus(SObject record) {
+        if (!record.getSObjectType().getDescribe().fields.getMap().containsKey('campus__c')) {
+            return;
+        }
+        if (kenCampusId == null) {
+            Schema.Location campus = new Schema.Location(Name = 'Ken Test Campus');
+            for (Schema.PicklistEntry entry : Schema.Location.LocationType.getDescribe().getPicklistValues()) {
+                if (entry.isActive()) {
+                    campus.LocationType = entry.getValue();
+                    break;
+                }
+            }
+            insert campus;
+            kenCampusId = campus.Id;
+        }
+        record.put('Campus__c', kenCampusId);
+    }
+
+    /**
+     * @description Provisioning creates portal users, and a portal user can only be created under
+     *              an account whose owner holds a role. The running user used to be handed one
+     *              here, but that row is shared with every other test class in the run and
+     *              updating it is where UNABLE_TO_LOCK_ROW comes from. A throwaway owner carrying
+     *              a fresh role is created once instead, and provisioning runs as them through
+     *              provisionAsPortalOwner and processVerifiedLeadAsPortalOwner.
+     */
     @TestSetup
     static void setupData() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            String suffix = String.valueOf(System.currentTimeMillis())
+                + String.valueOf(Math.abs(Crypto.getRandomInteger()));
+            UserRole role = new UserRole(
+                Name          = 'Portal Owner ' + suffix,
+                DeveloperName = 'Portal_Owner_' + suffix
+            );
+            insert role;
+            insert new User(
+                Username          = 'portal.owner.' + suffix + '@kenalumni.test',
+                Email             = 'portal.owner@kenalumni.test',
+                LastName          = 'PortalOwner',
+                Alias             = 'ptlownr',
+                TimeZoneSidKey    = 'Asia/Kolkata',
+                LocaleSidKey      = 'en_US',
+                EmailEncodingKey  = 'UTF-8',
+                LanguageLocaleKey = 'en_US',
+                ProfileId         = UserInfo.getProfileId(),
+                UserRoleId        = role.Id
+            );
+        }
+
         Lead l = new Lead(
             FirstName                = 'Test',
             LastName                 = 'Alumni',
@@ -16,6 +72,57 @@ private class KenAlumniOnboardingServiceTest {
             Registration_Number__c   = '12344'
         );
         insert l;
+    }
+
+    private static User portalOwner() {
+        return [
+            SELECT Id FROM User
+            WHERE Username LIKE 'portal.owner.%@kenalumni.test'
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ];
+    }
+
+    private static void provisionAsPortalOwner(List<Lead> leads) {
+        System.runAs(portalOwner()) {
+            KenAlumniOnboardingService.provisionOnLeadVerification(leads);
+        }
+    }
+
+    private static String processVerifiedLeadAsPortalOwner(String token) {
+        String url;
+        System.runAs(portalOwner()) {
+            url = KenAlumniOnboardingService.processVerifiedLead(token);
+        }
+        return url;
+    }
+
+    /**
+     * @description Silences the ConstituentRole trigger for tests that only need a role to reach
+     *              'Onboarding In Progress' as fixture state. That status change is the sole entry
+     *              to provisioning, and provisioning calls System.setPassword, which throws
+     *              INSUFFICIENT_ACCESS ('portal user email settings are not available') in an org
+     *              whose Experience site has no email configuration - rolling back the whole
+     *              update. The service is meant to let that throw, so the tests step around it.
+     *              Orgs carrying a second, org-only ConstituentRoleTrigger honour the same setting,
+     *              so this silences both. Call before any DML that fires the trigger, because
+     *              getInstance() caches within the transaction. Provisioning runs as the portal
+     *              owner, so the switch is written to the org default they fall back on, and to
+     *              any user- or profile-level record the running user resolves to as well.
+     */
+    private static void bypassConstituentRoleTrigger() {
+        Ken_Alm_Bypass_Settings__c orgDefaults = KenSettings.bypass();
+        if (orgDefaults.Id == null) {
+            orgDefaults.SetupOwnerId = UserInfo.getOrganizationId();
+        }
+        orgDefaults.Skip_ConstituentRole_Trigger__c = true;
+        upsert orgDefaults;
+
+        Ken_Alm_Bypass_Settings__c mine = KenSettings.bypass();
+        if (mine != null && mine.Id != null && mine.Id != orgDefaults.Id) {
+            mine.Skip_ConstituentRole_Trigger__c = true;
+            update mine;
+        }
     }
 
     private static Lead refreshLeadToken(String tokenSeed) {
@@ -37,12 +144,100 @@ private class KenAlumniOnboardingServiceTest {
         ];
     }
 
+    private static Id createProgramPlan(String name) {
+        Learning lrn = new Learning(Name = name + ' Learning');
+        insert lrn;
+        LearningProgram lp = new LearningProgram(Name = name + ' Program', LearningId = lrn.Id);
+        kenAssignCampus(lp);
+        insert lp;
+        LearningProgramPlan lpp = new LearningProgramPlan(Name = name, LearningProgramId = lp.Id);
+        insert lpp;
+        return lpp.Id;
+    }
+
+    @IsTest
+    static void testProvisioningSeedsEducationAndRaisesNoDuplicateRoleLead() {
+        Id planId = createProgramPlan('OnbPlan');
+        Lead l = [SELECT Id, Email, FirstName, LastName, Phone, Year_of_Graduation__c, Registration_Number__c FROM Lead LIMIT 1];
+        l.Program_Plan__c = planId;
+        update l;
+        l = [
+            SELECT Id, Email, FirstName, LastName, Phone, Year_of_Graduation__c,
+                   Registration_Number__c, Program_Plan__c
+            FROM Lead WHERE Id = :l.Id
+        ];
+
+        Test.startTest();
+        provisionAsPortalOwner(new List<Lead>{ l });
+        Test.stopTest();
+
+        Account pa = [SELECT Id FROM Account WHERE PersonEmail = :l.Email AND IsPersonAccount = true LIMIT 1];
+
+        List<ConstituentRole> roles = [
+            SELECT Id, Program_Plan__c FROM ConstituentRole WHERE PersonId = :pa.Id AND RoleType = 'Alumni'
+        ];
+        System.assertEquals(1, roles.size(), 'Provisioning should create exactly one alumni role');
+
+        List<PersonEducation> edus = [
+            SELECT Id, Program_Plan__c, Institution_Type__c, Degree_Name__c,
+                   Year_of_Completion__c, Registration_Number__c, ContactId
+            FROM PersonEducation WHERE AccountId = :pa.Id
+        ];
+        System.assertEquals(1, edus.size(), 'Provisioning should seed exactly one education row');
+        System.assertEquals(planId, edus[0].Program_Plan__c, 'The education must carry the role programme');
+        System.assertEquals('Our Institute', edus[0].Institution_Type__c, 'The seed is an own-institute education');
+        System.assertEquals('2022', edus[0].Year_of_Completion__c, 'Graduation year should carry across');
+        System.assertEquals(null, edus[0].Degree_Name__c, 'Degree is left for the alumnus to fill');
+        System.assertNotEquals(null, edus[0].ContactId, 'ContactId must be mirrored for the related list');
+
+        // The whole point of seeding after the role insert: the education trigger must see
+        // the role for this programme and therefore raise no secondary-role request.
+        System.assertEquals(0, [SELECT COUNT() FROM Lead WHERE Existing_Account__c = :pa.Id],
+            'Seeding the alumnus own education must not raise a duplicate new-role lead');
+    }
+
+    @IsTest
+    static void testProvisioningSeedsEducationOnlyOncePerProgramme() {
+        Id planId = createProgramPlan('OnbPlanTwice');
+        Lead l = [SELECT Id, Email FROM Lead LIMIT 1];
+        l.Program_Plan__c = planId;
+        update l;
+        l = [SELECT Id, Email, FirstName, LastName, Phone, Year_of_Graduation__c, Registration_Number__c, Program_Plan__c FROM Lead WHERE Id = :l.Id];
+
+        Test.startTest();
+        provisionAsPortalOwner(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
+        Test.stopTest();
+
+        Account pa = [SELECT Id FROM Account WHERE PersonEmail = :l.Email AND IsPersonAccount = true LIMIT 1];
+        System.assertEquals(1, [SELECT COUNT() FROM PersonEducation WHERE AccountId = :pa.Id],
+            'Re-provisioning the same programme must not add a second education row');
+    }
+
+    @IsTest
+    static void testProvisioningSkipsEducationSeedWhenSuppressed() {
+        Id planId = createProgramPlan('OnbPlanOff');
+        Lead l = [SELECT Id, Email FROM Lead LIMIT 1];
+        l.Program_Plan__c = planId;
+        update l;
+        l = [SELECT Id, Email, FirstName, LastName, Phone, Year_of_Graduation__c, Registration_Number__c, Program_Plan__c FROM Lead WHERE Id = :l.Id];
+
+        Test.startTest();
+        KenAlumniOnboardingService.seedEducationOnProvision = false;
+        provisionAsPortalOwner(new List<Lead>{ l });
+        Test.stopTest();
+
+        Account pa = [SELECT Id FROM Account WHERE PersonEmail = :l.Email AND IsPersonAccount = true LIMIT 1];
+        System.assertEquals(0, [SELECT COUNT() FROM PersonEducation WHERE AccountId = :pa.Id],
+            'Bulk import suppresses the seed because it writes its own education rows');
+    }
+
     @IsTest
     static void testProcessVerifiedLeadSuccess() {
         Lead leadWithToken = refreshLeadToken('VALID_TOKEN_SUCCESS');
 
         Test.startTest();
-        String url = KenAlumniOnboardingService.processVerifiedLead(leadWithToken.Verification_Token__c);
+        String url = processVerifiedLeadAsPortalOwner(leadWithToken.Verification_Token__c);
         Test.stopTest();
 
         System.assert(url.contains('onboarding-form'), 'URL should contain onboarding-form path segment');
@@ -58,13 +253,14 @@ private class KenAlumniOnboardingServiceTest {
         Lead l = [SELECT Email FROM Lead LIMIT 1];
 
         // Pre-create the person account so the provisioning code finds it and updates phone.
-        List<RecordType> rts = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND DeveloperName = 'Alumni_Person_Account' LIMIT 1];
+        List<RecordType> rts = [SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND DeveloperName = 'PersonAccount' LIMIT 1];
         if (rts.isEmpty()) {
-            System.assert(true, 'No Alumni Person Account RT in this org; skipping');
+            System.assert(true, 'No Person Account RT in this org; skipping');
             return;
         }
         Account pa = new Account(
             RecordTypeId = rts[0].Id,
+            OwnerId = portalOwner().Id,
             FirstName = 'PreExisting',
             LastName = 'AccountPhone',
             PersonEmail = l.Email,
@@ -83,7 +279,7 @@ private class KenAlumniOnboardingServiceTest {
 
         Test.startTest();
         try {
-            KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ leadWithDifferentPhone });
+            provisionAsPortalOwner(new List<Lead>{ leadWithDifferentPhone });
         } catch (Exception e) {
             System.assertNotEquals(null, e.getMessage(), 'provision existing-phone branch executed: ' + e.getMessage());
         }
@@ -125,7 +321,7 @@ private class KenAlumniOnboardingServiceTest {
     static void testProcessVerifiedLeadInvalidToken() {
         try {
             Test.startTest();
-            KenAlumniOnboardingService.processVerifiedLead(null);
+            processVerifiedLeadAsPortalOwner(null);
             Test.stopTest();
             System.assert(false, 'Expected AuraHandledException for null token but none was thrown');
         } catch (AuraHandledException e) {
@@ -141,7 +337,7 @@ private class KenAlumniOnboardingServiceTest {
 
         try {
             Test.startTest();
-            KenAlumniOnboardingService.processVerifiedLead(l.Verification_Token__c);
+            processVerifiedLeadAsPortalOwner(l.Verification_Token__c);
             Test.stopTest();
             System.assert(false, 'Expected AuraHandledException for expired token but none was thrown');
         } catch (AuraHandledException e) {
@@ -158,7 +354,7 @@ private class KenAlumniOnboardingServiceTest {
         ];
 
         Test.startTest();
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
         Test.stopTest();
 
         Account pa = [SELECT Id, PersonEmail FROM Account WHERE PersonEmail = :l.Email LIMIT 1];
@@ -186,13 +382,11 @@ private class KenAlumniOnboardingServiceTest {
             LIMIT 1
         ];
 
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
 
         Account pa = [SELECT Id FROM Account WHERE PersonEmail = :l.Email LIMIT 1];
 
-        // Insert the role already as Registered so the service performs no DML update,
-        // avoiding the KenConstituentRoleTrigger → KenAlumniIdCardQueueable chain that
-        // self-re-enqueues and causes AsyncException: Maximum stack depth in test context.
+        // Insert the role already as Registered so the service performs no DML update.
         ConstituentRole cr = new ConstituentRole(
             PersonId               = pa.Id,
             RoleType               = 'Alumni',
@@ -217,7 +411,7 @@ private class KenAlumniOnboardingServiceTest {
             LIMIT 1
         ];
 
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
 
         Account pa = [SELECT Id, PersonContactId FROM Account WHERE PersonEmail = :l.Email LIMIT 1];
 
@@ -257,7 +451,6 @@ private class KenAlumniOnboardingServiceTest {
                 System.assert(
                     ex.getMessage().contains('UNABLE_TO_LOCK_ROW')
                     || ex.getMessage().contains('CANNOT_INSERT_UPDATE_ACTIVATE_ENTITY')
-                    || ex.getMessage().contains('INVALID_NEW_PASSWORD')
                     || ex.getMessage().contains('Insufficient permissions')
                     || ex.getMessage().contains('inaccessible field')
                     || ex.getMessage().contains('INSUFFICIENT_ACCESS')
@@ -287,7 +480,7 @@ private class KenAlumniOnboardingServiceTest {
     static void testProcessVerifiedLeadMultiRoleSpecificResolution() {
         Lead firstLead = refreshLeadToken('VALID_TOKEN_MULTI_1');
 
-        String url1 = KenAlumniOnboardingService.processVerifiedLead(firstLead.Verification_Token__c);
+        String url1 = processVerifiedLeadAsPortalOwner(firstLead.Verification_Token__c);
         System.assert(url1.contains('&roleId='), 'First call URL should contain roleId parameter');
 
         Lead existingLead = [SELECT Id, Email, FirstName, LastName, Phone FROM Lead WHERE Id = :firstLead.Id LIMIT 1];
@@ -314,7 +507,7 @@ private class KenAlumniOnboardingServiceTest {
         secondLead = [SELECT Id, Verification_Token__c FROM Lead WHERE Id = :existingLead.Id LIMIT 1];
 
         Test.startTest();
-        String url2 = KenAlumniOnboardingService.processVerifiedLead(secondLead.Verification_Token__c);
+        String url2 = processVerifiedLeadAsPortalOwner(secondLead.Verification_Token__c);
         Test.stopTest();
 
         System.assert(url2.contains('&roleId='), 'Second call URL should contain roleId for newly assigned role');
@@ -427,7 +620,7 @@ private class KenAlumniOnboardingServiceTest {
             LIMIT 1
         ];
 
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
         Account pa = [SELECT Id FROM Account WHERE PersonEmail = :l.Email LIMIT 1];
 
         Test.startTest();
@@ -463,7 +656,7 @@ private class KenAlumniOnboardingServiceTest {
             LIMIT 1
         ];
 
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
 
         Account pa = [SELECT Id FROM Account WHERE PersonEmail = :l.Email LIMIT 1];
 
@@ -472,7 +665,7 @@ private class KenAlumniOnboardingServiceTest {
         Test.stopTest();
 
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account')
+            .get('PersonAccount')
             .getRecordTypeId();
         Account emptyPa = new Account(
             RecordTypeId = paRtId,
@@ -499,7 +692,7 @@ private class KenAlumniOnboardingServiceTest {
             SELECT Id, Email, FirstName, LastName, Phone, Year_of_Graduation__c, Registration_Number__c, Program_Plan__c
             FROM Lead LIMIT 1
         ];
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
 
         l.Year_of_Graduation__c  = '2024';
         l.Registration_Number__c = 'CHG-REG-001';
@@ -511,7 +704,7 @@ private class KenAlumniOnboardingServiceTest {
 
         Test.startTest();
         try {
-            KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ refreshed });
+            provisionAsPortalOwner(new List<Lead>{ refreshed });
         } catch (Exception ex) {
             System.assertNotEquals(null, ex.getMessage(), 'second provision path executed: ' + ex.getMessage());
         }
@@ -527,7 +720,7 @@ private class KenAlumniOnboardingServiceTest {
             SELECT Id, Email, FirstName, LastName, Phone, Year_of_Graduation__c, Registration_Number__c, Program_Plan__c
             FROM Lead LIMIT 1
         ];
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
 
         Test.startTest();
         try {
@@ -548,7 +741,7 @@ private class KenAlumniOnboardingServiceTest {
             SELECT Id, Email, FirstName, LastName, Phone, Year_of_Graduation__c, Registration_Number__c, Program_Plan__c
             FROM Lead LIMIT 1
         ];
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
 
         Account pa = [SELECT Id, PersonContactId FROM Account WHERE PersonEmail = :l.Email LIMIT 1];
 
@@ -591,7 +784,7 @@ private class KenAlumniOnboardingServiceTest {
 
         Test.startTest();
         try {
-            KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ reload });
+            provisionAsPortalOwner(new List<Lead>{ reload });
         } catch (Exception ex) {
             System.assertNotEquals(null, ex.getMessage(), 'second provision with new role executed: ' + ex.getMessage());
         }
@@ -606,7 +799,7 @@ private class KenAlumniOnboardingServiceTest {
             SELECT Id, Email, FirstName, LastName, Phone, Year_of_Graduation__c, Registration_Number__c, Program_Plan__c
             FROM Lead LIMIT 1
         ];
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ l });
+        provisionAsPortalOwner(new List<Lead>{ l });
         Account pa = [SELECT Id FROM Account WHERE PersonEmail = :l.Email LIMIT 1];
         List<ConstituentRole> roles = [
             SELECT Id, Program_Plan__c, Registration_Number__c
@@ -627,15 +820,246 @@ private class KenAlumniOnboardingServiceTest {
     }
 
     @IsTest
+    static void testHigherStatusPicksMaxRank() {
+        Test.startTest();
+        System.assertEquals('Initial Login Done',
+            KenAlumniOnboardingService.higherStatus('Onboarding In Progress', 'Initial Login Done'),
+            'The further-progressed status should win regardless of argument order.');
+        System.assertEquals('Initial Login Done',
+            KenAlumniOnboardingService.higherStatus('Initial Login Done', 'Onboarding In Progress'));
+        System.assertEquals('Registered',
+            KenAlumniOnboardingService.higherStatus('Registered', 'Unregistered'));
+        System.assertEquals('Onboarding In Progress',
+            KenAlumniOnboardingService.higherStatus(null, 'Onboarding In Progress'), 'A null status ranks below any known status.');
+        System.assertEquals('Onboarding In Progress',
+            KenAlumniOnboardingService.higherStatus('Onboarding In Progress', null));
+        Test.stopTest();
+    }
+
+    @IsTest
+    static void testNewRoleInheritsMaxExistingStatus() {
+        // An existing alumnus already holds TWO roles — Verified and the further-along
+        // Initial Login Done. A brand-new role for them must inherit the MAX (Initial
+        // Login Done) so they land on the portal home instead of onboarding again.
+        Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
+            .get('PersonAccount').getRecordTypeId();
+        Account pa = new Account(
+            RecordTypeId = paRtId, OwnerId = portalOwner().Id, FirstName = 'Multi', LastName = 'Role',
+            PersonEmail = 'multi.role.' + System.currentTimeMillis() + '@example.com'
+        );
+        insert pa;
+        insert new List<ConstituentRole>{
+            new ConstituentRole(PersonId = pa.Id, RoleType = 'Alumni', Status = 'Active',
+                Registration_Status__c = 'Onboarding In Progress', Registration_Number__c = 'EXIST-1'),
+            new ConstituentRole(PersonId = pa.Id, RoleType = 'Alumni', Status = 'Active',
+                Registration_Status__c = 'Initial Login Done', Registration_Number__c = 'EXIST-2')
+        };
+
+        // A secondary lead (new role) for the same person, flagged via Existing_Account__c.
+        Lead secondary = new Lead(
+            FirstName = 'Multi', LastName = 'Role', Company = 'Self-Declared',
+            Email = pa.PersonEmail, Status = 'Open',
+            Registration_Number__c = 'NEW-ROLE-9', Existing_Account__c = pa.Id
+        );
+        insert secondary;
+
+        Test.startTest();
+        provisionAsPortalOwner(new List<Lead>{ secondary });
+        Test.stopTest();
+
+        List<ConstituentRole> newRoles = [
+            SELECT Registration_Status__c FROM ConstituentRole
+            WHERE PersonId = :pa.Id AND Registration_Number__c = 'NEW-ROLE-9'
+        ];
+        System.assertEquals(1, newRoles.size(), 'A new role should be created for the secondary lead.');
+        System.assertEquals('Initial Login Done', newRoles[0].Registration_Status__c,
+            'New role should inherit the MAX existing status so the alumnus skips onboarding and lands on home.');
+    }
+
+    @IsTest
     static void testCreateOrGetConstituentRolesEmptyAccountsGuard() {
         // Re-provision with an empty leads list to exercise the early-return paths in
         // provisionOnLeadVerification (line ~200-202) and the empty-input guard in
         // createOrGetConstituentRoles via downstream calls.
         Test.startTest();
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>());
-        KenAlumniOnboardingService.provisionOnLeadVerification(null);
-        KenAlumniOnboardingService.provisionOnLeadVerification(new List<Lead>{ new Lead(LastName = 'NoEmail', Company = 'X') });
+        provisionAsPortalOwner(new List<Lead>());
+        provisionAsPortalOwner(null);
+        provisionAsPortalOwner(new List<Lead>{ new Lead(LastName = 'NoEmail', Company = 'X') });
         Test.stopTest();
         System.assert(true, 'provisionOnLeadVerification guard paths exercised.');
+    }
+
+    /**
+     * The org rejects a password that is all letters or all digits, and because
+     * provisioning runs inside the ConstituentRole after-update trigger, one rejected
+     * password rolled the entire onboarding back — no user, no account, no email.
+     * Drawing every character from one 36-character pool made that roughly a 1-in-50
+     * event, which is why it surfaced as an intermittent failure rather than an obvious
+     * one. Generating a large sample here is the only way to catch a regression that,
+     * by its nature, would not show up in a single run.
+     */
+    @IsTest
+    static void testGeneratedPasswordAlwaysMixesLettersAndDigits() {
+
+        final Integer SAMPLE = 2000;
+        final String DIGITS = '0123456789';
+
+        for (Integer i = 0; i < SAMPLE; i++) {
+            String pwd = KenAlumniOnboardingService.generateTempPassword(12);
+
+            System.assertEquals(12, pwd.length(), 'Password should be the requested length: ' + pwd);
+
+            Boolean hasDigit = false;
+            Boolean hasLetter = false;
+            for (Integer c = 0; c < pwd.length(); c++) {
+                if (DIGITS.contains(pwd.substring(c, c + 1))) {
+                    hasDigit = true;
+                } else {
+                    hasLetter = true;
+                }
+            }
+
+            System.assert(hasDigit, 'Password must contain at least one digit, got: ' + pwd);
+            System.assert(hasLetter, 'Password must contain at least one letter, got: ' + pwd);
+        }
+    }
+
+    /** A two-character password is the shortest that can still satisfy both rules. */
+    @IsTest
+    static void testGeneratedPasswordHonoursTheTwoCharacterMinimum() {
+        String pwd = KenAlumniOnboardingService.generateTempPassword(1);
+        System.assertEquals(2, pwd.length(),
+            'A length below 2 cannot hold both a letter and a digit, so it is raised to 2: ' + pwd);
+    }
+
+    /**
+     * The magic link is single use, and the role's status is what says so. The
+     * first click opens onboarding and (via autoVerifyOnboarding) moves the role
+     * to Onboarding In Progress; the second must be refused there rather than
+     * dropping the alumnus back into a registration that is already underway.
+     *
+     * The token must survive both clicks — it is what resendMagicLink looks the
+     * lead up by, so clearing it on first use left no way back in.
+     */
+    @IsTest
+    static void testProcessVerifiedLeadRefusesAlreadyStartedOnboarding() {
+        bypassConstituentRoleTrigger();
+        Lead leadWithToken = refreshLeadToken('VALID_TOKEN_REUSE');
+
+        Test.startTest();
+        String firstUrl = processVerifiedLeadAsPortalOwner(leadWithToken.Verification_Token__c);
+        System.assert(String.isNotBlank(firstUrl), 'The first click must open the onboarding form.');
+
+        // Stand in for autoVerifyOnboarding, which marks the role once the
+        // alumnus lands on the form.
+        Account pa = [
+            SELECT Id FROM Account
+            WHERE PersonEmail = :leadWithToken.Email AND IsPersonAccount = true
+            LIMIT 1
+        ];
+        ConstituentRole role = [
+            SELECT Id FROM ConstituentRole
+            WHERE PersonId = :pa.Id AND RoleType = 'Alumni'
+            ORDER BY CreatedDate ASC
+            LIMIT 1
+        ];
+        update new ConstituentRole(Id = role.Id, Registration_Status__c = 'Onboarding In Progress');
+
+        Lead beforeSecondClick = [
+            SELECT Verification_Token__c FROM Lead WHERE Id = :leadWithToken.Id LIMIT 1
+        ];
+        System.assert(String.isNotBlank(beforeSecondClick.Verification_Token__c),
+            'The first click must leave the token intact so the link can be resent.');
+
+        Boolean refused = false;
+        try {
+            processVerifiedLeadAsPortalOwner(beforeSecondClick.Verification_Token__c);
+        } catch (AuraHandledException e) {
+            refused = true;
+        }
+        Test.stopTest();
+
+        System.assertEquals(true, refused,
+            'A second click must be refused once onboarding is already in progress.');
+
+        Lead afterSecondClick = [
+            SELECT Verification_Token__c FROM Lead WHERE Id = :leadWithToken.Id LIMIT 1
+        ];
+        System.assertEquals(beforeSecondClick.Verification_Token__c, afterSecondClick.Verification_Token__c,
+            'Being refused must not consume the token either.');
+    }
+
+    /**
+     * Everything ranked above Unregistered means the link has been walked through
+     * once. An unknown status must read as unused, so an org carrying a picklist
+     * value this class does not know about is never locked out of onboarding.
+     */
+    @IsTest
+    static void testLinkAlreadyUsedFollowsRegistrationStatusRank() {
+        System.assertEquals(false, KenAlumniOnboardingService.isLinkAlreadyUsed('Unregistered'),
+            'Unregistered is the pre-onboarding state, so the link is still unused.');
+        System.assertEquals(false, KenAlumniOnboardingService.isLinkAlreadyUsed('Unverified'),
+            'Unverified ranks alongside Unregistered.');
+        System.assertEquals(false, KenAlumniOnboardingService.isLinkAlreadyUsed(null),
+            'A blank status must not lock the alumnus out.');
+        System.assertEquals(false, KenAlumniOnboardingService.isLinkAlreadyUsed('Some Custom Value'),
+            'An unrecognised status must not lock the alumnus out.');
+        System.assertEquals(true, KenAlumniOnboardingService.isLinkAlreadyUsed('Onboarding In Progress'),
+            'Onboarding In Progress is set by the first click, so the link is spent.');
+        System.assertEquals(true, KenAlumniOnboardingService.isLinkAlreadyUsed('Registered'),
+            'Registered is past onboarding.');
+        System.assertEquals(true, KenAlumniOnboardingService.isLinkAlreadyUsed('Initial Login Done'),
+            'Initial Login Done is past onboarding.');
+    }
+
+    /**
+     * A secondary role is born carrying the furthest-progressed status on the
+     * account, so an alumnus already mid-onboarding on one programme gets a new
+     * role for a second programme that starts at Onboarding In Progress. That
+     * status is inherited, not earned — the link for the new programme has never
+     * been clicked — so it must still open.
+     */
+    @IsTest
+    static void testNewSecondaryRoleOpensEvenWhenItInheritsAnInProgressStatus() {
+        bypassConstituentRoleTrigger();
+        Lead firstLead = refreshLeadToken('VALID_TOKEN_SECONDARY_1');
+        String firstUrl = processVerifiedLeadAsPortalOwner(firstLead.Verification_Token__c);
+        System.assert(String.isNotBlank(firstUrl), 'The first programme must open onboarding.');
+
+        Account pa = [
+            SELECT Id FROM Account
+            WHERE PersonEmail = :firstLead.Email AND IsPersonAccount = true
+            LIMIT 1
+        ];
+        ConstituentRole firstRole = [
+            SELECT Id FROM ConstituentRole
+            WHERE PersonId = :pa.Id AND RoleType = 'Alumni'
+            ORDER BY CreatedDate ASC
+            LIMIT 1
+        ];
+        // The alumnus is part way through onboarding on the first programme.
+        update new ConstituentRole(Id = firstRole.Id, Registration_Status__c = 'Onboarding In Progress');
+
+        // An admin adds them to a second programme, which is what marks the lead
+        // secondary and makes the new role inherit the status above.
+        Id secondPlan = createProgramPlan('SecondaryPlan');
+        update new Lead(
+            Id                       = firstLead.Id,
+            Constituent_Role_Type__c = 'Secondary',
+            Program_Plan__c          = secondPlan,
+            Registration_Number__c   = 'SEC-REG-9001',
+            Verification_Token__c    = 'VALID_TOKEN_SECONDARY_2',
+            Token_Expiration_Date__c = System.now().addDays(1)
+        );
+        Lead secondLead = [SELECT Verification_Token__c FROM Lead WHERE Id = :firstLead.Id LIMIT 1];
+
+        Test.startTest();
+        String secondUrl = processVerifiedLeadAsPortalOwner(secondLead.Verification_Token__c);
+        Test.stopTest();
+
+        System.assert(String.isNotBlank(secondUrl),
+            'A brand-new secondary role must open onboarding even though it inherited Onboarding In Progress.');
+        System.assert(secondUrl.contains('onboarding-form'),
+            'The second programme must land on the onboarding form: ' + secondUrl);
     }
 }

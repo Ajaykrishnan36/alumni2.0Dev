@@ -10,6 +10,7 @@ public with sharing class KenLogService {
     public static final String CATEGORY_IMPORT = 'Import';
     public static final String CATEGORY_EMAIL = 'Email';
     public static final String CATEGORY_GENERAL = 'General';
+    public static final String CATEGORY_INTEGRATION = 'Integration';
 
     public static final String TYPE_ERROR = 'Error';
     public static final String TYPE_WARNING = 'Warning';
@@ -54,7 +55,7 @@ public with sharing class KenLogService {
             Database.DMLOptions options = new Database.DMLOptions();
             options.allowFieldTruncation = true;
             options.optAllOrNone = false;
-            Database.insert(logs, options);
+            Database.insert(logs, options, AccessLevel.SYSTEM_MODE);
         } catch (Exception ignored) {
             // Logging failures are intentionally suppressed.
         }

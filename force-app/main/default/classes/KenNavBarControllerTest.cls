@@ -1,10 +1,51 @@
 @IsTest
 public class KenNavBarControllerTest {
 
+    /**
+     * @description A portal user can only be created under an account whose owner holds a role.
+     *              The running user used to be handed one here, but that row is shared with every
+     *              other test class in the run and updating it is where UNABLE_TO_LOCK_ROW comes
+     *              from. A throwaway owner carrying a fresh role is created once instead, and the
+     *              accounts these tests build are given to it.
+     */
+    @TestSetup
+    static void makePortalOwner() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            String suffix = String.valueOf(System.currentTimeMillis())
+                + String.valueOf(Math.abs(Crypto.getRandomInteger()));
+            UserRole role = new UserRole(
+                Name          = 'Portal Owner ' + suffix,
+                DeveloperName = 'Portal_Owner_' + suffix
+            );
+            insert role;
+            insert new User(
+                Username          = 'portal.owner.' + suffix + '@kenalumni.test',
+                Email             = 'portal.owner@kenalumni.test',
+                LastName          = 'PortalOwner',
+                Alias             = 'ptlownr',
+                TimeZoneSidKey    = 'Asia/Kolkata',
+                LocaleSidKey      = 'en_US',
+                EmailEncodingKey  = 'UTF-8',
+                LanguageLocaleKey = 'en_US',
+                ProfileId         = UserInfo.getProfileId(),
+                UserRoleId        = role.Id
+            );
+        }
+    }
+
+    private static Id portalOwnerId() {
+        return [
+            SELECT Id FROM User
+            WHERE Username LIKE 'portal.owner.%@kenalumni.test'
+            ORDER BY CreatedDate DESC
+            LIMIT 1
+        ].Id;
+    }
+
     // ---------------- Helpers ----------------
 
     private static Account makeAccount(String name) {
-        Account a = new Account(Name = name);
+        Account a = new Account(Name = name, OwnerId = portalOwnerId());
         insert a;
         return a;
     }
@@ -92,10 +133,7 @@ public class KenNavBarControllerTest {
             return;
         }
 
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c    = a.Id,
-            Profile_Photo_URL__c = 'https://example.test/photo.png'
-        );
+        update new Account(Id = a.Id, Profile_Photo_URL__c = 'https://example.test/photo.png');
 
         insert new ConstituentRole(
             PersonId           = a.Id,

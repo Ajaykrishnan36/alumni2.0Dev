@@ -1,5 +1,4 @@
 @IsTest
-@SuppressWarnings('PMD.CyclomaticComplexity')
 private class KenCommunityLoginControllerTest {
     private static final String SEED_EMAIL = 'alumni.seed@example.com';
     private static final String ROLE_FALLBACK_EMAIL = 'alumni.role.fallback@example.com';
@@ -72,6 +71,147 @@ private class KenCommunityLoginControllerTest {
             Boolean didThrow = expectExceptionFromLogin('', '', null);
             System.assertEquals(true, didThrow, 'Login should fail when email and password are missing.');
         }
+    }
+
+    @IsTest
+    static void testAssertAlumniRoleActiveBlocksDeactivatedAlumni() {
+        Account inactiveAccount = new Account(Name = 'Inactive Alumni Account');
+        insert inactiveAccount;
+        insert new ConstituentRole(
+            PersonId = inactiveAccount.Id,
+            RoleType = 'Alumni',
+            Status = 'Former'
+        );
+
+        String blockedMessage = null;
+        try {
+            KenCommunityLoginController.assertAlumniRoleActive(inactiveAccount.Id);
+        } catch (AuraHandledException ex) {
+            blockedMessage = ex.getMessage();
+        }
+        System.assertNotEquals(null, blockedMessage, 'An account whose every role is Former must be blocked.');
+        System.assertEquals(
+            KenCommunityLoginController.MSG_INACTIVE,
+            blockedMessage,
+            'The block must carry wording written for the alumnus, not a script-thrown exception.'
+        );
+
+        Account activeAccount = new Account(Name = 'Active Alumni Account');
+        insert activeAccount;
+        insert new ConstituentRole(
+            PersonId = activeAccount.Id,
+            RoleType = 'Alumni',
+            Status = 'Active'
+        );
+
+        Boolean activeBlocked = false;
+        try {
+            KenCommunityLoginController.assertAlumniRoleActive(activeAccount.Id);
+        } catch (AuraHandledException ex) {
+            activeBlocked = true;
+        }
+        System.assertEquals(false, activeBlocked, 'An active role must not block login.');
+
+        Boolean noRowsBlocked = false;
+        try {
+            KenCommunityLoginController.assertAlumniRoleActive(seedAccountId());
+        } catch (AuraHandledException ex) {
+            noRowsBlocked = true;
+        }
+        System.assertEquals(false, noRowsBlocked, 'Accounts without roles must fail open.');
+
+        Boolean nullAccountBlocked = false;
+        try {
+            KenCommunityLoginController.assertAlumniRoleActive(null);
+        } catch (AuraHandledException ex) {
+            nullAccountBlocked = true;
+        }
+        System.assertEquals(false, nullAccountBlocked, 'A null account id must fail open.');
+    }
+
+    @IsTest
+    static void testDuplicateAlumniRolesLetAnyActiveRoleIn() {
+        Account duplicateAccount = new Account(Name = 'Duplicate Role Account');
+        insert duplicateAccount;
+        insert new List<ConstituentRole>{
+            new ConstituentRole(PersonId = duplicateAccount.Id, RoleType = 'Alumni', Status = 'Former'),
+            new ConstituentRole(PersonId = duplicateAccount.Id, RoleType = 'Alumni', Status = 'Former'),
+            new ConstituentRole(PersonId = duplicateAccount.Id, RoleType = 'Alumni', Status = 'Active')
+        };
+
+        Boolean blocked = false;
+        try {
+            KenCommunityLoginController.assertAlumniRoleActive(duplicateAccount.Id);
+        } catch (AuraHandledException ex) {
+            blocked = true;
+        }
+        System.assertEquals(
+            false,
+            blocked,
+            'Duplicate role rows must not lock anyone out while one of them is still active.'
+        );
+    }
+
+    @IsTest
+    static void testActiveNonAlumniRoleStillLetsThemIn() {
+        Account mixedAccount = new Account(Name = 'Mixed Role Account');
+        insert mixedAccount;
+        insert new List<ConstituentRole>{
+            new ConstituentRole(PersonId = mixedAccount.Id, RoleType = 'Alumni', Status = 'Former'),
+            new ConstituentRole(PersonId = mixedAccount.Id, RoleType = 'Student', Status = 'Active')
+        };
+
+        Boolean blocked = false;
+        try {
+            KenCommunityLoginController.assertAlumniRoleActive(mixedAccount.Id);
+        } catch (AuraHandledException ex) {
+            blocked = true;
+        }
+        System.assertEquals(false, blocked, 'Any active constituent role is enough to sign in.');
+
+        Account formerNonAlumni = new Account(Name = 'Former Non Alumni Account');
+        insert formerNonAlumni;
+        insert new ConstituentRole(PersonId = formerNonAlumni.Id, RoleType = 'Student', Status = 'Former');
+
+        Boolean nonAlumniBlocked = false;
+        try {
+            KenCommunityLoginController.assertAlumniRoleActive(formerNonAlumni.Id);
+        } catch (AuraHandledException ex) {
+            nonAlumniBlocked = true;
+        }
+        System.assertEquals(
+            false,
+            nonAlumniBlocked,
+            'An account carrying no Alumni role at all must keep failing open.'
+        );
+    }
+
+    @IsTest
+    static void testLoginSurfacesReadableMessageForUnknownEmail() {
+        System.runAs(currentUser()) {
+            String surfaced = null;
+            try {
+                KenCommunityLoginController.login('nobody.here@example.com', 'Password123', '/alumni/home');
+            } catch (AuraHandledException ex) {
+                surfaced = ex.getMessage();
+            }
+            System.assertNotEquals(null, surfaced, 'An unknown email must fail login.');
+            System.assertEquals(
+                KenCommunityLoginController.MSG_USER_NOT_FOUND,
+                surfaced,
+                'login must pass its own wording through instead of re-wrapping it into a script-thrown exception.'
+            );
+        }
+    }
+
+    @IsTest
+    static void testLoginErrorCarriesItsMessage() {
+        AuraHandledException error = KenCommunityLoginController.loginError('Readable failure.');
+        System.assertEquals(
+            'Readable failure.',
+            error.getMessage(),
+            'loginError must set the message so callers never read back a script-thrown exception.'
+        );
     }
 
     @IsTest
@@ -283,7 +423,7 @@ private class KenCommunityLoginControllerTest {
                     ORDER BY CreatedDate DESC
                     LIMIT 1
                 ];
-                System.assertEquals(false, latestOtp.IsActive__c, 'Verified OTP should be deactivated.');
+                System.assertEquals(true, latestOtp.IsActive__c, 'verifyResetOtp only checks the code; resetPassword is what consumes it.');
             } else {
                 System.assert(true, 'Verification may fail in restricted org contexts; branch execution is still validated.');
             }
@@ -295,19 +435,62 @@ private class KenCommunityLoginControllerTest {
         System.runAs(currentUser()) {
             System.assertEquals(
                 true,
-                expectExceptionFromResetPassword('', 'NewPassw0rd!'),
+                expectExceptionFromResetPassword('', 'NewPassw0rd!', '1234'),
                 'resetPassword should fail on blank email.'
             );
             System.assertEquals(
                 true,
-                expectExceptionFromResetPassword(SEED_EMAIL, 'short'),
+                expectExceptionFromResetPassword(SEED_EMAIL, 'short', '1234'),
                 'resetPassword should fail on weak password.'
+            );
+
+            String unknownEmail = 'unknown.user@example.com';
+            insert new Ken_One_Time_Password__c(
+                Email__c = unknownEmail,
+                Person_Account__c = seedAccountId(),
+                OTP__c = '4545',
+                IsActive__c = true,
+                Expiry__c = System.now().addMinutes(5)
             );
             System.assertEquals(
                 true,
-                expectExceptionFromResetPassword('unknown.user@example.com', 'NewPassw0rd!'),
+                expectExceptionFromResetPassword(unknownEmail, 'NewPassw0rd!', '4545'),
                 'resetPassword should fail when user is not found.'
             );
+        }
+    }
+
+    @IsTest
+    static void testResetPasswordRefusesWithoutValidOtp() {
+        System.runAs(currentUser()) {
+            String emailKey = 'reset.nootp.' + System.currentTimeMillis() + '@example.com';
+
+            System.assertEquals(
+                true,
+                expectExceptionFromResetPassword(emailKey, 'NewPassw0rd!', '1234'),
+                'resetPassword must refuse when no OTP was ever issued for the email.'
+            );
+
+            insert new Ken_One_Time_Password__c(
+                Email__c = emailKey,
+                Person_Account__c = seedAccountId(),
+                OTP__c = '7788',
+                IsActive__c = true,
+                Expiry__c = System.now().addMinutes(5)
+            );
+            System.assertEquals(
+                true,
+                expectExceptionFromResetPassword(emailKey, 'NewPassw0rd!', '0000'),
+                'resetPassword must refuse when the supplied OTP does not match.'
+            );
+            System.assertEquals(
+                true,
+                expectExceptionFromResetPassword(emailKey, 'NewPassw0rd!', ''),
+                'resetPassword must refuse when no OTP is supplied at all.'
+            );
+
+            Ken_One_Time_Password__c stillLive = KenCommunityLoginController.fetchLatestActiveOtp(emailKey);
+            System.assertNotEquals(null, stillLive, 'A failed reset must not consume the live OTP.');
         }
     }
 
@@ -411,9 +594,9 @@ private class KenCommunityLoginControllerTest {
         }
     }
 
-    private static Boolean expectExceptionFromResetPassword(String email, String password) {
+    private static Boolean expectExceptionFromResetPassword(String email, String password, String otp) {
         try {
-            KenCommunityLoginController.resetPassword(email, password);
+            KenCommunityLoginController.resetPassword(email, password, otp);
             return false;
         } catch (Exception ex) {
             return true;
@@ -536,7 +719,7 @@ private class KenCommunityLoginControllerTest {
             Id paRtId;
             try {
                 paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-                    .get('Alumni_Person_Account').getRecordTypeId();
+                    .get('PersonAccount').getRecordTypeId();
             } catch (Exception ex) {
                 System.assert(true, 'Person Account RT unavailable in this org; path still entered.');
                 return;
@@ -562,13 +745,17 @@ private class KenCommunityLoginControllerTest {
 
     @IsTest
     static void testResetPasswordWithValidUser() {
-        // Covers resetPassword happy path lines 158-163: System.setPassword + markTempPasswordResetCompleted.
-        // Uses the community user created by the standard test helper when available; otherwise
-        // gracefully verifies the exception path.
         System.runAs(currentUser()) {
             Boolean hasCommunityUser = enqueueCommunityUser(seedContactId(), SEED_EMAIL);
+            insert new Ken_One_Time_Password__c(
+                Email__c = SEED_EMAIL,
+                Person_Account__c = seedAccountId(),
+                OTP__c = '8642',
+                IsActive__c = true,
+                Expiry__c = System.now().addMinutes(5)
+            );
             if (!hasCommunityUser) {
-                System.assertEquals(true, expectExceptionFromResetPassword(SEED_EMAIL, 'NewSecret123!'),
+                System.assertEquals(true, expectExceptionFromResetPassword(SEED_EMAIL, 'NewSecret123!', '8642'),
                     'Without a community user, resetPassword should fail gracefully.');
                 return;
             }
@@ -576,7 +763,7 @@ private class KenCommunityLoginControllerTest {
             // enqueueCommunityUser already consumed Test.startTest()/stopTest(); call resetPassword directly.
             Boolean threwOnHappyPath = false;
             try {
-                KenCommunityLoginController.resetPassword(SEED_EMAIL, 'NewSecret123!');
+                KenCommunityLoginController.resetPassword(SEED_EMAIL, 'NewSecret123!', '8642');
             } catch (Exception ex) {
                 threwOnHappyPath = true;
                 System.assertNotEquals(null, ex.getMessage(), 'resetPassword path executed: ' + ex.getMessage());
@@ -689,7 +876,7 @@ private class KenCommunityLoginControllerTest {
             Id paRtId;
             try {
                 paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-                    .get('Alumni_Person_Account').getRecordTypeId();
+                    .get('PersonAccount').getRecordTypeId();
             } catch (Exception ex) {
                 System.assert(true, 'Person Account RT unavailable; skip.');
                 return;
@@ -831,7 +1018,6 @@ private class KenCommunityLoginControllerTest {
 
     @IsTest
     static void testVerifyResetOtpSuccessDeactivates() {
-        // Exercises the success path of verifyResetOtp (lines ~138-139) where IsActive__c is flipped.
         System.runAs(currentUser()) {
             String emailKey = 'verify.success.' + System.currentTimeMillis() + '@example.com';
             insert new Ken_One_Time_Password__c(
@@ -865,7 +1051,6 @@ private class KenCommunityLoginControllerTest {
         return ConstituentRole.SObjectType.getDescribe(SObjectDescribeOptions.DEFERRED).fields.getMap();
     }
 
-    @SuppressWarnings('PMD.QueueableWithoutFinalizer,PMD.ApexDoc')
     private class CreateCommunityUserJob implements Queueable {
         private final Id targetContactId;
         private final String targetEmail;

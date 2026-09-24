@@ -8,6 +8,14 @@ public without sharing class KenGroupTriggerHandler extends KenTriggerHandler {
     private static final String TPL_GROUP_APPROVED = 'Group_Approved';
     private static final String TPL_GROUP_REJECTED = 'Group_Rejected';
 
+    public override void processBeforeInsert() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
+    public override void processBeforeUpdate() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
     public override void processAfterUpdate() {
         submitGroupsForApproval();
         notifyCreatorOfApprovalDecision();

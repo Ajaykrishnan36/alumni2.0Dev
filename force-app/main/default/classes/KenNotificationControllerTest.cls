@@ -65,11 +65,11 @@ private class KenNotificationControllerTest {
         System.assertNotEquals(null, hb.pollIntervalSeconds);
         System.assert(hb.pollIntervalSeconds >= 10 && hb.pollIntervalSeconds <= 3600);
 
-        List<Ken_Alumni_CRM__c> crmRows = [
-            SELECT Last_Active__c FROM Ken_Alumni_CRM__c WHERE Person_Account__c = :recipient.Id
-        ];
-        System.assertEquals(1, crmRows.size(), 'A CRM row should exist after fetchNotifications');
-        System.assertNotEquals(null, crmRows[0].Last_Active__c);
+        System.assertNotEquals(
+            null,
+            [SELECT Last_Active__c FROM Account WHERE Id = :recipient.Id].Last_Active__c,
+            'The heartbeat should stamp Account.Last_Active__c'
+        );
     }
 
     @IsTest
@@ -121,7 +121,7 @@ private class KenNotificationControllerTest {
     private static Account createAlumniPersonAccount(String firstName, String lastName, String email) {
         Id paRtId = [
             SELECT Id FROM RecordType
-            WHERE SObjectType = 'Account' AND DeveloperName = 'Alumni_Person_Account' LIMIT 1
+            WHERE SObjectType = 'Account' AND DeveloperName = 'PersonAccount' LIMIT 1
         ].Id;
         return new Account(
             RecordTypeId = paRtId,

@@ -1,7 +1,7 @@
 @IsTest
 private class KenNetworkControllerTest {
     private static final String CONNECTION_RECORD_TYPE = 'Connection_Request';
-    private static final String ALUMNI_ACCOUNT_RECORD_TYPE = 'Alumni_Person_Account';
+    private static final String ALUMNI_ACCOUNT_RECORD_TYPE = 'PersonAccount';
 
     private static User buildRunAsUser() {
         Profile prof = [SELECT Id FROM Profile WHERE Name = 'System Administrator' LIMIT 1];
@@ -41,29 +41,6 @@ private class KenNetworkControllerTest {
         insertRegisteredRole(acceptedMentorshipOnly.Id, 'network.accepted.mentorship.only.role@test.com');
         insertRegisteredRole(requesterOne.Id,           'network.requester.one.role@test.com');
         insertRegisteredRole(requesterTwo.Id,           'network.requester.two.role@test.com');
-
-        insert new List<Ken_Alumni_CRM__c>{
-            new Ken_Alumni_CRM__c(
-                Person_Account__c  = acceptedConnection.Id,
-                Current_Company__c = 'Accepted Company',
-                Current_Location__c = 'Pune, India'
-            ),
-            new Ken_Alumni_CRM__c(
-                Person_Account__c   = acceptedMentorshipOnly.Id,
-                Current_Company__c  = 'Mentorship Only Company',
-                Current_Location__c = 'Bengaluru, India'
-            ),
-            new Ken_Alumni_CRM__c(
-                Person_Account__c   = requesterOne.Id,
-                Current_Company__c  = 'Requester One Company',
-                Current_Location__c = 'Mumbai, India'
-            ),
-            new Ken_Alumni_CRM__c(
-                Person_Account__c   = requesterTwo.Id,
-                Current_Company__c  = 'Requester Two Company',
-                Current_Location__c = 'Hyderabad, India'
-            )
-        };
 
         insert new List<PersonEmployment>{
             new PersonEmployment(
@@ -120,13 +97,7 @@ private class KenNetworkControllerTest {
             Willing_to_be_a_mentor__c = true
         );
 
-        Id connectionRecordTypeId = [
-            SELECT Id
-            FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = :CONNECTION_RECORD_TYPE
-            LIMIT 1
-        ].Id;
+        Id connectionRecordTypeId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CONNECTION_RECORD_TYPE)?.getRecordTypeId();
 
         Ken_Network_Connection__c acceptedNetworkConnection = new Ken_Network_Connection__c(
             Initiator__c = acceptedConnection.Id,
@@ -316,7 +287,7 @@ private class KenNetworkControllerTest {
             Email__c               = email
         );
         if (constituentRoleFields().containsKey('Status')) {
-            role.put('Status', 'Admitted');
+            role.put('Status', 'Active');
         }
         insert role;
     }
@@ -444,7 +415,7 @@ private class KenNetworkControllerTest {
 
         System.assertEquals(0, emptySummaries.size(), 'Empty input should return an empty map.');
         KenNetworkController.ProfileCardSummary summary = summaries.get(portalUser.Id);
-        System.assertNotEquals(null, summary, 'Summary should exist even without a Ken_Alumni_CRM__c row.');
+        System.assertNotEquals(null, summary, 'Summary should exist even for a bare portal-created profile.');
         System.assertEquals('QA Engineer', summary.title,
             'Title should come from current employment when PersonTitle is blank.');
         System.assertEquals('T2C Development Center', summary.company,
@@ -494,7 +465,7 @@ private class KenNetworkControllerTest {
             ORDER BY LastModifiedDate DESC
             LIMIT 1
         ];
-        pref.Is_Private_Account__c = true;
+        pref.Is_Restricted_Account__c = true;
         update pref;
 
         Test.startTest();
@@ -522,7 +493,7 @@ private class KenNetworkControllerTest {
     static void testGetAlumniProfileUnmasksPublicAccountOnceConnected() {
         Account current = [SELECT Id FROM Account WHERE Name = 'Network Current User' LIMIT 1];
         // acceptedConnection has an Accepted network connection with current and
-        // is public (no Is_Private_Account__c flag) — the mask must be lifted.
+        // is public (no Is_Restricted_Account__c flag) — the mask must be lifted.
         Account peer = [SELECT Id FROM Account WHERE Name = 'Network Accepted Connection' LIMIT 1];
 
         update new Account(Id = peer.Id, PersonEmail = 'public.peer@example.com', PersonMobilePhone = '+1 9876543210');
@@ -711,10 +682,7 @@ private class KenNetworkControllerTest {
             Initiator__c = current.Id, Recipient__c = peer.Id, Status__c = 'Accepted'
         );
         insert conn;
-        Id connRt = [
-            SELECT Id FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c' AND DeveloperName = :CONNECTION_RECORD_TYPE LIMIT 1
-        ].Id;
+        Id connRt = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CONNECTION_RECORD_TYPE)?.getRecordTypeId();
         insert new Ken_Mentorship__c(
             RecordTypeId = connRt, Mentor__c = peer.Id, Mentee__c = current.Id,
             Mentorship_Status__c = 'Rejected', Network_Connection__c = conn.Id

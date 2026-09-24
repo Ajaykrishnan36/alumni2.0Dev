@@ -118,17 +118,6 @@
                   </span>
                 </div>
               </div>
-              <button
-                type="button"
-                class="chat-header-action"
-                aria-label="Conversation details"
-                title="Conversation details"
-              >
-                <lightning-icon
-                  icon-name="utility:info"
-                  size="x-small"
-                ></lightning-icon>
-              </button>
             </header>
           </template>
           <div
@@ -167,8 +156,59 @@
                   </template>
                   <div class="chat-msg-bubble">
                     <div class="chat-msg-line">
-                      <span class="chat-msg-text">{msg.text}</span>
+                      <span class={msg.textClass}>{msg.displayText}</span>
                       <span class="chat-msg-time">
+                        <template if:true={msg.isEdited}>
+                          <span class="chat-msg-edited-tag">edited</span>
+                        </template>
+                        <template if:true={msg.canManage}>
+                          <span class="chat-msg-menu-wrap">
+                            <button
+                              type="button"
+                              class={msg.kebabClass}
+                              data-uid={msg.id}
+                              onclick={handleToggleMessageMenu}
+                              title="Message options"
+                              aria-label="Message options"
+                              aria-haspopup="true"
+                            >
+                              <lightning-icon
+                                icon-name="utility:threedots_vertical"
+                                size="xx-small"
+                              ></lightning-icon>
+                            </button>
+                            <template if:true={msg.menuOpen}>
+                              <div class="chat-msg-menu" role="menu">
+                                <button
+                                  type="button"
+                                  class="chat-msg-menu-item"
+                                  data-uid={msg.id}
+                                  onclick={handleEditMessage}
+                                  role="menuitem"
+                                >
+                                  <lightning-icon
+                                    icon-name="utility:edit"
+                                    size="xx-small"
+                                  ></lightning-icon>
+                                  <span>Edit</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  class="chat-msg-menu-item"
+                                  data-uid={msg.id}
+                                  onclick={handleDeleteMessage}
+                                  role="menuitem"
+                                >
+                                  <lightning-icon
+                                    icon-name="utility:delete"
+                                    size="xx-small"
+                                  ></lightning-icon>
+                                  <span>Delete</span>
+                                </button>
+                              </div>
+                            </template>
+                          </span>
+                        </template>
                         {msg.time}
                         <template if:true={msg.showTick}>
                           <span class={msg.tickClass} aria-hidden="true"
@@ -246,6 +286,24 @@
             </template>
           </div>
           <div class="chat-composer-wrap">
+            <template if:true={isEditing}>
+              <div class="chat-editing-banner">
+                <lightning-icon
+                  icon-name="utility:edit"
+                  size="xx-small"
+                ></lightning-icon>
+                <span class="chat-editing-label">Editing message</span>
+                <button
+                  type="button"
+                  class="chat-editing-cancel"
+                  onclick={handleCancelEdit}
+                  aria-label="Cancel edit"
+                  title="Cancel"
+                >
+                  &times;
+                </button>
+              </div>
+            </template>
             <!-- Attached and waiting for Send. Shown above the field so the row reads as
                          part of the message being written, not as something already sent. -->
             <template if:true={hasPendingFiles}>
@@ -303,6 +361,7 @@
                   type="button"
                   class="chat-composer-attach"
                   onclick={handleAttachClick}
+                  disabled={isEditing}
                   aria-label="Attach file"
                   title="Attach"
                 >
@@ -380,6 +439,32 @@
         >
           &times;
         </button>
+      </div>
+    </template>
+
+    <!-- Delete-message confirmation -->
+    <template if:true={pendingDeleteMessage}>
+      <div class="chat-confirm-overlay" onclick={handleCancelDelete}>
+        <div class="chat-confirm-card" onclick={stopPropagation}>
+          <p class="chat-confirm-text">Delete this message?</p>
+          <div class="chat-confirm-actions">
+            <button
+              type="button"
+              class="chat-confirm-cancel"
+              onclick={handleCancelDelete}
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              class="chat-confirm-delete"
+              onclick={handleConfirmDelete}
+              disabled={isDeletingMessage}
+            >
+              Delete
+            </button>
+          </div>
+        </div>
       </div>
     </template>
   </div>

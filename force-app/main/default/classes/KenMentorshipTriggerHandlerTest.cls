@@ -12,7 +12,7 @@ private class KenMentorshipTriggerHandlerTest {
     static void testTriggerBypass() {
         Account mentor = [SELECT Id FROM Account WHERE Name = 'Mentor One' LIMIT 1];
         Account mentee = [SELECT Id FROM Account WHERE Name = 'Mentee One' LIMIT 1];
-        insert new Alumni_Trigger_Settings__c(Mentorship_Trigger__c = true);
+        insert new Ken_Alm_Bypass_Settings__c(Skip_Mentorship_Trigger__c = true);
         Test.startTest();
         insert new Ken_Mentorship__c(
             RecordTypeId         = connectionRtId(),
@@ -138,18 +138,13 @@ private class KenMentorshipTriggerHandlerTest {
     }
 
     private static Id connectionRtId() {
-        return [
-            SELECT Id FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = 'Connection_Request'
-            LIMIT 1
-        ].Id;
+        return Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get('Connection_Request')?.getRecordTypeId();
     }
 
     private static Account createAlumniPersonAccount(String firstName, String lastName, String email) {
         Id paRtId = [
             SELECT Id FROM RecordType
-            WHERE SObjectType = 'Account' AND DeveloperName = 'Alumni_Person_Account' LIMIT 1
+            WHERE SObjectType = 'Account' AND DeveloperName = 'PersonAccount' LIMIT 1
         ].Id;
         return new Account(
             RecordTypeId = paRtId,

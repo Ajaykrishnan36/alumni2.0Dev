@@ -30,7 +30,7 @@ private class KenLinkedInRegistrationHandlerTest {
             List<User> alumniUsers = [
                 SELECT Id, Email
                 FROM User
-                WHERE Profile.Name = 'Alumni-Student'
+                WHERE Profile.Name = 'Alumni'
                 AND IsActive = true
                 LIMIT 1
             ];
@@ -45,13 +45,13 @@ private class KenLinkedInRegistrationHandlerTest {
                 System.assertEquals(
                     alumniUsers[0].Id,
                     returnedUser.Id,
-                    'Handler should return the existing active Alumni-Student user.'
+                    'Handler should return the existing active community user.'
                 );
             } else {
                 try {
                     handler.createUser(null, linkedInUser);
                     Test.stopTest();
-                    System.assert(false, 'Expected SObjectException when Alumni-Student profile is unavailable.');
+                    System.assert(false, 'Expected SObjectException when no matching community user exists.');
                 } catch (SObjectException ex) {
                     Test.stopTest();
                     System.assert(

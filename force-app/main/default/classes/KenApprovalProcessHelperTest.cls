@@ -41,7 +41,7 @@ public class KenApprovalProcessHelperTest {
         Opportunity opp = [SELECT Id FROM Opportunity LIMIT 1];
 
         Test.startTest();
-        
+
         KenApprovalProcessHelper.submitForApproval(
             opp.Id,
             'Some_Process_Definition',
@@ -50,9 +50,14 @@ public class KenApprovalProcessHelperTest {
         );
         Test.stopTest();
 
-       
+
         Opportunity verify = [SELECT Id FROM Opportunity WHERE Id = :opp.Id];
         System.assertNotEquals(null, verify.Id, 'Record should still exist when using defaults');
+        System.assertEquals(
+            true,
+            KenApprovalProcessHelper.testSubmittedRecordIds.contains(opp.Id),
+            'Bypassed submission should still record the record as submitted'
+        );
     }
 
     @IsTest

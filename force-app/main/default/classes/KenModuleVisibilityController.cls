@@ -1,6 +1,6 @@
 /**
  * Supplies per-module show/hide flags for the alumni portal navigation and the
- * internal Alumni Management app, sourced from the Alumni_Module_Settings__c
+ * internal Alumni Management app, sourced from the Ken_Alm_Module_Settings__c
  * hierarchy custom setting.
  *
  * Semantics: a module is HIDDEN only when its checkbox is explicitly unchecked
@@ -30,7 +30,7 @@ public with sharing class KenModuleVisibilityController {
 
     @AuraEnabled(cacheable=true)
     public static ModuleVisibility getModuleVisibility() {
-        Alumni_Module_Settings__c cs = Alumni_Module_Settings__c.getOrgDefaults();
+        Ken_Alm_Module_Settings__c cs = Ken_Alm_Module_Settings__c.getOrgDefaults();
         // getOrgDefaults() returns an UNSAVED instance (Id == null) when no org
         // default record exists — and its checkboxes read false, not null. Only
         // honour the flags when a real record has been saved; otherwise every

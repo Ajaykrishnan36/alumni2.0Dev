@@ -46,6 +46,12 @@ public without sharing class KenMentorshipController {
         @AuraEnabled public Id id;
         @AuraEnabled public String dateIso;
         @AuraEnabled public String timeLabel;
+        // Raw UTC instants; the component formats them in the viewer's own
+        // timezone. timeLabel/startTime above are built server-side and so
+        // read as the running user's zone — Asia/Kolkata for every portal
+        // user. Kept only until the components switch to these.
+        @AuraEnabled public String startInstant;
+        @AuraEnabled public String endInstant;
         @AuraEnabled public String startTime;
         @AuraEnabled public String endTime;
         @AuraEnabled public String title;
@@ -80,6 +86,18 @@ public without sharing class KenMentorshipController {
         @AuraEnabled public String description { get; set; }
         @AuraEnabled public String meetingType { get; set; }
         @AuraEnabled public String meetLink { get; set; }
+
+        // ISO-8601 UTC instants from c/kenDateTime.toUtcInstant. Authoritative.
+        // meetingDate/startTime/endTime above are still written so existing
+        // readers keep working, and are retired once those have migrated.
+        //
+        // The two screens that write this object disagreed about what the bare
+        // startTime meant — the schedule modal builds local "HH:mm" slots while
+        // the reschedule panel passes through the UTC value lightning-input
+        // emits — so a call silently changed time when rescheduled. Only the
+        // instant is unambiguous.
+        @AuraEnabled public String startDateTime { get; set; }
+        @AuraEnabled public String endDateTime { get; set; }
     }
 
     public class TaskRow {
@@ -140,6 +158,7 @@ public without sharing class KenMentorshipController {
                    OR Mentee__c = :currentAccountId)
                   AND RecordType.DeveloperName = :CONNECTION_REQUEST_RECORD_TYPE
                   AND Mentorship_Status__c = :ACCEPTED_STATUS
+                WITH SECURITY_ENFORCED
                 ORDER BY LastModifiedDate DESC
                 LIMIT 500
             ];
@@ -225,6 +244,7 @@ public without sharing class KenMentorshipController {
               AND RecordType.DeveloperName = :CONNECTION_REQUEST_RECORD_TYPE
               AND Mentorship_Status__c = :ACCEPTED_STATUS
               AND Mentor__c != null
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
             LIMIT 500
         ]) {
@@ -264,6 +284,7 @@ public without sharing class KenMentorshipController {
               AND RecordType.DeveloperName = :CONNECTION_REQUEST_RECORD_TYPE
               AND Mentorship_Status__c = :ACCEPTED_STATUS
               AND Mentee__c != null
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
             LIMIT 500
         ]) {
@@ -296,24 +317,25 @@ public without sharing class KenMentorshipController {
         }
 
         Date today = Date.today();
-        Time nowTime = Datetime.now().time();
+        Datetime nowInstant = Datetime.now();
         // call id -> its per-call feedback instance (Survey__c), for the dedupe pass below
         Map<Id, Id> callSurveyById = new Map<Id, Id>();
         for (Ken_Mentorship__c rec : [
             SELECT Id,
                    Meeting_Title__c,
                    Meeting_Description__c,
-                   Meet_Date__c,
-                   Meet_Start_Time__c,
-                   Meet_End_Time__c,
+                   Meet_Start_DateTime__c,
+                   Meet_End_DateTime__c,
                    Mentor__c,
                    Mentor__r.Name,
                    Mentor__r.PersonTitle,
                    Mentor__r.PhotoUrl,
+                   Mentor__r.Profile_Photo_URL__c,
                    Mentee__c,
                    Mentee__r.Name,
                    Mentee__r.PersonTitle,
                    Mentee__r.PhotoUrl,
+                   Mentee__r.Profile_Photo_URL__c,
                    MeetingRequestedBy__c,
                    MeetingRequestedBy__r.Name,
                    Call_Request_Status__c,
@@ -324,8 +346,9 @@ public without sharing class KenMentorshipController {
             FROM Ken_Mentorship__c
             WHERE (Mentee__c = :currentAccountId OR Mentor__c = :currentAccountId)
               AND RecordType.DeveloperName = :CALL_REQUEST_RECORD_TYPE
-              AND Meet_Date__c != null
-            ORDER BY Meet_Date__c ASC, Meet_Start_Time__c ASC, LastModifiedDate DESC
+              AND Meet_Start_DateTime__c != null
+            WITH SECURITY_ENFORCED
+            ORDER BY Meet_Start_DateTime__c ASC NULLS LAST, LastModifiedDate DESC
             LIMIT 1000
         ]) {
             if (isHiddenStatus(rec.Call_Request_Status__c)) {
@@ -337,23 +360,23 @@ public without sharing class KenMentorshipController {
 
             ScheduleEventRow row = new ScheduleEventRow();
             row.id = rec.Id;
-            row.dateIso = rec.Meet_Date__c != null ? String.valueOf(rec.Meet_Date__c) : null;
-            row.timeLabel = buildTimeLabel(rec.Meet_Start_Time__c, rec.Meet_End_Time__c);
-            row.startTime = formatTimeForInput(rec.Meet_Start_Time__c);
-            row.endTime = formatTimeForInput(rec.Meet_End_Time__c);
+            // Day derived from the one stored instant, never duplicated.
+            Date meetDay = KenDateTimeUtil.localDate(rec.Meet_Start_DateTime__c);
+            row.dateIso = meetDay == null ? null : String.valueOf(meetDay);
+            row.timeLabel = ''; // component formats startInstant in the viewer's zone
+            row.startInstant = KenDateTimeUtil.formatInstant(rec.Meet_Start_DateTime__c);
+            row.endInstant = KenDateTimeUtil.formatInstant(rec.Meet_End_DateTime__c);
+            row.startTime = instantToInputTime(rec.Meet_Start_DateTime__c);
+            row.endTime = instantToInputTime(rec.Meet_End_DateTime__c);
             row.title = String.isNotBlank(rec.Meeting_Title__c) ? rec.Meeting_Title__c : 'Mentorship Call';
             if (isViewerMentor) {
                 row.mentor = rec.Mentee__r != null ? rec.Mentee__r.Name : null;
                 row.counterpartTitle = rec.Mentee__r != null ? rec.Mentee__r.PersonTitle : null;
-                row.mentorImage = rec.Mentee__r != null && String.isNotBlank(rec.Mentee__r.PhotoUrl)
-                    ? URL.getOrgDomainUrl().toExternalForm() + rec.Mentee__r.PhotoUrl
-                    : null;
+                row.mentorImage = resolveAccountPhoto(rec.Mentee__r);
             } else {
                 row.mentor = rec.Mentor__r != null ? rec.Mentor__r.Name : null;
                 row.counterpartTitle = rec.Mentor__r != null ? rec.Mentor__r.PersonTitle : null;
-                row.mentorImage = rec.Mentor__r != null && String.isNotBlank(rec.Mentor__r.PhotoUrl)
-                    ? URL.getOrgDomainUrl().toExternalForm() + rec.Mentor__r.PhotoUrl
-                    : null;
+                row.mentorImage = resolveAccountPhoto(rec.Mentor__r);
             }
             row.meetingDescriptionHtml = rec.Meeting_Description__c;
             row.meetingDescription = buildDescriptionText(rec);
@@ -364,12 +387,12 @@ public without sharing class KenMentorshipController {
             row.requesterName = rec.MeetingRequestedBy__r != null ? rec.MeetingRequestedBy__r.Name : null;
             row.status = mapUiStatus(
                 rec.Call_Request_Status__c,
-                rec.Meet_Date__c,
-                rec.Meet_Start_Time__c,
-                rec.Meet_End_Time__c,
+                meetDay,
+                rec.Meet_Start_DateTime__c,
+                rec.Meet_End_DateTime__c,
                 rec.Meeting_Mode__c,
                 today,
-                nowTime,
+                nowInstant,
                 isViewerMentor,
                 isRequestedByViewer
             );
@@ -388,43 +411,29 @@ public without sharing class KenMentorshipController {
         // so the "Leave Feedback" prompt clears (one response per user per call).
         // Fail-soft: a feedback-lookup error must never blank the schedule list.
         try {
-        if (!callSurveyById.isEmpty() &&
-            Schema.sObjectType.Ken_Questionnaire_Parameter_Response__c.isAccessible()) {
-            Set<Id> surveyIds = new Set<Id>(callSurveyById.values());
-            // Responses reach the survey via the questionnaire link; map back to survey.
-            Map<Id, Id> surveyByQuestionnaire = new Map<Id, Id>();
-            for (Ken_Survey__c s : [
-                SELECT Id, Ken_Questionnaire__c
-                FROM Ken_Survey__c
-                WHERE Id IN :surveyIds AND Ken_Questionnaire__c != null
-            ]) {
-                surveyByQuestionnaire.put(s.Ken_Questionnaire__c, s.Id);
-            }
-            Set<Id> answeredSurveyIds = new Set<Id>();
-            if (!surveyByQuestionnaire.isEmpty()) {
-                Set<Id> qIds = surveyByQuestionnaire.keySet();
-                for (Ken_Questionnaire_Parameter_Response__c resp : [
-                    SELECT Questionnaire_Parameter__r.Questionnaire__c
-                    FROM Ken_Questionnaire_Parameter_Response__c
-                    WHERE Questionnaire_Parameter__r.Questionnaire__c IN :qIds
-                      AND Respondent__c = :currentAccountId
+            if (!callSurveyById.isEmpty()) {
+                Set<Id> surveyIds = new Set<Id>(callSurveyById.values());
+                Set<Id> assessmentSurveyIds = new Set<Id>();
+                for (Ken_Survey__c s : [
+                    SELECT Id
+                    FROM Ken_Survey__c
+                    WHERE Id IN :surveyIds
+                    AND Assessment_Question_Set__c != null
+                WITH SECURITY_ENFORCED
                 ]) {
-                    Id qId = (resp.Questionnaire_Parameter__r != null)
-                        ? resp.Questionnaire_Parameter__r.Questionnaire__c : null;
-                    if (qId != null && surveyByQuestionnaire.containsKey(qId)) {
-                        answeredSurveyIds.add(surveyByQuestionnaire.get(qId));
+                    assessmentSurveyIds.add(s.Id);
+                }
+                Set<Id> answeredSurveyIds =
+                    KenAssessmentSurveyService.surveysAnsweredBy(assessmentSurveyIds, currentAccountId);
+                if (!answeredSurveyIds.isEmpty()) {
+                    for (ScheduleEventRow r : rows) {
+                        Id sId = callSurveyById.get(r.id);
+                        if (sId != null && answeredSurveyIds.contains(sId)) {
+                            r.feedbackSubmitted = true;
+                        }
                     }
                 }
             }
-            if (!answeredSurveyIds.isEmpty()) {
-                for (ScheduleEventRow r : rows) {
-                    Id sId = callSurveyById.get(r.id);
-                    if (sId != null && answeredSurveyIds.contains(sId)) {
-                        r.feedbackSubmitted = true;
-                    }
-                }
-            }
-        }
         } catch (Exception e) {
             System.debug(LoggingLevel.WARN, 'Feedback flagging skipped: ' + e.getMessage());
         }
@@ -453,12 +462,15 @@ public without sharing class KenMentorshipController {
                    Mentor__c,
                    Mentor__r.Name,
                    Mentor__r.PhotoUrl,
+                   Mentor__r.Profile_Photo_URL__c,
                    Mentee__c,
                    Mentee__r.Name,
-                   Mentee__r.PhotoUrl
+                   Mentee__r.PhotoUrl,
+                   Mentee__r.Profile_Photo_URL__c
             FROM Task
             WHERE Mentee__c = :currentAccountId
                OR Mentor__c = :currentAccountId
+            WITH SYSTEM_MODE
             ORDER BY CreatedDate DESC
             LIMIT 500
         ]) {
@@ -491,6 +503,7 @@ public without sharing class KenMentorshipController {
                 FROM Task
                 WHERE Id = :taskId
                   AND CreatedById = :UserInfo.getUserId()
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
             if (existing.isEmpty()) {
@@ -555,9 +568,9 @@ public without sharing class KenMentorshipController {
         }
 
         if (isCreate) {
-            insert taskRec;
+            Database.insert(taskRec, true, AccessLevel.SYSTEM_MODE);
         } else {
-            update taskRec;
+            Database.update(taskRec, true, AccessLevel.SYSTEM_MODE);
         }
 
         Task savedTask = [
@@ -573,11 +586,14 @@ public without sharing class KenMentorshipController {
                    Mentor__c,
                    Mentor__r.Name,
                    Mentor__r.PhotoUrl,
+                   Mentor__r.Profile_Photo_URL__c,
                    Mentee__c,
                    Mentee__r.Name,
-                   Mentee__r.PhotoUrl
+                   Mentee__r.PhotoUrl,
+                   Mentee__r.Profile_Photo_URL__c
             FROM Task
             WHERE Id = :taskRec.Id
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
         return mapTaskRow(savedTask);
@@ -602,6 +618,7 @@ public without sharing class KenMentorshipController {
             FROM Task
             WHERE Id = :parsedTaskId
               AND CreatedById = :UserInfo.getUserId()
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
 
@@ -696,9 +713,8 @@ public without sharing class KenMentorshipController {
         callRequest.MeetingRequestedBy__c = currentAccountId;
         callRequest.Meeting_Title__c = String.isNotBlank(request.title) ? request.title.trim() : 'Mentorship Call';
         callRequest.Meeting_Description__c = request.description;
-        callRequest.Meet_Date__c = meetDate;
-        callRequest.Meet_Start_Time__c = startTime;
-        callRequest.Meet_End_Time__c = endTime;
+        callRequest.Meet_Start_DateTime__c = resolveMeetInstant(request.startDateTime, meetDate, startTime);
+        callRequest.Meet_End_DateTime__c = resolveMeetInstant(request.endDateTime, meetDate, endTime);
         callRequest.Meeting_Mode__c = normalizedMeetingType;
         callRequest.Call_Request_Status__c = REQUESTED_STATUS;
         if (acceptedMentorship.Network_Connection__c != null) {
@@ -726,6 +742,9 @@ public without sharing class KenMentorshipController {
             callRequest.Meeting_Location__c = request.meetLink;
         }
 
+        if (!Schema.sObjectType.Ken_Mentorship__c.isCreateable()) {
+            throw new KenCrudException('Ken_Mentorship__c is not createable by the current user.');
+        }
         insert callRequest;
         return callRequest.Id;
     }
@@ -769,6 +788,7 @@ public without sharing class KenMentorshipController {
             WHERE Id = :parsedId
               AND RecordType.DeveloperName = :CONNECTION_REQUEST_RECORD_TYPE
               AND Mentor__c = :currentAccountId
+            WITH SECURITY_ENFORCED
             LIMIT 1
         ];
 
@@ -824,6 +844,7 @@ public without sharing class KenMentorshipController {
             WHERE Id = :parsedCallRequestId
               AND RecordType.DeveloperName = :CALL_REQUEST_RECORD_TYPE
               AND (Mentor__c = :currentAccountId OR Mentee__c = :currentAccountId)
+            WITH SECURITY_ENFORCED
             LIMIT 1
         ];
 
@@ -847,8 +868,22 @@ public without sharing class KenMentorshipController {
         KenNotificationFactory.markRelatedAsRead(new Set<Id>{ callRequest.Id }, currentAccountId);
     }
 
+    /**
+     * @description Reschedules a call.
+     *
+     *              startDateTime/endDateTime are ISO-8601 UTC instants from
+     *              c/kenDateTime and are what actually gets stored. The bare
+     *              meetingDate/startTime/endTime are still accepted and written
+     *              so existing readers keep working during the migration.
+     *
+     *              The instants exist because this screen and the schedule modal
+     *              disagreed about what a bare time meant — this one passes
+     *              through the UTC value lightning-input emits, the modal builds
+     *              local "HH:mm" slots — so a call shifted by the user's offset
+     *              the moment it was rescheduled.
+     */
     @AuraEnabled
-    public static void rescheduleCallRequest(String callRequestId, String meetingDate, String startTime, String endTime) {
+    public static void rescheduleCallRequest(String callRequestId, String meetingDate, String startTime, String endTime, String startDateTime, String endDateTime) {
         if (!Schema.sObjectType.Ken_Mentorship__c.isUpdateable()) {
             throw new AuraHandledException('You do not have permission to update call requests.');
         }
@@ -887,6 +922,7 @@ public without sharing class KenMentorshipController {
             WHERE Id = :parsedCallRequestId
               AND RecordType.DeveloperName = :CALL_REQUEST_RECORD_TYPE
               AND (Mentor__c = :currentAccountId OR Mentee__c = :currentAccountId)
+            WITH SECURITY_ENFORCED
             LIMIT 1
         ];
         if (records.isEmpty()) {
@@ -901,9 +937,8 @@ public without sharing class KenMentorshipController {
             throw new AuraHandledException('Only requested calls can be rescheduled.');
         }
 
-        callRequest.Meet_Date__c = targetDate;
-        callRequest.Meet_Start_Time__c = targetStartTime;
-        callRequest.Meet_End_Time__c = targetEndTime;
+        callRequest.Meet_Start_DateTime__c = resolveMeetInstant(startDateTime, targetDate, targetStartTime);
+        callRequest.Meet_End_DateTime__c = resolveMeetInstant(endDateTime, targetDate, targetEndTime);
         callRequest.Call_Request_Status__c = ACCEPTED_STATUS;
         callRequest.Mentorship_Status__c = ACCEPTED_STATUS;
         update callRequest;
@@ -970,6 +1005,7 @@ public without sharing class KenMentorshipController {
             SELECT Id, AccountId, ContactId, Contact.AccountId
             FROM User
             WHERE Id = :UserInfo.getUserId()
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
 
@@ -1013,6 +1049,7 @@ public without sharing class KenMentorshipController {
             FROM Ken_Alumni_Preferences__c
             WHERE Person_Account__c = :mentorAccountId
               AND Willing_to_be_a_mentor__c = true
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
             LIMIT 1
         ];
@@ -1039,6 +1076,7 @@ public without sharing class KenMentorshipController {
             SELECT Person_Account__c, Willing_to_be_a_mentor__c
             FROM Ken_Alumni_Preferences__c
             WHERE Person_Account__c IN :accountIds
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
         ]) {
             if (rec.Person_Account__c != null && !mentorPreferenceByAccountId.containsKey(rec.Person_Account__c)) {
@@ -1056,6 +1094,7 @@ public without sharing class KenMentorshipController {
               AND Mentee__c = :menteeId
               AND RecordType.DeveloperName = :CONNECTION_REQUEST_RECORD_TYPE
               AND Mentorship_Status__c = :ACCEPTED_STATUS
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
             LIMIT 1
         ];
@@ -1070,6 +1109,7 @@ public without sharing class KenMentorshipController {
               AND Mentor__c = :mentorId
               AND RecordType.DeveloperName = :CONNECTION_REQUEST_RECORD_TYPE
               AND Mentorship_Status__c = :ACCEPTED_STATUS
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
             LIMIT 1
         ];
@@ -1094,6 +1134,7 @@ public without sharing class KenMentorshipController {
                   OR
                   (Mentor__c = :secondAccountId AND Mentee__c = :firstAccountId)
               )
+            WITH SECURITY_ENFORCED
             LIMIT 1
         ];
         return !records.isEmpty();
@@ -1112,6 +1153,7 @@ public without sharing class KenMentorshipController {
               AND RecordType.DeveloperName = :CONNECTION_REQUEST_RECORD_TYPE
               AND Mentorship_Status__c = :ACCEPTED_STATUS
               AND Mentor__c != null
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
             LIMIT 200
         ]) {
@@ -1137,6 +1179,7 @@ public without sharing class KenMentorshipController {
               AND RecordType.DeveloperName = :CONNECTION_REQUEST_RECORD_TYPE
               AND Mentorship_Status__c = :ACCEPTED_STATUS
               AND Mentee__c != null
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
             LIMIT 200
         ]) {
@@ -1150,14 +1193,10 @@ public without sharing class KenMentorshipController {
     }
 
     private static Id getCallRequestRecordTypeId() {
-        List<RecordType> recordTypes = [
-            SELECT Id
-            FROM RecordType
-            WHERE SobjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = :CALL_REQUEST_RECORD_TYPE
-            LIMIT 1
-        ];
-        return recordTypes.isEmpty() ? null : recordTypes[0].Id;
+        return Schema.SObjectType.Ken_Mentorship__c
+            .getRecordTypeInfosByDeveloperName()
+            .get(CALL_REQUEST_RECORD_TYPE)
+            ?.getRecordTypeId();
     }
 
     private static void validateCreateAccess() {
@@ -1239,6 +1278,39 @@ public without sharing class KenMentorshipController {
         return Time.newInstance(hour, minute, second, 0);
     }
 
+    /**
+     * @description Resolves the UTC instant to store for a call.
+     *
+     *              Prefers the instant the component sent. The fallback pairs
+     *              the legacy Date + Time and reads the Time as the running
+     *              user's local wall clock, which matches how the schedule
+     *              modal builds its slots.
+     *
+     *              That fallback is wrong for the reschedule panel, which sends
+     *              a UTC value instead — the exact disagreement that let a call
+     *              shift by the user's offset when rescheduled. It is a stopgap
+     *              until both screens send instants; only then is this object's
+     *              storage genuinely unambiguous.
+     *
+     * @param iso          instant from the component, preferred when present
+     * @param fallbackDate date fragment from the component's payload — no longer
+     *                     a stored column, since Meet_Date__c has been retired
+     * @param fallbackTime time fragment from the component's payload, read as local
+     * @return             the instant to store, or null
+     */
+
+    @TestVisible
+    private static DateTime resolveMeetInstant(String iso, Date fallbackDate, Time fallbackTime) {
+        DateTime parsed = KenDateTimeUtil.parseInstant(iso);
+        if (parsed != null) {
+            return parsed;
+        }
+        if (fallbackDate == null || fallbackTime == null) {
+            return null;
+        }
+        return DateTime.newInstance(fallbackDate, fallbackTime);
+    }
+
     private static String buildTimeLabel(Time startTime, Time endTime) {
         if (startTime == null && endTime == null) {
             return '';
@@ -1261,6 +1333,18 @@ public without sharing class KenMentorshipController {
         return String.valueOf(hour12) + ':' + String.valueOf(minute).leftPad(2, '0') + ' ' + meridian;
     }
 
+    /**
+     * @description Renders a stored instant as the "HH:mm" a time input expects.
+     *              UTC on purpose: c/kenDateTime converts it to the viewer's wall
+     *              clock, so emitting a server-local value here would double-shift.
+     *
+     * @param value stored instant, or null
+     * @return      "HH:mm", or null
+     */
+    private static String instantToInputTime(DateTime value) {
+        return KenDateTimeUtil.formatTimeOfDay(value);
+    }
+
     private static String formatTimeForInput(Time value) {
         if (value == null) {
             return null;
@@ -1268,14 +1352,23 @@ public without sharing class KenMentorshipController {
         return String.valueOf(value.hour()).leftPad(2, '0') + ':' + String.valueOf(value.minute()).leftPad(2, '0');
     }
 
+    /**
+     * @description Derives the UI badge for a call.
+     *
+     *              Takes instants rather than a Date + zoneless Time pair: the
+     *              old form compared the stored Time against the running user's
+     *              clock, so "happening now" and "completed" were decided in
+     *              whatever zone the viewer's User record claimed — Asia/Kolkata
+     *              for everyone here. Comparing instants is zone-free.
+     */
     private static String mapUiStatus(
         String callStatus,
         Date meetDate,
-        Time startTime,
-        Time endTime,
+        DateTime startInstant,
+        DateTime endInstant,
         String meetingMode,
         Date today,
-        Time nowTime,
+        Datetime nowInstant,
         Boolean isViewerMentor,
         Boolean isRequestedByViewer
     ) {
@@ -1289,14 +1382,17 @@ public without sharing class KenMentorshipController {
             if (meetDate == null) {
                 return 'request';
             }
-            // Auto-complete: date is past, OR it's today and the end time has passed
-            Boolean pastDate = meetDate < today;
-            Boolean endedToday = meetDate == today && endTime != null && nowTime > endTime;
-            if (pastDate || endedToday) {
+            // Auto-complete once the end instant has passed. Falls back to the
+            // date alone for rows that never got an instant.
+            if (endInstant != null) {
+                if (nowInstant > endInstant) {
+                    return 'completed';
+                }
+                if (startInstant != null && nowInstant >= startInstant) {
+                    return 'happening';
+                }
+            } else if (meetDate < today) {
                 return 'completed';
-            }
-            if (meetDate == today && startTime != null && endTime != null && nowTime >= startTime && nowTime <= endTime) {
-                return 'happening';
             }
             if (meetingMode == 'Online') {
                 return 'video';
@@ -1351,13 +1447,24 @@ public without sharing class KenMentorshipController {
             row.assigneeName = rec.Mentor__r != null ? rec.Mentor__r.Name : null;
         }
 
-        String assigneePhoto = isMenteeAssignee
-            ? (rec.Mentee__r != null ? rec.Mentee__r.PhotoUrl : null)
-            : (rec.Mentor__r != null ? rec.Mentor__r.PhotoUrl : null);
-        row.assigneeAvatar = String.isNotBlank(assigneePhoto)
-            ? URL.getOrgDomainUrl().toExternalForm() + assigneePhoto
-            : null;
+        row.assigneeAvatar = resolveAccountPhoto(isMenteeAssignee ? rec.Mentee__r : rec.Mentor__r);
         return row;
+    }
+
+    /**
+     * Public photo URL for a Person Account, matching
+     * KenGroupFeedService.lookupProfileImages: Profile_Photo_URL__c holds a
+     * ContentDistribution link the community can fetch, whereas the standard
+     * PhotoUrl is a session-gated org-domain path that fails to load for portal
+     * users — so it is only ever a last resort.
+     */
+    private static String resolveAccountPhoto(Account person) {
+        if (person == null) return null;
+        if (String.isNotBlank(person.Profile_Photo_URL__c)) return person.Profile_Photo_URL__c;
+        if (String.isNotBlank(person.PhotoUrl)) {
+            return URL.getOrgDomainUrl().toExternalForm() + person.PhotoUrl;
+        }
+        return null;
     }
 
     private static String normalizeTaskStatus(String status) {
@@ -1447,6 +1554,7 @@ public without sharing class KenMentorshipController {
             SELECT Willing_to_be_a_mentor__c
             FROM Ken_Alumni_Preferences__c
             WHERE Person_Account__c = :currentAccountId
+            WITH SECURITY_ENFORCED
             ORDER BY LastModifiedDate DESC
             LIMIT 1
         ];

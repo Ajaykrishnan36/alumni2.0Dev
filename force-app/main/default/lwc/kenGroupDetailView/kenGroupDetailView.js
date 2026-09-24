@@ -15,6 +15,9 @@ import sendInvite from "@salesforce/apex/KenGroupsController.sendInvite";
 import resendInvite from "@salesforce/apex/KenGroupsController.resendInvite";
 import searchAlumniToInvite from "@salesforce/apex/KenGroupsController.searchAlumniToInvite";
 import getEventsForGroup from "@salesforce/apex/KenGroupsController.getEventsForGroup";
+import getRoomForAlumnus from "@salesforce/apex/KenChatController.getRoomForAlumnus";
+import requestConnection from "@salesforce/apex/KenNetworkController.requestConnection";
+import getCurrentAccountId from "@salesforce/apex/KenNotificationController.getCurrentAccountId";
 import { getPortalConfigs as getPrimaryColor } from "c/kenThemeConfig";
 import defaultProfileImage from "@salesforce/resourceUrl/defaultProfileImage";
 
@@ -57,6 +60,22 @@ export default class KenGroupDetailView extends NavigationMixin(
   @track showPendingRequestsModal = false;
   @track allPendingRequests = [];
 
+  // Per-member "Message" icon in the members modal: which member row is mid-connection-check
+  // (getRoomForAlumnus round trip), so only that row's button shows a spinner/disabled state.
+  @track checkingMessageAccountId = null;
+  // "You're not connected yet - send a request?" confirmation, shown when getRoomForAlumnus
+  // comes back empty for the clicked member.
+  @track showConnectionRequestModal = false;
+  @track connectionRequestTarget = null;
+  @track isSendingConnectionRequest = false;
+
+  // Floating 1:1 chatbox for an already-connected member - the same widget/pattern as the
+  // Network profile page's "Message" button (kenAlumniDetailView), reused here instead of
+  // navigating away to the standalone /alumni/chat page.
+  @track showChatbox = false;
+  @track isChatExpanded = false;
+  @track chatboxMember = null;
+
   // Invite email chips
   @track inviteEmails = [];
   @track currentEmailInput = "";
@@ -69,6 +88,7 @@ export default class KenGroupDetailView extends NavigationMixin(
 
   _wiredGroupDetailResult = null;
   _pendingDeepLinkTab = null;
+  _myAccountId = null;
 
   @wire(CurrentPageReference)
   wiredPageRef(pageRef) {
@@ -400,6 +420,15 @@ export default class KenGroupDetailView extends NavigationMixin(
         }
       })
       .catch(() => {});
+
+    getCurrentAccountId()
+      .then((accountId) => {
+        this._myAccountId = accountId;
+      })
+      .catch(() => {
+        // Non-fatal: worst case the viewer's own row keeps its Message icon and the
+        // Apex-side self-connect guard in requestConnection still refuses it.
+      });
   }
 
   handleBack() {
@@ -478,6 +507,91 @@ export default class KenGroupDetailView extends NavigationMixin(
       })
       .finally(() => {
         this.isLeaving = false;
+      });
+  }
+
+  // Group-level "Message" button (sticky footer, joined members only): opens this group's
+  // shared thread on the standalone chat page. Room id there IS the Ken_Group__c id
+  // (KenChatController.groupRooms), so no extra lookup is needed - just hand off the id.
+  handleOpenGroupChat() {
+    if (!this._groupId) return;
+    this[NavigationMixin.Navigate]({
+      type: "comm__namedPage",
+      attributes: { name: "chat__c" },
+      state: { groupId: this._groupId }
+    });
+  }
+
+  // Per-member "Message" icon in the members modal. getRoomForAlumnus enforces Accepted-only
+  // server-side (KenChatController), so a null result IS the "not connected" signal - no
+  // separate connection-status call needed.
+  handleMemberMessageClick(event) {
+    const accountId = event.currentTarget.dataset.accountId;
+    if (!accountId || this.checkingMessageAccountId) return;
+    // The icon stays visible on the viewer's own row too, but messaging yourself isn't a
+    // thing - silently do nothing rather than surface "cannot connect to yourself".
+    if (this._myAccountId && accountId === this._myAccountId) return;
+    this.checkingMessageAccountId = accountId;
+    const member = (this.membersList || []).find(
+      (m) => m.accountId === accountId
+    );
+    getRoomForAlumnus({ accountId })
+      .then((room) => {
+        if (room) {
+          this.chatboxMember = member || { accountId, name: "" };
+          this.isChatExpanded = false;
+          this.showChatbox = true;
+        } else {
+          this.connectionRequestTarget = {
+            accountId,
+            name: member?.name || "this alumnus"
+          };
+          // Close the members list popup rather than stacking the connect-request
+          // confirmation on top of it - one overlay on screen at a time.
+          this.showAllMembersModal = false;
+          this.showConnectionRequestModal = true;
+        }
+      })
+      .catch((err) => {
+        this._showToast(
+          "error",
+          "Error",
+          err?.body?.message || "Unable to check connection status."
+        );
+      })
+      .finally(() => {
+        this.checkingMessageAccountId = null;
+      });
+  }
+
+  cancelConnectionRequest() {
+    this.showConnectionRequestModal = false;
+    this.connectionRequestTarget = null;
+  }
+
+  confirmConnectionRequest() {
+    const target = this.connectionRequestTarget;
+    if (!target || this.isSendingConnectionRequest) return;
+    this.isSendingConnectionRequest = true;
+    requestConnection({ targetAccountId: target.accountId })
+      .then(() => {
+        this.showConnectionRequestModal = false;
+        this.connectionRequestTarget = null;
+        this[NavigationMixin.Navigate]({
+          type: "comm__namedPage",
+          attributes: { name: "network__c" },
+          state: { profileId: target.accountId }
+        });
+      })
+      .catch((err) => {
+        this._showToast(
+          "error",
+          "Error",
+          err?.body?.message || "Unable to send connection request."
+        );
+      })
+      .finally(() => {
+        this.isSendingConnectionRequest = false;
       });
   }
 
@@ -805,5 +919,31 @@ export default class KenGroupDetailView extends NavigationMixin(
 
   stopPropagation(event) {
     event.stopPropagation();
+  }
+
+  // ---- floating chatbox (member Message icon, already connected) -----------------------
+
+  get chatContainerClass() {
+    return this.isChatExpanded
+      ? "chatbox-container expanded"
+      : "chatbox-container";
+  }
+
+  get chatExpandIcon() {
+    return this.isChatExpanded ? "utility:contract_alt" : "utility:expand_alt";
+  }
+
+  handleToggleExpand() {
+    this.isChatExpanded = !this.isChatExpanded;
+  }
+
+  handleCloseChat() {
+    this.showChatbox = false;
+    this.isChatExpanded = false;
+    this.chatboxMember = null;
+  }
+
+  handleChatAvatarError(event) {
+    event.target.src = this.defaultAvatar;
   }
 }

@@ -25,7 +25,7 @@ private class KenPortalRegistrationControllerTest {
     }
 
     @isTest
-    static void testSuccessfulRegistrationCreatesAccountAndCrm() {
+    static void testSuccessfulRegistrationCreatesAccount() {
         KenPortalRegistrationController.RegistrationInput inp = validInput();
         Test.startTest();
         String result = KenPortalRegistrationController.registerAlumni(inp);
@@ -40,13 +40,6 @@ private class KenPortalRegistrationControllerTest {
         System.assertEquals('Test', accs[0].FirstName);
         System.assert(accs[0].Linkedin_Profile_URL__c.startsWith('https://'), 'LinkedIn URL should be normalised to https');
 
-        List<Ken_Alumni_CRM__c> crm = [
-            SELECT Id, Registration_Number__c, Year_of_Graduation__c, Approval_Status__c
-            FROM Ken_Alumni_CRM__c WHERE Person_Account__c = :accs[0].Id
-        ];
-        System.assertEquals(1, crm.size(), 'Alumni CRM record should be created');
-        System.assertEquals('2020', crm[0].Year_of_Graduation__c);
-        System.assertEquals('Pending', crm[0].Approval_Status__c);
     }
 
     @isTest

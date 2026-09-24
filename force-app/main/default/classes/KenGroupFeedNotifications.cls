@@ -41,7 +41,7 @@ public without sharing class KenGroupFeedNotifications {
     public static void notifyCommentCreated(Id feedCommentId, Id feedItemId, Id commenterUserId, String commentBody) {
         if (feedCommentId == null || feedItemId == null) return;
 
-        List<FeedItem> fis = [SELECT ParentId, CreatedById FROM FeedItem WHERE Id = :feedItemId LIMIT 1];
+        List<FeedItem> fis = [SELECT ParentId, CreatedById FROM FeedItem WHERE Id = :feedItemId WITH SECURITY_ENFORCED LIMIT 1];
         if (fis.isEmpty()) return;
         Id parentGroupId = fis[0].ParentId;
         if (parentGroupId == null || parentGroupId.getSObjectType() != Ken_Group__c.SObjectType) return;
@@ -158,6 +158,7 @@ public without sharing class KenGroupFeedNotifications {
         for (Ken_Group_Member__c m : [
             SELECT Member__c FROM Ken_Group_Member__c
             WHERE Group__c = :groupId AND Status__c = 'Approved'
+        WITH SECURITY_ENFORCED
         ]) {
             if (m.Member__c != null) memberAccountIds.add(m.Member__c);
         }
@@ -168,6 +169,7 @@ public without sharing class KenGroupFeedNotifications {
             SELECT Person_Account__c, Receive_updates_from_joined_groups__c, Notify_me_for_groups__c
             FROM Ken_Alumni_Preferences__c
             WHERE Person_Account__c IN :memberAccountIds
+        WITH SECURITY_ENFORCED
         ]) {
             if (p.Person_Account__c != null) prefsByAccount.put(p.Person_Account__c, p);
         }
@@ -219,10 +221,10 @@ public without sharing class KenGroupFeedNotifications {
     private static Set<Id> usersToAccounts(Set<Id> userIds) {
         Set<Id> out = new Set<Id>();
         if (userIds == null || userIds.isEmpty()) return out;
-        for (User u : [SELECT AccountId, ContactId FROM User WHERE Id IN :userIds]) {
+        for (User u : [SELECT AccountId, ContactId FROM User WHERE Id IN :userIds WITH SYSTEM_MODE]) {
             if (u.AccountId != null) out.add(u.AccountId);
             else if (u.ContactId != null) {
-                List<Contact> cs = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId LIMIT 1];
+                List<Contact> cs = [SELECT AccountId FROM Contact WHERE Id = :u.ContactId WITH SECURITY_ENFORCED LIMIT 1];
                 if (!cs.isEmpty() && cs[0].AccountId != null) out.add(cs[0].AccountId);
             }
         }
@@ -231,7 +233,7 @@ public without sharing class KenGroupFeedNotifications {
 
     private static String groupName(Id groupId) {
         if (groupId == null) return '';
-        List<Ken_Group__c> gs = [SELECT Name FROM Ken_Group__c WHERE Id = :groupId LIMIT 1];
+        List<Ken_Group__c> gs = [SELECT Name FROM Ken_Group__c WHERE Id = :groupId WITH SECURITY_ENFORCED LIMIT 1];
         return gs.isEmpty() ? '' : gs[0].Name;
     }
 

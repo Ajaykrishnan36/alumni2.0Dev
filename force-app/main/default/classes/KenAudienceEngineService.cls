@@ -43,6 +43,9 @@ public without sharing class KenAudienceEngineService {
     private static final String DEFAULT_TARGET_OBJECT = 'ConstituentRole';
     private static final String DEFAULT_FIELDSET      = 'AudienceFilters';
 
+    /** Ceiling on the GROUP BY ... HAVING pass that de-duplicates audience reach counts. */
+    private static final Integer MAX_REPEATED_ANCHORS = 10000;
+
     // ==========================================================
     // DTOs
     // ==========================================================
@@ -188,7 +191,7 @@ public without sharing class KenAudienceEngineService {
     public static List<OptionDTO> getTargetRoles() {
         assertObjectAndFieldsExist();
 
-        Schema.SObjectType sType = globalDescribe().get(CATEGORY_OBJ);
+        Schema.SObjectType sType = KenNamespaceUtil.resolveSObjectType(CATEGORY_OBJ);
         Map<String, Schema.SObjectField> fMap = sType.getDescribe().fields.getMap();
         Schema.DescribeFieldResult dfr = fMap.get(CATEGORY_ROLE_FIELD).getDescribe();
 
@@ -213,10 +216,10 @@ public without sharing class KenAudienceEngineService {
         // Fallback (only if the field is NOT a picklist)
         List<OptionDTO> fallback = new List<OptionDTO>();
         String soql =
-            'SELECT ' + CATEGORY_ROLE_FIELD + ' role FROM ' + CATEGORY_OBJ +
+            'SELECT ' + CATEGORY_ROLE_FIELD + ' role, COUNT(Id) cnt FROM ' + CATEGORY_OBJ +
             ' WHERE ' + CATEGORY_ROLE_FIELD + ' != null GROUP BY ' + CATEGORY_ROLE_FIELD + ' ORDER BY ' + CATEGORY_ROLE_FIELD;
 
-        for (AggregateResult ar : (List<AggregateResult>)Database.query(soql)) {
+        for (AggregateResult ar : (List<AggregateResult>)Database.queryWithBinds(soql, new Map<String, Object>(), AccessLevel.SYSTEM_MODE)) {
             String v = (String)ar.get('role');
             if (!String.isBlank(v)) fallback.add(new OptionDTO(v, v));
         }
@@ -239,7 +242,7 @@ public without sharing class KenAudienceEngineService {
         }
 
         List<RoleCategoryDTO> out = new List<RoleCategoryDTO>();
-        for (SObject row : Database.query(soql)) {
+        for (SObject row : Database.queryWithBinds(soql, new Map<String, Object>(), AccessLevel.SYSTEM_MODE)) {
             String code = (String)row.get(CATEGORY_ROLE_FIELD);
             String name = (String)row.get('Name');
             if (String.isBlank(code) || String.isBlank(name)) {
@@ -283,7 +286,7 @@ public without sharing class KenAudienceEngineService {
             catSoql += ' ORDER BY Name';
         }
 
-        List<SObject> categories = Database.query(catSoql);
+        List<SObject> categories = Database.queryWithBinds(catSoql, new Map<String, Object>{ 'r' => r }, AccessLevel.SYSTEM_MODE);
         if (categories.isEmpty()) {
             return new List<FieldConfigDTO>();
         }
@@ -334,12 +337,12 @@ public without sharing class KenAudienceEngineService {
 
         List<FieldConfigDTO> out = new List<FieldConfigDTO>();
 
-        for (SObject def : Database.query(defSoql)) {
+        for (SObject def : Database.queryWithBinds(defSoql, new Map<String, Object>{ 'r' => r, 'catIds' => catIds }, AccessLevel.SYSTEM_MODE)) {
             String objectApi = fieldExists(DISTRIBUTION_OBJ, 'Object_API_Name__c')
-                ? (String)def.get('Object_API_Name__c')
+                ? (String)def.get(KenNamespaceUtil.qualifyCustom('Object_API_Name__c'))
                 : null;
             String fieldApi = fieldExists(DISTRIBUTION_OBJ, 'Field_API_Name__c')
-                ? (String)def.get('Field_API_Name__c')
+                ? (String)def.get(KenNamespaceUtil.qualifyCustom('Field_API_Name__c'))
                 : null;
             String label = fieldExists(DISTRIBUTION_OBJ, 'Label')
                 ? (String)def.get('Label')
@@ -369,7 +372,7 @@ public without sharing class KenAudienceEngineService {
                 dto.objectApi = DEFAULT_TARGET_OBJECT;
             }
             dto.joinField = fieldExists(DISTRIBUTION_OBJ, 'Join_Field__c')
-                ? (String)def.get('Join_Field__c')
+                ? (String)def.get(KenNamespaceUtil.qualifyCustom('Join_Field__c'))
                 : null;
 
             if (!String.isBlank(dto.objectApi) && !String.isBlank(dto.fieldApi)) {
@@ -421,13 +424,23 @@ public without sharing class KenAudienceEngineService {
             && info.baseObjectApi != info.objectApi;
 
         try {
-            Boolean useGroupBy = info.fieldDescribe.isGroupable();
+            // The COUNT(Id) in the SELECT list below is load-bearing, not decorative.
+            // A GROUP BY carrying no aggregate function is charged every row it
+            // SCANS against the 50,000-row governor limit and LIMIT does not cap
+            // that; add any aggregate and it is charged only the rows it RETURNS.
+            // Measured on KJS production ConstituentRole: 183,019 rows charged
+            // without it (uncatchable System.LimitException, so the catch below is
+            // no help and the whole request dies), 3 with it. Near-unique fields
+            // (timestamps) gain nothing from grouping, so they take the bounded
+            // scan below instead.
+            Boolean useGroupBy = info.fieldDescribe.isGroupable() && !isNearUniqueType(info.fieldDescribe);
             if (useGroupBy) {
+                Map<String, Object> binds = new Map<String, Object>();
                 String soql =
-                    'SELECT ' + queryField + ' FROM ' + queryObject +
+                    'SELECT ' + queryField + ', COUNT(Id) cnt FROM ' + queryObject +
                     ' WHERE ' + queryField + ' != null';
                 if (useLike) {
-                    soql += ' AND ' + queryField + ' LIKE ' + toSoqlString('%' + escapeLike(term) + '%');
+                    soql += ' AND ' + queryField + ' LIKE ' + valueRef(binds, '%' + escapeLike(term) + '%');
                 }
                 if (useSemiJoin) {
                     soql += ' AND Id IN (SELECT ' + info.firstLookupApi + ' FROM ' + info.baseObjectApi +
@@ -435,19 +448,20 @@ public without sharing class KenAudienceEngineService {
                 }
                 soql += ' GROUP BY ' + queryField + ' ORDER BY ' + queryField + ' LIMIT ' + limitVal;
 
-                for (AggregateResult ar : (List<AggregateResult>)Database.query(soql)) {
+                for (AggregateResult ar : (List<AggregateResult>)Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE)) {
                     Object val = ar.get(queryField);
                     if (val == null) continue;
-                    String label = String.valueOf(val);
+                    String label = displayValueOf(val);
                     if (String.isBlank(label)) continue;
                     out.add(new OptionDTO(label, label));
                 }
             } else {
+                Map<String, Object> binds = new Map<String, Object>();
                 String soql =
                     'SELECT ' + queryField + ' FROM ' + queryObject +
                     ' WHERE ' + queryField + ' != null';
                 if (useLike) {
-                    soql += ' AND ' + queryField + ' LIKE ' + toSoqlString('%' + escapeLike(term) + '%');
+                    soql += ' AND ' + queryField + ' LIKE ' + valueRef(binds, '%' + escapeLike(term) + '%');
                 }
                 if (useSemiJoin) {
                     soql += ' AND Id IN (SELECT ' + info.firstLookupApi + ' FROM ' + info.baseObjectApi +
@@ -457,10 +471,10 @@ public without sharing class KenAudienceEngineService {
                 soql += ' LIMIT ' + fetchLimit;
 
                 Set<String> seen = new Set<String>();
-                for (SObject row : Database.query(soql)) {
+                for (SObject row : Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE)) {
                     Object val = row.get(queryField);
                     if (val == null) continue;
-                    String label = String.valueOf(val);
+                    String label = displayValueOf(val);
                     if (String.isBlank(label) || seen.contains(label)) continue;
                     seen.add(label);
                     out.add(new OptionDTO(label, label));
@@ -472,6 +486,13 @@ public without sharing class KenAudienceEngineService {
         }
 
         return out;
+    }
+
+    /** Timestamp-like fields are effectively unique per row, so grouping them is wasted work. */
+    private static Boolean isNearUniqueType(Schema.DescribeFieldResult fr) {
+        if (fr == null) return false;
+        Schema.DisplayType t = fr.getType();
+        return t == Schema.DisplayType.DATETIME || t == Schema.DisplayType.TIME;
     }
 
     private static Boolean isTextSearchable(Schema.DescribeFieldResult fr) {
@@ -488,7 +509,7 @@ public without sharing class KenAudienceEngineService {
 
     private static String getNameFieldApi(String objectApi) {
         if (String.isBlank(objectApi)) return null;
-        Schema.SObjectType sType = globalDescribe().get(objectApi);
+        Schema.SObjectType sType = KenNamespaceUtil.resolveSObjectType(objectApi);
         if (sType == null) return null;
         Map<String, Schema.SObjectField> fMap = sType.getDescribe().fields.getMap();
         if (fMap.containsKey('Name')) return 'Name';
@@ -524,13 +545,14 @@ public without sharing class KenAudienceEngineService {
         }
         soql += ')';
 
+        Map<String, Object> binds = new Map<String, Object>();
         if (!String.isBlank(term)) {
-            soql += ' AND ' + nameField + ' LIKE ' + toSoqlString('%' + escapeLike(term) + '%');
+            soql += ' AND ' + nameField + ' LIKE ' + valueRef(binds, '%' + escapeLike(term) + '%');
         }
         soql += ' ORDER BY ' + nameField + ' LIMIT ' + limitVal;
 
         try {
-            for (SObject row : Database.query(soql)) {
+            for (SObject row : Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE)) {
                 String idVal = String.valueOf(row.get('Id'));
                 Object nameRaw = row.get(nameField);
                 String nameVal = nameRaw == null ? idVal : String.valueOf(nameRaw);
@@ -664,8 +686,10 @@ public without sharing class KenAudienceEngineService {
     private static String findFieldApiIgnoreCase(Map<String, Schema.SObjectField> fieldMap, String candidate) {
         if (fieldMap == null || String.isBlank(candidate)) return null;
         if (fieldMap.containsKey(candidate)) return candidate;
+        String qualified = KenNamespaceUtil.qualifyCustom(candidate);
+        if (fieldMap.containsKey(qualified)) return qualified;
         for (String key : fieldMap.keySet()) {
-            if (key.equalsIgnoreCase(candidate)) return key;
+            if (key.equalsIgnoreCase(candidate) || key.equalsIgnoreCase(qualified)) return key;
         }
         return null;
     }
@@ -675,7 +699,7 @@ public without sharing class KenAudienceEngineService {
     // ==========================================================
     @AuraEnabled(cacheable=true)
     public static List<OptionDTO> getConstituentRoleOptions() {
-        Schema.SObjectType sType = globalDescribe().get('ConstituentRole');
+        Schema.SObjectType sType = KenNamespaceUtil.resolveSObjectType('ConstituentRole');
         if (sType == null) {
             return new List<OptionDTO>();
         }
@@ -721,7 +745,7 @@ public without sharing class KenAudienceEngineService {
         if (fieldExists(CATEGORY_OBJ, CATEGORY_TARGET_OBJ)) catSoql += ', ' + CATEGORY_TARGET_OBJ;
         if (fieldExists(CATEGORY_OBJ, CATEGORY_FIELDSET)) catSoql += ', ' + CATEGORY_FIELDSET;
         catSoql += ' FROM ' + CATEGORY_OBJ + catWhere + ' ORDER BY Name';
-        List<SObject> catRows = Database.query(catSoql);
+        List<SObject> catRows = Database.queryWithBinds(catSoql, new Map<String, Object>{ 'targetRole' => targetRole }, AccessLevel.SYSTEM_MODE);
 
         List<Id> catIds = new List<Id>();
         Map<Id, String> catNameById = new Map<Id, String>();
@@ -771,14 +795,18 @@ public without sharing class KenAudienceEngineService {
             }
 
             String defSoql =
-                'SELECT Id, ' + DIST_FIELD_LABEL + ', ' + DIST_FIELD_API + ', ' + DIST_DATA_TYPE + ', Field_API_Name__c, ' + DIST_CATEGORY_LOOKUP +
+                'SELECT Id, ' + DIST_FIELD_LABEL + ', ' + DIST_FIELD_API + ', ' + DIST_DATA_TYPE + ', Field_API_Name__c, ' + DIST_CATEGORY_LOOKUP;
+            if (fieldExists(DISTRIBUTION_OBJ, 'PicklistId')) {
+                defSoql += ', PicklistId';
+            }
+            defSoql +=
                 ' FROM ' + DISTRIBUTION_OBJ + defWhere +
                 ' ORDER BY ' + DIST_FIELD_LABEL;
 
-            for (SObject d : Database.query(defSoql)) {
+            for (SObject d : Database.queryWithBinds(defSoql, new Map<String, Object>{ 'targetRole' => targetRole, 'catIds' => catIds }, AccessLevel.SYSTEM_MODE)) {
                 String api = (String)d.get(DIST_FIELD_API);
                 if (String.isBlank(api)) {
-                    api = (String)d.get('Field_API_Name__c');
+                    api = (String)d.get(KenNamespaceUtil.qualifyCustom('Field_API_Name__c'));
                 }
                 if (String.isBlank(api)) continue;
 
@@ -801,7 +829,7 @@ public without sharing class KenAudienceEngineService {
             }
             pvSoql += ' ORDER BY Sequence';
 
-            for (SObject pv : Database.query(pvSoql)) {
+            for (SObject pv : Database.queryWithBinds(pvSoql, new Map<String, Object>{ 'targetRole' => targetRole, 'catIds' => catIds, 'picklistIds' => picklistIds }, AccessLevel.SYSTEM_MODE)) {
                 Id pid = (Id)pv.get('PicklistId');
                 String val = (String)pv.get('Value');
                 String label = (String)pv.get('DisplayValue');
@@ -886,26 +914,47 @@ public without sharing class KenAudienceEngineService {
             targetObject = req.targetObject;
         }
 
-        SoqlBuildResult built = buildWhere(targetObject, req.matchMode, req.customLogic, req.filters);
+        Map<String, Object> binds = new Map<String, Object>();
+        SoqlBuildResult built = buildWhere(targetObject, req.matchMode, req.customLogic, req.filters, binds);
 
-        String whereClause = String.isBlank(built.whereClause) ? '' : (' WHERE ' + built.whereClause);
-        Integer total = (Integer)((List<AggregateResult>)Database.query('SELECT COUNT(Id) c FROM ' + targetObject + whereClause))[0].get('c');
+        // Scope the preview to the selected role. The builder always sends one and
+        // the saved-audience evaluator honours it (buildItemWhere), but the preview
+        // ignored it — so an Alumni audience previewed a count covering every role
+        // type in the org. buildWhere emits only plain field clauses, never
+        // semi-joins, so parenthesising its output here is safe.
+        List<String> conjuncts = new List<String>();
+        String roleClause = buildRoleClause(req.targetRole, targetObject, binds);
+        if (!String.isBlank(roleClause)) conjuncts.add(roleClause);
+        if (!String.isBlank(built.whereClause)) conjuncts.add('(' + built.whereClause + ')');
+        String whereClause = conjuncts.isEmpty() ? '' : (' WHERE ' + String.join(conjuncts, ' AND '));
+        Integer total = (Integer)((List<AggregateResult>)Database.queryWithBinds('SELECT COUNT(Id) c FROM ' + targetObject + whereClause, binds, AccessLevel.SYSTEM_MODE))[0].get('c');
 
+        // Person is a POLYMORPHIC lookup, so Person.Name / Person.PersonEmail
+        // cannot be traversed in SOQL here — that query always failed, the
+        // fallback ran without the relationship, and getSObject('Person') then
+        // threw on the first sample row, taking the whole preview down. Resolve
+        // the person details from Account by PersonId instead, the same way the
+        // Specific Individuals search does.
+        Boolean hasPersonId = fieldExists(targetObject, 'PersonId');
         List<String> sampleFields = new List<String>{ 'Id', 'Name' };
-        List<SObject> rows = new List<SObject>();
-        try {
-            sampleFields.add('Person.Name');
-            sampleFields.add('Person.PersonEmail');
-            rows = Database.query(
-                'SELECT ' + String.join(sampleFields, ',') + ' FROM ' + targetObject + whereClause +
-                ' ORDER BY LastModifiedDate DESC LIMIT 10'
-            );
-        } catch (Exception e) {
-            rows = Database.query(
-                'SELECT Id, Name FROM ' + targetObject + whereClause +
-                ' ORDER BY LastModifiedDate DESC LIMIT 10'
-            );
+        if (hasPersonId) sampleFields.add('PersonId');
+        List<SObject> rows = Database.queryWithBinds(
+            'SELECT ' + String.join(sampleFields, ',') + ' FROM ' + targetObject + whereClause +
+            ' ORDER BY LastModifiedDate DESC LIMIT 10',
+            binds,
+            AccessLevel.SYSTEM_MODE
+        );
+
+        Set<Id> personIds = new Set<Id>();
+        if (hasPersonId) {
+            for (SObject row : rows) {
+                Id pid = (Id)row.get('PersonId');
+                if (pid != null) personIds.add(pid);
+            }
         }
+        Map<Id, Account> peopleById = personIds.isEmpty()
+            ? new Map<Id, Account>()
+            : new Map<Id, Account>([SELECT Id, Name, PersonEmail FROM Account WHERE Id IN :personIds WITH SECURITY_ENFORCED]);
 
         AudiencePreviewDTO out = new AudiencePreviewDTO();
         out.count = total;
@@ -915,9 +964,9 @@ public without sharing class KenAudienceEngineService {
         for (SObject row : rows) {
             PersonRowDTO p = new PersonRowDTO();
             p.id = (Id)row.get('Id');
-            p.name = (String)row.get('Name');
-            SObject person = row.getSObject('Person');
-            p.email = (person == null) ? null : (String)person.get('PersonEmail');
+            Account person = hasPersonId ? peopleById.get((Id)row.get('PersonId')) : null;
+            p.name = (person != null && person.Name != null) ? person.Name : (String)row.get('Name');
+            p.email = (person == null) ? null : person.PersonEmail;
             out.sample.add(p);
         }
         return out;
@@ -951,7 +1000,7 @@ public without sharing class KenAudienceEngineService {
         Integer maxRows
     ) {
         List<PersonRowDTO> out = new List<PersonRowDTO>();
-        Schema.SObjectType roleType = globalDescribe().get(DEFAULT_TARGET_OBJECT);
+        Schema.SObjectType roleType = KenNamespaceUtil.resolveSObjectType(DEFAULT_TARGET_OBJECT);
         if (roleType == null) {
             return out;
         }
@@ -966,7 +1015,7 @@ public without sharing class KenAudienceEngineService {
             selectFields.add('RoleType');
         }
 
-        Schema.SObjectType accountType = globalDescribe().get('Account');
+        Schema.SObjectType accountType = KenNamespaceUtil.resolveSObjectType('Account');
         Map<String, Schema.SObjectField> accountFields = accountType == null
             ? new Map<String, Schema.SObjectField>()
             : accountType.getDescribe().fields.getMap();
@@ -991,27 +1040,29 @@ public without sharing class KenAudienceEngineService {
         }
 
         List<String> whereParts = new List<String>();
+        Map<String, Object> binds = new Map<String, Object>();
         whereParts.add('PersonId != null');
         if (!String.isBlank(role) && roleFields.containsKey('RoleType') && !role.equalsIgnoreCase('GROUPS')) {
-            whereParts.add('RoleType = ' + toSoqlString(role.trim()));
+            whereParts.add('RoleType = ' + valueRef(binds, role.trim()));
         }
 
         Set<Id> matchingPersonIds = new Set<Id>();
         if (!String.isBlank(term)) {
             if (!accountFields.isEmpty()) {
                 List<String> personSearchParts = new List<String>();
+                Map<String, Object> personBinds = new Map<String, Object>();
                 String likeTerm = '%' + escapeLike(term) + '%';
                 if (accountFields.containsKey('Name')) {
-                    personSearchParts.add('Name LIKE ' + toSoqlString(likeTerm));
+                    personSearchParts.add('Name LIKE ' + valueRef(personBinds, likeTerm));
                 }
                 if (!String.isBlank(accountEmailField)) {
-                    personSearchParts.add(accountEmailField + ' LIKE ' + toSoqlString(likeTerm));
+                    personSearchParts.add(accountEmailField + ' LIKE ' + valueRef(personBinds, likeTerm));
                 }
                 for (String f : accountPhoneFields) {
-                    personSearchParts.add(f + ' LIKE ' + toSoqlString(likeTerm));
+                    personSearchParts.add(f + ' LIKE ' + valueRef(personBinds, likeTerm));
                 }
                 if (term.length() >= 15 && term.length() <= 18) {
-                    personSearchParts.add('Id = ' + toSoqlString(term));
+                    personSearchParts.add('Id = ' + valueRef(personBinds, term));
                 }
                 if (!personSearchParts.isEmpty()) {
                     String personWhere = '(' + String.join(personSearchParts, ' OR ') + ')';
@@ -1019,7 +1070,7 @@ public without sharing class KenAudienceEngineService {
                         personWhere = '(IsPersonAccount = true) AND ' + personWhere;
                     }
                     String personSoql = 'SELECT Id FROM Account WHERE ' + personWhere + ' LIMIT 500';
-                    for (SObject a : Database.query(personSoql)) {
+                    for (SObject a : Database.queryWithBinds(personSoql, personBinds, AccessLevel.SYSTEM_MODE)) {
                         Id pid = (Id)a.get('Id');
                         if (pid != null) matchingPersonIds.add(pid);
                     }
@@ -1028,15 +1079,16 @@ public without sharing class KenAudienceEngineService {
 
             List<String> searchParts = new List<String>();
             String likeTerm = '%' + escapeLike(term) + '%';
-            searchParts.add('Name LIKE ' + toSoqlString(likeTerm));
+            searchParts.add('Name LIKE ' + valueRef(binds, likeTerm));
             if (term.length() >= 15 && term.length() <= 18) {
-                searchParts.add('Id = ' + toSoqlString(term));
-                searchParts.add('PersonId = ' + toSoqlString(term));
+                searchParts.add('Id = ' + valueRef(binds, term));
+                searchParts.add('PersonId = ' + valueRef(binds, term));
             }
             if (roleFields.containsKey('RoleType')) {
-                searchParts.add('RoleType LIKE ' + toSoqlString(likeTerm));
+                searchParts.add('RoleType LIKE ' + valueRef(binds, likeTerm));
             }
             if (!matchingPersonIds.isEmpty()) {
+                binds.put('matchingPersonIds', matchingPersonIds);
                 searchParts.add('PersonId IN :matchingPersonIds');
             }
             if (!searchParts.isEmpty()) {
@@ -1062,7 +1114,7 @@ public without sharing class KenAudienceEngineService {
                 List<String> valueClauses = new List<String>();
                 for (String v : values) {
                     if (String.isBlank(v)) continue;
-                    valueClauses.add(filterField + ' LIKE ' + toSoqlString('%' + escapeLike(v.trim()) + '%'));
+                    valueClauses.add(filterField + ' LIKE ' + valueRef(binds, '%' + escapeLike(v.trim()) + '%'));
                 }
                 if (!valueClauses.isEmpty()) {
                     whereParts.add('(' + String.join(valueClauses, ' OR ') + ')');
@@ -1077,7 +1129,7 @@ public without sharing class KenAudienceEngineService {
             whereClause +
             ' ORDER BY LastModifiedDate DESC LIMIT ' + maxRows;
 
-        List<SObject> roleRows = Database.query(soql);
+        List<SObject> roleRows = Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE);
         if (roleRows.isEmpty()) {
             return out;
         }
@@ -1102,7 +1154,10 @@ public without sharing class KenAudienceEngineService {
             String personDetailSoql =
                 'SELECT ' + String.join(personSelectFields, ',') +
                 ' FROM Account WHERE Id IN :personIds';
-            for (SObject personRow : Database.query(personDetailSoql)) {
+            for (SObject personRow : Database.queryWithBinds(
+                    personDetailSoql,
+                    new Map<String, Object>{ 'personIds' => personIds },
+                    AccessLevel.SYSTEM_MODE)) {
                 Id idVal = (Id)personRow.get('Id');
                 if (idVal != null) peopleById.put(idVal, personRow);
             }
@@ -1138,9 +1193,9 @@ public without sharing class KenAudienceEngineService {
 
         // validate filters/logic before saving JSON
         String targetObject = String.isBlank(req.targetObject) ? DEFAULT_TARGET_OBJECT : req.targetObject;
-        buildWhere(targetObject, req.matchMode, req.customLogic, req.filters);
+        buildWhere(targetObject, req.matchMode, req.customLogic, req.filters, new Map<String, Object>());
 
-        SObject seg = globalDescribe().get(SEG_OBJ).newSObject();
+        SObject seg = KenNamespaceUtil.resolveSObjectType(SEG_OBJ).newSObject();
         seg.put('Name', req.audienceName);
 
         if (fieldExists(SEG_OBJ, SEG_DESC_FIELD)) seg.put(SEG_DESC_FIELD, req.description);
@@ -1155,7 +1210,7 @@ public without sharing class KenAudienceEngineService {
         }
         seg.put(SEG_JSON_FIELD, requestJson);
 
-        insert seg;
+        Database.insert(seg, true, AccessLevel.SYSTEM_MODE);
         return (Id)seg.get('Id');
     }
 
@@ -1221,9 +1276,10 @@ public without sharing class KenAudienceEngineService {
                 Integer g = groupCounts.get((Id)id);
                 count = (g == null) ? 0 : g;
             } else {
-                String whereClause = buildItemWhere(item, targetObject);
+                Map<String, Object> itemBinds = new Map<String, Object>();
+                String whereClause = buildItemWhere(item, targetObject, itemBinds);
                 try {
-                    count = countAudience(targetObject, whereClause);
+                    count = countAudience(targetObject, whereClause, itemBinds);
                 } catch (Exception e) {
                     count = 0;
                 }
@@ -1245,16 +1301,62 @@ public without sharing class KenAudienceEngineService {
         return !String.isBlank(type) && type.equalsIgnoreCase('GROUP') && isLikelySalesforceId(id);
     }
 
-    private static Integer countAudience(String targetObject, String whereClause) {
-        String wc = String.isBlank(whereClause) ? '' : (' WHERE ' + whereClause);
+    /**
+     * People (not records) matched by an audience item.
+     *
+     * Deliberately NOT COUNT_DISTINCT(anchor), even though that is what this
+     * returns: COUNT_DISTINCT charges every row it scans against the 50,000-row
+     * transaction limit, so on KJS production's ConstituentRole (152,784 rows) it
+     * throws an uncatchable System.LimitException — the try/catch around the
+     * caller cannot contain it, and the whole reach panel dies. COUNT() is
+     * charged one row, and a GROUP BY ... HAVING is charged only the groups it
+     * returns, so subtracting the repeats reproduces COUNT_DISTINCT at a cost
+     * that does not grow with the population.
+     */
+    private static Integer countAudience(String targetObject, String whereClause, Map<String, Object> binds) {
         String anchor = resolveAnchorField(targetObject);
-        if (!String.isBlank(anchor) && !anchor.equalsIgnoreCase('Id') && fieldExists(targetObject, anchor)) {
-            List<AggregateResult> ars = Database.query(
-                'SELECT COUNT_DISTINCT(' + anchor + ') cnt FROM ' + targetObject + wc);
-            Object v = ars.isEmpty() ? null : ars[0].get('cnt');
-            return (v == null) ? 0 : Integer.valueOf(v);
+        Boolean anchored = !String.isBlank(anchor)
+            && !anchor.equalsIgnoreCase('Id')
+            && fieldExists(targetObject, anchor);
+
+        String wc = String.isBlank(whereClause) ? '' : (' WHERE ' + whereClause);
+        if (!anchored) {
+            return Database.countQueryWithBinds('SELECT COUNT() FROM ' + targetObject + wc, binds, AccessLevel.SYSTEM_MODE);
         }
-        return Database.countQuery('SELECT COUNT() FROM ' + targetObject + wc);
+
+        // COUNT_DISTINCT ignores rows whose anchor is null, so the row count it is
+        // being reconstructed from has to ignore them too.
+        String scoped = String.isBlank(whereClause)
+            ? (' WHERE ' + anchor + ' != null')
+            : (' WHERE ' + whereClause + ' AND ' + anchor + ' != null');
+
+        Integer rows = Database.countQueryWithBinds('SELECT COUNT() FROM ' + targetObject + scoped, binds, AccessLevel.SYSTEM_MODE);
+        if (rows <= 1) {
+            return rows;
+        }
+        return rows - repeatedAnchorRows(targetObject, scoped, anchor, binds);
+    }
+
+    /**
+     * Rows contributed by anchors that appear on more than one record — the gap
+     * between COUNT() and COUNT_DISTINCT(anchor). One person legitimately holds
+     * several ConstituentRoles, so this is not a data defect. Capped at
+     * MAX_REPEATED_ANCHORS groups; beyond that the reach is reported slightly
+     * high rather than killing the transaction.
+     */
+    private static Integer repeatedAnchorRows(String targetObject, String whereFragment, String anchor, Map<String, Object> binds) {
+        Integer extra = 0;
+        List<AggregateResult> repeats = (List<AggregateResult>) Database.queryWithBinds(
+            'SELECT COUNT(Id) cnt FROM ' + targetObject + whereFragment
+            + ' GROUP BY ' + anchor
+            + ' HAVING COUNT(Id) > 1'
+            + ' LIMIT ' + MAX_REPEATED_ANCHORS,
+            binds,
+            AccessLevel.SYSTEM_MODE);
+        for (AggregateResult ar : repeats) {
+            extra += ((Integer) ar.get('cnt')) - 1;
+        }
+        return extra;
     }
 
     @AuraEnabled(cacheable=false)
@@ -1268,13 +1370,14 @@ public without sharing class KenAudienceEngineService {
             'SELECT Id, Name, Category__c, Group_Type__c, Member_Count__c ' +
             'FROM Ken_Group__c ' +
             'WHERE Is_Active__c = true AND Status__c = \'Approved\'';
+        Map<String, Object> binds = new Map<String, Object>();
         if (!String.isBlank(term)) {
-            soql += ' AND Name LIKE ' + toSoqlString('%' + escapeLike(term) + '%');
+            soql += ' AND Name LIKE ' + valueRef(binds, '%' + escapeLike(term) + '%');
         }
         soql += ' ORDER BY Member_Count__c DESC NULLS LAST, Name ASC LIMIT ' + maxRows;
 
         Set<Id> groupIds = new Set<Id>();
-        List<Ken_Group__c> groups = (List<Ken_Group__c>)Database.query(soql);
+        List<Ken_Group__c> groups = (List<Ken_Group__c>)Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE);
         for (Ken_Group__c g : groups) {
             groupIds.add(g.Id);
         }
@@ -1314,6 +1417,7 @@ public without sharing class KenAudienceEngineService {
             SELECT Id, Name, Category__c, Group_Type__c, Member_Count__c
             FROM Ken_Group__c
             WHERE Id IN :idSet
+        WITH SECURITY_ENFORCED
         ];
         Set<Id> found = new Set<Id>();
         for (Ken_Group__c g : groups) {
@@ -1355,6 +1459,7 @@ public without sharing class KenAudienceEngineService {
             WHERE Group__c IN :groupIds
               AND Status__c IN ('Approved', 'Invite Accepted')
               AND Member__c != null
+        WITH SECURITY_ENFORCED
         ]) {
             Set<Id> mem = groupToMembers.get(gm.Group__c);
             if (mem == null) {
@@ -1374,8 +1479,8 @@ public without sharing class KenAudienceEngineService {
             // Target is keyed directly by the member Id space (or no usable anchor) — no intersection.
             valid.addAll(allMembers);
         } else {
-            for (SObject row : Database.query(
-                'SELECT ' + anchor + ' FROM ' + obj + ' WHERE ' + anchor + ' IN :allMembers')) {
+            for (SObject row : Database.queryWithBinds(
+                'SELECT ' + anchor + ' FROM ' + obj + ' WHERE ' + anchor + ' IN :allMembers', new Map<String, Object>{ 'allMembers' => allMembers }, AccessLevel.SYSTEM_MODE)) {
                 Object v = row.get(anchor);
                 if (v != null) valid.add((Id)v);
             }
@@ -1391,23 +1496,87 @@ public without sharing class KenAudienceEngineService {
         return counts;
     }
 
-    private static String buildGroupClause(String groupId, String targetObject) {
+    private static String buildGroupClause(String groupId, String targetObject, Map<String, Object> binds) {
         if (String.isBlank(groupId) || !isLikelySalesforceId(groupId)) return '';
         String obj = String.isBlank(targetObject) ? DEFAULT_TARGET_OBJECT : targetObject;
         String anchor = resolveAnchorField(obj);
+        // The subquery selects Member__c, an Account lookup, so the outer field has to
+        // point at Account too. Orgs with no AttributeCategory anchor row resolve to Id,
+        // which SOQL rejects against an Account subquery.
+        if (!'Account'.equalsIgnoreCase(anchorObjectFor(obj, anchor))) {
+            anchor = accountAnchorFor(obj);
+            if (!'Account'.equalsIgnoreCase(anchorObjectFor(obj, anchor))) return '';
+        }
         if (!anchor.equalsIgnoreCase('Id') && !fieldExists(obj, anchor)) return '';
         return anchor + ' IN (SELECT Member__c FROM Ken_Group_Member__c WHERE Group__c = ' +
-            toSoqlString(groupId) + ' AND Status__c IN (\'Approved\',\'Invite Accepted\'))';
+            valueRef(binds, groupId) + ' AND Status__c IN (\'Approved\',\'Invite Accepted\'))';
     }
 
     @AuraEnabled
     public static Boolean isAccountInSegmentation(Id accountId, Id segmentationId) {
         if (accountId == null || segmentationId == null) return false;
         String soql = 'SELECT Id, ' + SEG_JSON_FIELD + ' FROM ' + SEG_OBJ + ' WHERE Id = :segmentationId LIMIT 1';
-        List<SObject> rows = Database.query(soql);
+        List<SObject> rows = Database.queryWithBinds(soql, new Map<String, Object>{ 'segmentationId' => segmentationId }, AccessLevel.SYSTEM_MODE);
         if (rows.isEmpty()) return false;
         String payloadJson = (String)rows[0].get(SEG_JSON_FIELD);
         return isAccountMatchedByPayload(accountId, payloadJson);
+    }
+
+    /**
+     * True when the given base-object record (e.g. a ConstituentRole) is part of the saved
+     * segmentation's audience. Evaluated one item at a time so semi-join items (groups,
+     * related-object criteria) stay valid SOQL — the item union can never be one OR query.
+     */
+    public static Boolean isRecordInSegmentation(Id segmentationId, Id recordId) {
+        if (segmentationId == null || recordId == null) return false;
+        for (String itemSoql : buildAudienceItemQueries(segmentationId)) {
+            if (Limits.getQueries() >= Limits.getLimitQueries() - 5) return false;
+            String scoped = itemSoql.contains(' WHERE ')
+                ? itemSoql + ' AND Id = :recordId'
+                : itemSoql + ' WHERE Id = :recordId';
+            try {
+                if (!Database.queryWithBinds(scoped, new Map<String, Object>{ 'recordId' => recordId }, AccessLevel.SYSTEM_MODE).isEmpty()) return true;
+            } catch (Exception e) {
+                continue;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Re-syncs every stored SOQL__c copy with what the current builder produces from
+     * Definition_JSON__c — repairs malformed OR-of-semi-join copies and migrates old
+     * baked-id snapshots to the live multi-statement format. Only writes rows whose
+     * stored copy differs, so repeated runs converge to 0.
+     */
+    public static Integer rebuildStoredSoql() {
+        return rebuildStoredSoql(null);
+    }
+
+    public static Integer rebuildStoredSoql(Set<Id> scopeIds) {
+        if (!fieldExists(SEG_OBJ, SEG_SOQL_FIELD) || !fieldExists(SEG_OBJ, SEG_JSON_FIELD)) return 0;
+        String soql = 'SELECT Id, ' + SEG_SOQL_FIELD + ', ' + SEG_JSON_FIELD + ' FROM ' + SEG_OBJ;
+        if (scopeIds != null && !scopeIds.isEmpty()) {
+            soql += ' WHERE Id IN :scopeIds';
+        }
+        List<SObject> toUpdate = new List<SObject>();
+        for (SObject seg : Database.queryWithBinds(soql, new Map<String, Object>{ 'scopeIds' => scopeIds }, AccessLevel.SYSTEM_MODE)) {
+            String payloadJson = (String)seg.get(SEG_JSON_FIELD);
+            if (String.isBlank(payloadJson)) continue;
+            String fresh;
+            try {
+                fresh = buildBaseSoqlFromPayload(payloadJson);
+            } catch (Exception e) {
+                continue;
+            }
+            if (String.isBlank(fresh) || fresh == (String)seg.get(SEG_SOQL_FIELD)) continue;
+            seg.put(SEG_SOQL_FIELD, fresh);
+            toUpdate.add(seg);
+        }
+        if (!toUpdate.isEmpty()) {
+            Database.update(toUpdate, true, AccessLevel.SYSTEM_MODE);
+        }
+        return toUpdate.size();
     }
 
     /**
@@ -1420,7 +1589,7 @@ public without sharing class KenAudienceEngineService {
         Set<Id> out = new Set<Id>();
         if (segmentationId == null) return out;
         String soql = 'SELECT Id, ' + SEG_JSON_FIELD + ' FROM ' + SEG_OBJ + ' WHERE Id = :segmentationId LIMIT 1';
-        List<SObject> rows = Database.query(soql);
+        List<SObject> rows = Database.queryWithBinds(soql, new Map<String, Object>{ 'segmentationId' => segmentationId }, AccessLevel.SYSTEM_MODE);
         if (rows.isEmpty()) return out;
         String payloadJson = (String)rows[0].get(SEG_JSON_FIELD);
         return resolveAccountIdsFromPayload(payloadJson);
@@ -1449,14 +1618,15 @@ public without sharing class KenAudienceEngineService {
             if (!(itemRaw instanceof Map<String, Object>)) continue;
             Map<String, Object> item = (Map<String, Object>)itemRaw;
 
-            String whereClause = buildItemWhere(item, targetObject);
+            Map<String, Object> itemBinds = new Map<String, Object>();
+            String whereClause = buildItemWhere(item, targetObject, itemBinds);
             String soql = 'SELECT ' + selectField + ' FROM ' + targetObject;
             if (!String.isBlank(whereClause)) {
                 soql += ' WHERE ' + whereClause;
             }
             soql += ' LIMIT 50000';
             try {
-                for (SObject row : Database.query(soql)) {
+                for (SObject row : Database.queryWithBinds(soql, itemBinds, AccessLevel.SYSTEM_MODE)) {
                     Object val = hasPersonId ? row.get('PersonId') : row.get('Id');
                     if (val != null) out.add((Id)val);
                 }
@@ -1473,8 +1643,8 @@ public without sharing class KenAudienceEngineService {
 
     private static String loadSegmentationPayload(Id segmentationId) {
         if (segmentationId == null) return '';
-        List<SObject> rows = Database.query(
-            'SELECT ' + SEG_JSON_FIELD + ' FROM ' + SEG_OBJ + ' WHERE Id = :segmentationId LIMIT 1');
+        List<SObject> rows = Database.queryWithBinds(
+            'SELECT ' + SEG_JSON_FIELD + ' FROM ' + SEG_OBJ + ' WHERE Id = :segmentationId LIMIT 1', new Map<String, Object>{ 'segmentationId' => segmentationId }, AccessLevel.SYSTEM_MODE);
         return rows.isEmpty() ? '' : (String)rows[0].get(SEG_JSON_FIELD);
     }
 
@@ -1523,7 +1693,9 @@ public without sharing class KenAudienceEngineService {
 
         for (Object itemRaw : (List<Object>)itemsRaw) {
             if (!(itemRaw instanceof Map<String, Object>)) continue;
-            String w = buildItemWhere((Map<String, Object>)itemRaw, targetObject);
+            // null bind map: this text is handed to a batch that runs it in its own
+            // transaction, so it has to stand on its own.
+            String w = buildItemWhere((Map<String, Object>)itemRaw, targetObject, null);
             String soql = selectClause + ' FROM ' + targetObject;
             if (!String.isBlank(w)) soql += ' WHERE ' + w;
             out.add(soql);
@@ -1535,9 +1707,9 @@ public without sharing class KenAudienceEngineService {
     public static void updateSegmentationCount(Id segmentationId, Integer memberCount) {
         if (segmentationId == null || !fieldExists(SEG_OBJ, 'Member_Count__c')) return;
         try {
-            SObject seg = globalDescribe().get(SEG_OBJ).newSObject(segmentationId);
-            seg.put('Member_Count__c', memberCount);
-            update seg;
+            SObject seg = KenNamespaceUtil.resolveSObjectType(SEG_OBJ).newSObject(segmentationId);
+            seg.put(KenNamespaceUtil.qualifyCustom('Member_Count__c'), memberCount);
+            Database.update(seg, true, AccessLevel.SYSTEM_MODE);
         } catch (Exception e) { }
     }
 
@@ -1575,13 +1747,14 @@ public without sharing class KenAudienceEngineService {
             if (!(itemRaw instanceof Map<String, Object>)) continue;
             Map<String, Object> item = (Map<String, Object>)itemRaw;
 
-            String whereClause = buildItemWhere(item, targetObject);
+            Map<String, Object> itemBinds = new Map<String, Object>{ 'accountId' => accountId };
+            String whereClause = buildItemWhere(item, targetObject, itemBinds);
             String soql = 'SELECT COUNT() FROM ' + targetObject + ' WHERE ' + anchor + ' = :accountId';
             if (!String.isBlank(whereClause)) {
                 soql += ' AND ' + whereClause;
             }
             try {
-                if (Database.countQuery(soql) > 0) return true;
+                if (Database.countQueryWithBinds(soql, itemBinds, AccessLevel.SYSTEM_MODE) > 0) return true;
             } catch (Exception e) {
                 // ignore malformed clauses for individual items
             }
@@ -1642,7 +1815,7 @@ public without sharing class KenAudienceEngineService {
         }
         soql += ' ORDER BY LastModifiedDate DESC';
 
-        List<SObject> rows = Database.query(soql);
+        List<SObject> rows = Database.queryWithBinds(soql, new Map<String, Object>(), AccessLevel.SYSTEM_MODE);
         List<SavedGroupDTO> out = new List<SavedGroupDTO>();
 
         for (SObject row : rows) {
@@ -1699,14 +1872,14 @@ public without sharing class KenAudienceEngineService {
         if (audienceId == null) {
             return false;
         }
-        SObject seg = globalDescribe().get(SEG_OBJ).newSObject(audienceId);
+        SObject seg = KenNamespaceUtil.resolveSObjectType(SEG_OBJ).newSObject(audienceId);
         if (fieldExists(SEG_OBJ, SEG_ACTIVE_FIELD)) {
             seg.put(SEG_ACTIVE_FIELD, true);
         }
         if (fieldExists(SEG_OBJ, SEG_STATUS_FIELD)) {
             seg.put(SEG_STATUS_FIELD, 'Active');
         }
-        update seg;
+        Database.update(seg, true, AccessLevel.SYSTEM_MODE);
         return true;
     }
 
@@ -1730,9 +1903,9 @@ public without sharing class KenAudienceEngineService {
 
     private static void assertObjectAndFieldsExist() {
         Map<String, Schema.SObjectType> gd = globalDescribe();
-        if (!gd.containsKey(CATEGORY_OBJ)) throw new AuraHandledException('Missing object: ' + CATEGORY_OBJ);
-        if (!gd.containsKey(DISTRIBUTION_OBJ)) throw new AuraHandledException('Missing object: ' + DISTRIBUTION_OBJ);
-        if (!gd.containsKey(SEG_OBJ)) throw new AuraHandledException('Missing object: ' + SEG_OBJ);
+        if (KenNamespaceUtil.resolveSObjectType(CATEGORY_OBJ) == null) throw new AuraHandledException('Missing object: ' + CATEGORY_OBJ);
+        if (KenNamespaceUtil.resolveSObjectType(DISTRIBUTION_OBJ) == null) throw new AuraHandledException('Missing object: ' + DISTRIBUTION_OBJ);
+        if (KenNamespaceUtil.resolveSObjectType(SEG_OBJ) == null) throw new AuraHandledException('Missing object: ' + SEG_OBJ);
 
         assertFieldExists(CATEGORY_OBJ, CATEGORY_ROLE_FIELD);
 
@@ -1757,7 +1930,7 @@ public without sharing class KenAudienceEngineService {
     private static Map<String, Schema.SObjectField> fieldMapFor(String objApi) {
         if (String.isBlank(objApi)) return null;
         if (!FIELD_MAP_CACHE.containsKey(objApi)) {
-            Schema.SObjectType t = globalDescribe().get(objApi);
+            Schema.SObjectType t = KenNamespaceUtil.resolveSObjectType(objApi);
             FIELD_MAP_CACHE.put(objApi, (t == null) ? null : t.getDescribe().fields.getMap());
         }
         return FIELD_MAP_CACHE.get(objApi);
@@ -1766,7 +1939,10 @@ public without sharing class KenAudienceEngineService {
     private static Boolean fieldExists(String objApi, String fieldApi) {
         if (String.isBlank(fieldApi)) return false;
         Map<String, Schema.SObjectField> fm = fieldMapFor(objApi);
-        return fm != null && fm.containsKey(fieldApi);
+        if (fm == null) return false;
+        if (fm.containsKey(fieldApi)) return true;
+        String prefix = KenNamespaceUtil.namespacePrefix();
+        return String.isNotBlank(prefix) && fm.containsKey(prefix + fieldApi);
     }
 
     private static void assertFieldExists(String objApi, String fieldApi) {
@@ -1778,14 +1954,14 @@ public without sharing class KenAudienceEngineService {
     // ==========================================================
     // SOQL Builder (safe literals)
     // ==========================================================
-    private static SoqlBuildResult buildWhere(String targetObject, String matchMode, String customLogic, List<FilterDTO> filters) {
+    private static SoqlBuildResult buildWhere(String targetObject, String matchMode, String customLogic, List<FilterDTO> filters, Map<String, Object> binds) {
         SoqlBuildResult out = new SoqlBuildResult();
         if (filters == null || filters.isEmpty()) {
             out.whereClause = '';
             return out;
         }
 
-        Schema.SObjectType sType = globalDescribe().get(targetObject);
+        Schema.SObjectType sType = KenNamespaceUtil.resolveSObjectType(targetObject);
         if (sType == null) throw new AuraHandledException('Invalid target object: ' + targetObject);
         Map<String, Schema.SObjectField> fm = sType.getDescribe().fields.getMap();
 
@@ -1803,7 +1979,7 @@ public without sharing class KenAudienceEngineService {
                 if (!fr.isFilterable()) throw new AuraHandledException('Filter #' + (i+1) + ': Not filterable: ' + f.fieldApi);
             }
 
-            String clause = buildClause(f, fr);
+            String clause = buildClause(f, fr, binds);
             clauses.add(clause);
 
             String pillLabel = (fr != null ? fr.getLabel() : f.fieldApi);
@@ -1827,7 +2003,7 @@ public without sharing class KenAudienceEngineService {
         return String.join(w, joiner);
     }
 
-    private static String buildClause(FilterDTO f, Schema.DescribeFieldResult fr) {
+    private static String buildClause(FilterDTO f, Schema.DescribeFieldResult fr, Map<String, Object> binds) {
         String op = String.valueOf(f.operator).toLowerCase();
         Schema.DisplayType actualType = (fr == null) ? null : fr.getType();
 
@@ -1839,7 +2015,7 @@ public without sharing class KenAudienceEngineService {
             for (String p : parts) {
                 String raw = (p == null) ? null : p.trim();
                 if (String.isBlank(raw)) continue;
-                literals.add(toSoqlLiteral(raw));
+                literals.add(valueRef(binds, raw));
             }
             if (literals.isEmpty()) throw new AuraHandledException(op + ' requires at least one value.');
             return f.fieldApi + ' ' + verb + ' (' + String.join(literals, ',') + ')';
@@ -1854,7 +2030,7 @@ public without sharing class KenAudienceEngineService {
                 String raw = (p == null) ? null : p.trim();
                 if (String.isBlank(raw)) continue;
                 Object typed = parseTyped(raw, f.dataType, actualType);
-                literals.add(toSoqlLiteral(typed));
+                literals.add(valueRef(binds, typed));
             }
             if (literals.isEmpty()) throw new AuraHandledException('IN requires at least one value.');
             return f.fieldApi + ' IN (' + String.join(literals, ',') + ')';
@@ -1862,12 +2038,12 @@ public without sharing class KenAudienceEngineService {
 
         if (op == 'contains') {
             if (String.isBlank(f.value)) throw new AuraHandledException('Value required for contains.');
-            return f.fieldApi + ' LIKE ' + toSoqlString('%' + escapeLike(f.value) + '%');
+            return f.fieldApi + ' LIKE ' + valueRef(binds, '%' + escapeLike(f.value) + '%');
         }
 
         if (op == 'startswith') {
             if (String.isBlank(f.value)) throw new AuraHandledException('Value required for startsWith.');
-            return f.fieldApi + ' LIKE ' + toSoqlString(escapeLike(f.value) + '%');
+            return f.fieldApi + ' LIKE ' + valueRef(binds, escapeLike(f.value) + '%');
         }
 
         if (op != '=' && op != '!=' && op != '>' && op != '>=' && op != '<' && op != '<=') {
@@ -1876,7 +2052,7 @@ public without sharing class KenAudienceEngineService {
         if (String.isBlank(f.value)) throw new AuraHandledException('Value required.');
 
         Object typedValue = parseTyped(f.value.trim(), f.dataType, actualType);
-        return f.fieldApi + ' ' + op + ' ' + toSoqlLiteral(typedValue);
+        return f.fieldApi + ' ' + op + ' ' + valueRef(binds, typedValue);
     }
 
     private static Object parseTyped(String raw, String typeHint, Schema.DisplayType actualType) {
@@ -1901,14 +2077,38 @@ public without sharing class KenAudienceEngineService {
         return v;
     }
 
+    /**
+     * Registers a value for the bind map and returns the reference that stands in
+     * for it. A null map means the caller needs text that can outlive this
+     * transaction, so the value is emitted as a literal instead.
+     */
+    private static String valueRef(Map<String, Object> binds, Object typed) {
+        if (binds == null) return toSoqlLiteral(typed);
+        String key = 'v' + binds.size();
+        binds.put(key, typed);
+        return ':' + key;
+    }
+
     private static String toSoqlLiteral(Object typed) {
         if (typed == null) return 'NULL';
         if (typed instanceof Boolean)  return ((Boolean)typed) ? 'true' : 'false';
         if (typed instanceof Integer)  return String.valueOf((Integer)typed);
         if (typed instanceof Decimal)  return String.valueOf((Decimal)typed);
-        if (typed instanceof Date)     return ((Date)typed).toString();
+        if (typed instanceof Date)     return formatDateYmd((Date)typed);
         if (typed instanceof Datetime) return ((Datetime)typed).formatGmt('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'');
         return toSoqlString(String.valueOf(typed));
+    }
+
+    /** yyyy-MM-dd with no time suffix (String.valueOf(Date) appends ' 00:00:00'). */
+    private static String formatDateYmd(Date d) {
+        return Datetime.newInstance(d.year(), d.month(), d.day()).format('yyyy-MM-dd');
+    }
+
+    /** Display/value label for a queried field value; dates are shown as yyyy-MM-dd. */
+    private static String displayValueOf(Object val) {
+        if (val instanceof Date) return formatDateYmd((Date)val);
+        if (val instanceof Datetime) return ((Datetime)val).format('yyyy-MM-dd HH:mm');
+        return String.valueOf(val);
     }
 
     private static String toSoqlString(String s) {
@@ -1958,6 +2158,7 @@ public without sharing class KenAudienceEngineService {
 
     private static List<SObject> querySavedAudiences(String searchTerm, Integer limitSize, Id audienceId) {
         List<String> clauses = new List<String>();
+        Map<String, Object> binds = new Map<String, Object>{ 'audienceId' => audienceId };
 
         if (audienceId != null) {
             clauses.add('Id = :audienceId');
@@ -1967,9 +2168,9 @@ public without sharing class KenAudienceEngineService {
         if (!String.isBlank(term)) {
             String likeTerm = '%' + escapeLike(term) + '%';
             List<String> searchClauses = new List<String>();
-            searchClauses.add('Name LIKE ' + toSoqlString(likeTerm));
+            searchClauses.add('Name LIKE ' + valueRef(binds, likeTerm));
             if (term.length() >= 15 && term.length() <= 18) {
-                searchClauses.add('Id = ' + toSoqlString(term));
+                searchClauses.add('Id = ' + valueRef(binds, term));
             }
             clauses.add('(' + String.join(searchClauses, ' OR ') + ')');
         }
@@ -1986,7 +2187,7 @@ public without sharing class KenAudienceEngineService {
         if (limitSize != null && limitSize > 0) {
             soql += ' LIMIT ' + limitSize;
         }
-        return Database.query(soql);
+        return Database.queryWithBinds(soql, binds, AccessLevel.SYSTEM_MODE);
     }
 
     private static Id upsertAudiencePayload(Id audienceId, String audienceName, String payloadJson, Boolean active, String statusValue) {
@@ -2001,8 +2202,8 @@ public without sharing class KenAudienceEngineService {
         ensureUniqueSegmentationName(audienceName, audienceId);
 
         SObject seg = (audienceId == null)
-            ? globalDescribe().get(SEG_OBJ).newSObject()
-            : globalDescribe().get(SEG_OBJ).newSObject(audienceId);
+            ? KenNamespaceUtil.resolveSObjectType(SEG_OBJ).newSObject()
+            : KenNamespaceUtil.resolveSObjectType(SEG_OBJ).newSObject(audienceId);
 
         seg.put('Name', audienceName);
 
@@ -2018,9 +2219,9 @@ public without sharing class KenAudienceEngineService {
         }
 
         if (audienceId == null) {
-            insert seg;
+            Database.insert(seg, true, AccessLevel.SYSTEM_MODE);
         } else {
-            update seg;
+            Database.update(seg, true, AccessLevel.SYSTEM_MODE);
         }
         return (Id)seg.get('Id');
     }
@@ -2032,7 +2233,7 @@ public without sharing class KenAudienceEngineService {
             soql += ' AND Id != :excludeId';
         }
         soql += ' LIMIT 1';
-        List<SObject> rows = Database.query(soql);
+        List<SObject> rows = Database.queryWithBinds(soql, new Map<String, Object>{ 'name' => name, 'excludeId' => excludeId }, AccessLevel.SYSTEM_MODE);
         if (!rows.isEmpty()) {
             throw new AuraHandledException('Audience name already exists. Please use a different name.');
         }
@@ -2044,8 +2245,11 @@ public without sharing class KenAudienceEngineService {
         try {
             String baseSoql = buildBaseSoqlFromPayload(payloadJson);
             if (String.isBlank(baseSoql)) return null;
+            if (baseSoql.contains('\n')) {
+                return resolveAccountIdsFromPayload(payloadJson).size();
+            }
             String countSoql = baseSoql.replace('SELECT Id FROM', 'SELECT COUNT() FROM');
-            return Database.countQuery(countSoql);
+            return Database.countQueryWithBinds(countSoql, new Map<String, Object>(), AccessLevel.SYSTEM_MODE);
         } catch (Exception e) {
             return null;
         }
@@ -2092,9 +2296,18 @@ public without sharing class KenAudienceEngineService {
         return null;
     }
 
+    // SOQL__c is a 32,768-char Long Text Area and one SOQL statement caps out around
+    // 100k chars; oversized combined clauses spill onto their own statement lines.
+    private static final Integer STORED_QUERY_CHAR_BUDGET = 24000;
+
     /**
-     * Build a single Account SOQL query by OR-ing each audience item clause.
-     * Audience clauses are AND-ed across fields and OR-ed within field values.
+     * Builds the stored SOQL__c copy of an audience. Semi-join items (groups,
+     * related-object criteria) are ALWAYS emitted as their own statement line, keeping
+     * them fully dynamic: SOQL forbids OR-ing semi-joins, and an id snapshot would go
+     * stale and cannot scale past the statement/field length limits. All other items are
+     * OR-ed into the first statement. Each line is a valid standalone query and the
+     * audience is the UNION of the lines — consumers must split on newline. Live audience
+     * resolution never uses this copy (see buildAudienceItemQueries).
      */
     private static String buildBaseSoqlFromPayload(String payloadJson) {
         Object raw = JSON.deserializeUntyped(payloadJson);
@@ -2113,15 +2326,30 @@ public without sharing class KenAudienceEngineService {
         List<String> itemWheres = new List<String>();
         for (Object itemRaw : (List<Object>)itemsRaw) {
             if (!(itemRaw instanceof Map<String, Object>)) continue;
-            String w = buildItemWhere((Map<String, Object>)itemRaw, targetObject);
+            // null bind map: the result is stored on the segmentation record.
+            String w = buildItemWhere((Map<String, Object>)itemRaw, targetObject, null);
             if (!String.isBlank(w)) itemWheres.add(w);
         }
 
         if (itemWheres.isEmpty()) return baseSoql;
         if (itemWheres.size() == 1) return baseSoql + ' WHERE ' + itemWheres[0];
-        List<String> wrapped = new List<String>();
-        for (String w : itemWheres) wrapped.add('(' + w + ')');
-        return baseSoql + ' WHERE ' + String.join(wrapped, ' OR ');
+
+        List<String> orClauses = new List<String>();
+        List<String> standalone = new List<String>();
+        Integer combinedChars = 0;
+        for (String w : itemWheres) {
+            if (w.contains(' IN (SELECT ') || combinedChars + w.length() > STORED_QUERY_CHAR_BUDGET) {
+                standalone.add(baseSoql + ' WHERE ' + w);
+                continue;
+            }
+            combinedChars += w.length();
+            orClauses.add('(' + w + ')');
+        }
+
+        List<String> statements = new List<String>();
+        if (!orClauses.isEmpty()) statements.add(baseSoql + ' WHERE ' + String.join(orClauses, ' OR '));
+        statements.addAll(standalone);
+        return String.join(statements, '\n');
     }
 
     /** Base-object predicates vs related-object semi-joins for one audience item. */
@@ -2144,7 +2372,7 @@ public without sharing class KenAudienceEngineService {
      * object (via the same join) are combined into ONE semi-join so they match the SAME record
      * (e.g. an enrollment that is for event X AND session Y), not just the same person.
      */
-    private static Clauses buildCriteriaClauses(Object criteriaRaw, String targetObject) {
+    private static Clauses buildCriteriaClauses(Object criteriaRaw, String targetObject, Map<String, Object> binds) {
         Clauses cc = new Clauses();
         if (!(criteriaRaw instanceof List<Object>)) return cc;
         String obj = String.isBlank(targetObject) ? DEFAULT_TARGET_OBJECT : targetObject;
@@ -2196,7 +2424,7 @@ public without sharing class KenAudienceEngineService {
         for (String fieldApi : fieldToValues.keySet()) {
             List<String> perField = new List<String>();
             for (List<String> values : fieldToValues.get(fieldApi)) {
-                String clause = buildTypedInClause(obj, fieldApi, values);
+                String clause = buildTypedInClause(obj, fieldApi, values, binds);
                 if (!String.isBlank(clause)) perField.add(clause);
             }
             if (perField.isEmpty()) continue;
@@ -2205,7 +2433,7 @@ public without sharing class KenAudienceEngineService {
 
         for (String gk : relOrder) {
             RelGroup g = relGroups.get(gk);
-            String semiJoin = buildRelatedSemiJoin(obj, g.objectApi, g.joinField, g.fieldApis, g.valueSets);
+            String semiJoin = buildRelatedSemiJoin(obj, g.objectApi, g.joinField, g.fieldApis, g.valueSets, binds);
             if (!String.isBlank(semiJoin)) cc.semi.add(semiJoin);
         }
         return cc;
@@ -2217,7 +2445,7 @@ public without sharing class KenAudienceEngineService {
      * within a single query), which is what Salesforce requires. The OR/union across audience
      * items is done in Apex by the callers, not in one SOQL. Returns '' for an unconstrained item.
      */
-    private static String buildItemWhere(Map<String, Object> item, String targetObject) {
+    private static String buildItemWhere(Map<String, Object> item, String targetObject, Map<String, Object> binds) {
         String itemId = (String)item.get('id');
         String itemType = (String)item.get('type');
         Boolean isGroup = !String.isBlank(itemType) && itemType.equalsIgnoreCase('GROUP');
@@ -2230,19 +2458,19 @@ public without sharing class KenAudienceEngineService {
         List<String> conj = new List<String>();
 
         if (isGroup) {
-            String g = buildGroupClause(itemId, targetObject); // semi-join -> top level
+            String g = buildGroupClause(itemId, targetObject, binds); // semi-join -> top level
             if (!String.isBlank(g)) conj.add(g);
             return String.join(conj, ' AND ');
         }
 
         if (useIdScope) {
-            conj.add('Id = ' + toSoqlString(itemId));
+            conj.add('Id = ' + valueRef(binds, itemId));
         } else {
-            String roleClause = buildRoleClause((String)item.get('role'), targetObject);
+            String roleClause = buildRoleClause((String)item.get('role'), targetObject, binds);
             if (!String.isBlank(roleClause)) conj.add(roleClause);
         }
 
-        Clauses cc = buildCriteriaClauses(item.get('criteria'), targetObject);
+        Clauses cc = buildCriteriaClauses(item.get('criteria'), targetObject, binds);
         conj.addAll(cc.base);
         conj.addAll(cc.semi);
 
@@ -2261,16 +2489,16 @@ public without sharing class KenAudienceEngineService {
      * Returns '' when the relationship cannot be resolved so we never emit broken SOQL.
      */
     private static String buildRelatedSemiJoin(String baseObject, String relatedObject, String declaredJoinField,
-        List<String> fieldApis, List<List<String>> valueSets) {
+        List<String> fieldApis, List<List<String>> valueSets, Map<String, Object> binds) {
         if (String.isBlank(relatedObject) || fieldApis == null || fieldApis.isEmpty()) return '';
-        if (globalDescribe().get(relatedObject) == null) return '';
+        if (KenNamespaceUtil.resolveSObjectType(relatedObject) == null) return '';
 
         RelatedJoin rj = resolveRelatedJoin(baseObject, relatedObject, declaredJoinField);
         if (rj == null) return '';
 
         List<String> innerPreds = new List<String>();
         for (Integer i = 0; i < fieldApis.size(); i++) {
-            String c = buildTypedInClause(relatedObject, fieldApis[i], valueSets[i]);
+            String c = buildTypedInClause(relatedObject, fieldApis[i], valueSets[i], binds);
             if (!String.isBlank(c)) innerPreds.add(c);
         }
         if (innerPreds.isEmpty()) return '';
@@ -2299,6 +2527,17 @@ public without sharing class KenAudienceEngineService {
 
         String anchorField = resolveAnchorField(baseObject);          // e.g. 'PersonId' or 'Id'
         String anchorObject = anchorObjectFor(baseObject, anchorField); // object the anchor references
+
+        // The related object IS the anchor object itself (e.g. Account fields like
+        // PersonBirthdate/Age__c filtered from ConstituentRole): join anchor field to Id.
+        if (!String.isBlank(anchorObject) && relatedObject.equalsIgnoreCase(anchorObject)
+            && !anchorField.equalsIgnoreCase('Id')
+            && (String.isBlank(declaredJoinField) || declaredJoinField.equalsIgnoreCase('Id'))) {
+            RelatedJoin rj = new RelatedJoin();
+            rj.baseKey = anchorField;
+            rj.joinLookup = 'Id';
+            return rj;
+        }
 
         if (!String.isBlank(declaredJoinField)) {
             RelatedJoin rj = joinFromLookup(relFields, declaredJoinField, baseObject, anchorObject, anchorField);
@@ -2373,11 +2612,11 @@ public without sharing class KenAudienceEngineService {
         String anchor = null;
         if (fieldExists(CATEGORY_OBJ, 'Anchor_Field__c') && fieldExists(CATEGORY_OBJ, CATEGORY_TARGET_OBJ)) {
             try {
-                List<SObject> rows = Database.query(
+                List<SObject> rows = Database.queryWithBinds(
                     'SELECT Anchor_Field__c FROM ' + CATEGORY_OBJ +
-                    ' WHERE ' + CATEGORY_TARGET_OBJ + ' = :baseObject AND Anchor_Field__c != null LIMIT 1');
+                    ' WHERE ' + CATEGORY_TARGET_OBJ + ' = :baseObject AND Anchor_Field__c != null LIMIT 1', new Map<String, Object>{ 'baseObject' => baseObject }, AccessLevel.SYSTEM_MODE);
                 if (!rows.isEmpty()) {
-                    String a = (String)rows[0].get('Anchor_Field__c');
+                    String a = (String)rows[0].get(KenNamespaceUtil.qualifyCustom('Anchor_Field__c'));
                     if (!String.isBlank(a) && fieldExists(baseObject, a.trim())) anchor = a.trim();
                 }
             } catch (Exception e) {
@@ -2386,6 +2625,21 @@ public without sharing class KenAudienceEngineService {
         if (String.isBlank(anchor)) anchor = 'Id';
         ANCHOR_BY_OBJECT.put(baseObject, anchor);
         return anchor;
+    }
+
+    /**
+     * A field on baseObject that points at Account, for clauses that must compare
+     * against an Account id. Returns 'Id' when nothing suitable exists. Kept separate
+     * from resolveAnchorField so it only affects the clauses that need it.
+     */
+    private static String accountAnchorFor(String baseObject) {
+        for (String candidate : new List<String>{ 'PersonId', 'AccountId' }) {
+            if (fieldExists(baseObject, candidate)
+                && 'Account'.equalsIgnoreCase(anchorObjectFor(baseObject, candidate))) {
+                return candidate;
+            }
+        }
+        return 'Id';
     }
 
     /** The object an anchor field points to (e.g. PersonId -> Account); the base object when anchor = Id. */
@@ -2409,7 +2663,7 @@ public without sharing class KenAudienceEngineService {
      */
     private static String mapCriteriaField(String key, String label, String targetObject) {
         String obj = String.isBlank(targetObject) ? DEFAULT_TARGET_OBJECT : targetObject;
-        Schema.SObjectType sType = globalDescribe().get(obj);
+        Schema.SObjectType sType = KenNamespaceUtil.resolveSObjectType(obj);
         if (sType == null) return null;
 
         Map<String, Schema.SObjectField> fm = sType.getDescribe().fields.getMap();
@@ -2464,9 +2718,9 @@ public without sharing class KenAudienceEngineService {
         soql += ' LIMIT 1';
 
         try {
-            List<SObject> rows = Database.query(soql);
+            List<SObject> rows = Database.queryWithBinds(soql, new Map<String, Object>{ 'key' => key, 'label' => label, 'obj' => obj }, AccessLevel.SYSTEM_MODE);
             if (!rows.isEmpty()) {
-                return (String)rows[0].get('Field_API_Name__c');
+                return (String)rows[0].get(KenNamespaceUtil.qualifyCustom('Field_API_Name__c'));
             }
         } catch (Exception e) {
             // Ignore and fall back to other mappings
@@ -2485,14 +2739,14 @@ public without sharing class KenAudienceEngineService {
     /**
      * Build a RoleType filter when the target object supports it.
      */
-    private static String buildRoleClause(String role, String targetObject) {
+    private static String buildRoleClause(String role, String targetObject, Map<String, Object> binds) {
         if (String.isBlank(role)) return '';
         String obj = String.isBlank(targetObject) ? DEFAULT_TARGET_OBJECT : targetObject;
         if (!fieldExists(obj, 'RoleType')) return '';
         String r = role.trim();
         // Ignore pseudo-roles that don't map to ConstituentRole.RoleType picklist
         if (r.equalsIgnoreCase('GROUPS')) return '';
-        return 'RoleType = ' + toSoqlLiteral(r);
+        return 'RoleType = ' + valueRef(binds, r);
     }
 
     /**
@@ -2500,7 +2754,7 @@ public without sharing class KenAudienceEngineService {
      * quoted; boolean/number/date/datetime values are emitted unquoted so the SOQL is valid.
      * A single boolean value uses '=' (e.g. Is_Active__c = true).
      */
-    private static String buildTypedInClause(String objectApi, String fieldPath, List<String> values) {
+    private static String buildTypedInClause(String objectApi, String fieldPath, List<String> values, Map<String, Object> binds) {
         if (String.isBlank(fieldPath) || values == null || values.isEmpty()) return '';
         FieldPathInfo info = resolveFieldPathInfo(objectApi, fieldPath);
         String resolved = (info != null && !String.isBlank(info.resolvedPath)) ? info.resolvedPath : fieldPath;
@@ -2509,7 +2763,7 @@ public without sharing class KenAudienceEngineService {
         if (t == Schema.DisplayType.BOOLEAN) {
             Object b;
             try { b = parseTyped(values[0], null, t); } catch (Exception e) { return ''; }
-            return (b == null) ? '' : resolved + ' = ' + toSoqlLiteral(b);
+            return (b == null) ? '' : resolved + ' = ' + valueRef(binds, b);
         }
 
         List<String> literals = new List<String>();
@@ -2521,7 +2775,7 @@ public without sharing class KenAudienceEngineService {
             } catch (Exception e) {
                 typed = v.trim(); // fall back to a quoted string on parse failure
             }
-            literals.add(toSoqlLiteral(typed));
+            literals.add(valueRef(binds, typed));
         }
         if (literals.isEmpty()) return '';
         return resolved + ' IN (' + String.join(literals, ',') + ')';

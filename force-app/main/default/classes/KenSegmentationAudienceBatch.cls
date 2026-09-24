@@ -98,7 +98,7 @@ public without sharing class KenSegmentationAudienceBatch implements Database.Ba
     }
 
     private Processor newProcessor() {
-        Type t = Type.forName(processorType);
+        Type t = KenNamespaceUtil.resolveType(processorType);
         if (t == null) return null;
         Object inst = t.newInstance();
         return (inst instanceof Processor) ? (Processor)inst : null;

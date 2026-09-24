@@ -33,7 +33,10 @@ public without sharing class KenPersonEducationTriggerHandler extends KenTrigger
             SELECT Id, FirstName, LastName, PersonEmail, Phone, OwnerId
             FROM Account
             WHERE Id IN :eduByAccount.keySet() AND IsPersonAccount = true
+        WITH SYSTEM_MODE
         ]);
+
+        Map<Id, Set<Id>> heldPlansByAccount = queryHeldProgramPlans(eduByAccount.keySet());
 
         List<Lead> toInsert = new List<Lead>();
         for (Id accId : eduByAccount.keySet()) {
@@ -41,7 +44,13 @@ public without sharing class KenPersonEducationTriggerHandler extends KenTrigger
             if (a == null || String.isBlank(a.PersonEmail)) {
                 continue;
             }
+            Set<Id> heldPlans = heldPlansByAccount.containsKey(accId)
+                ? heldPlansByAccount.get(accId)
+                : new Set<Id>();
             for (PersonEducation edu : eduByAccount.get(accId)) {
+                if (edu.Program_Plan__c != null && heldPlans.contains(edu.Program_Plan__c)) {
+                    continue;
+                }
                 toInsert.add(new Lead(
                     OwnerId                  = a.OwnerId,
                     RecordTypeId             = ALUMNI_LEAD_RT_ID,
@@ -63,7 +72,41 @@ public without sharing class KenPersonEducationTriggerHandler extends KenTrigger
         }
 
         if (!toInsert.isEmpty()) {
-            insert toInsert;
+            Database.insert(toInsert, true, AccessLevel.SYSTEM_MODE);
         }
+    }
+
+    /**
+     * @description Program Plans each person already holds an alumni ConstituentRole for.
+     *
+     *              A new-role request only makes sense for a programme the alumnus does
+     *              NOT yet hold. Without this the onboarding form's pre-filled education â€”
+     *              seeded from the alumnus's own role â€” raised a Lead against their own
+     *              primary programme every time they reached the education step, and
+     *              approving it created a duplicate role (secondary leads deliberately
+     *              bypass the composite-key dedup in createOrGetConstituentRoles).
+     *
+     * @param accountIds Person Account Ids to inspect.
+     * @return Account Id â†’ Set of Program Plan Ids already held.
+     */
+    private static Map<Id, Set<Id>> queryHeldProgramPlans(Set<Id> accountIds) {
+        Map<Id, Set<Id>> heldByAccount = new Map<Id, Set<Id>>();
+        if (accountIds == null || accountIds.isEmpty()) {
+            return heldByAccount;
+        }
+        for (ConstituentRole cr : [
+            SELECT PersonId, Program_Plan__c
+            FROM ConstituentRole
+            WHERE PersonId IN :accountIds
+            AND RoleType = 'Alumni'
+            AND Program_Plan__c != null
+        WITH SYSTEM_MODE
+        ]) {
+            if (!heldByAccount.containsKey(cr.PersonId)) {
+                heldByAccount.put(cr.PersonId, new Set<Id>());
+            }
+            heldByAccount.get(cr.PersonId).add(cr.Program_Plan__c);
+        }
+        return heldByAccount;
     }
 }

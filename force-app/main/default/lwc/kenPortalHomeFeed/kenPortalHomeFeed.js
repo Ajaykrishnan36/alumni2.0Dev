@@ -75,6 +75,7 @@ export default class KenPortalHomeFeed extends LightningElement {
 
     spotlights = [];
     spotlightIndex = 0;
+    spotlightImageFailed = false;
     _spotlightTimer = null;
     emptyImage = EMPTY_STATE;
 
@@ -106,7 +107,13 @@ export default class KenPortalHomeFeed extends LightningElement {
     }
 
     get spotlightImageUrl() {
+        // Links that aren't loadable images (broken URL, web page) hide the media box instead of leaving an empty gap
+        if (this.spotlightImageFailed) return null;
         return this.spotlight ? this.spotlight.contentLink : null;
+    }
+
+    handleSpotlightImageError() {
+        this.spotlightImageFailed = true;
     }
 
     get spotlightDescription() {
@@ -305,6 +312,7 @@ export default class KenPortalHomeFeed extends LightningElement {
         const row = this.spotlights[this.spotlightIndex] || null;
         this.spotlight = row;
         this.spotlightEmbedUrl = row ? toYouTubeEmbed(row.contentLink) : null;
+        this.spotlightImageFailed = false;
         this.spotlightExpanded = false;
     }
 

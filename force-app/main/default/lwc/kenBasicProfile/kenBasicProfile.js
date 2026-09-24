@@ -1083,7 +1083,6 @@ export default class KenBasicProfile extends LightningElement {
 
         if (!this.validateInputs()) {
             this.scrollToErrorPending = true;
-            this.dispatchNotify('error', 'Required field missing', this.errorMessage || 'Please complete required fields to continue.');
             return;
         }
 
@@ -1096,9 +1095,6 @@ export default class KenBasicProfile extends LightningElement {
                 roleId: this.roleId || null
             });
             this.profileImageUrl = formData.profileImageUrl;
-
-            const message = result && result.message ? result.message : 'Profile saved successfully.';
-            this.dispatchNotify('success', 'Success', message);
 
             this.dispatchEvent(new CustomEvent('continue', {
                 detail: {

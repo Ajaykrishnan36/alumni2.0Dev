@@ -4,7 +4,7 @@ private class KenMentorshipDashboardControllerTest {
     @TestSetup
     static void setup() {
         // Alumni record type
-        RecordType alumRT = [SELECT Id FROM RecordType WHERE SObjectType='Account' AND DeveloperName='Alumni_Person_Account' LIMIT 1];
+        RecordType alumRT = [SELECT Id FROM RecordType WHERE SObjectType='Account' AND DeveloperName='PersonAccount' LIMIT 1];
 
         List<Account> people = new List<Account>{
             new Account(RecordTypeId=alumRT.Id, FirstName='Mentor',  LastName='Alpha', PersonEmail='malpha@test.edu'),
@@ -14,20 +14,20 @@ private class KenMentorshipDashboardControllerTest {
         };
         insert people;
 
-        RecordType connRT = [SELECT Id FROM RecordType WHERE SObjectType='Ken_Mentorship__c' AND DeveloperName='Connection_Request' LIMIT 1];
-        RecordType callRT = [SELECT Id FROM RecordType WHERE SObjectType='Ken_Mentorship__c' AND DeveloperName='Call_Request' LIMIT 1];
+        Id connRTId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get('Connection_Request').getRecordTypeId();
+        Id callRTId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get('Call_Request').getRecordTypeId();
 
         List<Ken_Mentorship__c> records = new List<Ken_Mentorship__c>{
             // Connection Requests
-            new Ken_Mentorship__c(RecordTypeId=connRT.Id, Mentor__c=people[0].Id, Mentee__c=people[2].Id, Meeting_Mode__c='Online'),
-            new Ken_Mentorship__c(RecordTypeId=connRT.Id, Mentor__c=people[0].Id, Mentee__c=people[3].Id, Meeting_Mode__c='In-person'),
-            new Ken_Mentorship__c(RecordTypeId=connRT.Id, Mentor__c=people[1].Id, Mentee__c=people[2].Id, Meeting_Mode__c='Online'),
-            new Ken_Mentorship__c(RecordTypeId=connRT.Id, Mentor__c=people[1].Id, Mentee__c=people[3].Id, Meeting_Mode__c='In-person'),
-            new Ken_Mentorship__c(RecordTypeId=connRT.Id, Mentor__c=people[0].Id, Mentee__c=people[3].Id, Meeting_Mode__c='Online'),
+            new Ken_Mentorship__c(RecordTypeId=connRTId, Mentor__c=people[0].Id, Mentee__c=people[2].Id, Meeting_Mode__c='Online'),
+            new Ken_Mentorship__c(RecordTypeId=connRTId, Mentor__c=people[0].Id, Mentee__c=people[3].Id, Meeting_Mode__c='In-person'),
+            new Ken_Mentorship__c(RecordTypeId=connRTId, Mentor__c=people[1].Id, Mentee__c=people[2].Id, Meeting_Mode__c='Online'),
+            new Ken_Mentorship__c(RecordTypeId=connRTId, Mentor__c=people[1].Id, Mentee__c=people[3].Id, Meeting_Mode__c='In-person'),
+            new Ken_Mentorship__c(RecordTypeId=connRTId, Mentor__c=people[0].Id, Mentee__c=people[3].Id, Meeting_Mode__c='Online'),
             // Call Requests
-            new Ken_Mentorship__c(RecordTypeId=callRT.Id, Mentor__c=people[0].Id, Mentee__c=people[2].Id, Meet_Date__c=Date.today(), Meeting_Mode__c='Online'),
-            new Ken_Mentorship__c(RecordTypeId=callRT.Id, Mentor__c=people[1].Id, Mentee__c=people[3].Id, Meet_Date__c=Date.today(), Meeting_Mode__c='In-person'),
-            new Ken_Mentorship__c(RecordTypeId=callRT.Id, Mentor__c=people[0].Id, Mentee__c=people[2].Id, Meet_Date__c=Date.today(), Meeting_Mode__c='Online')
+            new Ken_Mentorship__c(RecordTypeId=callRTId, Mentor__c=people[0].Id, Mentee__c=people[2].Id, Meet_Start_DateTime__c=DateTime.newInstance(Date.today(), Time.newInstance(10, 0, 0, 0)), Meeting_Mode__c='Online'),
+            new Ken_Mentorship__c(RecordTypeId=callRTId, Mentor__c=people[1].Id, Mentee__c=people[3].Id, Meet_Start_DateTime__c=DateTime.newInstance(Date.today(), Time.newInstance(10, 0, 0, 0)), Meeting_Mode__c='In-person'),
+            new Ken_Mentorship__c(RecordTypeId=callRTId, Mentor__c=people[0].Id, Mentee__c=people[2].Id, Meet_Start_DateTime__c=DateTime.newInstance(Date.today(), Time.newInstance(10, 0, 0, 0)), Meeting_Mode__c='Online')
         };
 
         // Set restricted picklist values via put()

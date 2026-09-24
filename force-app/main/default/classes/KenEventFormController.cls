@@ -1,6 +1,7 @@
 public with sharing class KenEventFormController {
 
-    private static final String PERSON_ACCOUNT_RT_DEVNAME = 'Alumni_Person_Account';
+    private static final String PERSON_ACCOUNT_RT_DEVNAME = 'PersonAccount';
+    private static final String STATUS_APPROVED = 'Approved';
     
     @AuraEnabled(cacheable=true)
     public static List<Account> searchContact(String searchKey) {
@@ -10,6 +11,7 @@ public with sharing class KenEventFormController {
             FROM Account
             WHERE IsPersonAccount = true
             AND Name LIKE :query
+            WITH USER_MODE
             LIMIT 10
         ];
     }
@@ -22,6 +24,7 @@ public with sharing class KenEventFormController {
                 FROM Account
                 WHERE Id = :accountId
                 AND IsPersonAccount = true
+                WITH USER_MODE
                 LIMIT 1
             ];
         } catch (Exception e) {
@@ -47,7 +50,7 @@ public with sharing class KenEventFormController {
     
     @AuraEnabled
     public static void deleteSpeaker(String recordId) {
-        delete [select Id from Ken_Events_Sessions_Enrollment__c WHERE Id=:recordId];
+        delete [select Id from Ken_Events_Sessions_Enrollment__c WHERE Id=:recordId WITH USER_MODE];
     }
     
     @AuraEnabled
@@ -58,11 +61,17 @@ public with sharing class KenEventFormController {
                 throw new AuraHandledException('Record Id is required');
             }
 
-            Ken_Schedule_Sessions__c sessionToDelete = [SELECT Id FROM Ken_Schedule_Sessions__c WHERE Id = :recordId LIMIT 1];
-            List<Ken_Events_Sessions_Enrollment__c> enrollmentsToDelete = [SELECT Id FROM Ken_Events_Sessions_Enrollment__c WHERE Schedule_Sessions__c = :recordId];
+            Ken_Schedule_Sessions__c sessionToDelete = [SELECT Id FROM Ken_Schedule_Sessions__c WHERE Id = :recordId WITH USER_MODE LIMIT 1];
+            List<Ken_Events_Sessions_Enrollment__c> enrollmentsToDelete = [SELECT Id FROM Ken_Events_Sessions_Enrollment__c WHERE Schedule_Sessions__c = :recordId WITH USER_MODE];
 
             if (!enrollmentsToDelete.isEmpty()) {
+                if (!Schema.sObjectType.Ken_Events_Sessions_Enrollment__c.isDeletable()) {
+                    throw new KenCrudException('Ken_Events_Sessions_Enrollment__c is not deletable by the current user.');
+                }
                 delete enrollmentsToDelete;
+            }
+            if (!Schema.sObjectType.Ken_Schedule_Sessions__c.isDeletable()) {
+                throw new KenCrudException('Ken_Schedule_Sessions__c is not deletable by the current user.');
             }
             delete sessionToDelete;
         } catch (Exception e) {
@@ -81,54 +90,43 @@ public with sharing class KenEventFormController {
                 Name,(SELECT Id, Person_Account__r.Name,Person_Account__c, Description__c,Speaker_Image__c,Schedule_Sessions__c,Speaker_Name__c,Speaker_Email__c,Send_Invite__c FROM Event_Session_Account_Associations__r),
                 Session_Broucher__c,
                 Event_Reference__c,
-                Start_Date__c,
-                Start_Time__c,
-                End_Time__c,
                 Location_Type__c,
                 Session_Link__c,
                 Location__c,
-                End_Date__c,
                 Session_Fee__c,
                 No_Fee__c,
                 Broucher_Type__c,
                 Broucher_Name__c,
-                Questionnaire__c,
+                Survey__c,
+                Survey__r.Assessment_Question_Set__c,
                 Feedback_Trigger_Type__c,
                 Feedback_Trigger_When__c,
-                Feedback_End_Date__c,
-                Feedback_End_Time__c,
+                Start_DateTime__c,
+                End_DateTime__c,
+                Feedback_End_DateTime__c,
                 Meals__c
                 FROM Ken_Schedule_Sessions__c
                 WHERE Event_Reference__c = :recordId
+            WITH USER_MODE
             ];
             
-            Set<Id> questionnaireIds = new Set<Id>();
+            Set<Id> questionSetIds = new Set<Id>();
             for (Ken_Schedule_Sessions__c s : eventSchedule) {
-                if (s.Questionnaire__c != null) {
-                    questionnaireIds.add(s.Questionnaire__c);
+                if (s.Survey__r != null && s.Survey__r.Assessment_Question_Set__c != null) {
+                    questionSetIds.add(s.Survey__r.Assessment_Question_Set__c);
                 }
             }
-            Map<Id, List<Ken_Questionnaire_Parameter__c>> paramsByQuestionnaire = new Map<Id, List<Ken_Questionnaire_Parameter__c>>();
-            if (!questionnaireIds.isEmpty()) {
-                for (Ken_Questionnaire_Parameter__c param : [
-                    SELECT Id, Question_Label__c, Question_Type__c, Is_Required__c, MCQ_Options__c, Questionnaire__c
-                    FROM Ken_Questionnaire_Parameter__c
-                    WHERE Questionnaire__c IN :questionnaireIds
-                    ORDER BY CreatedDate ASC
-                ]) {
-                    if (!paramsByQuestionnaire.containsKey(param.Questionnaire__c)) {
-                        paramsByQuestionnaire.put(param.Questionnaire__c, new List<Ken_Questionnaire_Parameter__c>());
-                    }
-                    paramsByQuestionnaire.get(param.Questionnaire__c).add(param);
-                }
-            }
+            Map<Id, List<KenAssessmentSurveyService.QuestionRow>> questionsBySet =
+                KenAssessmentSurveyService.questionsBySet(questionSetIds);
 
             List<EventScheduleWrapper> eventScheduleList = new List<EventScheduleWrapper>();
             if(!eventSchedule.isEmpty()){
                 for (Ken_Schedule_Sessions__c eachSchedule : eventSchedule) {
                     EventScheduleWrapper eventSc = new EventScheduleWrapper(eachSchedule);
-                    if (eachSchedule.Questionnaire__c != null && paramsByQuestionnaire.containsKey(eachSchedule.Questionnaire__c)) {
-                        eventSc.questionnaireParams = paramsByQuestionnaire.get(eachSchedule.Questionnaire__c);
+                    Id setId = eachSchedule.Survey__r != null
+                        ? eachSchedule.Survey__r.Assessment_Question_Set__c : null;
+                    if (setId != null && questionsBySet.containsKey(setId)) {
+                        eventSc.questionnaireParams = questionsBySet.get(setId);
                     }
                     eventScheduleList.add(eventSc);
                 }
@@ -164,11 +162,15 @@ public with sharing class KenEventFormController {
             if (Schema.sObjectType.Ken_Schedule_Sessions__c.fields.Feedback_Trigger_When__c.isUpdateable()) {
                 updateSession.Feedback_Trigger_When__c = normalizedWhen;
             }
-            if (Schema.sObjectType.Ken_Schedule_Sessions__c.fields.Feedback_End_Date__c.isUpdateable()) {
-                updateSession.Feedback_End_Date__c = String.isNotBlank(endDate) ? Date.valueOf(endDate) : null;
-            }
-            if (Schema.sObjectType.Ken_Schedule_Sessions__c.fields.Feedback_End_Time__c.isUpdateable()) {
-                updateSession.Feedback_End_Time__c = normalizeFeedbackEndTime(endTime);
+            if (Schema.sObjectType.Ken_Schedule_Sessions__c.fields.Feedback_End_DateTime__c.isUpdateable()) {
+                // endTime arrives as the UTC wall clock that <lightning-input
+                // type="time"> emits, so pairing it with the date as GMT gives
+                // the instant directly.
+                updateSession.Feedback_End_DateTime__c = resolveInstant(
+                    null,
+                    String.isNotBlank(endDate) ? Date.valueOf(endDate) : null,
+                    parseUtcTime(endTime)
+                );
             }
 
             update updateSession;
@@ -205,18 +207,58 @@ public with sharing class KenEventFormController {
         return triggerWhen;
     }
 
-    private static Time normalizeFeedbackEndTime(String endTime) {
-        if (String.isBlank(endTime)) {
+    /**
+     * @description Reads an "HH:mm" fragment as a UTC wall clock, without the
+     *              legacy +5:30 compensation, which no longer exists.
+     *
+     * @param value "HH:mm" or "HH:mm:ss.sssZ", or blank
+     * @return      the Time, or null
+     */
+    @TestVisible
+    private static Time parseUtcTime(String value) {
+        if (String.isBlank(value)) {
             return null;
         }
-        List<String> parts = endTime.split(':');
+        String raw = value.contains('T') ? value.substringAfter('T') : value;
+        raw = raw.replace('Z', '');
+        List<String> parts = raw.split(':');
         if (parts.size() < 2) {
             return null;
         }
-        Integer hours = Integer.valueOf(parts[0]);
-        Integer minutes = Integer.valueOf(parts[1]);
-        Time localTime = Time.newInstance(hours, minutes, 0, 0);
-        return localTime.addHours(5).addMinutes(30);
+        try {
+            return Time.newInstance(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]), 0, 0);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * @description Resolves the instant to store, preferring what the component
+     *              sent and falling back to the legacy Date + Time pair for
+     *              callers not yet migrated. The fallback reads the Time as a
+     *              UTC wall clock, which is what <lightning-input type="time">
+     *              produces.
+     *
+     *              The fallback cannot be exact across midnight, because a bare
+     *              Time carries no day — a 00:30 IST session arrives as 19:00
+     *              belonging to the previous UTC date, and nothing in the pair
+     *              records that. That gap is the whole reason for the instant.
+     *
+     * @param iso          instant from the component, preferred when present
+     * @param fallbackDate legacy Date
+     * @param fallbackTime legacy Time, read as UTC
+     * @return             the instant to store, or null
+     */
+    @TestVisible
+    private static DateTime resolveInstant(String iso, Date fallbackDate, Time fallbackTime) {
+        DateTime parsed = KenDateTimeUtil.parseInstant(iso);
+        if (parsed != null) {
+            return parsed;
+        }
+        if (fallbackDate == null || fallbackTime == null) {
+            return null;
+        }
+        return DateTime.newInstanceGmt(fallbackDate, fallbackTime);
     }
     
     @AuraEnabled
@@ -233,7 +275,7 @@ public with sharing class KenEventFormController {
             // "Invalid format: ''". Treat any empty-string value as null first.
             records = records.replaceAll(':\\s*""', ':null');
 
-            Id speakerRecordType = [SELECT Id FROM RecordType WHERE SObjectType = 'Ken_Events_Sessions_Enrollment__c' AND DeveloperName = 'Speaker_Enrollment']?.Id;
+            Id speakerRecordType = Schema.SObjectType.Ken_Events_Sessions_Enrollment__c.getRecordTypeInfosByDeveloperName().get('Speaker_Enrollment')?.getRecordTypeId();
 
             List<EventScheduleWrapper> requestBody = (List<EventScheduleWrapper>) JSON.deserialize(
                 records,
@@ -330,17 +372,25 @@ public with sharing class KenEventFormController {
                     FROM Ken_Schedule_Sessions__c
                     WHERE Event_Reference__c = :eventId
                     AND Id NOT IN :incomingSessionIds
+                WITH USER_MODE
                 ];
                 enrollmentsToDelete = [
                     SELECT Id
                     FROM Ken_Events_Sessions_Enrollment__c
                     WHERE Schedule_Sessions__r.Event_Reference__c = :eventId
                     AND Id NOT IN :sessionSpeakerEnrollmentIds
+                WITH USER_MODE
                 ];
                 if (!enrollmentsToDelete.isEmpty()) {
+                    if (!Schema.sObjectType.Ken_Events_Sessions_Enrollment__c.isDeletable()) {
+                        throw new KenCrudException('Ken_Events_Sessions_Enrollment__c is not deletable by the current user.');
+                    }
                     delete enrollmentsToDelete;
                 }
                 if (!sessionsToDelete.isEmpty()) {
+                    if (!Schema.sObjectType.Ken_Schedule_Sessions__c.isDeletable()) {
+                        throw new KenCrudException('Ken_Schedule_Sessions__c is not deletable by the current user.');
+                    }
                     delete sessionsToDelete;
                 }
             } else if (!incomingSessionIds.isEmpty()) {
@@ -349,8 +399,12 @@ public with sharing class KenEventFormController {
                     FROM Ken_Events_Sessions_Enrollment__c
                     WHERE Schedule_Sessions__c IN :incomingSessionIds
                     AND Id NOT IN :sessionSpeakerEnrollmentIds
+                WITH USER_MODE
                 ];
                 if (!enrollmentsToDelete.isEmpty()) {
+                    if (!Schema.sObjectType.Ken_Events_Sessions_Enrollment__c.isDeletable()) {
+                        throw new KenCrudException('Ken_Events_Sessions_Enrollment__c is not deletable by the current user.');
+                    }
                     delete enrollmentsToDelete;
                 }
             }
@@ -375,12 +429,32 @@ public with sharing class KenEventFormController {
     // save the schedule for an event they own but don't have sharing-level access to.
     private without sharing class ScheduleWriter {
         void upsertSessions(List<Ken_Schedule_Sessions__c> toUpdate, List<Ken_Schedule_Sessions__c> toInsert) {
-            if (toUpdate != null && !toUpdate.isEmpty()) update toUpdate;
-            if (toInsert != null && !toInsert.isEmpty()) insert toInsert;
+            if (toUpdate != null && !toUpdate.isEmpty()) {
+                if (!Schema.sObjectType.Ken_Schedule_Sessions__c.isUpdateable()) {
+                    throw new KenCrudException('Ken_Schedule_Sessions__c is not updateable by the current user.');
+                }
+                update toUpdate;
+            }
+            if (toInsert != null && !toInsert.isEmpty()) {
+                if (!Schema.sObjectType.Ken_Schedule_Sessions__c.isCreateable()) {
+                    throw new KenCrudException('Ken_Schedule_Sessions__c is not createable by the current user.');
+                }
+                insert toInsert;
+            }
         }
         void upsertEnrollments(List<Ken_Events_Sessions_Enrollment__c> toUpdate, List<Ken_Events_Sessions_Enrollment__c> toInsert) {
-            if (toUpdate != null && !toUpdate.isEmpty()) update toUpdate;
-            if (toInsert != null && !toInsert.isEmpty()) insert toInsert;
+            if (toUpdate != null && !toUpdate.isEmpty()) {
+                if (!Schema.sObjectType.Ken_Events_Sessions_Enrollment__c.isUpdateable()) {
+                    throw new KenCrudException('Ken_Events_Sessions_Enrollment__c is not updateable by the current user.');
+                }
+                update toUpdate;
+            }
+            if (toInsert != null && !toInsert.isEmpty()) {
+                if (!Schema.sObjectType.Ken_Events_Sessions_Enrollment__c.isCreateable()) {
+                    throw new KenCrudException('Ken_Events_Sessions_Enrollment__c is not createable by the current user.');
+                }
+                insert toInsert;
+            }
         }
     }
     
@@ -413,30 +487,16 @@ public with sharing class KenEventFormController {
 
     private without sharing class EventReader {
         List<Ken_Event_Master__c> fetchEvent(String recordId) {
-            return [SELECT Id, Name,Event_Current_Step__c,Language__c,Event_Status__c, Target_Keywords__c,Event_Broucher__c, Broucher_Title__c, Description__c,createdDate,Event_Fee__c,No_Fee__c, Auto_Enroll_Target_Audience__c,RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c,Email_Subject__c,Email_Distribution_List__c,Email_Body__c,Schedule_Date__c,Schedule_Time__c,Email_Attachment__c,Can_Alumni_Bring_Guests__c,Guest_Count__c,Offer_Meals__c,Make_Meals_Paid__c,Collect_Dietary_Preferences__c,Dietary_Preferences__c,Meal_Fee__c  FROM Ken_Event_Master__c WHERE Id=:recordId];
+            return [SELECT Id, Name,Event_Current_Step__c,Language__c,Event_Status__c, Target_Topics__c,Event_Broucher__c, Broucher_Title__c, Description__c,createdDate,Event_Fee__c,No_Fee__c, Auto_Enroll_Target_Audience__c,RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c,Email_Subject__c,Email_Distribution_List__c,Email_Body__c,Schedule_DateTime__c,Email_Attachment__c,Can_Alumni_Bring_Guests__c,Guest_Count__c,Offer_Meals__c,Make_Meals_Paid__c,Collect_Dietary_Preferences__c,Dietary_Preferences__c,Meal_Fee__c  FROM Ken_Event_Master__c WHERE Id=:recordId WITH SECURITY_ENFORCED];
         }
-    }
-    
-    @AuraEnabled(cacheable=true)
-    public static Map<String,String> getFileUploadSettings(String allowedFileTypes, String maxFileSize){
-        
-        Map<String,String> eventFileUploadSettings = new Map<String,String>();
-        Alumni_Org_Parameters__c orgSettings = Alumni_Org_Parameters__c.getInstance();
-        
-        
-        if(orgSettings != null){
-            eventFileUploadSettings.put('allowedFileTypes',String.valueOf(orgSettings.get(allowedFileTypes)));
-            eventFileUploadSettings.put('maxFileSize',String.valueOf(orgSettings.get(maxFileSize)));
-        }
-        
-        return eventFileUploadSettings;
     }
     
     @AuraEnabled
-    public static Id saveEvent(string eventData, Id constituentRoleId){
+    public static Id saveEvent(string eventData){
         if (String.isBlank(eventData)) {
             throw new AuraHandledException('Event payload is required.');
         }
+        Id constituentRoleId = KenConstituentRoleService.getActiveConstituentRoleId();
         EventWrapper requestBody = (EventWrapper) JSON.deserialize(
             eventData,
             EventWrapper.class
@@ -452,7 +512,7 @@ public with sharing class KenEventFormController {
             updateEvent.Constituent_Role__c = constituentRoleId;
         }
 
-        Id eventRecordType = [SELECT Id FROM RecordType WHERE SObjectType = 'Ken_Event_Master__c' AND DeveloperName = 'Event']?.Id;
+        Id eventRecordType = Schema.SObjectType.Ken_Event_Master__c.getRecordTypeInfosByDeveloperName().get('Event')?.getRecordTypeId();
         if(String.isNotBlank(eventRecordType)) {
             updateEvent.RecordTypeId = eventRecordType;
         }
@@ -479,53 +539,73 @@ public with sharing class KenEventFormController {
     // event they don't have row-level sharing for (mirrors EventReader/ScheduleWriter).
     private without sharing class EventWriter {
         void upsertEvent(Ken_Event_Master__c evt) {
+            preserveApproval(evt);
+            if (!Schema.sObjectType.Ken_Event_Master__c.isCreateable() || !Schema.sObjectType.Ken_Event_Master__c.isUpdateable()) {
+                throw new KenCrudException('Ken_Event_Master__c is not upsertable by the current user.');
+            }
             upsert evt;
+        }
+
+        /**
+         * @description The wizard stamps Draft on every save and In Review on every
+         *              submit, so editing an approved event - even just to swap its
+         *              banner - used to send it back through approval, and anything
+         *              gated on Approved (the landing page, the public event lists)
+         *              dropped it on the spot. An approval is a decision: only the
+         *              approval flow reverses it, never an edit.
+         *
+         *              The read lives here, in the same system context as the write,
+         *              because a portal host editing an event they don't own cannot
+         *              see it under sharing - and a host who can't see it is exactly
+         *              the caller this guard has to hold for.
+         */
+        void preserveApproval(Ken_Event_Master__c evt) {
+            if (evt.Id == null || evt.Event_Status__c == null || evt.Event_Status__c == STATUS_APPROVED) {
+                return;
+            }
+            for (Ken_Event_Master__c current : [
+                SELECT Event_Status__c
+                FROM Ken_Event_Master__c
+                WHERE Id = :evt.Id
+                WITH SECURITY_ENFORCED
+                LIMIT 1
+            ]) {
+                if (current.Event_Status__c == STATUS_APPROVED) {
+                    evt.Event_Status__c = STATUS_APPROVED;
+                }
+            }
         }
     }
 
+    /**
+     * @description Points an event at a segmentation, replacing whatever audience it had,
+     *              and mirrors the change onto the event's wrapper surveys.
+     * @param eventId Event to link.
+     * @param segmentationId Segmentation to link.
+     * @return Id of the event that now carries the audience.
+     */
     @AuraEnabled
     public static Id createEventSegmentation(Id eventId, Id segmentationId) {
         if (eventId == null || segmentationId == null) {
             throw new AuraHandledException('Event Id and Segmentation Id are required.');
         }
-        System.debug(LoggingLevel.INFO, 'createEventSegmentation: eventId=' + eventId + ', segmentationId=' + segmentationId);
-        if (!Schema.sObjectType.Ken_Event_Segmentation__c.isCreateable()) {
-            throw new AuraHandledException('You do not have permission to create event segmentation.');
-        }
-        if (!Schema.sObjectType.Ken_Event_Segmentation__c.fields.Event_Master__c.isCreateable()
-            || !Schema.sObjectType.Ken_Event_Segmentation__c.fields.Segmentation__c.isCreateable()) {
-            throw new AuraHandledException('You do not have permission to set event segmentation fields.');
+        if (!Schema.sObjectType.Ken_Event_Master__c.isUpdateable()) {
+            throw new AuraHandledException('You do not have permission to set the event audience.');
         }
 
-        List<Ken_Event_Segmentation__c> staleLinks = [
-            SELECT Id
-            FROM Ken_Event_Segmentation__c
-            WHERE Event_Master__c = :eventId
-            AND Segmentation__c != :segmentationId
-        ];
-        if (!staleLinks.isEmpty()) {
-            delete staleLinks;
-        }
-
-        List<Ken_Event_Segmentation__c> existing = [
-            SELECT Id
-            FROM Ken_Event_Segmentation__c
-            WHERE Event_Master__c = :eventId
-            AND Segmentation__c = :segmentationId
+        List<Ken_Event_Master__c> existing = [
+            SELECT Id, Segmentation__c FROM Ken_Event_Master__c WHERE Id = :eventId
+            WITH USER_MODE
             LIMIT 1
         ];
-        if (!existing.isEmpty()) {
-            System.debug(LoggingLevel.INFO, 'createEventSegmentation: link already exists Id=' + existing[0].Id);
-            return existing[0].Id;
+        if (existing.isEmpty()) {
+            throw new AuraHandledException('Event not found.');
         }
-
-        Ken_Event_Segmentation__c link = new Ken_Event_Segmentation__c(
-            Event_Master__c = eventId,
-            Segmentation__c = segmentationId
-        );
-        insert link;
-        System.debug(LoggingLevel.INFO, 'createEventSegmentation: created link Id=' + link.Id);
-        return link.Id;
+        if (existing[0].Segmentation__c != segmentationId) {
+            update new Ken_Event_Master__c(Id = eventId, Segmentation__c = segmentationId);
+        }
+        syncEventAudienceToWrapperSurveys(eventId);
+        return eventId;
     }
     
     @AuraEnabled
@@ -533,7 +613,7 @@ public with sharing class KenEventFormController {
         // If event-wise fee update
         if (isEventWise) {
             // Fetch the event record
-            Ken_Event_Master__c eventRecord = [SELECT Id, Event_Fee__c, No_Fee__c, Auto_Enroll_Target_Audience__c FROM Ken_Event_Master__c WHERE Id = :eventId LIMIT 1];
+            Ken_Event_Master__c eventRecord = [SELECT Id, Event_Fee__c, No_Fee__c, Auto_Enroll_Target_Audience__c FROM Ken_Event_Master__c WHERE Id = :eventId WITH USER_MODE LIMIT 1];
             
             // Set the event-level fee or no-fee values
             eventRecord.Event_Fee__c = eventFee;
@@ -579,15 +659,16 @@ public with sharing class KenEventFormController {
             }
 
             List<Ken_Schedule_Sessions__c> sessions = [
-                SELECT Id, Start_Date__c, Meals__c
+                SELECT Id, Start_DateTime__c, Meals__c
                 FROM Ken_Schedule_Sessions__c
                 WHERE Event_Reference__c = :eventId
+            WITH USER_MODE
             ];
             List<Ken_Schedule_Sessions__c> toUpdate = new List<Ken_Schedule_Sessions__c>();
             for (Ken_Schedule_Sessions__c s : sessions) {
                 String mealsValue = '';
-                if (offerMeals == true && s.Start_Date__c != null) {
-                    Date d = s.Start_Date__c;
+                if (offerMeals == true && s.Start_DateTime__c != null) {
+                    Date d = KenDateTimeUtil.localDate(s.Start_DateTime__c);
                     String dateKey = String.valueOf(d.year()) + '-' +
                         (d.month() < 10 ? '0' : '') + String.valueOf(d.month()) + '-' +
                         (d.day() < 10 ? '0' : '') + String.valueOf(d.day());
@@ -630,6 +711,7 @@ public with sharing class KenEventFormController {
             SELECT Id, Name
             FROM Account
             WHERE IsPersonAccount = true
+        WITH USER_MODE
 
         ];
     }
@@ -638,8 +720,8 @@ public with sharing class KenEventFormController {
     public static List<Ken_Schedule_Sessions__c> getEventSessions(string eventId) {
         
         return  [SELECT Id, Name, 
-                 Session_Broucher__c,End_Time__c,
-                 Start_Date__c,Location_Type__c,Session_Link__c,
+                 Session_Broucher__c,
+                 Location_Type__c,Session_Link__c,
                  Event_Reference__c,Event_Reference__r.Event_Broucher__c,
                  Event_Reference__r.Event_banner__c,Event_Reference__r.Name,
                  Event_Reference__r.Event_Fee__c,Event_Reference__r.No_Fee__c,
@@ -650,21 +732,42 @@ public with sharing class KenEventFormController {
                  Event_Reference__r.Max_Allowed_Participants__c,
                  Event_Reference__r.Description__c,
                  Event_Reference__r.Event_Status__c,
-                 Start_Time__c, Session_Fee__c,What_to_Expect_From_Event__c, No_Fee__c, Location__c
-                 FROM Ken_Schedule_Sessions__c WHERE Event_Reference__c =:eventId ORDER BY Start_Date__c];
+                 Session_Fee__c,What_to_Expect_From_Event__c, No_Fee__c, Location__c,
+                 Start_DateTime__c, End_DateTime__c
+                 FROM Ken_Schedule_Sessions__c WHERE Event_Reference__c =:eventId
+                 WITH USER_MODE
+                 ORDER BY Start_DateTime__c NULLS LAST];
     }
     
+    /**
+     * @description Type-ahead lookup over Event Group records.
+     * @param searchKey       Text typed by the user, matched against Name.
+     * @param sObjectApiName  API name of the target sObject. It arrives from the caller, so it is
+     *                        resolved through the schema and re-read from the describe before it
+     *                        reaches the query; an unresolvable name returns an empty list.
+     * @return                List<SObject> with Id and Name populated, at most five rows.
+     */
     @AuraEnabled(cacheable=true)
-    public static list<sObject> fetchLookupData(string searchKey , string sObjectApiName) {    
+    public static list<sObject> fetchLookupData(string searchKey , string sObjectApiName) {
         List < sObject > returnList = new List < sObject > ();
+
+        Schema.SObjectType resolvedType = KenNamespaceUtil.resolveSObjectType(sObjectApiName);
+        if (String.isBlank(sObjectApiName) || resolvedType == null) {
+            return returnList;
+        }
+        String safeObjectApiName = resolvedType.getDescribe().getName();
+
         string sWildCardText = '%' + searchKey + '%';
         String sQuery = 'SELECT Id, Name ' +
-            'FROM ' + sObjectApiName + ' ' +
+            'FROM ' + safeObjectApiName + ' ' +
             'WHERE Name LIKE :sWildCardText ' +
             'AND RecordType.DeveloperName = \'Event_Group\' ' +
             'ORDER BY CreatedDate DESC ' +
             'LIMIT 5';
-        for (sObject obj: database.query(sQuery)) {
+        for (sObject obj : Database.queryWithBinds(
+                sQuery,
+                new Map<String, Object>{ 'sWildCardText' => sWildCardText },
+                AccessLevel.SYSTEM_MODE)) {
             returnList.add(obj);
         }
         return returnList;
@@ -674,7 +777,7 @@ public with sharing class KenEventFormController {
     public static Map<String, List<Map<String, String>>> getPicklistValues(String objectName, List<String> fieldNames) {
         Map<String,List<Map<String,String>>> picklictValuesByField = new Map<String,List<Map<String,String>>>();
         try{
-            Schema.SObjectType objectType = Schema.getGlobalDescribe().get(objectName);
+            Schema.SObjectType objectType = KenNamespaceUtil.resolveSObjectType(objectName);
             if (objectType == null) {
                 throw new AuraHandledException('Object ' + objectName + ' not found');
             }
@@ -683,11 +786,12 @@ public with sharing class KenEventFormController {
             
             Map<String, Schema.SObjectField> fieldMap = describeObjResult.fields.getMap();
             for(String field : fieldNames){
-                if(!fieldMap.containsKey(field)){
+                String fieldApiName = KenNamespaceUtil.qualifyCustom(field);
+                if(!fieldMap.containsKey(fieldApiName)){
                     continue;
                 }
                 
-                Schema.DescribeFieldResult fieldResult = fieldMap.get(field).getDescribe();
+                Schema.DescribeFieldResult fieldResult = fieldMap.get(fieldApiName).getDescribe();
                 List<Map<String,String>> picklistValues = new List<Map<String,String>>();
                 for (Schema.PicklistEntry entry : fieldResult.getPicklistValues()) {
                     picklistValues.add(new Map<String,String>{'label' => entry.getLabel(), 'value' => entry.getValue()});
@@ -724,7 +828,7 @@ public with sharing class KenEventFormController {
         
         record.Event_Type__c = wrapper.eventTypes;
         record.Description__c = wrapper.description;
-        record.Target_Keywords__c = wrapper.agenda;
+        record.Target_Topics__c = wrapper.agenda;
         record.Event_banner__c = String.isNotBlank(wrapper.image) ? KenCreateContentVersion.createContentVersion(wrapper.imageFileName, wrapper.image) : null;
         record.Max_Allowed_Participants__c = wrapper.maximumNumberOfParticipants;
         if (Schema.sObjectType.Ken_Event_Master__c.isCreateable() || Schema.sObjectType.Ken_Event_Master__c.isUpdateable()) {
@@ -742,10 +846,33 @@ public with sharing class KenEventFormController {
                 throw new AuraHandledException('Event Id is required');
             }
 
-            Map<Id,Ken_Schedule_Sessions__c> sessionsToDelete = new Map<Id,Ken_Schedule_Sessions__c>([SELECT Id FROM Ken_Schedule_Sessions__c WHERE Start_Date__c NOT IN :selectedDates AND Event_Reference__c = :eventId]);
-            List<Ken_Events_Sessions_Enrollment__c> enrollmentsToDelete = [SELECT Id FROM Ken_Events_Sessions_Enrollment__c WHERE Schedule_Sessions__c IN :sessionsToDelete.keySet()];
+            // The day is derived from the stored instant, so the filter cannot be
+            // pushed into SOQL any more — a DateTime column has no "NOT IN a list
+            // of dates" form that respects the viewer's zone. Sessions per event
+            // are few, so deciding in Apex is cheap and exact.
+            //
+            // A session with no instant is deliberately treated as unmatched and
+            // therefore deleted, which is what the old NOT IN did with a null
+            // Start_Date__c.
+            Set<Date> keepDays = selectedDates == null ? new Set<Date>() : new Set<Date>(selectedDates);
+            Map<Id,Ken_Schedule_Sessions__c> sessionsToDelete = new Map<Id,Ken_Schedule_Sessions__c>();
+            for (Ken_Schedule_Sessions__c s : [
+                SELECT Id, Start_DateTime__c
+                FROM Ken_Schedule_Sessions__c
+                WHERE Event_Reference__c = :eventId
+            WITH USER_MODE
+            ]) {
+                Date day = KenDateTimeUtil.localDate(s.Start_DateTime__c);
+                if (day == null || !keepDays.contains(day)) {
+                    sessionsToDelete.put(s.Id, s);
+                }
+            }
+            List<Ken_Events_Sessions_Enrollment__c> enrollmentsToDelete = [SELECT Id FROM Ken_Events_Sessions_Enrollment__c WHERE Schedule_Sessions__c IN :sessionsToDelete.keySet() WITH USER_MODE];
 
             if (!enrollmentsToDelete.isEmpty()) {
+                if (!Schema.sObjectType.Ken_Events_Sessions_Enrollment__c.isDeletable()) {
+                    throw new KenCrudException('Ken_Events_Sessions_Enrollment__c is not deletable by the current user.');
+                }
                 delete enrollmentsToDelete;
             }
             if (!sessionsToDelete.isEmpty()) {
@@ -841,9 +968,9 @@ public with sharing class KenEventFormController {
             this.startDate = event.Start_Date__c;
             this.endDate = event.End_Date__c;
             this.description = event.Description__c;
-            this.agenda =event.Target_Keywords__c;
+            this.agenda =event.Target_Topics__c;
             this.eventExpectations = event.What_to_Expect_From_Event__c;
-            this.targetKeyWords = event.Target_Keywords__c;
+            this.targetKeyWords = event.Target_Topics__c;
             this.maximumNumberOfParticipants = event.Max_Allowed_Participants__c;
             this.image = event.Event_banner__c;
             this.broucher = event.Event_Broucher__c;
@@ -858,8 +985,13 @@ public with sharing class KenEventFormController {
             this.emailSubject = event.Email_Subject__c;
             this.emailDistributionList = event.Email_Distribution_List__c;
             this.emailBody = event.Email_Body__c;
-            this.ScheduleDate = (event.Schedule_Date__c != null) ? String.valueOf(event.Schedule_Date__c) : '';
-            this.ScheduleTime = (event.Schedule_Time__c != null) ? String.valueOf(event.Schedule_Time__c.hour()) + ':' + String.valueOf(event.Schedule_Time__c.minute()) : '';
+            // The scheduled send is a real moment, so Schedule_DateTime__c is the
+            // single source and both halves are derived from it. instantFrom, not
+            // a direct read: this wrapper is built from several different SOQL
+            // statements and touching an unqueried field throws.
+            String scheduleIso = KenDateTimeUtil.instantFrom(event, 'Schedule_DateTime__c');
+            this.ScheduleDate = scheduleIso == null ? '' : scheduleIso.substring(0, 10);
+            this.ScheduleTime = scheduleIso == null ? '' : scheduleIso.substring(11, 16);
             this.emailAttachment = event.Email_Attachment__c;
             this.offerMeals = event.Offer_Meals__c;
             this.makeMealsPaid = event.Make_Meals_Paid__c;
@@ -895,7 +1027,7 @@ public with sharing class KenEventFormController {
                 updateEvent.Description__c = this.description;
             }   
             if(this.agenda != null && this.agenda != ''){
-                updateEvent.Target_Keywords__c = this.agenda;
+                updateEvent.Target_Topics__c = this.agenda;
             } 
             if(this.eventExpectations != null && this.eventExpectations != ''){
                 updateEvent.What_to_Expect_From_Event__c = this.eventExpectations;
@@ -966,16 +1098,21 @@ public with sharing class KenEventFormController {
             if(this.emailBody != null && this.emailBody != ''){
                 updateEvent.Email_Body__c = this.emailBody;
             }
-            if(this.ScheduleDate != null && this.ScheduleDate != ''){
-                updateEvent.Schedule_Date__c = Date.valueOf(this.ScheduleDate);
-            }
-            if(this.ScheduleTime != null && this.ScheduleTime != ''){
+            // One field for the scheduled send. The date and time arrive as two
+            // separate inputs, but only the combined instant is stored.
+            if(this.ScheduleDate != null && this.ScheduleDate != ''
+               && this.ScheduleTime != null && this.ScheduleTime != ''){
                 List<String> timeParts = this.ScheduleTime.split(':');
                 if(timeParts.size() == 2){
                     Integer hours = Integer.valueOf(timeParts[0]);
                     Integer minutes = Integer.valueOf(timeParts[1]);
-                    Time ScheduleTime = Time.newInstance(hours, minutes, 0, 0);
-                    updateEvent.Schedule_Time__c = ScheduleTime;
+                    // The send time comes from a plain <input type="time"> in
+                    // kenPortalCreateEvent, so it is a local wall clock and the
+                    // pair resolves in the running user's timezone.
+                    updateEvent.Schedule_DateTime__c = DateTime.newInstance(
+                        Date.valueOf(this.ScheduleDate),
+                        Time.newInstance(hours, minutes, 0, 0)
+                    );
                 }
             }
             if(this.emailAttachment != null && this.emailAttachment != ''){
@@ -994,16 +1131,16 @@ public with sharing class KenEventFormController {
         cv.PathOnClient = '/' + fileName;
         cv.VersionData = fileBody;
         cv.IsMajorVersion = true;
-        insert cv;
+        Database.insert(cv, true, AccessLevel.USER_MODE);
 
-        ContentVersion insertedCV = [SELECT Id, ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id LIMIT 1];
+        ContentVersion insertedCV = [SELECT Id, ContentDocumentId FROM ContentVersion WHERE Id = :cv.Id WITH SYSTEM_MODE LIMIT 1];
 
         ContentDocumentLink cdl = new ContentDocumentLink();
         cdl.ContentDocumentId = insertedCV.ContentDocumentId;
         cdl.LinkedEntityId = recordId;
         cdl.ShareType = 'V';
         cdl.Visibility = 'AllUsers';
-        insert cdl;
+        Database.insert(cdl, true, AccessLevel.USER_MODE);
 
         return insertedCV.ContentDocumentId;
     }
@@ -1061,7 +1198,22 @@ public with sharing class KenEventFormController {
         @AuraEnabled
         public String meals;
         @AuraEnabled
-        public List<Ken_Questionnaire_Parameter__c> questionnaireParams;
+        public List<KenAssessmentSurveyService.QuestionRow> questionnaireParams;
+
+        // ISO-8601 UTC instants produced by c/kenDateTime.toUtcInstant, e.g.
+        // "2026-08-21T06:25:00.000Z". These are the authoritative values. The
+        // startDate/startTime pair above is still written so the ~390 readers
+        // that expect it keep working, and is retired once they have migrated.
+        //
+        // Only the instant survives a timezone change: a bare Time cannot say
+        // which day it belongs to, which is what let a 00:30 IST session land
+        // on the wrong date.
+        @AuraEnabled
+        public String startDateTime;
+        @AuraEnabled
+        public String endDateTime;
+        @AuraEnabled
+        public String feedbackEndDateTime;
 
         public EventScheduleWrapper() {
             this.speakers = new List<SpeakerWrapper>();
@@ -1070,17 +1222,20 @@ public with sharing class KenEventFormController {
         public EventScheduleWrapper(Ken_Schedule_Sessions__c eventSchedule) {
             this.Id = eventSchedule?.Id != null?eventSchedule.Id:'';
             this.agenda = eventSchedule.What_to_Expect_From_Event__c;
-            this.startTime = eventSchedule.Start_Time__c;
-            this.endTime = eventSchedule.End_Time__c;
-            this.startDate = eventSchedule.Start_Date__c!=null?eventSchedule.Start_Date__c:null;
+            // Derived from the one stored instant rather than a second column.
+            this.startDate = KenDateTimeUtil.localDate(eventSchedule.Start_DateTime__c);
             this.eventId = eventSchedule.Event_Reference__c;
             this.sessionBroucher = eventSchedule.Session_Broucher__c;
             this.name = eventSchedule.Name;
             this.feedbackTriggerType = eventSchedule.Feedback_Trigger_Type__c;
             this.feedbackTriggerWhen = eventSchedule.Feedback_Trigger_When__c;
-            this.feedbackEndDate = eventSchedule.Feedback_End_Date__c;
-            this.feedbackEndTime = eventSchedule.Feedback_End_Time__c;
-            this.questionnaireId = eventSchedule.Questionnaire__c;
+            this.feedbackEndDate = KenDateTimeUtil.localDate(eventSchedule.Feedback_End_DateTime__c);
+            // Survey__r is not on every caller's query, and touching an unqueried
+            // relationship throws rather than returning null.
+            this.questionnaireId = eventSchedule.getPopulatedFieldsAsMap().containsKey(KenNamespaceUtil.qualifyCustom('Survey__r'))
+                    && eventSchedule.Survey__r != null
+                ? eventSchedule.Survey__r.Assessment_Question_Set__c
+                : null;
             this.locationType = eventSchedule.Location_Type__c;
             this.locationAddress = eventSchedule.Location__c;
             this.sessionLink = eventSchedule.Session_Link__c;
@@ -1089,6 +1244,13 @@ public with sharing class KenEventFormController {
             this.sessionFee = eventSchedule.Session_Fee__c;
             this.noFee = eventSchedule.No_Fee__c ? eventSchedule.No_Fee__c : false ;
             this.meals = eventSchedule.Meals__c;
+
+            // Hand the LWC the instant when we have one. Rows saved before the
+            // migration have only the Date + Time pair, so the field stays null
+            // and the component falls back to those.
+            this.startDateTime = KenDateTimeUtil.instantFrom(eventSchedule, 'Start_DateTime__c');
+            this.endDateTime = KenDateTimeUtil.instantFrom(eventSchedule, 'End_DateTime__c');
+            this.feedbackEndDateTime = KenDateTimeUtil.instantFrom(eventSchedule, 'Feedback_End_DateTime__c');
             
             // If there are speaker child records, map them to the SpeakerWrapper
             this.speakers = new List<SpeakerWrapper>();
@@ -1109,14 +1271,16 @@ public with sharing class KenEventFormController {
             if (this.agenda != null && this.agenda !='') {
                 es.What_to_Expect_From_Event__c = this.agenda;}
             
-            if (this.startDate != null) {
-                es.Start_Date__c = this.startDate; }
-            
-            if (this.startTime != null) {
-                es.Start_Time__c = this.startTime.addHours(5).addMinutes(30); }
-            
-            if (this.endTime != null) {
-                es.End_Time__c = this.endTime.addHours(5).addMinutes(30); }
+            // Authoritative UTC instants. Written first so that if the legacy
+            // pair below is ever wrong, the instant is still right.
+            DateTime startInstant = resolveInstant(this.startDateTime, this.startDate, this.startTime);
+            if (startInstant != null) {
+                es.Start_DateTime__c = startInstant; }
+
+            DateTime endInstant = resolveInstant(this.endDateTime, this.endDate != null ? this.endDate : this.startDate, this.endTime);
+            if (endInstant != null) {
+                es.End_DateTime__c = endInstant; }
+
 
             if (this.feedbackTriggerType != null && this.feedbackTriggerType != '') {
                 es.Feedback_Trigger_Type__c = this.feedbackTriggerType;
@@ -1127,12 +1291,13 @@ public with sharing class KenEventFormController {
             }
 
             if (this.feedbackEndDate != null) {
-                es.Feedback_End_Date__c = this.feedbackEndDate;
             }
 
-            if (this.feedbackEndTime != null) {
-                es.Feedback_End_Time__c = this.feedbackEndTime.addHours(5).addMinutes(30);
+            DateTime feedbackInstant = resolveInstant(this.feedbackEndDateTime, this.feedbackEndDate, this.feedbackEndTime);
+            if (feedbackInstant != null) {
+                es.Feedback_End_DateTime__c = feedbackInstant;
             }
+
             
             if (this.eventId != null && this.eventId !=' ') {
                 es.Event_Reference__c = this.eventId; }
@@ -1254,151 +1419,208 @@ public with sharing class KenEventFormController {
     // which the S&S module doesn't have).
     // ─────────────────────────────────────────────────────────────────────────
 
-    @AuraEnabled(cacheable=true)
-    public static Ken_Questionnaire__c getQuestionnaireByEventId(Id eventId) {
-        try {
-            if (eventId == null) return null;
-            // Read in system context: a community registrant has no sharing access to
-            // the event/survey/questionnaire, so a with-sharing query returns 0 rows
-            // ("List has no rows for assignment to SObject").
-            WosDml wos = new WosDml();
-            List<Ken_Event_Master__c> events = wos.eventForQuestionnaire(eventId);
-            if (events.isEmpty()) {
-                return null;
-            }
-            Ken_Event_Master__c eventRecord = events[0];
-            // Prefer the survey-linked questionnaire; fall back to the legacy direct lookup.
-            Id questionnaireId = (eventRecord.Survey__r != null && eventRecord.Survey__r.Ken_Questionnaire__c != null)
-                ? eventRecord.Survey__r.Ken_Questionnaire__c
-                : eventRecord.Questionnaire__c;
-            if (questionnaireId == null) {
-                return null;
-            }
-            List<Ken_Questionnaire__c> qs = wos.questionnaireWithParams(questionnaireId);
-            return qs.isEmpty() ? null : qs[0];
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
+    /**
+     * @description A questionnaire and its questions as the event builder consumes them.
+     */
+    public class QuestionnaireDTO {
+        @AuraEnabled public Id questionSetId { get; set; }
+        @AuraEnabled public List<KenAssessmentSurveyService.QuestionRow> questions { get; set; }
     }
 
-    @AuraEnabled
-    public static Id saveQuestionnaireForEvent(Id eventId, Ken_Questionnaire__c questionnaire, List<Ken_Questionnaire_Parameter__c> questions) {
+    /**
+     * @description One question being saved from the event builder. A linear scale carries its
+     *              points in choices, each with its own label.
+     */
+    public class QuestionSaveDTO {
+        @AuraEnabled public String text { get; set; }
+        @AuraEnabled public String questionType { get; set; }
+        @AuraEnabled public Boolean required { get; set; }
+        @AuraEnabled public List<KenAssessmentSurveyService.ChoiceRow> choices { get; set; }
+    }
+
+    /**
+     * @description Loads the questionnaire attached to an event's pre-event survey.
+     * @param eventId Event to read.
+     * @return The questionnaire, or null when the event has none.
+     */
+    @AuraEnabled(cacheable=true)
+    public static QuestionnaireDTO getQuestionnaireByEventId(Id eventId) {
         try {
             if (eventId == null) {
-                throw new AuraHandledException('Event Id is required.');
+                return null;
             }
-            Ken_Event_Master__c eventRecord = [
-                SELECT Id, Name, Description__c, Questionnaire__c, Survey__c, Constituent_Role__c,
-                       Start_Date__c, End_Date__c
-                FROM Ken_Event_Master__c
-                WHERE Id = :eventId                LIMIT 1
-            ];
-
-            if (questionnaire == null) {
-                questionnaire = new Ken_Questionnaire__c();
+            // Read in system context: a community registrant has no sharing access to the
+            // event or its survey, so a with-sharing query returns 0 rows.
+            List<Ken_Event_Master__c> events = new WosDml().eventForQuestionnaire(eventId);
+            if (events.isEmpty() || events[0].Survey__r == null
+                || events[0].Survey__r.Assessment_Question_Set__c == null) {
+                return null;
             }
-            if (questionnaire.Id == null && eventRecord.Questionnaire__c != null) {
-                questionnaire.Id = eventRecord.Questionnaire__c;
-            }
-            questionnaire.Section_Name__c = eventRecord.Name;
-
-            questionnaire.Questions_JSON__c = JSON.serialize(questions);
-
-            if (Schema.sObjectType.Ken_Questionnaire__c.isCreateable() &&
-                Schema.sObjectType.Ken_Questionnaire__c.isUpdateable()) {
-                upsert questionnaire;
-            }
-
-            reconcileQuestions(questionnaire.Id, questions);
-
-            // Wrap the questionnaire in a Ken_Survey__c so it surfaces in the Survey module
-            // and responses can be tracked against the survey. Event -> Survey -> Questionnaire.
-            Id surveyId = upsertWrapperSurvey(
-                eventRecord.Survey__c, questionnaire.Id, 'Survey',
-                eventRecord.Name, eventRecord.Description__c, eventRecord.Constituent_Role__c,
-                eventRecord.Start_Date__c, eventRecord.End_Date__c
-            );
-
-            if (Schema.sObjectType.Ken_Event_Master__c.isUpdateable()) {
-                new WosDml().updateRecord(new Ken_Event_Master__c(
-                    Id = eventRecord.Id,
-                    Survey__c = surveyId,
-                    Questionnaire__c = questionnaire.Id
-                ));
-            }
-            return questionnaire.Id;
-        } catch (Exception e) {
-            throw new AuraHandledException(e.getMessage());
-        }
-    }
-
-    @AuraEnabled
-    public static Id saveQuestionnaireForSession(Id sessionId, Ken_Questionnaire__c questionnaire, List<Ken_Questionnaire_Parameter__c> questions) {
-        try {
-            if (sessionId == null) {
-                throw new AuraHandledException('Session Id is required.');
-            }
-            Ken_Schedule_Sessions__c sessionRecord = [
-                SELECT Id, Name, Questionnaire__c, Survey__c, What_to_Expect_From_Event__c,
-                       Start_Date__c, Event_Reference__r.Constituent_Role__c
-                FROM Ken_Schedule_Sessions__c
-                WHERE Id = :sessionId                LIMIT 1
-            ];
-
-            if (questionnaire == null) {
-                questionnaire = new Ken_Questionnaire__c();
-            }
-            if (questionnaire.Id == null && sessionRecord.Questionnaire__c != null) {
-                questionnaire.Id = sessionRecord.Questionnaire__c;
-            }
-            if (String.isBlank(questionnaire.Section_Name__c)) {
-                questionnaire.Section_Name__c = sessionRecord.Name;
-            }
-
-            questionnaire.Questions_JSON__c = JSON.serialize(questions);
-
-            if (Schema.sObjectType.Ken_Questionnaire__c.isCreateable() &&
-                Schema.sObjectType.Ken_Questionnaire__c.isUpdateable()) {
-                upsert questionnaire;
-            }
-
-            reconcileQuestions(questionnaire.Id, questions);
-
-            // Wrap the feedback questionnaire in a Ken_Survey__c (Type Feedback). Session -> Survey -> Questionnaire.
-            Id hostRole = sessionRecord.Event_Reference__r != null ? sessionRecord.Event_Reference__r.Constituent_Role__c : null;
-            Id surveyId = upsertWrapperSurvey(
-                sessionRecord.Survey__c, questionnaire.Id, 'Feedback',
-                sessionRecord.Name, sessionRecord.What_to_Expect_From_Event__c, hostRole,
-                sessionRecord.Start_Date__c, sessionRecord.Start_Date__c
-            );
-
-            if (Schema.sObjectType.Ken_Schedule_Sessions__c.isUpdateable()) {
-                new WosDml().updateRecord(new Ken_Schedule_Sessions__c(
-                    Id = sessionRecord.Id,
-                    Survey__c = surveyId,
-                    Questionnaire__c = questionnaire.Id
-                ));
-            }
-            return questionnaire.Id;
+            return buildQuestionnaireDTO(events[0].Survey__r.Assessment_Question_Set__c);
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
 
     /**
+     * @description Saves an event's pre-event survey questions.
+     * @param eventId Event the survey belongs to.
+     * @param surveyTitle Optional questionnaire title; defaults to the event name.
+     * @param questions Questions in display order.
+     * @return Id of the saved question set.
+     */
+    @AuraEnabled
+    public static Id saveQuestionnaireForEvent(Id eventId, String surveyTitle, List<QuestionSaveDTO> questions) {
+        try {
+            if (eventId == null) {
+                throw new AuraHandledException('Event Id is required.');
+            }
+            Ken_Event_Master__c eventRecord = [
+                SELECT Id, Name, Description__c, Survey__c, Survey__r.Assessment_Question_Set__c,
+                       Constituent_Role__c, Start_Date__c, End_Date__c
+                FROM Ken_Event_Master__c
+                WHERE Id = :eventId
+                WITH USER_MODE
+                LIMIT 1
+            ];
+
+            Id existingSetId = eventRecord.Survey__r != null
+                ? eventRecord.Survey__r.Assessment_Question_Set__c : null;
+            String title = String.isNotBlank(surveyTitle) ? surveyTitle : eventRecord.Name;
+            Id questionSetId = KenAssessmentSurveyService.saveQuestionSet(
+                existingSetId, title,
+                toServiceInputs(questions)
+            );
+
+            Id surveyId = upsertWrapperSurvey(
+                eventRecord.Survey__c, questionSetId, 'Survey',
+                eventRecord.Name, eventRecord.Description__c, eventRecord.Constituent_Role__c,
+                eventRecord.Start_Date__c, eventRecord.End_Date__c,
+                eventRecord.Id, null
+            );
+
+            if (Schema.sObjectType.Ken_Event_Master__c.isUpdateable()) {
+                new WosDml().updateRecord(new Ken_Event_Master__c(
+                    Id = eventRecord.Id,
+                    Survey__c = surveyId
+                ));
+            }
+
+            syncWrapperSurveyAudience(eventRecord.Id, new Set<Id>{ surveyId });
+            return questionSetId;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    /**
+     * @description Saves a session's feedback questions.
+     * @param sessionId Session the feedback belongs to.
+     * @param surveyTitle Optional questionnaire title; defaults to the session name.
+     * @param questions Questions in display order.
+     * @return Id of the saved question set.
+     */
+    @AuraEnabled
+    public static Id saveQuestionnaireForSession(Id sessionId, String surveyTitle, List<QuestionSaveDTO> questions) {
+        try {
+            if (sessionId == null) {
+                throw new AuraHandledException('Session Id is required.');
+            }
+            Ken_Schedule_Sessions__c sessionRecord = [
+                SELECT Id, Name, Survey__c, Survey__r.Assessment_Question_Set__c,
+                       What_to_Expect_From_Event__c, Start_DateTime__c, Event_Reference__c,
+                       Event_Reference__r.Constituent_Role__c
+                FROM Ken_Schedule_Sessions__c
+                WHERE Id = :sessionId
+                WITH USER_MODE
+                LIMIT 1
+            ];
+
+            Id existingSetId = sessionRecord.Survey__r != null
+                ? sessionRecord.Survey__r.Assessment_Question_Set__c : null;
+            String title = String.isNotBlank(surveyTitle) ? surveyTitle : sessionRecord.Name;
+            Id questionSetId = KenAssessmentSurveyService.saveQuestionSet(
+                existingSetId, title,
+                toServiceInputs(questions)
+            );
+
+            Id hostRole = sessionRecord.Event_Reference__r != null
+                ? sessionRecord.Event_Reference__r.Constituent_Role__c : null;
+            Id surveyId = upsertWrapperSurvey(
+                sessionRecord.Survey__c, questionSetId, 'Feedback',
+                sessionRecord.Name, sessionRecord.What_to_Expect_From_Event__c, hostRole,
+                KenDateTimeUtil.localDate(sessionRecord.Start_DateTime__c),
+                KenDateTimeUtil.localDate(sessionRecord.Start_DateTime__c),
+                sessionRecord.Event_Reference__c, sessionRecord.Id
+            );
+
+            if (Schema.sObjectType.Ken_Schedule_Sessions__c.isUpdateable()) {
+                new WosDml().updateRecord(new Ken_Schedule_Sessions__c(
+                    Id = sessionRecord.Id,
+                    Survey__c = surveyId
+                ));
+            }
+
+            syncWrapperSurveyAudience(sessionRecord.Event_Reference__c, new Set<Id>{ surveyId });
+            return questionSetId;
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
+        }
+    }
+
+    private static QuestionnaireDTO buildQuestionnaireDTO(Id questionSetId) {
+        List<AssessmentQuestionSet> sets = [
+            SELECT Id, Name
+            FROM AssessmentQuestionSet WHERE Id = :questionSetId
+            WITH USER_MODE
+            LIMIT 1
+        ];
+        if (sets.isEmpty()) {
+            return null;
+        }
+        QuestionnaireDTO dto = new QuestionnaireDTO();
+        dto.questionSetId = sets[0].Id;
+        dto.questions = KenAssessmentSurveyService.questionsForSet(questionSetId);
+        return dto;
+    }
+
+    private static List<KenAssessmentSurveyService.QuestionInput> toServiceInputs(List<QuestionSaveDTO> questions) {
+        List<KenAssessmentSurveyService.QuestionInput> inputs = new List<KenAssessmentSurveyService.QuestionInput>();
+        if (questions == null) {
+            return inputs;
+        }
+        for (QuestionSaveDTO q : questions) {
+            if (q == null) {
+                continue;
+            }
+            KenAssessmentSurveyService.QuestionInput input = new KenAssessmentSurveyService.QuestionInput();
+            input.text = q.text;
+            input.questionType = q.questionType;
+            input.required = q.required == true;
+            input.choices = q.choices;
+            inputs.add(input);
+        }
+        return inputs;
+    }
+
+    /**
      * Upserts the Ken_Survey__c wrapper that links an event/session to its questionnaire.
-     * Event/Session point to this survey; the survey points to the questionnaire.
+     * Event/Session point to this survey; the survey points back at them and at the
+     * questionnaire, so the link is navigable from either record page.
      */
     private static Id upsertWrapperSurvey(Id existingSurveyId, Id questionnaireId, String surveyType,
-        String name, String description, Id constituentRoleId, Date startDate, Date endDate) {
+        String name, String description, Id constituentRoleId, Date startDate, Date endDate,
+        Id eventId, Id sessionId) {
         Ken_Survey__c survey = new Ken_Survey__c();
         if (existingSurveyId != null) survey.Id = existingSurveyId;
+        survey.Event__c = eventId;
+        survey.Session__c = sessionId;
         survey.Name = String.isBlank(name) ? surveyType : name;
-        survey.Section_Name__c = name;
         survey.Description__c = description;
         survey.Type__c = surveyType;
-        survey.Ken_Questionnaire__c = questionnaireId;
+        survey.Assessment_Question_Set__c = questionnaireId;
         survey.Approval_Status__c = 'Approved';
+        survey.Module__c = 'Alumni';
         survey.Is_Active__c = true;
         survey.Start_Date__c = startDate;
         survey.End_Date__c = endDate;
@@ -1410,63 +1632,130 @@ public with sharing class KenEventFormController {
         return survey.Id;
     }
 
-    // System-context DML helper for the questionnaire/survey save path, mirroring
-    // EventWriter/ScheduleWriter — portal hosts can't always reach these records or
-    // their cross-references under sharing.
-    private without sharing class WosDml {
-        void upsertRecord(SObject rec) { upsert rec; }
-        void updateRecord(SObject rec) { update rec; }
-        List<Ken_Event_Master__c> eventForQuestionnaire(Id eventId) {
-            return [
-                SELECT Id, Questionnaire__c, Survey__c, Survey__r.Ken_Questionnaire__c
-                FROM Ken_Event_Master__c WHERE Id = :eventId LIMIT 1
-            ];
+    /**
+     * Entry point for the audience picker: pushes an event's saved audience down to every
+     * Ken_Survey__c wrapper already created for the event and its sessions.
+     *
+     * The picker writes Ken_Event_Master__c.Segmentation__c through KenAudienceJunctionController,
+     * which can run either before or after the questionnaire step has created those
+     * wrappers, so the mirror has to be driven from both sides.
+     *
+     * @param eventId Event whose audience has just been saved.
+     */
+    public static void syncEventAudienceToWrapperSurveys(Id eventId) {
+        syncWrapperSurveyAudience(eventId, wrapperSurveyIdsForEvent(eventId));
+    }
+
+    /**
+     * Mirrors an event's audience onto the Ken_Survey__c wrappers that hang off it.
+     *
+     * The Survey module resolves a survey's target audience only from Ken_Survey__c's own
+     * Segmentation__c — both the detail page's Target Audience card and the getSurveys()
+     * eligibility filter. Event and session feedback wrappers take their audience from the
+     * event, so without this mirror they render an empty audience and are filtered out of
+     * every respondent's survey list.
+     *
+     * A cleared event audience is mirrored too, so a wrapper never keeps an audience the
+     * event has dropped.
+     *
+     * Runs in system context: a portal host rarely holds sharing access to the wrapper
+     * survey, which is created on their behalf either way.
+     *
+     * @param eventId Event whose audience is the source of truth.
+     * @param surveyIds Wrapper surveys to bring in line with that audience.
+     */
+    private static void syncWrapperSurveyAudience(Id eventId, Set<Id> surveyIds) {
+        if (eventId == null || surveyIds == null) {
+            return;
         }
-        List<Ken_Questionnaire__c> questionnaireWithParams(Id questionnaireId) {
-            return [
-                SELECT Id, Section_Name__c, Descripation__c, Target_Audience__c,
-                       (SELECT Id, Question_Label__c, Question_Type__c, Is_Required__c, MCQ_Options__c,
-                               Section_Name__c, Section_Header__c
-                        FROM Ken_Questionnaire_Parameters__r
-                        ORDER BY CreatedDate ASC)
-                FROM Ken_Questionnaire__c WHERE Id = :questionnaireId LIMIT 1
-            ];
+        surveyIds.remove(null);
+        if (surveyIds.isEmpty()) {
+            return;
+        }
+
+        WosDml dml = new WosDml();
+        Id eventSegmentationId = null;
+        for (Ken_Event_Master__c evt : dml.eventAudience(eventId)) {
+            eventSegmentationId = evt.Segmentation__c;
+        }
+
+        List<Ken_Survey__c> toUpdate = new List<Ken_Survey__c>();
+        for (Ken_Survey__c srv : dml.surveyAudiences(surveyIds)) {
+            if (srv.Segmentation__c != eventSegmentationId) {
+                toUpdate.add(new Ken_Survey__c(Id = srv.Id, Segmentation__c = eventSegmentationId));
+            }
+        }
+
+        if (!toUpdate.isEmpty()) {
+            dml.updateRecords(toUpdate);
         }
     }
 
     /**
-     * Shared helper: deletes orphaned existing questions, then upserts the
-     * incoming ones with the parent questionnaire id wired up.
+     * Collects every Ken_Survey__c wrapper reachable from an event — the event's own
+     * survey plus one per session — so an audience change can be pushed to all of them.
+     *
+     * @param eventId Event to walk.
+     * @return Wrapper survey Ids, empty when the event has no questionnaire yet.
      */
-    private static void reconcileQuestions(Id questionnaireId, List<Ken_Questionnaire_Parameter__c> questions) {
-        List<Ken_Questionnaire_Parameter__c> existing = [
-            SELECT Id FROM Ken_Questionnaire_Parameter__c
-            WHERE Questionnaire__c = :questionnaireId        ];
-
-        Set<Id> incomingIds = new Set<Id>();
-        if (questions != null) {
-            for (Ken_Questionnaire_Parameter__c q : questions) {
-                if (q.Id != null) incomingIds.add(q.Id);
+    private static Set<Id> wrapperSurveyIdsForEvent(Id eventId) {
+        Set<Id> surveyIds = new Set<Id>();
+        if (eventId == null) {
+            return surveyIds;
+        }
+        WosDml dml = new WosDml();
+        for (Ken_Event_Master__c evt : dml.eventForQuestionnaire(eventId)) {
+            if (evt.Survey__c != null) {
+                surveyIds.add(evt.Survey__c);
             }
         }
-
-        List<Ken_Questionnaire_Parameter__c> toDelete = new List<Ken_Questionnaire_Parameter__c>();
-        for (Ken_Questionnaire_Parameter__c q : existing) {
-            if (!incomingIds.contains(q.Id)) toDelete.add(q);
-        }
-        if (!toDelete.isEmpty() && Schema.sObjectType.Ken_Questionnaire_Parameter__c.isDeletable()) {
-            delete toDelete;
-        }
-
-        if (questions != null) {
-            for (Ken_Questionnaire_Parameter__c q : questions) {
-                if (q.Id == null) q.Questionnaire__c = questionnaireId;
+        for (Ken_Schedule_Sessions__c ses : dml.sessionSurveysForEvent(eventId)) {
+            if (ses.Survey__c != null) {
+                surveyIds.add(ses.Survey__c);
             }
-            if (!questions.isEmpty() &&
-                Schema.sObjectType.Ken_Questionnaire_Parameter__c.isCreateable() &&
-                Schema.sObjectType.Ken_Questionnaire_Parameter__c.isUpdateable()) {
-                upsert questions;
-            }
+        }
+        return surveyIds;
+    }
+
+    // System-context DML helper for the questionnaire/survey save path, mirroring
+    // EventWriter/ScheduleWriter — portal hosts can't always reach these records or
+    // their cross-references under sharing.
+    private without sharing class WosDml {
+        void upsertRecord(SObject rec) { Database.upsert(rec, true, AccessLevel.SYSTEM_MODE); }
+        void updateRecord(SObject rec) { Database.update(rec, true, AccessLevel.SYSTEM_MODE); }
+        void updateRecords(List<SObject> recs) { Database.update(recs, true, AccessLevel.SYSTEM_MODE); }
+        List<Ken_Event_Master__c> eventAudience(Id eventId) {
+            return [
+                SELECT Id, Segmentation__c
+                FROM Ken_Event_Master__c
+                WHERE Id = :eventId
+                WITH SECURITY_ENFORCED
+                LIMIT 1
+            ];
+        }
+        List<Ken_Survey__c> surveyAudiences(Set<Id> surveyIds) {
+            return [
+                SELECT Id, Segmentation__c
+                FROM Ken_Survey__c
+                WHERE Id IN :surveyIds
+            WITH SECURITY_ENFORCED
+            ];
+        }
+        List<Ken_Schedule_Sessions__c> sessionSurveysForEvent(Id eventId) {
+            return [
+                SELECT Id, Survey__c
+                FROM Ken_Schedule_Sessions__c
+                WHERE Event_Reference__c = :eventId AND Survey__c != null
+            WITH SECURITY_ENFORCED
+            ];
+        }
+        List<Ken_Event_Master__c> eventForQuestionnaire(Id eventId) {
+            return [
+                SELECT Id, Survey__c, Survey__r.Assessment_Question_Set__c
+                FROM Ken_Event_Master__c WHERE Id = :eventId
+                WITH SECURITY_ENFORCED
+                LIMIT 1
+            ];
         }
     }
 }

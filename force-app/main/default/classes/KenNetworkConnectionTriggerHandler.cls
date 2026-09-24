@@ -8,6 +8,14 @@ public without sharing class KenNetworkConnectionTriggerHandler extends KenTrigg
     private static final String STATUS_REQUESTED = 'Requested';
     private static final String STATUS_REJECTED  = 'Rejected';
 
+    public override void processBeforeInsert() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
+    public override void processBeforeUpdate() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
     public override void processAfterInsert() {
         notifyRequestRecipients((List<Ken_Network_Connection__c>) Trigger.new);
     }
@@ -30,7 +38,7 @@ public without sharing class KenNetworkConnectionTriggerHandler extends KenTrigg
             ctxs.add(new KenNotificationFactory.Context(
                 conn.Recipient__c,
                 conn.Initiator__c,
-                conn.Initiator__c   // sourceRecordId → {!Id} resolves to the requester's profile id
+                conn.Initiator__c
             ));
         }
         if (ctxs.isEmpty()) return;

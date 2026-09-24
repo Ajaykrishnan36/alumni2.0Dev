@@ -1,17 +1,14 @@
 @isTest
 public class KenEventFormControllerTest {
+    // Fixture day for the UTC instants that replaced the old Date+Time pairs.
+    private static final Date TZ_TEST_DAY = Date.today();
 
     @TestSetup
     static void setup() {
-        Alumni_Org_Parameters__c orgSettings = new Alumni_Org_Parameters__c();
-        orgSettings.Session_Brochure_File_Size_MB__c = 2;
-        orgSettings.Session_Brochure_File_Types__c = 'png,jpeg,jpg,pdf';
-		orgSettings.Event_Banner_File_Size_MB__c = 2;
-		orgSettings.Event_Banner_File_Types__c = 'png,jpeg,jpg';
-        insert orgSettings;
+        insert new Ken_Alm_Org_Parameters__c();
         
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account')
+            .get('PersonAccount')
             .getRecordTypeId();
         Account testAccount = new Account(
             RecordTypeId = paRtId,
@@ -35,7 +32,7 @@ public class KenEventFormControllerTest {
             Start_Date__c = Date.today(),
             End_Date__c = Date.today().addDays(1),
             Description__c = 'Test Description',
-            Target_Keywords__c = 'Test Keywords',
+            Target_Topics__c = 'Test Keywords',
             Max_Allowed_Participants__c = 100,
             Event_Current_Step__c = 1,
             Event_Fee__c = 500,
@@ -44,8 +41,7 @@ public class KenEventFormControllerTest {
             Auto_Enroll_Target_Audience__c = false,
             Email_Body__c = 'test body',
             Email_Subject__c = 'test subject',
-            Schedule_Date__c = Date.today(),
-            Schedule_Time__c = System.now().time(),
+            Schedule_DateTime__c = System.now(),
             Email_Attachment__c = 'Test Attahement',
             What_to_Expect_From_Event__c = 'Great learning',
             Constituent_Role__c = cr.Id
@@ -55,9 +51,8 @@ public class KenEventFormControllerTest {
         Ken_Schedule_Sessions__c testSession = new Ken_Schedule_Sessions__c(
             Name = 'Test Session',
             Event_Reference__c = testEvent.Id,
-            Start_Date__c = Date.today(),
-            Start_Time__c = Time.newInstance(10, 0, 0, 0),
-            End_Time__c = Time.newInstance(11, 0, 0, 0),
+            Start_DateTime__c = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(10, 0, 0, 0)),
+            End_DateTime__c = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(11, 0, 0, 0)),
             Location_Type__c = 'Online',
             Session_Link__c = 'https://test.com',
             Location__c = 'Virtual',
@@ -274,15 +269,8 @@ public class KenEventFormControllerTest {
     }
     
     @isTest
-    static void testGetFileUploadSettings() {
-        Test.startTest();
-        Map<String, String> settings = KenEventFormController.getFileUploadSettings('Event_Banner_File_Types__c', 'Event_Banner_File_Size_MB__c');
-        Test.stopTest();
-    }
-    
-    @isTest
     static void testSaveEventNew() {
-        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Keywords__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_Date__c, Schedule_Time__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
+        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Topics__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_DateTime__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
         
         KenEventFormController.EventWrapper wrapper = new KenEventFormController.EventWrapper(existingEvent);
         wrapper.Id = null;
@@ -299,7 +287,7 @@ public class KenEventFormControllerTest {
         String jsonData = JSON.serialize(wrapper);
         
         Test.startTest();
-        Id eventId = KenEventFormController.saveEvent(jsonData, null);
+        Id eventId = KenEventFormController.saveEvent(jsonData);
         Test.stopTest();
     }
     
@@ -320,7 +308,7 @@ public class KenEventFormControllerTest {
         insert portalUser;
         
         System.runAs(portalUser) {
-            Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Keywords__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_Date__c, Schedule_Time__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
+            Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Topics__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_DateTime__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
             
             KenEventFormController.EventWrapper wrapper = new KenEventFormController.EventWrapper(existingEvent);
             wrapper.eventTitle = 'Portal Event';
@@ -330,7 +318,7 @@ public class KenEventFormControllerTest {
             
             Test.startTest();
             try {
-                KenEventFormController.saveEvent(jsonData, null);
+                KenEventFormController.saveEvent(jsonData);
             } catch (AuraHandledException e) {
             }
             Test.stopTest();
@@ -405,7 +393,7 @@ public class KenEventFormControllerTest {
     
     @isTest
     static void testSaveDataEventGroup() {
-        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Keywords__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c , Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_Date__c, Schedule_Time__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
+        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Topics__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c , Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_DateTime__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
         
         KenEventFormController.EventWrapper wrapper = new KenEventFormController.EventWrapper(existingEvent);
         wrapper.Id = null;
@@ -451,7 +439,7 @@ public class KenEventFormControllerTest {
     
     @isTest
     static void testEventWrapperConstructor() {
-        Ken_Event_Master__c event = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Keywords__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_Date__c, Schedule_Time__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
+        Ken_Event_Master__c event = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Topics__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_DateTime__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
         
         Test.startTest();
         KenEventFormController.EventWrapper wrapper = new KenEventFormController.EventWrapper(event);
@@ -460,7 +448,7 @@ public class KenEventFormControllerTest {
     
     @isTest
     static void testEventWrapperGetRecord() {
-        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Keywords__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_Date__c, Schedule_Time__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
+        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Topics__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_DateTime__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
         
         KenEventFormController.EventWrapper wrapper = new KenEventFormController.EventWrapper(existingEvent);
         wrapper.Id = existingEvent.Id;
@@ -489,7 +477,7 @@ public class KenEventFormControllerTest {
     
     @isTest
     static void testEventWrapperGetRecordWithUrlBroucher() {
-        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Keywords__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_Date__c, Schedule_Time__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
+        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Topics__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_DateTime__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
         
         KenEventFormController.EventWrapper wrapper = new KenEventFormController.EventWrapper(existingEvent);
         wrapper.broucher = 'https://example.com/broucher.pdf';
@@ -503,7 +491,7 @@ public class KenEventFormControllerTest {
     
     @isTest
     static void testEventWrapperGetRecordBase64WithoutComma() {
-        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Keywords__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_Date__c, Schedule_Time__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
+        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Topics__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_DateTime__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
         
         KenEventFormController.EventWrapper wrapper = new KenEventFormController.EventWrapper(existingEvent);
         wrapper.broucher = 'JVBERi0xLjQKJcfs';
@@ -518,7 +506,7 @@ public class KenEventFormControllerTest {
     
     @isTest
     static void testEventScheduleWrapperConstructor() {
-        Ken_Schedule_Sessions__c session = [SELECT Id, What_to_Expect_From_Event__c, Name, Session_Broucher__c, Event_Reference__c, Start_Date__c, Start_Time__c, End_Time__c, Location_Type__c, Session_Link__c, Location__c, End_Date__c, Session_Fee__c, No_Fee__c, Feedback_Trigger_Type__c, Feedback_Trigger_When__c, Feedback_End_Date__c, Feedback_End_Time__c, Questionnaire__c, Broucher_Type__c, Broucher_Name__c, Meals__c, (SELECT Id, Person_Account__r.Name, Person_Account__c, Description__c, Speaker_Image__c, Schedule_Sessions__c, Speaker_Name__c, Speaker_Email__c, Send_Invite__c, Invite_Email_Sent__c FROM Event_Session_Account_Associations__r) FROM Ken_Schedule_Sessions__c LIMIT 1];
+        Ken_Schedule_Sessions__c session = [SELECT Id, What_to_Expect_From_Event__c, Name, Session_Broucher__c, Event_Reference__c, Start_DateTime__c, End_DateTime__c, Location_Type__c, Session_Link__c, Location__c, Session_Fee__c, No_Fee__c, Feedback_Trigger_Type__c, Feedback_Trigger_When__c, Feedback_End_DateTime__c, Broucher_Type__c, Broucher_Name__c, Meals__c, (SELECT Id, Person_Account__r.Name, Person_Account__c, Description__c, Speaker_Image__c, Schedule_Sessions__c, Speaker_Name__c, Speaker_Email__c, Send_Invite__c, Invite_Email_Sent__c FROM Event_Session_Account_Associations__r) FROM Ken_Schedule_Sessions__c LIMIT 1];
 
         Test.startTest();
         KenEventFormController.EventScheduleWrapper wrapper = new KenEventFormController.EventScheduleWrapper(session);
@@ -554,25 +542,25 @@ public class KenEventFormControllerTest {
         Test.stopTest();
     }
 
-    // ─────────────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     // Questionnaire methods migrated from KenQuestionnaireControllerClass
-    // ─────────────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @isTest
     static void testGetQuestionnaireByEventIdReturnsNullWhenNoQuestionnaire() {
         Ken_Event_Master__c eventRec = [SELECT Id FROM Ken_Event_Master__c LIMIT 1];
 
         Test.startTest();
-        Ken_Questionnaire__c result = KenEventFormController.getQuestionnaireByEventId(eventRec.Id);
+        KenEventFormController.QuestionnaireDTO result = KenEventFormController.getQuestionnaireByEventId(eventRec.Id);
         Test.stopTest();
 
-        System.assertEquals(null, result, 'No questionnaire linked yet — should return null');
+        System.assertEquals(null, result, 'No questionnaire linked yet â€” should return null');
     }
 
     @isTest
     static void testGetQuestionnaireByEventIdNullEventReturnsNull() {
         Test.startTest();
-        Ken_Questionnaire__c result = KenEventFormController.getQuestionnaireByEventId(null);
+        KenEventFormController.QuestionnaireDTO result = KenEventFormController.getQuestionnaireByEventId(null);
         Test.stopTest();
 
         System.assertEquals(null, result, 'Null event id should short-circuit to null');
@@ -582,33 +570,23 @@ public class KenEventFormControllerTest {
     static void testSaveQuestionnaireForEventCreatesAndLinks() {
         Ken_Event_Master__c eventRec = [SELECT Id, Name FROM Ken_Event_Master__c LIMIT 1];
 
-        Ken_Questionnaire__c q = new Ken_Questionnaire__c(
-            Section_Name__c = 'Pre-event',
-            Target_Audience__c = 'Alumni'
-        );
-        List<Ken_Questionnaire_Parameter__c> questions = new List<Ken_Questionnaire_Parameter__c>{
-            new Ken_Questionnaire_Parameter__c(
-                Question_Label__c = 'What did you expect?',
-                Question_Type__c  = 'Short Answer',
-                Is_Required__c    = true
-            )
-        };
-
         Test.startTest();
-        Id questionnaireId = KenEventFormController.saveQuestionnaireForEvent(
-            eventRec.Id, q, questions
+        Id questionSetId = KenEventFormController.saveQuestionnaireForEvent(
+            eventRec.Id, 'Pre-event', qDtos('What did you expect?', 'Short Answer', true)
         );
         Test.stopTest();
 
-        System.assertNotEquals(null, questionnaireId);
-        Ken_Event_Master__c reloaded = [SELECT Questionnaire__c FROM Ken_Event_Master__c WHERE Id = :eventRec.Id];
-        System.assertEquals(questionnaireId, reloaded.Questionnaire__c,
-            'Event should be linked to the newly-created questionnaire');
-
-        Integer linkedQuestions = [
-            SELECT COUNT() FROM Ken_Questionnaire_Parameter__c WHERE Questionnaire__c = :questionnaireId
+        System.assertNotEquals(null, questionSetId);
+        Ken_Event_Master__c reloaded = [
+            SELECT Survey__c, Survey__r.Assessment_Question_Set__c
+            FROM Ken_Event_Master__c WHERE Id = :eventRec.Id
         ];
-        System.assertEquals(1, linkedQuestions, 'One question should be persisted');
+        System.assertEquals(questionSetId, reloaded.Survey__r.Assessment_Question_Set__c,
+            'Event survey should point at the newly-created question set');
+
+        System.assertEquals(1, [
+            SELECT COUNT() FROM AssessmentQuestion WHERE Ken_Question_Set__c = :questionSetId
+        ], 'One question should be persisted');
     }
 
     @isTest
@@ -617,9 +595,7 @@ public class KenEventFormControllerTest {
         Test.startTest();
         try {
             KenEventFormController.saveQuestionnaireForEvent(
-                null,
-                new Ken_Questionnaire__c(),
-                new List<Ken_Questionnaire_Parameter__c>()
+                null, null, new List<KenEventFormController.QuestionSaveDTO>()
             );
         } catch (AuraHandledException e) {
             threw = true;
@@ -631,13 +607,12 @@ public class KenEventFormControllerTest {
     @isTest
     static void testGetQuestionnaireByEventIdReturnsAfterSave() {
         Ken_Event_Master__c eventRec = [SELECT Id FROM Ken_Event_Master__c LIMIT 1];
-        Ken_Questionnaire__c q = new Ken_Questionnaire__c(Section_Name__c = 'Read-back');
         KenEventFormController.saveQuestionnaireForEvent(
-            eventRec.Id, q, new List<Ken_Questionnaire_Parameter__c>()
+            eventRec.Id, 'Read-back', qDtos('Anything to add?', 'Short Answer', false)
         );
 
         Test.startTest();
-        Ken_Questionnaire__c result = KenEventFormController.getQuestionnaireByEventId(eventRec.Id);
+        KenEventFormController.QuestionnaireDTO result = KenEventFormController.getQuestionnaireByEventId(eventRec.Id);
         Test.stopTest();
 
         System.assertNotEquals(null, result, 'Should return the linked questionnaire after save');
@@ -647,25 +622,54 @@ public class KenEventFormControllerTest {
     static void testSaveQuestionnaireForSessionCreatesAndLinks() {
         Ken_Schedule_Sessions__c sessionRec = [SELECT Id, Name FROM Ken_Schedule_Sessions__c LIMIT 1];
 
-        Ken_Questionnaire__c q = new Ken_Questionnaire__c();
-        List<Ken_Questionnaire_Parameter__c> questions = new List<Ken_Questionnaire_Parameter__c>{
-            new Ken_Questionnaire_Parameter__c(
-                Question_Label__c = 'How was the session?',
-                Question_Type__c  = 'Rating',
-                Is_Required__c    = false
-            )
-        };
-
         Test.startTest();
-        Id questionnaireId = KenEventFormController.saveQuestionnaireForSession(
-            sessionRec.Id, q, questions
+        Id questionSetId = KenEventFormController.saveQuestionnaireForSession(
+            sessionRec.Id, null, qDtos('How was the session?', 'Rating', false)
         );
         Test.stopTest();
 
-        System.assertNotEquals(null, questionnaireId);
-        Ken_Schedule_Sessions__c reloaded = [SELECT Questionnaire__c FROM Ken_Schedule_Sessions__c WHERE Id = :sessionRec.Id];
-        System.assertEquals(questionnaireId, reloaded.Questionnaire__c,
-            'Session should be linked to the newly-created questionnaire');
+        System.assertNotEquals(null, questionSetId);
+        Ken_Schedule_Sessions__c reloaded = [
+            SELECT Survey__c, Survey__r.Assessment_Question_Set__c
+            FROM Ken_Schedule_Sessions__c WHERE Id = :sessionRec.Id
+        ];
+        System.assertEquals(questionSetId, reloaded.Survey__r.Assessment_Question_Set__c,
+            'Session survey should point at the newly-created question set');
+    }
+
+    @isTest
+    static void wrapperSurveyPointsBackAtItsEventAndSession() {
+        Ken_Schedule_Sessions__c sessionRec = [
+            SELECT Id, Event_Reference__c FROM Ken_Schedule_Sessions__c WHERE Event_Reference__c != null LIMIT 1
+        ];
+
+        Test.startTest();
+        KenEventFormController.saveQuestionnaireForEvent(
+            sessionRec.Event_Reference__c, 'Event level',
+            qDtos('Q1', 'Short Answer', false)
+        );
+        KenEventFormController.saveQuestionnaireForSession(
+            sessionRec.Id, 'Session level',
+            qDtos('Q2', 'Short Answer', false)
+        );
+        Test.stopTest();
+
+        Ken_Event_Master__c ev = [SELECT Survey__c FROM Ken_Event_Master__c WHERE Id = :sessionRec.Event_Reference__c];
+        Ken_Schedule_Sessions__c sess = [SELECT Survey__c FROM Ken_Schedule_Sessions__c WHERE Id = :sessionRec.Id];
+        System.assertNotEquals(null, ev.Survey__c, 'Event should own a wrapper survey.');
+        System.assertNotEquals(null, sess.Survey__c, 'Session should own a wrapper survey.');
+
+        Ken_Survey__c eventSurvey = [SELECT Event__c, Session__c FROM Ken_Survey__c WHERE Id = :ev.Survey__c];
+        System.assertEquals(sessionRec.Event_Reference__c, eventSurvey.Event__c,
+            'Event survey must link back to its event so the record page shows it.');
+        System.assertEquals(null, eventSurvey.Session__c,
+            'An event-level survey belongs to no session.');
+
+        Ken_Survey__c sessionSurvey = [SELECT Event__c, Session__c FROM Ken_Survey__c WHERE Id = :sess.Survey__c];
+        System.assertEquals(sessionRec.Id, sessionSurvey.Session__c,
+            'Session feedback survey must link back to its session.');
+        System.assertEquals(sessionRec.Event_Reference__c, sessionSurvey.Event__c,
+            'Session feedback survey must also link back to the parent event.');
     }
 
     @isTest
@@ -674,9 +678,7 @@ public class KenEventFormControllerTest {
         Test.startTest();
         try {
             KenEventFormController.saveQuestionnaireForSession(
-                null,
-                new Ken_Questionnaire__c(),
-                new List<Ken_Questionnaire_Parameter__c>()
+                null, null, new List<KenEventFormController.QuestionSaveDTO>()
             );
         } catch (AuraHandledException e) {
             threw = true;
@@ -689,39 +691,31 @@ public class KenEventFormControllerTest {
     static void testSaveQuestionnaireForEventReconcilesQuestions() {
         Ken_Event_Master__c eventRec = [SELECT Id FROM Ken_Event_Master__c LIMIT 1];
 
-        // First save: 2 questions
-        Ken_Questionnaire__c q = new Ken_Questionnaire__c(Section_Name__c = 'Initial');
-        List<Ken_Questionnaire_Parameter__c> initial = new List<Ken_Questionnaire_Parameter__c>{
-            new Ken_Questionnaire_Parameter__c(Question_Label__c = 'Q1', Question_Type__c = 'Short Answer'),
-            new Ken_Questionnaire_Parameter__c(Question_Label__c = 'Q2', Question_Type__c = 'Short Answer')
-        };
-        Id qId = KenEventFormController.saveQuestionnaireForEvent(eventRec.Id, q, initial);
-
-        // Reload existing questions so the second save sees them as "kept"
-        List<Ken_Questionnaire_Parameter__c> existing = [
-            SELECT Id, Question_Label__c, Question_Type__c FROM Ken_Questionnaire_Parameter__c
-            WHERE Questionnaire__c = :qId
-        ];
-
-        // Second save: drop one, keep one — orphan should be deleted
-        Ken_Questionnaire__c qReload = new Ken_Questionnaire__c(Id = qId, Section_Name__c = 'Initial');
-        List<Ken_Questionnaire_Parameter__c> kept = new List<Ken_Questionnaire_Parameter__c>{ existing[0] };
+        List<KenEventFormController.QuestionSaveDTO> initial = qDtos('Q1', 'Short Answer', false);
+        initial.addAll(qDtos('Q2', 'Short Answer', false));
+        Id qId = KenEventFormController.saveQuestionnaireForEvent(eventRec.Id, 'Initial', initial);
+        System.assertEquals(2, [
+            SELECT COUNT() FROM AssessmentQuestion WHERE Ken_Question_Set__c = :qId
+        ], 'Both questions should be persisted on the first save');
 
         Test.startTest();
-        KenEventFormController.saveQuestionnaireForEvent(eventRec.Id, qReload, kept);
+        Id sameSetId = KenEventFormController.saveQuestionnaireForEvent(
+            eventRec.Id, 'Initial', qDtos('Q1', 'Short Answer', false)
+        );
         Test.stopTest();
 
-        Integer remaining = [
-            SELECT COUNT() FROM Ken_Questionnaire_Parameter__c WHERE Questionnaire__c = :qId
-        ];
-        System.assertEquals(1, remaining, 'Orphan question should be deleted by reconcile');
+        System.assertEquals(qId, sameSetId, 'Re-saving reuses the same question set');
+        System.assertEquals(1, [
+            SELECT COUNT() FROM AssessmentQuestion WHERE Ken_Question_Set__c = :qId
+        ], 'The dropped question should no longer be assigned');
     }
 
     @isTest
     static void testSavePreEventSurveyData() {
         Ken_Event_Master__c event = [SELECT Id FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
-        Ken_Schedule_Sessions__c session = [SELECT Id, Start_Date__c FROM Ken_Schedule_Sessions__c LIMIT 1];
-        Date d = session.Start_Date__c;
+        Ken_Schedule_Sessions__c session = [SELECT Id, Start_DateTime__c FROM Ken_Schedule_Sessions__c LIMIT 1];
+        // Day derived from the session's single stored instant.
+        Date d = session.Start_DateTime__c.date();
         String dateKey = String.valueOf(d.year()) + '-' +
             (d.month() < 10 ? '0' : '') + String.valueOf(d.month()) + '-' +
             (d.day() < 10 ? '0' : '') + String.valueOf(d.day());
@@ -776,7 +770,7 @@ public class KenEventFormControllerTest {
     @isTest
     static void testSaveEventPortalStampsConstituentRole() {
         ConstituentRole cr = [SELECT Id FROM ConstituentRole LIMIT 1];
-        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Keywords__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, End_Time__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_Date__c, Schedule_Time__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, Start_Time__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
+        Ken_Event_Master__c existingEvent = [SELECT Id, Name, Event_Current_Step__c, Language__c, Event_Status__c, Target_Topics__c, Event_Broucher__c, Broucher_Title__c, Description__c, createdDate, Event_Fee__c, No_Fee__c, RecordTypeId, End_Date__c, Event_Type__c, Event_banner__c, Evvent_Group__c, Is_Active__c, Location__c, Max_Allowed_Participants__c, Auto_Enroll_Target_Audience__c, Email_Subject__c, Email_Distribution_List__c, Email_Body__c, Schedule_DateTime__c, Email_Attachment__c, Target_Audience_Applicable__c, Start_Date__c, What_to_Expect_From_Event__c, Can_Alumni_Bring_Guests__c, Guest_Count__c, Offer_Meals__c, Make_Meals_Paid__c, Collect_Dietary_Preferences__c, Dietary_Preferences__c, Meal_Fee__c FROM Ken_Event_Master__c WHERE Name = 'Test Event' LIMIT 1];
 
         KenEventFormController.EventWrapper wrapper = new KenEventFormController.EventWrapper(existingEvent);
         wrapper.Id = null;
@@ -791,11 +785,216 @@ public class KenEventFormControllerTest {
 
         String jsonData = JSON.serialize(wrapper);
 
+        KenConstituentRoleService.testCurrentRoleId = cr.Id;
         Test.startTest();
-        Id eventId = KenEventFormController.saveEvent(jsonData, cr.Id);
+        Id eventId = KenEventFormController.saveEvent(jsonData);
         Test.stopTest();
 
         Ken_Event_Master__c created = [SELECT Constituent_Role__c FROM Ken_Event_Master__c WHERE Id = :eventId];
         System.assertEquals(cr.Id, created.Constituent_Role__c, 'Constituent_Role__c must be stamped when isPortal=true');
+    }
+
+    @isTest
+    static void testSaveQuestionnaireForEventMirrorsAudienceOntoWrapperSurvey() {
+        Ken_Event_Master__c eventRec = [SELECT Id FROM Ken_Event_Master__c LIMIT 1];
+        Ken_Segmentation__c seg = new Ken_Segmentation__c(Name = 'Event Audience');
+        insert seg;
+        update new Ken_Event_Master__c(Id = eventRec.Id, Segmentation__c = seg.Id);
+
+        Test.startTest();
+        KenEventFormController.saveQuestionnaireForEvent(
+            eventRec.Id,
+            'Audience mirror', qDtos('Q1', 'Short Answer', false)
+        );
+        Test.stopTest();
+
+        Ken_Event_Master__c reloaded = [SELECT Survey__c FROM Ken_Event_Master__c WHERE Id = :eventRec.Id];
+        System.assertNotEquals(null, reloaded.Survey__c, 'Wrapper survey should be created');
+        System.assertEquals(seg.Id,
+            [SELECT Segmentation__c FROM Ken_Survey__c WHERE Id = :reloaded.Survey__c].Segmentation__c,
+            'Event audience must be mirrored onto the wrapper survey');
+    }
+
+    @isTest
+    static void testSaveQuestionnaireForSessionMirrorsAudienceOntoWrapperSurvey() {
+        Ken_Schedule_Sessions__c sessionRec = [
+            SELECT Id, Event_Reference__c
+            FROM Ken_Schedule_Sessions__c
+            WHERE Event_Reference__c != null
+            LIMIT 1
+        ];
+        Ken_Segmentation__c seg = new Ken_Segmentation__c(Name = 'Session Audience');
+        insert seg;
+        update new Ken_Event_Master__c(
+            Id = sessionRec.Event_Reference__c,
+            Segmentation__c = seg.Id
+        );
+
+        Test.startTest();
+        KenEventFormController.saveQuestionnaireForSession(
+            sessionRec.Id,
+            null, qDtos('Rate it', 'Rating', false)
+        );
+        Test.stopTest();
+
+        Ken_Schedule_Sessions__c reloaded = [
+            SELECT Survey__c FROM Ken_Schedule_Sessions__c WHERE Id = :sessionRec.Id
+        ];
+        System.assertNotEquals(null, reloaded.Survey__c, 'Feedback wrapper survey should be created');
+        System.assertEquals(seg.Id,
+            [SELECT Segmentation__c FROM Ken_Survey__c WHERE Id = :reloaded.Survey__c].Segmentation__c,
+            'Parent event audience must be mirrored onto the feedback survey');
+    }
+
+    @isTest
+    static void testCreateEventSegmentationBackfillsExistingWrapperSurvey() {
+        Ken_Event_Master__c eventRec = [SELECT Id FROM Ken_Event_Master__c LIMIT 1];
+        KenEventFormController.saveQuestionnaireForEvent(
+            eventRec.Id,
+            'Backfill', qDtos('Q1', 'Short Answer', false)
+        );
+        Ken_Event_Master__c withSurvey = [SELECT Survey__c FROM Ken_Event_Master__c WHERE Id = :eventRec.Id];
+        System.assertEquals(null,
+            [SELECT Segmentation__c FROM Ken_Survey__c WHERE Id = :withSurvey.Survey__c].Segmentation__c,
+            'Nothing to mirror before an audience is chosen');
+
+        Ken_Segmentation__c seg = new Ken_Segmentation__c(Name = 'Late Audience');
+        insert seg;
+
+        Test.startTest();
+        KenEventFormController.createEventSegmentation(eventRec.Id, seg.Id);
+        Test.stopTest();
+
+        System.assertEquals(seg.Id,
+            [SELECT Segmentation__c FROM Ken_Survey__c WHERE Id = :withSurvey.Survey__c].Segmentation__c,
+            'Choosing an audience later must backfill the wrapper survey');
+    }
+
+    @isTest
+    static void testCreateEventSegmentationRepointsWrapperSurveyAudience() {
+        Ken_Event_Master__c eventRec = [SELECT Id FROM Ken_Event_Master__c LIMIT 1];
+        Ken_Segmentation__c first = new Ken_Segmentation__c(Name = 'First Audience');
+        Ken_Segmentation__c second = new Ken_Segmentation__c(Name = 'Second Audience');
+        insert new List<Ken_Segmentation__c>{ first, second };
+
+        KenEventFormController.createEventSegmentation(eventRec.Id, first.Id);
+        KenEventFormController.saveQuestionnaireForEvent(
+            eventRec.Id,
+            'Repoint', qDtos('Q1', 'Short Answer', false)
+        );
+        Ken_Event_Master__c withSurvey = [SELECT Survey__c FROM Ken_Event_Master__c WHERE Id = :eventRec.Id];
+
+        Test.startTest();
+        KenEventFormController.createEventSegmentation(eventRec.Id, second.Id);
+        Test.stopTest();
+
+        System.assertEquals(second.Id,
+            [SELECT Segmentation__c FROM Ken_Survey__c WHERE Id = :withSurvey.Survey__c].Segmentation__c,
+            'Wrapper survey must follow the new audience, not keep the old one');
+    }
+
+    /**
+     * @description Clearing an event's audience must reach its wrapper surveys too, or a
+     *              feedback form keeps targeting people the event has dropped.
+     */
+    @isTest
+    static void testClearedEventAudienceClearsWrapperSurvey() {
+        Ken_Event_Master__c eventRec = [SELECT Id FROM Ken_Event_Master__c LIMIT 1];
+        Ken_Segmentation__c seg = new Ken_Segmentation__c(Name = 'Dropped Audience');
+        insert seg;
+
+        KenEventFormController.createEventSegmentation(eventRec.Id, seg.Id);
+        KenEventFormController.saveQuestionnaireForEvent(
+            eventRec.Id,
+            'Clearing', qDtos('Q1', 'Short Answer', false)
+        );
+        Ken_Event_Master__c withSurvey = [SELECT Survey__c FROM Ken_Event_Master__c WHERE Id = :eventRec.Id];
+        System.assertEquals(seg.Id,
+            [SELECT Segmentation__c FROM Ken_Survey__c WHERE Id = :withSurvey.Survey__c].Segmentation__c,
+            'Wrapper should start out carrying the event audience');
+
+        Test.startTest();
+        update new Ken_Event_Master__c(Id = eventRec.Id, Segmentation__c = null);
+        KenEventFormController.syncEventAudienceToWrapperSurveys(eventRec.Id);
+        Test.stopTest();
+
+        System.assertEquals(null,
+            [SELECT Segmentation__c FROM Ken_Survey__c WHERE Id = :withSurvey.Survey__c].Segmentation__c,
+            'A cleared event audience must be cleared on the wrapper survey');
+    }
+
+    private static List<KenEventFormController.QuestionSaveDTO> qDtos(String text, String type, Boolean required) {
+        KenEventFormController.QuestionSaveDTO q = new KenEventFormController.QuestionSaveDTO();
+        q.text = text;
+        q.questionType = type;
+        q.required = required;
+        q.choices = new List<KenAssessmentSurveyService.ChoiceRow>();
+        return new List<KenEventFormController.QuestionSaveDTO>{ q };
+    }
+
+    // The wizard stamps Draft/In Review on every save, so an edit must not be
+    // allowed to walk an approved event back out of Approved - everything public
+    // is gated on that value.
+    @isTest
+    static void testSaveEventKeepsApprovalOnEdit() {
+        ConstituentRole cr = [SELECT Id FROM ConstituentRole LIMIT 1];
+        Ken_Event_Master__c approved = new Ken_Event_Master__c(
+            Name = 'Approved Event',
+            Event_Type__c = 'Workshop',
+            Start_Date__c = Date.today().addDays(10),
+            End_Date__c = Date.today().addDays(10),
+            Event_Status__c = 'Approved',
+            Is_Active__c = true,
+            Constituent_Role__c = cr.Id
+        );
+        insert approved;
+
+        String payload = JSON.serialize(new Map<String, Object>{
+            'Id' => approved.Id,
+            'eventTitle' => 'Approved Event',
+            'image' => 'https://example.com/new-banner.png',
+            'imageFileName' => 'NewBanner.png',
+            'eventStatus' => 'Draft',
+            'isPortal' => false
+        });
+
+        Test.startTest();
+        KenEventFormController.saveEvent(payload);
+        Test.stopTest();
+
+        System.assertEquals('Approved',
+            [SELECT Event_Status__c FROM Ken_Event_Master__c WHERE Id = :approved.Id].Event_Status__c,
+            'Editing an approved event must not send it back through approval');
+    }
+
+    // The guard is about approved events only: a draft the host submits still has
+    // to move to In Review, or nothing would ever reach an approver.
+    @isTest
+    static void testSaveEventStillAdvancesUnapprovedStatus() {
+        ConstituentRole cr = [SELECT Id FROM ConstituentRole LIMIT 1];
+        Ken_Event_Master__c draft = new Ken_Event_Master__c(
+            Name = 'Draft Event',
+            Event_Type__c = 'Workshop',
+            Start_Date__c = Date.today().addDays(10),
+            End_Date__c = Date.today().addDays(10),
+            Event_Status__c = 'Draft',
+            Constituent_Role__c = cr.Id
+        );
+        insert draft;
+
+        String payload = JSON.serialize(new Map<String, Object>{
+            'Id' => draft.Id,
+            'eventTitle' => 'Draft Event',
+            'eventStatus' => 'In Review',
+            'isPortal' => false
+        });
+
+        Test.startTest();
+        KenEventFormController.saveEvent(payload);
+        Test.stopTest();
+
+        System.assertEquals('In Review',
+            [SELECT Event_Status__c FROM Ken_Event_Master__c WHERE Id = :draft.Id].Event_Status__c,
+            'Submitting a draft must still move it into review');
     }
 }

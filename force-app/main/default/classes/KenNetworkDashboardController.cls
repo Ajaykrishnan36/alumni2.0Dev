@@ -33,15 +33,20 @@ public with sharing class KenNetworkDashboardController {
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private static List<String> buildConds(String statusFilter, String yearFilter) {
+    // Filter values travel as bind variables rather than being escaped into the query
+    // text. Each bind is added to the map in the same branch that adds the condition
+    // referencing it, so a clause can never name a bind the map is missing.
+    private static List<String> buildConds(String statusFilter, String yearFilter, Map<String, Object> binds) {
         List<String> conds = new List<String>();
         if (!String.isBlank(statusFilter) && statusFilter != 'All') {
-            conds.add('Status__c = \'' + String.escapeSingleQuotes(statusFilter) + '\'');
+            binds.put('bStatus', statusFilter);
+            conds.add('Status__c = :bStatus');
         }
         if (!String.isBlank(yearFilter) && yearFilter != 'All') {
             try {
                 Integer yr = Integer.valueOf(yearFilter);
-                conds.add('CALENDAR_YEAR(CreatedDate) = ' + yr);
+                binds.put('bYear', yr);
+                conds.add('CALENDAR_YEAR(CreatedDate) = :bYear');
             } catch (Exception e) {
                 // silently ignore invalid year
             }
@@ -81,11 +86,12 @@ public with sharing class KenNetworkDashboardController {
     public static SummaryStats getSummaryStats(String statusFilter, String yearFilter) {
         SummaryStats stats = new SummaryStats();
         try {
-            List<String> conds = buildConds(statusFilter, yearFilter);
+            Map<String, Object> binds = new Map<String, Object>();
+            List<String> conds = buildConds(statusFilter, yearFilter, binds);
             String q = 'SELECT Status__c s, COUNT(Id) cnt FROM Ken_Network_Connection__c'
                 + whereClause(conds)
                 + ' GROUP BY Status__c';
-            for (AggregateResult ar : Database.query(q)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 Integer cnt = (Integer) ar.get('cnt');
                 String  s   = (String)  ar.get('s');
                 stats.total += cnt;
@@ -98,14 +104,15 @@ public with sharing class KenNetworkDashboardController {
             if (!String.isBlank(yearFilter) && yearFilter != 'All') {
                 try {
                     Integer yr = Integer.valueOf(yearFilter);
-                    yearConds.add('CALENDAR_YEAR(CreatedDate) = ' + yr);
+                    binds.put('bYear', yr);
+                    yearConds.add('CALENDAR_YEAR(CreatedDate) = :bYear');
                 } catch (Exception e) { }
             }
             String tatBase = ' WHERE Status__c = \'Accepted\' AND Requested_Date__c != null AND Accepted_Date__c != null';
             if (!yearConds.isEmpty()) tatBase += ' AND ' + String.join(yearConds, ' AND ');
-            List<Ken_Network_Connection__c> tatRecs = Database.query(
+            List<Ken_Network_Connection__c> tatRecs = Database.queryWithBinds(
                 'SELECT Requested_Date__c, Accepted_Date__c FROM Ken_Network_Connection__c'
-                + tatBase + ' LIMIT 1000'
+                + tatBase + ' LIMIT 1000', binds, AccessLevel.SYSTEM_MODE
             );
             if (!tatRecs.isEmpty()) {
                 Long totalMs = 0;
@@ -125,12 +132,13 @@ public with sharing class KenNetworkDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getConnectionsByStatus(String yearFilter) {
         try {
-            List<String> conds = buildConds(null, yearFilter);
+            Map<String, Object> binds = new Map<String, Object>();
+            List<String> conds = buildConds(null, yearFilter, binds);
             String q = 'SELECT Status__c s, COUNT(Id) cnt FROM Ken_Network_Connection__c'
                 + whereClause(conds)
                 + ' GROUP BY Status__c ORDER BY COUNT(Id) DESC';
             List<ChartPoint> pts = new List<ChartPoint>();
-            for (AggregateResult ar : Database.query(q)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 pts.add(new ChartPoint((String) ar.get('s'), (Integer) ar.get('cnt')));
             }
             return pts;
@@ -148,15 +156,17 @@ public with sharing class KenNetworkDashboardController {
             if (!String.isBlank(yearFilter) && yearFilter != 'All') {
                 try { targetYear = Integer.valueOf(yearFilter); } catch (Exception e) { }
             }
-            List<String> conds = new List<String>{ 'CALENDAR_YEAR(CreatedDate) = ' + targetYear };
+            Map<String, Object> binds = new Map<String, Object>{ 'bYear' => targetYear };
+            List<String> conds = new List<String>{ 'CALENDAR_YEAR(CreatedDate) = :bYear' };
             if (!String.isBlank(statusFilter) && statusFilter != 'All') {
-                conds.add('Status__c = \'' + String.escapeSingleQuotes(statusFilter) + '\'');
+                binds.put('bStatus', statusFilter);
+                conds.add('Status__c = :bStatus');
             }
             String q = 'SELECT CALENDAR_MONTH(CreatedDate) mo, COUNT(Id) cnt FROM Ken_Network_Connection__c'
                 + ' WHERE ' + String.join(conds, ' AND ')
                 + ' GROUP BY CALENDAR_MONTH(CreatedDate)';
             Map<Integer, Integer> monthMap = new Map<Integer, Integer>();
-            for (AggregateResult ar : Database.query(q)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 monthMap.put((Integer) ar.get('mo'), (Integer) ar.get('cnt'));
             }
             List<String> monthLabels = new List<String>{
@@ -196,6 +206,7 @@ public with sharing class KenNetworkDashboardController {
                   AND Accepted_Date__c  != null
                   AND Accepted_Date__c  >= :startDT
                   AND Accepted_Date__c  <  :endDT
+                WITH USER_MODE
                 LIMIT 2000
             ];
             Map<Integer, Long>    totalMsMap = new Map<Integer, Long>();
@@ -233,25 +244,27 @@ public with sharing class KenNetworkDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getTopConnectors(String statusFilter, String yearFilter) {
         try {
-            String ac = andClause(buildConds(statusFilter, yearFilter));
+            Map<String, Object> binds = new Map<String, Object>();
+            String ac = andClause(buildConds(statusFilter, yearFilter, binds));
             Map<Id, Integer> countMap = new Map<Id, Integer>();
 
-            for (AggregateResult ar : Database.query(
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(
                 'SELECT Initiator__c pid, COUNT(Id) cnt FROM Ken_Network_Connection__c'
-                + ' WHERE Initiator__c != null' + ac + ' GROUP BY Initiator__c'
+                + ' WHERE Initiator__c != null' + ac + ' GROUP BY Initiator__c', binds, AccessLevel.SYSTEM_MODE
             )) {
                 Id pid = (Id) ar.get('pid');
                 countMap.put(pid, (countMap.containsKey(pid) ? countMap.get(pid) : 0) + (Integer) ar.get('cnt'));
             }
-            for (AggregateResult ar : Database.query(
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(
                 'SELECT Recipient__c pid, COUNT(Id) cnt FROM Ken_Network_Connection__c'
-                + ' WHERE Recipient__c != null' + ac + ' GROUP BY Recipient__c'
+                + ' WHERE Recipient__c != null' + ac + ' GROUP BY Recipient__c', binds, AccessLevel.SYSTEM_MODE
             )) {
                 Id pid = (Id) ar.get('pid');
                 countMap.put(pid, (countMap.containsKey(pid) ? countMap.get(pid) : 0) + (Integer) ar.get('cnt'));
             }
             Map<Id, Account> accMap = new Map<Id, Account>([
                 SELECT Id, Name FROM Account WHERE Id IN :countMap.keySet()
+            WITH USER_MODE
             ]);
             List<ChartPoint> pts = new List<ChartPoint>();
             for (Id pid : countMap.keySet()) {
@@ -269,17 +282,19 @@ public with sharing class KenNetworkDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getTopSenders(String statusFilter, String yearFilter) {
         try {
-            String ac = andClause(buildConds(statusFilter, yearFilter));
+            Map<String, Object> binds = new Map<String, Object>();
+            String ac = andClause(buildConds(statusFilter, yearFilter, binds));
             Map<Id, Integer> countMap = new Map<Id, Integer>();
-            for (AggregateResult ar : Database.query(
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(
                 'SELECT Initiator__c pid, COUNT(Id) cnt FROM Ken_Network_Connection__c'
-                + ' WHERE Initiator__c != null' + ac + ' GROUP BY Initiator__c LIMIT 10'
+                + ' WHERE Initiator__c != null' + ac + ' GROUP BY Initiator__c LIMIT 10', binds, AccessLevel.SYSTEM_MODE
             )) {
                 Id pid = (Id) ar.get('pid');
                 countMap.put(pid, (countMap.containsKey(pid) ? countMap.get(pid) : 0) + (Integer) ar.get('cnt'));
             }
             Map<Id, Account> accMap = new Map<Id, Account>([
                 SELECT Id, Name FROM Account WHERE Id IN :countMap.keySet()
+            WITH USER_MODE
             ]);
             List<ChartPoint> pts = new List<ChartPoint>();
             for (Id pid : countMap.keySet()) {
@@ -297,17 +312,19 @@ public with sharing class KenNetworkDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getTopReceivers(String statusFilter, String yearFilter) {
         try {
-            String ac = andClause(buildConds(statusFilter, yearFilter));
+            Map<String, Object> binds = new Map<String, Object>();
+            String ac = andClause(buildConds(statusFilter, yearFilter, binds));
             Map<Id, Integer> countMap = new Map<Id, Integer>();
-            for (AggregateResult ar : Database.query(
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(
                 'SELECT Recipient__c pid, COUNT(Id) cnt FROM Ken_Network_Connection__c'
-                + ' WHERE Recipient__c != null' + ac + ' GROUP BY Recipient__c LIMIT 10'
+                + ' WHERE Recipient__c != null' + ac + ' GROUP BY Recipient__c LIMIT 10', binds, AccessLevel.SYSTEM_MODE
             )) {
                 Id pid = (Id) ar.get('pid');
                 countMap.put(pid, (countMap.containsKey(pid) ? countMap.get(pid) : 0) + (Integer) ar.get('cnt'));
             }
             Map<Id, Account> accMap = new Map<Id, Account>([
                 SELECT Id, Name FROM Account WHERE Id IN :countMap.keySet()
+            WITH USER_MODE
             ]);
             List<ChartPoint> pts = new List<ChartPoint>();
             for (Id pid : countMap.keySet()) {
@@ -325,16 +342,18 @@ public with sharing class KenNetworkDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getYearlyGrowth(String statusFilter) {
         try {
+            Map<String, Object> binds = new Map<String, Object>();
             List<String> conds = new List<String>();
             if (!String.isBlank(statusFilter) && statusFilter != 'All') {
-                conds.add('Status__c = \'' + String.escapeSingleQuotes(statusFilter) + '\'');
+                binds.put('bStatus', statusFilter);
+                conds.add('Status__c = :bStatus');
             }
             String q = 'SELECT CALENDAR_YEAR(CreatedDate) yr, COUNT(Id) cnt'
                 + ' FROM Ken_Network_Connection__c'
                 + whereClause(conds)
                 + ' GROUP BY CALENDAR_YEAR(CreatedDate) ORDER BY CALENDAR_YEAR(CreatedDate) ASC';
             List<ChartPoint> pts = new List<ChartPoint>();
-            for (AggregateResult ar : Database.query(q)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 pts.add(new ChartPoint(String.valueOf(ar.get('yr')), (Integer) ar.get('cnt')));
             }
             return pts;
@@ -356,6 +375,7 @@ public with sharing class KenNetworkDashboardController {
             for (AggregateResult ar : [
                 SELECT CALENDAR_YEAR(CreatedDate) yr
                 FROM Ken_Network_Connection__c
+                WITH USER_MODE
                 GROUP BY CALENDAR_YEAR(CreatedDate)
                 ORDER BY CALENDAR_YEAR(CreatedDate) ASC
             ]) {
@@ -377,11 +397,12 @@ public with sharing class KenNetworkDashboardController {
         String dimension, String value, String statusFilter, String yearFilter
     ) {
         try {
-            List<String> conds = buildConds(statusFilter, yearFilter);
-            String safeVal = String.escapeSingleQuotes(value == null ? '' : value);
+            Map<String, Object> binds = new Map<String, Object>();
+            List<String> conds = buildConds(statusFilter, yearFilter, binds);
+            binds.put('bVal', value == null ? '' : value);
 
             if (dimension == 'status') {
-                conds.add('Status__c = \'' + safeVal + '\'');
+                conds.add('Status__c = :bVal');
             } else if (dimension == 'accepted') {
                 conds.add('Status__c = \'Accepted\'');
             } else if (dimension == 'pending') {
@@ -389,11 +410,11 @@ public with sharing class KenNetworkDashboardController {
             } else if (dimension == 'negative') {
                 conds.add('Status__c IN (\'Rejected\',\'Cancelled\',\'Blocked\')');
             } else if (dimension == 'initiator') {
-                conds.add('Initiator__r.Name = \'' + safeVal + '\'');
+                conds.add('Initiator__r.Name = :bVal');
             } else if (dimension == 'recipient') {
-                conds.add('Recipient__r.Name = \'' + safeVal + '\'');
+                conds.add('Recipient__r.Name = :bVal');
             } else if (dimension == 'connector') {
-                conds.add('(Initiator__r.Name = \'' + safeVal + '\' OR Recipient__r.Name = \'' + safeVal + '\')');
+                conds.add('(Initiator__r.Name = :bVal OR Recipient__r.Name = :bVal)');
             }
 
             String q = 'SELECT Id, Name, Initiator__c, Initiator__r.Name, Recipient__c, Recipient__r.Name,'
@@ -403,7 +424,7 @@ public with sharing class KenNetworkDashboardController {
                 + ' ORDER BY CreatedDate DESC LIMIT 500';
 
             List<ConnectionRecord> results = new List<ConnectionRecord>();
-            for (Ken_Network_Connection__c r : Database.query(q)) {
+            for (Ken_Network_Connection__c r : (List<Ken_Network_Connection__c>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 ConnectionRecord rec = new ConnectionRecord();
                 rec.id             = r.Id;
                 rec.connectionName = r.Name;

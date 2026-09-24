@@ -9,11 +9,16 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
     private static final String PORTAL_REGISTRATION_INVITATION = 'Portal_Registration_Invitation_1765533227690';
     private static final String ALUMNI_REG_SUBMISSION_TEMPLATE = 'Alumni_Registration_Submission_1746433607016';
     private static final String ALUMNI_REG_REJECTION_TEMPLATE = 'Alumni_Registration_Rejection_Email_1747223680789';
-    private static final String ORG_WIDE_NAME = 'Alumni Management';
+    private static final String ORG_WIDE_NAME = KenMessagingService.orgWideAddressName();
     private static final Id ALUMNI_LEAD_RT_ID = Schema.SObjectType.Lead.getRecordTypeInfosByName().get('Alumni Lead').getRecordTypeId();
 
     public override void processBeforeInsert() {
         insertVerificationToken();
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
+    public override void processBeforeUpdate() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
     }
 
     public override void processAfterInsert() {
@@ -54,8 +59,8 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             return;
         }
 
-        Alumni_Email_Settings__c emailSettings = Alumni_Email_Settings__c.getOrgDefaults();
-        if (emailSettings != null && emailSettings.Bypass_Portal_Registration_Invitation__c) {
+        Ken_Alm_Bypass_Settings__c emailSettings = KenSettings.bypass();
+        if (emailSettings != null && emailSettings.Skip_Portal_Registration_Invitation__c) {
             return;
         }
 
@@ -66,7 +71,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
         }
 
          // Fetch Custom Setting once
-        Alumni_Org_Parameters__c orgParam = Alumni_Org_Parameters__c.getOrgDefaults();
+        Ken_Alm_Org_Parameters__c orgParam = Ken_Alm_Org_Parameters__c.getOrgDefaults();
         String institutionAlias = orgParam != null && String.isNotBlank(orgParam.Institution_Alias__c) ? orgParam.Institution_Alias__c : '';
         String portalURL = orgParam != null && String.isNotBlank(orgParam.Portal_URL__c) ? orgParam.Portal_URL__c : '';
 
@@ -74,6 +79,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             SELECT Id
             FROM OrgWideEmailAddress
             WHERE DisplayName = :ORG_WIDE_NAME
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
 
@@ -83,6 +89,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
                 SELECT LetterheadHeader, LetterheadFooter
                 FROM EnhancedLetterhead
                 WHERE Name = 'Alumni Letterhead'
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
         } catch (Exception e) {
@@ -95,6 +102,11 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
 
         Set<Id> leadIdsToSkip = getLeadIdsToSkipMagicLink(leads);
         List<Messaging.SingleEmailMessage> messages = new List<Messaging.SingleEmailMessage>();
+
+        KenMessagingService.Request routing =
+            new KenMessagingService.Request(KenMessagingService.TYPE_MAGIC_LINK)
+                .attribute('Institution_Alias', institutionAlias)
+                .attribute('Portal_Url', portalURL);
 
         for (Lead lead : leads) {
             if (lead == null) {
@@ -117,13 +129,28 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             String yearOfGraduation = lead.Year_of_Graduation__c;
             String verificationToken = lead.Verification_Token__c;
             String fullName = String.join(new List<String>{lead.FirstName, lead.LastName},' ').trim();
-            
-            body = body.replace('{Recipient.Name}', fullName);
-            body = body.replace('{Institution_Alias}', institutionAlias);
-            body = body.replace('{Recipient.Year_of_Graduation__c}', yearOfGraduation != null ? yearOfGraduation : '');
-            body = body.replace('{Portal_Url}', portalURL);
-            body = body.replace('{Verification_Token}', verificationToken);
-            String finalBody ='<html><body>' + letterheadHeader + body 
+
+            // One token map drives both the Classic template merge and the Marketing Cloud
+            // attributes, so the two paths cannot drift apart. The template's own names are the
+            // canonical ones; the shorter aliases are what the journeys were built against.
+            Map<String, String> tokens = new Map<String, String>{
+                'Recipient.Name' => fullName,
+                'Recipient_Name' => fullName,
+                'Institution_Alias' => institutionAlias,
+                'Recipient.Year_of_Graduation__c' => yearOfGraduation,
+                'Year_of_Graduation' => yearOfGraduation,
+                'Portal_Url' => portalURL,
+                'Verification_Token' => verificationToken
+            };
+
+            routing.recipient(
+                lead.Email,
+                String.isNotBlank(lead.MobilePhone) ? lead.MobilePhone : lead.Phone,
+                tokens
+            );
+
+            body = KenMessagingService.mergeTokens(body, tokens);
+            String finalBody ='<html><body>' + letterheadHeader + body
             // + letterheadFooter 
             + '</body></html>';
 
@@ -133,6 +160,11 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             msg.setSaveAsActivity(false);
             msg.setHtmlBody(finalBody);
             messages.add(msg);
+        }
+
+        KenMessagingService.sendToPhoneChannels(routing);
+        if (KenMessagingService.send(routing.withNativeFallback(messages)).handled) {
+            return;
         }
 
         if (!messages.isEmpty()) {
@@ -172,6 +204,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
                 FROM Account
                 WHERE IsPersonAccount = true
                 AND PersonEmail IN :emailKeys
+            WITH SECURITY_ENFORCED
             ]) {
                 if (String.isNotBlank(pa.PersonEmail)) {
                     accountByPersonEmail.put(pa.PersonEmail.trim().toLowerCase(), pa.Id);
@@ -187,6 +220,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
                 FROM ConstituentRole
                 WHERE RoleType = 'Alumni'
                 AND (Registration_Number__c IN :regNumberKeys OR Email__c IN :emailKeys)
+                WITH SECURITY_ENFORCED
                 ORDER BY CreatedDate DESC
             ]) {
                 if (String.isNotBlank(cr.Registration_Number__c)) {
@@ -254,6 +288,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             FROM User
             WHERE IsActive = true
             AND AccountId IN :accountIds
+        WITH SYSTEM_MODE
         ]) {
             if (u.AccountId != null) {
                 accountsWithActiveUsers.add(u.AccountId);
@@ -270,6 +305,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             FROM ConstituentRole
             WHERE PersonId IN :accountIds
             AND RoleType = 'Alumni'
+        WITH SECURITY_ENFORCED
         ]) {
             if (cr.PersonId != null &&
                 String.isNotBlank(cr.Registration_Status__c) &&
@@ -295,8 +331,8 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             return;
         }
         
-        Alumni_Email_Settings__c emailSettings = Alumni_Email_Settings__c.getOrgDefaults();
-        if (emailSettings != null && emailSettings.Bypass_Alumni_Registration_Submission__c) {
+        Ken_Alm_Bypass_Settings__c emailSettings = KenSettings.bypass();
+        if (emailSettings != null && emailSettings.Skip_Alumni_Registration_Submission__c) {
             return;
         }
 
@@ -306,17 +342,22 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
         }
 
          // Fetch Custom Setting once
-        Alumni_Org_Parameters__c orgParam = Alumni_Org_Parameters__c.getOrgDefaults();
+        Ken_Alm_Org_Parameters__c orgParam = Ken_Alm_Org_Parameters__c.getOrgDefaults();
         String institutionAlias = orgParam != null && String.isNotBlank(orgParam.Institution_Alias__c) ? orgParam.Institution_Alias__c : '';
 
         List<OrgWideEmailAddress> orgIds = [
             SELECT Id
             FROM OrgWideEmailAddress
             WHERE DisplayName = :ORG_WIDE_NAME
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
 
         List<Messaging.SingleEmailMessage> messages = new List<Messaging.SingleEmailMessage>();
+        KenMessagingService.Request routing =
+            new KenMessagingService.Request(KenMessagingService.TYPE_REGISTRATION_SUBMISSION)
+                .attribute('Institution_Alias', institutionAlias);
+
         for (Lead lead : leads) {
             if (lead == null) {
                 continue;
@@ -331,10 +372,19 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             String body = template.HtmlValue;
             String fullName = String.join(new List<String>{lead.FirstName, lead.LastName},' ').trim();
 
-            body = body.replace('{Recipient.Name}', fullName);
-            body = body.replace('{Institution_Alias}', institutionAlias);
+            Map<String, String> tokens = new Map<String, String>{
+                'Recipient.Name' => fullName,
+                'Recipient_Name' => fullName,
+                'Institution_Alias' => institutionAlias
+            };
 
+            routing.recipient(
+                lead.Email,
+                String.isNotBlank(lead.MobilePhone) ? lead.MobilePhone : lead.Phone,
+                tokens
+            );
 
+            body = KenMessagingService.mergeTokens(body, tokens);
 
             Messaging.SingleEmailMessage msg = new Messaging.SingleEmailMessage();
             msg.setHtmlBody(body);
@@ -342,6 +392,11 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             msg.setOrgWideEmailAddressId(!orgIds.isEmpty() ? orgIds[0].Id : null);
             msg.setSaveAsActivity(false);
             messages.add(msg);
+        }
+
+        KenMessagingService.sendToPhoneChannels(routing);
+        if (KenMessagingService.send(routing.withNativeFallback(messages)).handled) {
+            return;
         }
 
         if (!messages.isEmpty()) {
@@ -355,8 +410,8 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
                 return;
             }
 
-            Alumni_Email_Settings__c emailSettings = Alumni_Email_Settings__c.getOrgDefaults();
-            if (emailSettings != null && emailSettings.ByPass_Alumni_Registration_Rejection_Ema__c) {
+            Ken_Alm_Bypass_Settings__c emailSettings = KenSettings.bypass();
+            if (emailSettings != null && emailSettings.Skip_Alumni_Registration_Rejection_Ema__c) {
                 return;
             }
 
@@ -366,7 +421,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             }
 
             // Fetch Custom Setting once
-            Alumni_Org_Parameters__c orgParam = Alumni_Org_Parameters__c.getOrgDefaults();
+            Ken_Alm_Org_Parameters__c orgParam = Ken_Alm_Org_Parameters__c.getOrgDefaults();
             String institutionAlias = orgParam != null && String.isNotBlank(orgParam.Institution_Alias__c) ? orgParam.Institution_Alias__c : '';
             String institutionEmail = orgParam != null && String.isNotBlank(orgParam.Institution_Email__c) ? orgParam.Institution_Email__c : '';
 
@@ -374,10 +429,16 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
                 SELECT Id
                 FROM OrgWideEmailAddress
                 WHERE DisplayName = :ORG_WIDE_NAME
+                WITH SYSTEM_MODE
                 LIMIT 1
             ];
 
             List<Messaging.SingleEmailMessage> messages = new List<Messaging.SingleEmailMessage>();
+            KenMessagingService.Request routing =
+                new KenMessagingService.Request(KenMessagingService.TYPE_REGISTRATION_REJECTION)
+                    .attribute('Institution_Alias', institutionAlias)
+                    .attribute('Institution_Email', institutionEmail);
+
             for (Lead l : newLeads) {
                 if (l == null) {
                     continue;
@@ -394,9 +455,19 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
                 String body = template.HtmlValue;
                 String fullName = String.join(new List<String>{l.FirstName, l.LastName},' ').trim();
 
-                body = body.replace('{User_Name}', fullName);
-                body = body.replace('{Institution_Alias}', institutionAlias);
-                body = body.replace('{Institution_Email}', institutionEmail);
+                Map<String, String> tokens = new Map<String, String>{
+                    'User_Name' => fullName,
+                    'Institution_Alias' => institutionAlias,
+                    'Institution_Email' => institutionEmail
+                };
+
+                routing.recipient(
+                    l.Email,
+                    String.isNotBlank(l.MobilePhone) ? l.MobilePhone : l.Phone,
+                    tokens
+                );
+
+                body = KenMessagingService.mergeTokens(body, tokens);
 
                 Messaging.SingleEmailMessage msg = new Messaging.SingleEmailMessage();
                 msg.setToAddresses(new List<String>{ l.Email });
@@ -406,10 +477,16 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
                 messages.add(msg);
             }
 
+            KenMessagingService.sendToPhoneChannels(routing);
+            if (KenMessagingService.send(routing.withNativeFallback(messages)).handled) {
+                return;
+            }
+
             if (!messages.isEmpty()) {
                 Messaging.sendEmail(messages);
             }
         }
+
 /**
      * @description Resends the magic login link email to a verified or
      *              converted lead. Regenerates the verification token
@@ -425,9 +502,11 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
 
         List<Lead> leadList = [
             SELECT Id, FirstName, LastName, Email, Status, Verification_Token__c, Token_Expiration_Date__c,
-                   RecordTypeId, Year_of_Graduation__c, Registration_Number__c, Program_Plan__c
+                   RecordTypeId, Year_of_Graduation__c, Registration_Number__c, Program_Plan__c,
+                   MobilePhone, Phone
             FROM Lead
             WHERE Id = :leadId
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
         if (leadList.isEmpty()) {
@@ -445,7 +524,7 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
         if (lead.Token_Expiration_Date__c == null || lead.Token_Expiration_Date__c < System.now() || String.isBlank(lead.Verification_Token__c)) {
             lead.Verification_Token__c = generateUniqueToken();
             lead.Token_Expiration_Date__c = System.now().addHours(48);
-            update lead;
+            Database.update(lead, true, AccessLevel.SYSTEM_MODE);
         }
 
         sendMagicLinkEmails(new List<Lead>{ lead });
@@ -460,10 +539,11 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
     @TestVisible
     private static EmailTemplate fetchMagicLinkTemplate() {
         List<EmailTemplate> templates = [
-            SELECT Id,HtmlValue 
+            SELECT Id, HtmlValue, Subject 
             FROM EmailTemplate
             WHERE DeveloperName = :PORTAL_REGISTRATION_INVITATION
-            AND IsActive = true 
+            AND IsActive = true
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
         return templates.isEmpty() ? null : templates[0];
@@ -491,10 +571,11 @@ public without sharing class KenLeadTriggerHandler extends KenTriggerHandler {
             return null;
         }
         List<EmailTemplate> templates = [
-            SELECT Id,HtmlValue 
+            SELECT Id, HtmlValue, Subject 
             FROM EmailTemplate
             WHERE DeveloperName = :devName
-            AND IsActive = true 
+            AND IsActive = true
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
         return templates.isEmpty() ? null : templates[0];

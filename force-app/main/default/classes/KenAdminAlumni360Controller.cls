@@ -10,8 +10,8 @@
  * Quick Actions, Record Health).
  *
  * Schema integration:
- *   - getHeader(recordId) queries Ken_Alumni_CRM__c (the same master object
- *     used by KenAdminAlumniController) and the Person Account lookup for
+ *   - getHeader(recordId) reads the ConstituentRole (the same master object
+ *     used by KenAdminAlumniController) and its Person Account for
  *     identity / contact / employer fields.
  *   - Sections without a wired source object (Lifecycle, Journey,
  *     Academic, Admissions, Continuing Education, Jobs, Recognition,
@@ -58,6 +58,7 @@ public with sharing class KenAdminAlumni360Controller {
         @AuraEnabled public Id     personAccountId;     // surface for the inline LinkedIn Sync button
         @AuraEnabled public String name;
         @AuraEnabled public String initials;
+        @AuraEnabled public String photoUrl;
         @AuraEnabled public String role;               // ALUMNA / ALUMNUS
         @AuraEnabled public String registrationNumber;
         @AuraEnabled public String classOf;
@@ -67,9 +68,7 @@ public with sharing class KenAdminAlumni360Controller {
         @AuraEnabled public String school;
         @AuraEnabled public String campus;
         @AuraEnabled public String status;
-        @AuraEnabled public String stage;
         @AuraEnabled public String legacyId;
-        @AuraEnabled public String verifyMessage;
         @AuraEnabled public List<BadgeDTO> badges;
     }
 
@@ -149,6 +148,7 @@ public with sharing class KenAdminAlumni360Controller {
     }
     public class EducationRow {
         @AuraEnabled public String institute;
+        @AuraEnabled public String program;
         @AuraEnabled public String degree;
         @AuraEnabled public String gradeLabel;   // e.g. "CGPA 8.4" or "85%" — pre-formatted
         @AuraEnabled public String yearOfCompletion;
@@ -432,8 +432,8 @@ public with sharing class KenAdminAlumni360Controller {
        the editable profile fields, keyed by a stable vocabulary the LWC
        binds its inputs to. updateAlumniProfile() takes only the keys the
        user actually changed (the LWC diffs client-side) and updates the
-       smallest possible set of records — the Person Account and, when a
-       real CRM row exists, Ken_Alumni_CRM__c. Nothing is written when a
+       smallest possible set of records — Person Account, ConstituentRole,
+       PersonEmployment and the Mailing address. Nothing is written when a
        value did not change, so we never touch a record needlessly.
        ============================================================ */
 
@@ -481,6 +481,23 @@ public with sharing class KenAdminAlumni360Controller {
     };
 
     /**
+     * Fallback dropdown options for Blood_Group__c, used only in orgs where the
+     * field is still Text and picklist describe returns nothing. Orgs matching
+     * KJS production have it as a Picklist and supply their own values.
+     */
+    private static final List<String> BLOOD_GROUP_VALUES = new List<String>{
+        'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
+    };
+
+    /**
+     * Person Account bio fields read dynamically because they don't exist
+     * (or aren't enabled) in every client org.
+     */
+    private static final List<String> SYNTH_BIO_FIELDS = new List<String>{
+        'PersonGenderIdentity', 'Nationality__pc', 'Nationality__c', 'Languages_Known__c', 'Blood_Group__c'
+    };
+
+    /**
      * Active picklist entries for a field as {label, value} maps, so the LWC can
      * render a combobox. When the field is a real picklist we read its describe
      * (org-specific values win). When it's still a Text field, we fall back to
@@ -492,8 +509,8 @@ public with sharing class KenAdminAlumni360Controller {
         if (String.isNotBlank(fieldApiName)) {
             try {
                 Schema.DescribeFieldResult dfr =
-                    Schema.getGlobalDescribe().get(objectApiName).getDescribe()
-                        .fields.getMap().get(fieldApiName).getDescribe();
+                    KenNamespaceUtil.resolveFieldMap(objectApiName)
+                        .get(fieldApiName).getDescribe();
                 if (dfr.getType() == Schema.DisplayType.Picklist ||
                     dfr.getType() == Schema.DisplayType.MultiPicklist) {
                     isPicklist = true;
@@ -524,16 +541,17 @@ public with sharing class KenAdminAlumni360Controller {
         // ----- Person Account scalar fields (dynamic for optional bio fields) -----
         if (ctx.personAccountId != null) {
             Map<String, Schema.SObjectField> af = Account.SObjectType.getDescribe().fields.getMap();
-            String natField  = af.containsKey('Nationality__pc') ? 'Nationality__pc'
-                              : (af.containsKey('Nationality__c') ? 'Nationality__c' : null);
-            String langField = af.containsKey('Languages_Known__c') ? 'Languages_Known__c' : null;
+            String natField  = KenNamespaceUtil.hasField(af, 'Nationality__c') ? 'Nationality__c'
+                              : (af.containsKey('Nationality__pc') ? 'Nationality__pc' : null);
+            String langField = KenNamespaceUtil.hasField(af, 'Languages_Known__c') ? 'Languages_Known__c' : null;
             List<String> fields = new List<String>{
-                'PersonEmail','PersonMobilePhone','Linkedin_Profile_URL__c','PersonBirthdate',
+                'PersonEmail','PersonMobilePhone','Linkedin_Profile_URL__c','Twitter_Profile_URL__c','PersonBirthdate',
                 'PersonMailingStreet','PersonMailingCity','PersonMailingState',
-                'PersonMailingPostalCode','PersonMailingCountry'
+                'PersonMailingPostalCode','PersonMailingCountry','PersonGenderIdentity'
             };
             if (natField  != null) fields.add(natField);
             if (langField != null) fields.add(langField);
+            if (KenNamespaceUtil.hasField(af, 'Blood_Group__c')) fields.add('Blood_Group__c');
             try {
                 Id pid = ctx.personAccountId;
                 List<Account> rows = (List<Account>) Database.query(
@@ -544,6 +562,7 @@ public with sharing class KenAdminAlumni360Controller {
                     m.put('email',       a.PersonEmail);
                     m.put('phone',       a.PersonMobilePhone);
                     m.put('linkedin',    a.Linkedin_Profile_URL__c);
+                    m.put('twitter',     a.Twitter_Profile_URL__c);
                     m.put('dob',         a.PersonBirthdate);                 // serialises as yyyy-MM-dd
                     m.put('street',      a.PersonMailingStreet);
                     m.put('city',        a.PersonMailingCity);
@@ -552,22 +571,53 @@ public with sharing class KenAdminAlumni360Controller {
                     m.put('country',     a.PersonMailingCountry);
                     m.put('nationality', natField  != null ? a.get(natField)  : null);
                     m.put('languages',   langField != null ? a.get(langField) : null);
+                    m.put('gender',      a.get('PersonGenderIdentity'));
+                    m.put('bloodGroup',  KenNamespaceUtil.hasField(af, 'Blood_Group__c') ? a.get(KenNamespaceUtil.qualifyCustom('Blood_Group__c')) : null);
+                    if (String.isBlank(a.PersonMailingCity) && String.isBlank(a.PersonMailingState)
+                        && String.isBlank(a.PersonMailingCountry)) {
+                        List<Ken_Address__c> ka = [
+                            SELECT Street__c, City__c, State__c, Pincode__c, Country__c
+                            FROM Ken_Address__c
+                            WHERE Person_Account__c = :pid
+                              AND Address_Type__c = 'Mailing'
+                            WITH USER_MODE
+                            LIMIT 1
+                        ];
+                        if (!ka.isEmpty()) {
+                            m.put('street',     ka[0].Street__c);
+                            m.put('city',       ka[0].City__c);
+                            m.put('state',      ka[0].State__c);
+                            m.put('postalCode', ka[0].Pincode__c);
+                            m.put('country',    ka[0].Country__c);
+                        }
+                    }
                 }
             } catch (Exception ignored) { /* leave account fields out */ }
             // Nationality picklist options (empty when the org still has it as a
             // plain text field — the LWC then falls back to a text input).
             m.put('nationalityOptions', picklistOptions('Account', natField, NATIONALITY_VALUES));
+            m.put('genderOptions', picklistOptions('Account', 'PersonGenderIdentity', new List<String>()));
+            m.put('bloodGroupOptions', picklistOptions('Account', KenNamespaceUtil.hasField(af, 'Blood_Group__c') ? 'Blood_Group__c' : null,
+                KenNamespaceUtil.hasField(af, 'Blood_Group__c') ? BLOOD_GROUP_VALUES : new List<String>()));
         }
 
-        // ----- Ken_Alumni_CRM__c scalar fields (only when a real row exists) -----
-        if (ctx.crm != null && ctx.crm.Id != null) {
+        // ----- Academic fields from the ConstituentRole; employment and
+        // location resolved from their own objects -----
+        if (ctx.cr != null && ctx.cr.Id != null) {
             m.put('crmEditable',        true);
-            m.put('classOf',            ctx.crm.Year_of_Graduation__c);
-            m.put('currentCompany',     ctx.crm.Current_Company__c);
-            m.put('campus',             ctx.crm.Current_Location__c);
-            m.put('registrationNumber', ctx.crm.Registration_Number__c);
-            m.put('industry',           ctx.crm.Industry__c);
-            m.put('specialization',     ctx.crm.Specialization__c);
+            m.put('classOf',            ctx.cr.Graduation_Year__c);
+            m.put('registrationNumber', ctx.cr.Registration_Number__c);
+        }
+        if (ctx.personAccountId != null) {
+            try {
+                KenAlumniProfileService.EmploymentSnapshot emp =
+                    KenAlumniProfileService.currentEmployment(ctx.personAccountId);
+                if (emp != null) {
+                    m.put('currentCompany', emp.company);
+                    m.put('industry',       emp.industry);
+                }
+                m.put('campus', KenAlumniProfileService.currentLocation(ctx.personAccountId));
+            } catch (Exception ignored) { /* leave employment fields out */ }
         }
         return m;
     }
@@ -587,9 +637,9 @@ public with sharing class KenAdminAlumni360Controller {
         AlumniContext ctx = loadContext(recordId);
 
         Map<String, Schema.SObjectField> af = Account.SObjectType.getDescribe().fields.getMap();
-        String natField  = af.containsKey('Nationality__pc') ? 'Nationality__pc'
-                          : (af.containsKey('Nationality__c') ? 'Nationality__c' : null);
-        String langField = af.containsKey('Languages_Known__c') ? 'Languages_Known__c' : null;
+        String natField  = KenNamespaceUtil.hasField(af, 'Nationality__c') ? 'Nationality__c'
+                          : (af.containsKey('Nationality__pc') ? 'Nationality__pc' : null);
+        String langField = KenNamespaceUtil.hasField(af, 'Languages_Known__c') ? 'Languages_Known__c' : null;
 
         // ----- Person Account -----
         Account acct;
@@ -603,6 +653,7 @@ public with sharing class KenAdminAlumni360Controller {
                 if (key == 'email')           { acct.PersonEmail = s; acctDirty = true; }
                 else if (key == 'phone')      { acct.PersonMobilePhone = s; acctDirty = true; }
                 else if (key == 'linkedin')   { acct.Linkedin_Profile_URL__c = s; acctDirty = true; }
+                else if (key == 'twitter')    { acct.Twitter_Profile_URL__c = s; acctDirty = true; }
                 else if (key == 'dob')        { acct.PersonBirthdate = (s == null) ? null : Date.valueOf(s); acctDirty = true; }
                 else if (key == 'street')     { acct.PersonMailingStreet = s; acctDirty = true; }
                 else if (key == 'city')       { acct.PersonMailingCity = s; acctDirty = true; }
@@ -611,32 +662,158 @@ public with sharing class KenAdminAlumni360Controller {
                 else if (key == 'country')    { acct.PersonMailingCountry = s; acctDirty = true; }
                 else if (key == 'nationality' && natField  != null) { acct.put(natField, s); acctDirty = true; }
                 else if (key == 'languages'  && langField != null) { acct.put(langField, s); acctDirty = true; }
+                else if (key == 'gender')     { acct.put('PersonGenderIdentity', s); acctDirty = true; }
+                else if (key == 'bloodGroup' && KenNamespaceUtil.hasField(af, 'Blood_Group__c')) { acct.put(KenNamespaceUtil.qualifyCustom('Blood_Group__c'), s); acctDirty = true; }
             }
         }
 
-        // ----- Ken_Alumni_CRM__c (only when a real row exists) -----
-        Ken_Alumni_CRM__c crm;
-        Boolean crmDirty = false;
-        if (ctx.crm != null && ctx.crm.Id != null) {
-            crm = new Ken_Alumni_CRM__c(Id = ctx.crm.Id);
+        // ----- Academic edits land on the ConstituentRole -----
+        ConstituentRole crUpd;
+        Boolean crUpdDirty = false;
+        if (ctx.cr != null && ctx.cr.Id != null) {
+            crUpd = new ConstituentRole(Id = ctx.cr.Id);
             for (String key : changes.keySet()) {
                 Object v = changes.get(key);
                 String s = (v == null) ? null : String.valueOf(v);
                 if (String.isBlank(s)) s = null;
-                if (key == 'classOf')                { crm.Year_of_Graduation__c = s; crmDirty = true; }
-                else if (key == 'currentCompany')    { crm.Current_Company__c = s; crmDirty = true; }
-                else if (key == 'campus')            { crm.Current_Location__c = s; crmDirty = true; }
-                else if (key == 'registrationNumber'){ crm.Registration_Number__c = s; crmDirty = true; }
-                else if (key == 'industry')          { crm.Industry__c = s; crmDirty = true; }
-                else if (key == 'specialization')    { crm.Specialization__c = s; crmDirty = true; }
+                if (key == 'classOf')                 { crUpd.Graduation_Year__c = s; crUpdDirty = true; }
+                else if (key == 'registrationNumber') { crUpd.Registration_Number__c = s; crUpdDirty = true; }
+            }
+        }
+
+        // ----- Company and industry belong to the current employment row -----
+        PersonEmployment empUpd;
+        Boolean empDirty = false;
+        if (ctx.personAccountId != null
+            && (changes.containsKey('currentCompany') || changes.containsKey('industry'))) {
+            String companyEdit = changes.get('currentCompany') == null
+                ? null : blankToNull(String.valueOf(changes.get('currentCompany')));
+            String industryEdit = changes.get('industry') == null
+                ? null : blankToNull(String.valueOf(changes.get('industry')));
+            List<PersonEmployment> currentEmp = [
+                SELECT Id FROM PersonEmployment
+                WHERE AccountId = :ctx.personAccountId
+                  AND (Is_Archived__c = false OR Is_Archived__c = null)
+                WITH USER_MODE
+                ORDER BY Currently_Employed__c DESC, StartDate DESC NULLS LAST
+                LIMIT 1
+            ];
+            if (!currentEmp.isEmpty()) {
+                empUpd = new PersonEmployment(Id = currentEmp[0].Id);
+                if (changes.containsKey('currentCompany')) { empUpd.Company_Name__c = companyEdit; empDirty = true; }
+                if (changes.containsKey('industry'))       { empUpd.Industry__c = industryEdit; empDirty = true; }
+            } else if (companyEdit != null || industryEdit != null) {
+                empUpd = new PersonEmployment(
+                    AccountId = ctx.personAccountId,
+                    RelatedPersonId = ctx.personAccountId,
+                    Name = companyEdit != null ? companyEdit.abbreviate(80) : 'Employment',
+                    Company_Name__c = companyEdit,
+                    Industry__c = industryEdit,
+                    Currently_Employed__c = true,
+                    Is_Archived__c = false
+                );
+                empDirty = true;
+            }
+        }
+
+        // ----- Campus / location edits land on the Mailing address -----
+        Ken_Address__c addrUpd;
+        Boolean addrDirty = false;
+        if (ctx.personAccountId != null && changes.containsKey('campus')) {
+            String campusEdit = changes.get('campus') == null
+                ? null : blankToNull(String.valueOf(changes.get('campus')));
+            List<Ken_Address__c> mailing = [
+                SELECT Id FROM Ken_Address__c
+                WHERE Person_Account__c = :ctx.personAccountId AND Address_Type__c = 'Mailing'
+                WITH USER_MODE
+                LIMIT 1
+            ];
+            if (!mailing.isEmpty()) {
+                addrUpd = new Ken_Address__c(Id = mailing[0].Id, City__c = campusEdit);
+                addrDirty = true;
+            } else if (campusEdit != null) {
+                addrUpd = new Ken_Address__c(
+                    Person_Account__c = ctx.personAccountId,
+                    Address_Type__c = 'Mailing',
+                    City__c = campusEdit
+                );
+                addrDirty = true;
             }
         }
 
         try {
-            if (acctDirty && acct != null) update acct;
-            if (crmDirty  && crm  != null) update crm;
+            if (acctDirty && acct != null) {
+                if (!Schema.sObjectType.Account.isUpdateable()) {
+                    throw new KenCrudException('Account is not updateable by the current user.');
+                }
+                update acct;
+            }
+            if (crUpdDirty && crUpd != null) {
+                if (!Schema.sObjectType.ConstituentRole.isUpdateable()) {
+                    throw new KenCrudException('ConstituentRole is not updateable by the current user.');
+                }
+                update crUpd;
+            }
+            if (empDirty && empUpd != null) {
+                if (!Schema.sObjectType.PersonEmployment.isCreateable() || !Schema.sObjectType.PersonEmployment.isUpdateable()) {
+                    throw new KenCrudException('PersonEmployment is not upsertable by the current user.');
+                }
+                upsert empUpd;
+            }
+            if (addrDirty && addrUpd != null) {
+                if (!Schema.sObjectType.Ken_Address__c.isCreateable() || !Schema.sObjectType.Ken_Address__c.isUpdateable()) {
+                    throw new KenCrudException('Ken_Address__c is not upsertable by the current user.');
+                }
+                upsert addrUpd;
+            }
         } catch (DmlException e) {
             throw new AuraHandledException(e.getDmlMessage(0));
+        }
+    }
+
+    /**
+     * Sends a one-off email to the alumnus's personal email from the
+     * "Alumni Management" org-wide address when configured.
+     */
+    @AuraEnabled
+    public static void sendEmailToAlumni(Id recordId, String subjectText, String bodyText) {
+        if (recordId == null || String.isBlank(subjectText) || String.isBlank(bodyText)) {
+            throw new AuraHandledException('Subject and message are required.');
+        }
+        AlumniContext ctx = loadContext(recordId);
+        String toAddr = (ctx.acct != null) ? ctx.acct.PersonEmail : null;
+        if (String.isBlank(toAddr)) {
+            throw new AuraHandledException('This alumnus has no email address on file.');
+        }
+        KenMessagingService.Request routing =
+            new KenMessagingService.Request(KenMessagingService.TYPE_ADHOC_EMAIL)
+                .toContact(toAddr, ctx.acct.PersonMobilePhone)
+                .attribute('emailSubject', subjectText)
+                .attribute('emailBody', bodyText);
+
+        KenMessagingService.sendToPhoneChannels(routing);
+        if (KenMessagingService.send(routing).handled) {
+            return;
+        }
+
+        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        mail.setToAddresses(new List<String>{ toAddr });
+        mail.setSubject(subjectText);
+        mail.setHtmlBody(bodyText.escapeHtml4().replace('\n', '<br/>'));
+        mail.setSaveAsActivity(false);
+        List<OrgWideEmailAddress> owa = [
+            SELECT Id FROM OrgWideEmailAddress
+            WHERE DisplayName = :KenMessagingService.orgWideAddressName()
+            WITH SYSTEM_MODE
+            LIMIT 1
+        ];
+        if (!owa.isEmpty()) {
+            mail.setOrgWideEmailAddressId(owa[0].Id);
+        }
+        try {
+            Messaging.sendEmail(new List<Messaging.SingleEmailMessage>{ mail });
+        } catch (Exception e) {
+            throw new AuraHandledException(e.getMessage());
         }
     }
 
@@ -690,6 +867,7 @@ public with sharing class KenAdminAlumni360Controller {
                 FROM PersonEducation
                 WHERE AccountId = :personAcctId
                   AND (Is_Archived__c = false OR Is_Archived__c = null)
+                WITH USER_MODE
                 ORDER BY Year_of_Completion__c DESC NULLS LAST
                 LIMIT 100
             ]) {
@@ -726,6 +904,7 @@ public with sharing class KenAdminAlumni360Controller {
                 FROM PersonEmployment
                 WHERE AccountId = :personAcctId
                   AND (Is_Archived__c = false OR Is_Archived__c = null)
+                WITH USER_MODE
                 ORDER BY StartDate DESC NULLS LAST
                 LIMIT 100
             ]) {
@@ -745,6 +924,13 @@ public with sharing class KenAdminAlumni360Controller {
         return out;
     }
 
+    /**
+     * Saves the Academic Record edit grid. Rows arriving with no id that match a
+     * row already on file — or another new row in the same submission — resolve
+     * onto the existing record instead of inserting a duplicate, keyed on
+     * institute + degree + completion year. ContactId is mirrored because only
+     * that side of PersonEducation is related-list enabled.
+     */
     @AuraEnabled
     public static void saveEducationRows(Id recordId, String rowsJson, String deleteIdsJson) {
         Id personAcctId = (recordId == null) ? null : lookupPersonAccountId(recordId);
@@ -754,14 +940,31 @@ public with sharing class KenAdminAlumni360Controller {
             ? new List<EducationEditRow>()
             : (List<EducationEditRow>) JSON.deserialize(rowsJson, List<EducationEditRow>.class);
 
+        Map<String, Id> existingByKey = existingEducationKeys(personAcctId);
+        Set<String> seenKeys = new Set<String>();
+
+        Id personContactId = null;
+        for (Account a : [SELECT PersonContactId FROM Account WHERE Id = :personAcctId WITH USER_MODE LIMIT 1]) {
+            personContactId = a.PersonContactId;
+        }
+
         List<PersonEducation> toUpsert = new List<PersonEducation>();
         for (EducationEditRow r : rows) {
             // Skip fully-empty new rows.
             if (String.isBlank(r.id) && String.isBlank(r.institute) && String.isBlank(r.degree)
                 && String.isBlank(r.grade) && String.isBlank(r.yearOfCompletion)) continue;
-            PersonEducation pe = String.isBlank(r.id)
+            String rowId = blankToNull(r.id);
+            if (rowId == null) {
+                String key = educationKey(r.institute, r.degree, r.yearOfCompletion);
+                if (key != null) {
+                    if (seenKeys.contains(key)) continue;
+                    seenKeys.add(key);
+                    if (existingByKey.containsKey(key)) rowId = existingByKey.get(key);
+                }
+            }
+            PersonEducation pe = (rowId == null)
                 ? new PersonEducation(AccountId = personAcctId, Is_Archived__c = false)
-                : new PersonEducation(Id = (Id) r.id);
+                : new PersonEducation(Id = (Id) rowId);
             String deg = blankToNull(r.degree);
             // Standard Name field is required (labelled "Degree") — keep it in
             // sync with the degree, falling back so the row can always be saved.
@@ -772,15 +975,53 @@ public with sharing class KenAdminAlumni360Controller {
             pe.Grade_Type__c = blankToNull(r.gradeType);
             pe.Grade__c = blankToNull(r.grade);
             pe.Year_of_Completion__c = blankToNull(r.yearOfCompletion);
+            if (personContactId != null) pe.ContactId = personContactId;
             toUpsert.add(pe);
         }
 
         try {
-            if (!toUpsert.isEmpty()) upsert toUpsert;
+            if (!toUpsert.isEmpty()) {
+                if (!Schema.sObjectType.PersonEducation.isCreateable() || !Schema.sObjectType.PersonEducation.isUpdateable()) {
+                    throw new KenCrudException('PersonEducation is not upsertable by the current user.');
+                }
+                upsert toUpsert;
+            }
             deleteChildren('PersonEducation', personAcctId, deleteIdsJson);
         } catch (DmlException e) {
             throw new AuraHandledException(e.getDmlMessage(0));
         }
+    }
+
+    /**
+     * Identity key for an education row: institute + degree + completion year,
+     * case- and whitespace-insensitive. Returns null when there is nothing
+     * meaningful to match on, so blank rows are never treated as duplicates.
+     */
+    private static String educationKey(String institute, String degree, String yearOfCompletion) {
+        String inst = blankToNull(institute);
+        String deg = blankToNull(degree);
+        if (inst == null && deg == null) return null;
+        return ((inst == null) ? '' : inst.trim().toLowerCase())
+            + '|' + ((deg == null) ? '' : deg.trim().toLowerCase())
+            + '|' + ((blankToNull(yearOfCompletion) == null) ? '' : yearOfCompletion.trim());
+    }
+
+    /** Maps the alumnus's unarchived education rows by identity key. */
+    private static Map<String, Id> existingEducationKeys(Id personAcctId) {
+        Map<String, Id> out = new Map<String, Id>();
+        if (personAcctId == null) return out;
+        for (PersonEducation pe : [
+            SELECT Id, Institute_Name__c, Degree_Name__c, Year_of_Completion__c
+            FROM PersonEducation
+            WHERE AccountId = :personAcctId
+            AND (Is_Archived__c = false OR Is_Archived__c = null)
+            WITH USER_MODE
+            LIMIT 200
+        ]) {
+            String key = educationKey(pe.Institute_Name__c, pe.Degree_Name__c, pe.Year_of_Completion__c);
+            if (key != null && !out.containsKey(key)) out.put(key, pe.Id);
+        }
+        return out;
     }
 
     @AuraEnabled
@@ -815,7 +1056,12 @@ public with sharing class KenAdminAlumni360Controller {
         }
 
         try {
-            if (!toUpsert.isEmpty()) upsert toUpsert;
+            if (!toUpsert.isEmpty()) {
+                if (!Schema.sObjectType.PersonEmployment.isCreateable() || !Schema.sObjectType.PersonEmployment.isUpdateable()) {
+                    throw new KenCrudException('PersonEmployment is not upsertable by the current user.');
+                }
+                upsert toUpsert;
+            }
             deleteChildren('PersonEmployment', personAcctId, deleteIdsJson);
         } catch (DmlException e) {
             throw new AuraHandledException(e.getDmlMessage(0));
@@ -833,8 +1079,14 @@ public with sharing class KenAdminAlumni360Controller {
         }
         if (ids.isEmpty()) return;
         String soql = 'SELECT Id FROM ' + objApi + ' WHERE Id IN :ids AND AccountId = :personAcctId';
-        List<SObject> rows = Database.query(soql);
-        if (!rows.isEmpty()) delete rows;
+        List<SObject> rows = Database.queryWithBinds(
+            soql,
+            new Map<String, Object>{ 'ids' => ids, 'personAcctId' => personAcctId },
+            AccessLevel.SYSTEM_MODE
+        );
+        if (!rows.isEmpty()) {
+            Database.delete(rows, true, AccessLevel.USER_MODE);
+        }
     }
 
     private static String blankToNull(String s) {
@@ -869,55 +1121,49 @@ public with sharing class KenAdminAlumni360Controller {
     public static HeaderDTO getHeader(Id recordId) {
         if (recordId == null) return emptyHeader();
         try {
-            Ken_Alumni_CRM__c r = resolveCrmRow(recordId);
+            CrmView r = resolveCrmRow(recordId);
             if (r == null) return emptyHeader();
 
             // ConstituentRole stage / registration status (separate query — standard sObject)
+            // Stage label comes from KenLeadLifecycleService.resolveStage() — the
+            // single source of truth for the 7-stage lifecycle (Lead/Unverified/
+            // Registered/Onboarding In Progress/Active),
+            // the same logic backing the admin dashboard KPIs and lifecycle funnel —
+            // so this record's status matches what's shown everywhere else.
             String stageLabel = null;
-            if (r.ConstituentRole__c != null) {
-                try {
-                    List<ConstituentRole> crRows = [
-                        SELECT Id, RoleType, Status, Registration_Status__c
-                        FROM ConstituentRole
-                        WHERE Id = :r.ConstituentRole__c
-                        LIMIT 1
-                    ];
-                    if (!crRows.isEmpty()) {
-                        stageLabel = crRows[0].Registration_Status__c != null
-                                        ? crRows[0].Registration_Status__c
-                                        : crRows[0].RoleType;
-                    }
-                } catch (Exception innerEx) { /* leave stage null */ }
+            String enrollmentYear = null;
+            ConstituentRole roleRow = resolveRoleRow(r);
+            if (roleRow != null) {
+                try { stageLabel = KenLeadLifecycleService.resolveStage(roleRow); } catch (Exception innerEx) { /* leave stage null */ }
+                enrollmentYear = roleRow.Year_of_Enrollment__c;
             }
 
             HeaderDTO h = new HeaderDTO();
-            h.alumniId = r.Id;
-            h.personAccountId = r.Person_Account__c;
-            h.name = (r.Person_Account__c != null && r.Person_Account__r.Name != null)
-                        ? r.Person_Account__r.Name : r.Name;
+            h.alumniId = r.id;
+            h.personAccountId = r.personAccountId;
+            h.name = (r.person != null && r.person.Name != null) ? r.person.Name : r.name;
             h.initials = computeInitials(h.name);
-            h.role = 'ALUMNUS';
-            h.registrationNumber = r.Registration_Number__c;
-            h.classOf = r.Year_of_Graduation__c;
-            h.program = displayProgram(r.Program__c);
-            // programDates: registration date year — year_of_graduation
-            String regYear = null;
-            if (r.Registration_Date__c != null) regYear = String.valueOf(r.Registration_Date__c.year());
-            if (regYear != null && r.Year_of_Graduation__c != null) {
-                h.programDates = regYear + ' – ' + r.Year_of_Graduation__c;
-            } else if (r.Year_of_Graduation__c != null) {
-                h.programDates = r.Year_of_Graduation__c;
+            if (r.person != null) {
+                try { h.photoUrl = (String) r.person.get(KenNamespaceUtil.qualifyCustom('Profile_Photo_URL__c')); } catch (Exception ex) { /* ignore */ }
             }
-            h.yearsOut = (r.Year_of_Graduation__c != null) ? yearsOutLabel(r.Year_of_Graduation__c) : null;
+            h.role = 'ALUMNUS';
+            h.registrationNumber = r.registrationNumber;
+            h.classOf = r.graduationYear;
+            h.program = displayProgram(r.program);
+            // programDates: year of enrollment — year of graduation
+            if (String.isNotBlank(enrollmentYear) && r.graduationYear != null) {
+                h.programDates = enrollmentYear + ' – ' + r.graduationYear;
+            } else if (r.graduationYear != null) {
+                h.programDates = r.graduationYear;
+            }
+            h.yearsOut = (r.graduationYear != null) ? yearsOutLabel(r.graduationYear) : null;
             h.school = null;       // no school field in data model
-            h.campus = r.Current_Location__c;
-            h.status = (r.Is_Active__c == true) ? 'Active Alumna' : 'Inactive';
-            h.stage = stageLabel;
+            h.campus = r.currentLocation;
+            Boolean isActive = (r.isActive == true);
+            h.status = stageLabel;
             h.legacyId = null;     // no legacy id field
-            h.verifyMessage = (r.Person_Account__c != null && r.Person_Account__r.PersonEmail != null)
-                                ? 'Contact verified' : 'Contact missing';
             h.badges = new List<BadgeDTO>();
-            if (r.Is_Active__c == true) h.badges.add(badge('Active Alumna', 'emerald'));
+            if (isActive) h.badges.add(badge('Active', 'emerald'));
             return h;
         } catch (Exception e) {
             return emptyHeader();
@@ -965,6 +1211,7 @@ public with sharing class KenAdminAlumni360Controller {
                            StartDate, EndDate, Currently_Employed__c, Is_Archived__c
                     FROM PersonEmployment
                     WHERE AccountId = :personAcctId
+                    WITH USER_MODE
                     ORDER BY StartDate DESC NULLS LAST
                 ];
                 PersonEmployment current;
@@ -1023,6 +1270,7 @@ public with sharing class KenAdminAlumni360Controller {
                     SELECT COUNT()
                     FROM Ken_Event_Booking__c
                     WHERE Person_Account__c = :personAcctId
+                WITH USER_MODE
                 ];
             } catch (Exception ex) { eventsCount = 0; }
             try {
@@ -1031,6 +1279,7 @@ public with sharing class KenAdminAlumni360Controller {
                     FROM Ken_Mentorship__c
                     WHERE Mentor__c = :personAcctId
                       AND Mentorship_Status__c IN ('Accepted', 'Scheduled')
+                WITH USER_MODE
                 ];
             } catch (Exception ex) { activeMentees = 0; }
         }
@@ -1055,18 +1304,19 @@ public with sharing class KenAdminAlumni360Controller {
     public static OverviewDTO getOverview(Id recordId) {
         if (recordId == null) return emptyOverview();
         try {
-            Ken_Alumni_CRM__c r = resolveCrmRow(recordId);
+            CrmView r = resolveCrmRow(recordId);
             if (r == null) return emptyOverview();
 
             // Current employment (for snapshot block)
             PersonEmployment cur;
-            if (r.Person_Account__c != null) {
+            if (r.personAccountId != null) {
                 try {
                     List<PersonEmployment> peList = [
                         SELECT Designation__c, Job_Role__c, Company_Name__c, Location__c,
                                StartDate, EndDate, Currently_Employed__c, Is_Archived__c
                         FROM PersonEmployment
-                        WHERE AccountId = :r.Person_Account__c
+                        WHERE AccountId = :r.personAccountId
+                        WITH USER_MODE
                         ORDER BY StartDate DESC NULLS LAST
                     ];
                     for (PersonEmployment pe : peList) {
@@ -1089,61 +1339,84 @@ public with sharing class KenAdminAlumni360Controller {
                 }
                 roleLine = (cur.Designation__c != null) ? cur.Designation__c : cur.Job_Role__c;
             }
-            if (String.isBlank(employerLine)) employerLine = r.Current_Company__c;
+            if (String.isBlank(employerLine)) employerLine = r.currentCompany;
 
-            String yearsOut = (r.Year_of_Graduation__c != null) ? yearsOutLabel(r.Year_of_Graduation__c) : null;
+            String yearsOut = (r.graduationYear != null) ? yearsOutLabel(r.graduationYear) : null;
+
+            // Year of Enrollment lives on the ConstituentRole (not the CRM); bulk-imported
+            // CRM rows may carry no role link, so fall back to the person's latest role.
+            String yearOfEnrollment = null;
+            ConstituentRole enrollmentRole = resolveRoleRow(r);
+            if (enrollmentRole != null) yearOfEnrollment = enrollmentRole.Year_of_Enrollment__c;
 
             OverviewDTO o = new OverviewDTO();
             o.snapshot = new List<KeyValue>{
-                kv('Alumni status',     r.Is_Active__c == true ? 'Active · Engaged' : 'Inactive', null),
-                kv('Class of',          r.Year_of_Graduation__c,                                  null),
-                kv('Program',           displayProgram(r.Program__c),                              null),
-                kv('Years post-grad',   yearsOut,                                                  null),
-                kv('Current employer',  employerLine,                                              null),
-                kv('Current role',      roleLine,                                                  null),
-                kv('Chapter',           null,                                                       null),
-                kv('Engagement tier',   null,                                                       null)
+                kv('Alumni status',     r.isActive == true ? 'Active · Engaged' : 'Inactive', null),
+                kv('Registration number', r.registrationNumber,                                null),
+                kv('Year of Enrollment', yearOfEnrollment,                                     null),
+                kv('Class of',          r.graduationYear,                                      null),
+                kv('Program',           displayProgram(r.program),                             null),
+                kv('Years post-grad',   yearsOut,                                              null),
+                kv('Current employer',  employerLine,                                          null),
+                kv('Current role',      roleLine,                                              null)
             };
 
-            String address = null;
+            AddressParts address = new AddressParts();
             String dob = null;
-            String phone = null, emailPersonal = null, linkedIn = null;
-            if (r.Person_Account__c != null && r.Person_Account__r != null) {
-                address = buildAddress(
-                    r.Person_Account__r.PersonMailingStreet,
-                    r.Person_Account__r.PersonMailingCity,
-                    r.Person_Account__r.PersonMailingState,
-                    r.Person_Account__r.PersonMailingPostalCode,
-                    r.Person_Account__r.PersonMailingCountry
-                );
-                if (r.Person_Account__r.PersonBirthdate != null) {
-                    dob = r.Person_Account__r.PersonBirthdate.format();
+            String phone = null, emailPersonal = null, linkedIn = null, twitter = null;
+            if (r.person != null) {
+                address.street  = r.person.PersonMailingStreet;
+                address.city    = r.person.PersonMailingCity;
+                address.state   = r.person.PersonMailingState;
+                address.postal  = r.person.PersonMailingPostalCode;
+                address.country = r.person.PersonMailingCountry;
+                if (r.person.PersonBirthdate != null) {
+                    Date bd = r.person.PersonBirthdate;
+                    dob = Datetime.newInstance(bd.year(), bd.month(), bd.day()).format('dd MMM yyyy');
                 }
-                phone         = r.Person_Account__r.PersonMobilePhone;
-                emailPersonal = r.Person_Account__r.PersonEmail;
-                linkedIn      = r.Person_Account__r.Linkedin_Profile_URL__c;
+                phone         = r.person.PersonMobilePhone;
+                emailPersonal = r.person.PersonEmail;
+                linkedIn      = r.person.Linkedin_Profile_URL__c;
+                try { twitter = (String) r.person.get(KenNamespaceUtil.qualifyCustom('Twitter_Profile_URL__c')); } catch (Exception ex) { /* ignore */ }
+            }
+            if (address.isEmpty() && r.personAccountId != null) {
+                address = kenAddressFallback(r.personAccountId);
             }
             // Bio fields — only read from real Account fields, never hardcoded.
             String nationality = null;
             String languages   = null;
-            if (r.Person_Account__c != null && r.Person_Account__r != null) {
-                // Nationality lives on the Person Account variant of the field.
-                try { nationality = (String) r.Person_Account__r.get('Nationality__pc'); } catch (Exception ex) { /* field may not exist */ }
+            if (r.person != null) {
+                // Nationality__c is where registration/onboarding writes; the
+                // KJS-only Nationality__pc variant is a legacy-data fallback.
+                try { nationality = (String) r.person.get(KenNamespaceUtil.qualifyCustom('Nationality__c')); } catch (Exception ex) { /* field may not exist */ }
                 if (String.isBlank(nationality)) {
-                    try { nationality = (String) r.Person_Account__r.get('Nationality__c'); } catch (Exception ex) { /* ignore */ }
+                    try { nationality = (String) r.person.get('Nationality__pc'); } catch (Exception ex) { /* ignore */ }
                 }
                 // Languages — read from Languages_Known__c if the org has it.
-                try { languages = (String) r.Person_Account__r.get('Languages_Known__c'); } catch (Exception ex) { /* ignore */ }
+                try { languages = (String) r.person.get(KenNamespaceUtil.qualifyCustom('Languages_Known__c')); } catch (Exception ex) { /* ignore */ }
+            }
+            String gender = null;
+            String bloodGroup = null;
+            if (r.person != null) {
+                try { gender = (String) r.person.get('PersonGenderIdentity'); } catch (Exception ex) { /* ignore */ }
+                try { bloodGroup = (String) r.person.get(KenNamespaceUtil.qualifyCustom('Blood_Group__c')); } catch (Exception ex) { /* ignore */ }
             }
             o.personalContact = new List<KeyValue>{
                 kv('Phone',            phone,         null),
                 kv('Email (personal)', emailPersonal, null),
                 kv('Email (alumni)',   emailPersonal, null),
                 kv('LinkedIn',         linkedIn,      null),
+                kv('Twitter',          twitter,       null),
                 kv('Date of birth',    dob,           null),
+                kv('Gender',           gender,        null),
+                kv('Blood group',      bloodGroup,    null),
                 kv('Nationality',      nationality,   null),
                 kv('Languages',        languages,     null),
-                kv('Address',          address,       null)
+                // Address is stored component-by-component, so surface it that
+                // way instead of flattening it into one comma-joined line.
+                kv('City',             address.city,    null),
+                kv('State',            address.state,   null),
+                kv('Country',          address.country, null)
             };
 
             // No relationship data model wired yet
@@ -1197,14 +1470,12 @@ public with sharing class KenAdminAlumni360Controller {
 
         Id personAcctId = null;
         try {
-            Ken_Alumni_CRM__c row = resolveCrmRow(recordId);
-            List<Ken_Alumni_CRM__c> rows = (row == null) ? new List<Ken_Alumni_CRM__c>() : new List<Ken_Alumni_CRM__c>{ row };
-            if (!rows.isEmpty()) {
-                Ken_Alumni_CRM__c r = rows[0];
-                personAcctId = r.Person_Account__c;
-                String prog  = (r.Program__c != null)             ? displayProgram(r.Program__c) : 'Program';
-                String year  = (r.Year_of_Graduation__c != null)  ? r.Year_of_Graduation__c  : '—';
-                String regNo = (r.Registration_Number__c != null) ? r.Registration_Number__c : null;
+            CrmView r = resolveCrmRow(recordId);
+            if (r != null) {
+                personAcctId = r.personAccountId;
+                String prog  = (r.program != null)            ? displayProgram(r.program) : 'Program';
+                String year  = (r.graduationYear != null)     ? r.graduationYear  : '—';
+                String regNo = (r.registrationNumber != null) ? r.registrationNumber : null;
                 a.graduationFooter = 'Graduated ' + year + ' · ' + prog
                     + (regNo != null ? ' · ' + regNo : '');
             }
@@ -1214,15 +1485,24 @@ public with sharing class KenAdminAlumni360Controller {
 
         try {
             for (PersonEducation pe : [
-                SELECT Institute_Name__c, Degree_Name__c, Grade__c, Grade_Type__c, Year_of_Completion__c
+                SELECT Institute_Name__c, Degree_Name__c, Grade__c, Grade_Type__c, Year_of_Completion__c,
+                       Program_Plan__r.Name, Program_Plan__r.Provider.Name
                 FROM PersonEducation
                 WHERE AccountId = :personAcctId
                 AND (Is_Archived__c = false OR Is_Archived__c = null)
+                WITH USER_MODE
                 ORDER BY Year_of_Completion__c DESC NULLS LAST
                 LIMIT 50
             ]) {
                 EducationRow er = new EducationRow();
-                er.institute = pe.Institute_Name__c;
+                // Institute_Name__c is free text the alumnus types, so an own-institute row can
+                // arrive blank; the programme's provider is the reliable name in that case.
+                er.institute = String.isNotBlank(pe.Institute_Name__c)
+                    ? pe.Institute_Name__c
+                    : (pe.Program_Plan__r != null && pe.Program_Plan__r.Provider != null
+                        ? pe.Program_Plan__r.Provider.Name
+                        : null);
+                er.program   = (pe.Program_Plan__r != null) ? pe.Program_Plan__r.Name : null;
                 er.degree    = pe.Degree_Name__c;
                 er.yearOfCompletion = (pe.Year_of_Completion__c != null) ? String.valueOf(pe.Year_of_Completion__c) : null;
                 // Pre-format grade for display: "CGPA 8.4" or "Percentage 85" — falls back to either part if missing.
@@ -1267,6 +1547,7 @@ public with sharing class KenAdminAlumni360Controller {
                        StartDate, EndDate, Currently_Employed__c, Description__c, Is_Archived__c
                 FROM PersonEmployment
                 WHERE AccountId = :personAcctId
+                WITH USER_MODE
                 ORDER BY StartDate DESC NULLS LAST
             ];
 
@@ -1357,6 +1638,7 @@ public with sharing class KenAdminAlumni360Controller {
                        Schedules_Sessions__r.Name, Schedules_Sessions__r.Event_Reference__c
                 FROM Ken_Event_Booking__c
                 WHERE Person_Account__c = :personAcctId
+                WITH USER_MODE
                 ORDER BY CreatedDate DESC
                 LIMIT 50
             ];
@@ -1375,6 +1657,7 @@ public with sharing class KenAdminAlumni360Controller {
                         SELECT Id, Name, Start_Date__c, Location__c, Event_Type__c
                         FROM Ken_Event_Master__c
                         WHERE Id IN :eventIds
+                    WITH USER_MODE
                     ]);
                 } catch (Exception ex) { /* swallow */ }
             }
@@ -1398,12 +1681,13 @@ public with sharing class KenAdminAlumni360Controller {
         // Mentorship — Mentor__c = personAcctId
         try {
             List<Ken_Mentorship__c> ms = [
-                SELECT Id, Mentee__c, Mentor__c, Mentorship_Status__c, Meet_Date__c,
+                SELECT Id, Mentee__c, Mentor__c, Mentorship_Status__c, Meet_Start_DateTime__c,
                        Meeting_Title__c, Meeting_Mode__c,
                        Mentee__r.Name
                 FROM Ken_Mentorship__c
                 WHERE Mentor__c = :personAcctId
-                ORDER BY Meet_Date__c DESC NULLS LAST
+                WITH USER_MODE
+                ORDER BY Meet_Start_DateTime__c DESC NULLS LAST
                 LIMIT 50
             ];
             // Group by mentee — count sessions, earliest date, latest status
@@ -1426,7 +1710,8 @@ public with sharing class KenAdminAlumni360Controller {
                 Date earliest;
                 Boolean isActive = false;
                 for (Ken_Mentorship__c m : sess) {
-                    if (m.Meet_Date__c != null && (earliest == null || m.Meet_Date__c < earliest)) earliest = m.Meet_Date__c;
+                    Date meetDay = KenDateTimeUtil.localDate(m.Meet_Start_DateTime__c);
+                    if (meetDay != null && (earliest == null || meetDay < earliest)) earliest = meetDay;
                     if (m.Mentorship_Status__c == 'Accepted' || m.Mentorship_Status__c == 'Scheduled') isActive = true;
                 }
                 mrow.since = (earliest != null) ? formatMonthYear(earliest) : null;
@@ -1484,8 +1769,7 @@ public with sharing class KenAdminAlumni360Controller {
 
     @AuraEnabled(cacheable=true)
     public static SupportDTO getSupport(Id recordId) {
-        if (recordId == null) return emptySupport();
-        return buildSupportFromOrg(recordId);
+        return emptySupport();
     }
 
     private static SupportDTO emptySupport() {
@@ -1497,77 +1781,6 @@ public with sharing class KenAdminAlumni360Controller {
         s.tickets = new List<TicketRow>();
         s.surveys = new List<SurveyRow>();
         return s;
-    }
-
-    private static SupportDTO buildSupportFromOrg(Id recordId) {
-        SupportDTO s = new SupportDTO();
-        s.ticketsRaisedCount = 0;
-        s.currentlyOpenCount = 0;
-        s.avgFirstResponse = null; // TODO upcoming-module: no first-response-time field on Case
-        s.surveysSubmittedCount = 0; // TODO upcoming-module: no submitted-survey link object yet
-        s.tickets = new List<TicketRow>();
-        s.surveys = new List<SurveyRow>();
-
-        Id personAcctId = lookupPersonAccountId(recordId);
-        if (personAcctId == null) return s;
-
-        try {
-            List<Case> all = [
-                SELECT Id, Subject, Status, Priority, CreatedDate, ClosedDate,
-                       Owner.Name, Origin, CaseNumber
-                FROM Case
-                WHERE Constituent_Role__r.PersonId = :personAcctId
-                ORDER BY CreatedDate DESC
-                LIMIT 50
-            ];
-            s.ticketsRaisedCount = all.size();
-            Integer open = 0;
-            for (Case c : all) {
-                String st = c.Status;
-                if (st != null && st != 'Closed' && st != 'Cancelled' && st != 'Rejected' && st != 'Resolved') {
-                    open++;
-                }
-            }
-            s.currentlyOpenCount = open;
-
-            Integer max = Math.min(all.size(), 10);
-            for (Integer i = 0; i < max; i++) {
-                Case c = all[i];
-                TicketRow t = new TicketRow();
-                t.title = c.Subject;
-                t.reference = c.CaseNumber;
-                List<String> bits = new List<String>();
-                if (c.Origin != null) bits.add(c.Origin);
-                if (c.CreatedDate != null) bits.add('raised ' + formatDayMonYear(c.CreatedDate.date()));
-                if (c.Owner != null && c.Owner.Name != null) bits.add('assigned to ' + c.Owner.Name);
-                if (c.ClosedDate != null) bits.add('resolved ' + formatDayMonYear(c.ClosedDate.date()));
-                t.details = String.join(bits, ' · ');
-                t.status = (c.Status != null) ? c.Status.toUpperCase() : null;
-                t.statusTone = mapStatusTone(c.Status);
-                t.priority = (c.Priority != null) ? c.Priority.toUpperCase() : null;
-                t.priorityTone = mapPriorityTone(c.Priority);
-                s.tickets.add(t);
-            }
-        } catch (Exception ex) { /* leave empty */ }
-
-        return s;
-    }
-
-    private static String mapStatusTone(String status) {
-        if (status == null) return 'gray';
-        String st = status.toLowerCase();
-        if (st.contains('closed') || st.contains('resolved')) return 'emerald';
-        if (st.contains('progress') || st.contains('open') || st.contains('new')) return 'amber';
-        if (st.contains('rejected') || st.contains('cancel')) return 'rose';
-        return 'gray';
-    }
-
-    private static String mapPriorityTone(String pri) {
-        if (pri == null) return 'gray';
-        String p = pri.toLowerCase();
-        if (p == 'high' || p == 'critical') return 'rose';
-        if (p == 'medium' || p == 'normal') return 'amber';
-        return 'gray';
     }
 
     // TODO upcoming-module: could wire ContentDocumentLink later
@@ -1620,16 +1833,16 @@ public with sharing class KenAdminAlumni360Controller {
         r.quickActions = new List<QuickActionItem>();
 
         Id personAcctId = null;
-        Ken_Alumni_CRM__c crm = resolveCrmRow(recordId);
-        if (crm != null) personAcctId = crm.Person_Account__c;
+        CrmView crm = resolveCrmRow(recordId);
+        if (crm != null) personAcctId = crm.personAccountId;
 
         // ----- RECENT ACTIVITY: pick the 5 most recent signals -----
         List<Map<String, Object>> signals = new List<Map<String, Object>>();
-        if (crm != null && crm.LastModifiedDate != null) {
+        if (crm != null && crm.lastModifiedDate != null) {
             signals.add(new Map<String, Object>{
                 'icon' => 'star',
                 'title' => 'Profile updated',
-                'date' => crm.LastModifiedDate
+                'date' => crm.lastModifiedDate
             });
         }
         if (personAcctId != null) {
@@ -1637,6 +1850,7 @@ public with sharing class KenAdminAlumni360Controller {
                 List<Ken_Event_Booking__c> evb = [
                     SELECT Id, CreatedDate FROM Ken_Event_Booking__c
                     WHERE Person_Account__c = :personAcctId
+                    WITH USER_MODE
                     ORDER BY CreatedDate DESC LIMIT 1
                 ];
                 if (!evb.isEmpty()) signals.add(new Map<String, Object>{
@@ -1647,22 +1861,11 @@ public with sharing class KenAdminAlumni360Controller {
                 List<Ken_Mentorship__c> mn = [
                     SELECT Id, CreatedDate FROM Ken_Mentorship__c
                     WHERE Mentor__c = :personAcctId
+                    WITH USER_MODE
                     ORDER BY CreatedDate DESC LIMIT 1
                 ];
                 if (!mn.isEmpty()) signals.add(new Map<String, Object>{
                     'icon' => 'mentor', 'title' => 'Mentor session logged', 'date' => mn[0].CreatedDate
-                });
-            } catch (Exception ex) {}
-            try {
-                List<Case> cs = [
-                    SELECT Id, CreatedDate, Subject FROM Case
-                    WHERE Constituent_Role__r.PersonId = :personAcctId
-                    ORDER BY CreatedDate DESC LIMIT 1
-                ];
-                if (!cs.isEmpty()) signals.add(new Map<String, Object>{
-                    'icon' => 'chat',
-                    'title' => cs[0].Subject != null ? cs[0].Subject : 'Support ticket raised',
-                    'date' => cs[0].CreatedDate
                 });
             } catch (Exception ex) {}
         }
@@ -1686,10 +1889,10 @@ public with sharing class KenAdminAlumni360Controller {
         }
 
         // ----- RECORD HEALTH -----
-        Boolean contactVerified = (crm != null && crm.Person_Account__c != null
-                                    && crm.Person_Account__r != null
-                                    && crm.Person_Account__r.PersonEmail != null);
         Boolean employerOk = false;
+        Boolean emailOk = false;
+        Boolean photoOk = false;
+        Boolean linkedinOk = false;
         if (personAcctId != null) {
             try {
                 Integer cnt = [
@@ -1698,11 +1901,24 @@ public with sharing class KenAdminAlumni360Controller {
                     WHERE AccountId = :personAcctId
                       AND Currently_Employed__c = true
                       AND Is_Archived__c = false
+                WITH USER_MODE
                 ];
                 employerOk = (cnt > 0);
             } catch (Exception ex) { employerOk = false; }
+            try {
+                Boolean hasBounceField = Account.SObjectType.getDescribe().fields.getMap().containsKey('PersonEmailBouncedDate');
+                String emailSoql = hasBounceField
+                    ? 'SELECT PersonEmail, PersonEmailBouncedDate, Profile_Photo_URL__c, Linkedin_Profile_URL__c FROM Account WHERE Id = :personAcctId LIMIT 1'
+                    : 'SELECT PersonEmail, Profile_Photo_URL__c, Linkedin_Profile_URL__c FROM Account WHERE Id = :personAcctId LIMIT 1';
+                List<Account> emailAccts = Database.query(emailSoql);
+                if (!emailAccts.isEmpty()) {
+                    emailOk = emailAccts[0].get('PersonEmail') != null
+                        && (!hasBounceField || emailAccts[0].get('PersonEmailBouncedDate') == null);
+                    photoOk = String.isNotBlank((String) emailAccts[0].get(KenNamespaceUtil.qualifyCustom('Profile_Photo_URL__c')));
+                    linkedinOk = String.isNotBlank((String) emailAccts[0].get(KenNamespaceUtil.qualifyCustom('Linkedin_Profile_URL__c')));
+                }
+            } catch (Exception ex) { emailOk = false; }
         }
-        Boolean emailOk = contactVerified;
         Boolean mentorOk = false;
         if (personAcctId != null) {
             try {
@@ -1711,16 +1927,16 @@ public with sharing class KenAdminAlumni360Controller {
                     FROM Ken_Alumni_Preferences__c
                     WHERE Person_Account__c = :personAcctId
                       AND Willing_to_be_a_mentor__c = true
+                WITH USER_MODE
                 ];
                 mentorOk = (pCnt > 0);
             } catch (Exception ex) { mentorOk = false; }
         }
-        r.recordHealth.add(rh('Contact verified',               contactVerified, contactVerified ? null : 'Missing email'));
+        r.recordHealth.add(rh('Alumni email active',            emailOk,         emailOk         ? null : 'Missing or bounced'));
         r.recordHealth.add(rh('Employer current and verified',  employerOk,      employerOk      ? null : 'No current employment'));
-        r.recordHealth.add(rh('Alumni email active',            emailOk,         emailOk         ? null : 'Missing'));
+        r.recordHealth.add(rh('Profile photo added',            photoOk,         photoOk         ? null : 'Missing'));
+        r.recordHealth.add(rh('LinkedIn profile linked',        linkedinOk,      linkedinOk      ? null : 'Not linked'));
         r.recordHealth.add(rh('Mentor profile complete',        mentorOk,        mentorOk        ? null : 'Not opted-in'));
-        // TODO upcoming-module: Tax PAN field — Missing for everyone for now
-        r.recordHealth.add(rh('Tax PAN on file (for receipts)', false,           'Missing'));
         return r;
     }
 
@@ -1768,21 +1984,39 @@ public with sharing class KenAdminAlumni360Controller {
     /* ============================================================
        Polymorphic Id resolver
        --------------------------------------------------------------
-       The 360 was originally built around Ken_Alumni_CRM__c Ids. After
-       the master-data flip in kenAdminAlumni, the modal now opens with
-       a ConstituentRole Id, and not every alumnus has a paired CRM row.
+       The modal opens with a ConstituentRole Id (or a Person Account Id
+       from older links), so the resolver accepts either prefix.
        loadContext() detects whichever Id type was passed and returns
-       up to three populated SObjects (cr / acct / crm). resolveCrmRow()
-       returns either the real CRM row OR a synthesised one built from
-       cr + acct, so legacy section code that reads CRM fields keeps
-       working without further changes.
+       the populated SObjects (cr / acct). resolveCrmRow() assembles a
+       CrmView from them, so section code has one flat object to read.
        ============================================================ */
     @TestVisible
     private class AlumniContext {
         ConstituentRole cr;
         Account acct;
-        Ken_Alumni_CRM__c crm;
         Id personAccountId;
+    }
+
+    /**
+     * Flat, in-memory view of an alumnus assembled from ConstituentRole,
+     * Account, PersonEmployment and the Mailing address. This replaced
+     * Ken_Alumni_CRM__c, which the 360 used as a carrier object rather
+     * than as storage.
+     */
+    @TestVisible
+    private class CrmView {
+        public Id id;
+        public Id roleId;
+        public Id personAccountId;
+        public Account person;
+        public String name;
+        public String program;
+        public String graduationYear;
+        public String registrationNumber;
+        public String currentLocation;
+        public String currentCompany;
+        public Boolean isActive;
+        public Datetime lastModifiedDate;
     }
 
     @TestVisible
@@ -1790,58 +2024,12 @@ public with sharing class KenAdminAlumni360Controller {
         AlumniContext ctx = new AlumniContext();
         if (recordId == null) return ctx;
         String prefix = String.valueOf(recordId).substring(0, 3);
-        String crmPrefix  = Schema.Ken_Alumni_CRM__c.SObjectType.getDescribe().getKeyPrefix();
         String crPrefix   = Schema.ConstituentRole.SObjectType.getDescribe().getKeyPrefix();
         String acctPrefix = Schema.Account.SObjectType.getDescribe().getKeyPrefix();
 
-        Id crmId = null, crId = null, acctId = null;
-        if (prefix == crmPrefix)       crmId  = recordId;
-        else if (prefix == crPrefix)   crId   = recordId;
+        Id crId = null, acctId = null;
+        if (prefix == crPrefix)        crId   = recordId;
         else if (prefix == acctPrefix) acctId = recordId;
-
-        // Hop from CR/Acct → CRM via linkage fields when possible.
-        if (crmId == null) {
-            try {
-                List<Ken_Alumni_CRM__c> linked;
-                if (crId != null) {
-                    linked = [SELECT Id FROM Ken_Alumni_CRM__c WHERE ConstituentRole__c = :crId LIMIT 1];
-                } else if (acctId != null) {
-                    linked = [SELECT Id FROM Ken_Alumni_CRM__c WHERE Person_Account__c = :acctId LIMIT 1];
-                }
-                if (linked != null && !linked.isEmpty()) crmId = linked[0].Id;
-            } catch (Exception ignored) {}
-        }
-
-        if (crmId != null) {
-            try {
-                // Build the Person Account select-list dynamically so optional
-                // bio fields (Nationality__pc, Languages_Known__c) don't break
-                // the query in orgs where they don't exist.
-                String paFields =
-                    'Person_Account__r.Name, Person_Account__r.FirstName, Person_Account__r.LastName, ' +
-                    'Person_Account__r.PersonEmail, Person_Account__r.PersonMobilePhone, ' +
-                    'Person_Account__r.PersonBirthdate, Person_Account__r.PersonMailingCountry, ' +
-                    'Person_Account__r.PersonMailingStreet, Person_Account__r.PersonMailingCity, ' +
-                    'Person_Account__r.PersonMailingState, Person_Account__r.PersonMailingPostalCode, ' +
-                    'Person_Account__r.Linkedin_Profile_URL__c';
-                Map<String, Schema.SObjectField> acctF = Account.SObjectType.getDescribe().fields.getMap();
-                if (acctF.containsKey('Nationality__pc'))     paFields += ', Person_Account__r.Nationality__pc';
-                else if (acctF.containsKey('Nationality__c')) paFields += ', Person_Account__r.Nationality__c';
-                if (acctF.containsKey('Languages_Known__c')) paFields += ', Person_Account__r.Languages_Known__c';
-                String crmSoql =
-                    'SELECT Id, Name, Program__c, Year_of_Graduation__c, Registration_Number__c, ' +
-                    'Registration_Date__c, Current_Location__c, Current_Company__c, ' +
-                    'Industry__c, Specialization__c, Approval_Status__c, Is_Active__c, ' +
-                    'ConstituentRole__c, Person_Account__c, LastModifiedDate, ' + paFields +
-                    ' FROM Ken_Alumni_CRM__c WHERE Id = :crmId LIMIT 1';
-                List<Ken_Alumni_CRM__c> rows = (List<Ken_Alumni_CRM__c>) Database.query(crmSoql);
-                if (!rows.isEmpty()) {
-                    ctx.crm = rows[0];
-                    if (crId   == null) crId   = ctx.crm.ConstituentRole__c;
-                    if (acctId == null) acctId = ctx.crm.Person_Account__c;
-                }
-            } catch (Exception ignored) {}
-        }
 
         if (crId != null) {
             try {
@@ -1849,7 +2037,9 @@ public with sharing class KenAdminAlumni360Controller {
                     SELECT Id, RoleType, Status, Registration_Status__c, PersonId,
                            Graduation_Year__c, Registration_Number__c, Program_Name__c,
                            Program_Plan__r.Name, Source_Funnel__c, CreatedDate, LastModifiedDate
-                    FROM ConstituentRole WHERE Id = :crId LIMIT 1
+                    FROM ConstituentRole WHERE Id = :crId
+                    WITH USER_MODE
+                    LIMIT 1
                 ];
                 if (!rows.isEmpty()) {
                     ctx.cr = rows[0];
@@ -1860,13 +2050,22 @@ public with sharing class KenAdminAlumni360Controller {
 
         if (acctId != null) {
             try {
-                List<Account> rows = [
-                    SELECT Id, Name, FirstName, LastName, PersonEmail, PersonMobilePhone,
-                           PersonBirthdate, PersonMailingCountry, PersonMailingStreet,
-                           PersonMailingCity, PersonMailingState, PersonMailingPostalCode,
-                           Linkedin_Profile_URL__c, LastModifiedDate
-                    FROM Account WHERE Id = :acctId LIMIT 1
-                ];
+                String acctSoql =
+                    'SELECT Id, Name, FirstName, LastName, PersonEmail, PersonMobilePhone, ' +
+                    'PersonBirthdate, PersonMailingCountry, PersonMailingStreet, ' +
+                    'PersonMailingCity, PersonMailingState, PersonMailingPostalCode, ' +
+                    'Linkedin_Profile_URL__c, Twitter_Profile_URL__c, ' +
+                    'Profile_Photo_URL__c, LastModifiedDate';
+                Map<String, Schema.SObjectField> acctFieldMap = Account.SObjectType.getDescribe().fields.getMap();
+                for (String optionalField : SYNTH_BIO_FIELDS) {
+                    if (acctFieldMap.containsKey(optionalField)) acctSoql += ', ' + optionalField;
+                }
+                acctSoql += ' FROM Account WHERE Id = :acctId LIMIT 1';
+                List<Account> rows = (List<Account>) Database.queryWithBinds(
+                    acctSoql,
+                    new Map<String, Object>{ 'acctId' => acctId },
+                    AccessLevel.SYSTEM_MODE
+                );
                 if (!rows.isEmpty()) ctx.acct = rows[0];
             } catch (Exception ignored) {}
         }
@@ -1876,53 +2075,43 @@ public with sharing class KenAdminAlumni360Controller {
     }
 
     /**
-     * Return the real Ken_Alumni_CRM__c row if one exists for this recordId
-     * (whatever its Id type), otherwise synthesise a transient one from the
-     * ConstituentRole + Account so legacy section code continues to work.
-     * Uses JSON serialise/deserialise so the Person_Account__r relationship
-     * field on the synthetic row is also populated.
+     * Assemble the flat CrmView for this recordId (role or account Id):
+     * academic facts from the ConstituentRole, person facts from the Account,
+     * and current company / location resolved live from PersonEmployment and
+     * the Mailing address via KenAlumniProfileService.
      */
     @TestVisible
-    private static Ken_Alumni_CRM__c resolveCrmRow(Id recordId) {
+    private static CrmView resolveCrmRow(Id recordId) {
         AlumniContext ctx = loadContext(recordId);
-        if (ctx.crm != null) return ctx.crm;
         if (ctx.cr == null && ctx.acct == null) return null;
 
-        Map<String, Object> synth = new Map<String, Object>{
-            'attributes' => new Map<String, String>{ 'type' => 'Ken_Alumni_CRM__c' }
-        };
+        CrmView v = new CrmView();
         if (ctx.cr != null) {
-            synth.put('ConstituentRole__c', ctx.cr.Id);
+            v.id = ctx.cr.Id;
+            v.roleId = ctx.cr.Id;
             String prog = ctx.cr.Program_Name__c;
             if (String.isBlank(prog) && ctx.cr.Program_Plan__r != null) prog = ctx.cr.Program_Plan__r.Name;
-            synth.put('Program__c', prog);
-            synth.put('Year_of_Graduation__c', ctx.cr.Graduation_Year__c);
-            synth.put('Registration_Number__c', ctx.cr.Registration_Number__c);
-            if (ctx.cr.CreatedDate != null) synth.put('Registration_Date__c', ctx.cr.CreatedDate.date());
-            synth.put('Is_Active__c', ctx.cr.Status == 'Active');
-            if (ctx.cr.LastModifiedDate != null) synth.put('LastModifiedDate', ctx.cr.LastModifiedDate);
+            v.program = prog;
+            v.graduationYear = ctx.cr.Graduation_Year__c;
+            v.registrationNumber = ctx.cr.Registration_Number__c;
+            v.isActive = ctx.cr.Status != 'Former';
+            v.lastModifiedDate = ctx.cr.LastModifiedDate;
         }
         if (ctx.acct != null) {
-            synth.put('Person_Account__c', ctx.acct.Id);
-            synth.put('Name', ctx.acct.Name);
-            synth.put('Person_Account__r', new Map<String, Object>{
-                'attributes' => new Map<String, String>{ 'type' => 'Account' },
-                'Id' => ctx.acct.Id,
-                'Name' => ctx.acct.Name,
-                'FirstName' => ctx.acct.FirstName,
-                'LastName' => ctx.acct.LastName,
-                'PersonEmail' => ctx.acct.PersonEmail,
-                'PersonMobilePhone' => ctx.acct.PersonMobilePhone,
-                'PersonBirthdate' => ctx.acct.PersonBirthdate,
-                'PersonMailingCountry' => ctx.acct.PersonMailingCountry,
-                'PersonMailingStreet' => ctx.acct.PersonMailingStreet,
-                'PersonMailingCity' => ctx.acct.PersonMailingCity,
-                'PersonMailingState' => ctx.acct.PersonMailingState,
-                'PersonMailingPostalCode' => ctx.acct.PersonMailingPostalCode,
-                'Linkedin_Profile_URL__c' => ctx.acct.Linkedin_Profile_URL__c
-            });
+            v.personAccountId = ctx.acct.Id;
+            v.person = ctx.acct;
+            v.name = ctx.acct.Name;
+            if (v.id == null) v.id = ctx.acct.Id;
         }
-        return (Ken_Alumni_CRM__c) JSON.deserialize(JSON.serialize(synth), Ken_Alumni_CRM__c.class);
+        if (v.personAccountId != null) {
+            try {
+                KenAlumniProfileService.EmploymentSnapshot emp =
+                    KenAlumniProfileService.currentEmployment(v.personAccountId);
+                if (emp != null) v.currentCompany = emp.company;
+                v.currentLocation = KenAlumniProfileService.currentLocation(v.personAccountId);
+            } catch (Exception ignored) { /* render without employment/location */ }
+        }
+        return v;
     }
 
     /** Resolve the Person Account Id from any of CRM / ConstituentRole / Account. */
@@ -1936,6 +2125,38 @@ public with sharing class KenAdminAlumni360Controller {
      * show "0uFTa00000001FTMAY" verbatim. Detect the LearningProgramPlan
      * key-prefix (`0uF`) and resolve to the Name; otherwise return as-is.
      */
+    /**
+     * Resolves the ConstituentRole backing a view. Falls back to the person's
+     * most recent alumni role so stage and Year of Enrollment still render
+     * when the view was assembled from an Account Id.
+     */
+    private static ConstituentRole resolveRoleRow(CrmView r) {
+        try {
+            if (r.roleId != null) {
+                List<ConstituentRole> rows = [
+                    SELECT Id, RoleType, Status, Registration_Status__c, Source_Funnel__c, Year_of_Enrollment__c
+                    FROM ConstituentRole
+                    WHERE Id = :r.roleId
+                    WITH USER_MODE
+                    LIMIT 1
+                ];
+                if (!rows.isEmpty()) return rows[0];
+            }
+            if (r.personAccountId != null) {
+                List<ConstituentRole> rows = [
+                    SELECT Id, RoleType, Status, Registration_Status__c, Source_Funnel__c, Year_of_Enrollment__c
+                    FROM ConstituentRole
+                    WHERE PersonId = :r.personAccountId AND RoleType = 'Alumni'
+                    WITH USER_MODE
+                    ORDER BY Last_Login__c DESC NULLS LAST, CreatedDate DESC, Id DESC
+                    LIMIT 1
+                ];
+                if (!rows.isEmpty()) return rows[0];
+            }
+        } catch (Exception ignored) { /* render without role data */ }
+        return null;
+    }
+
     private static String displayProgram(String rawValue) {
         if (String.isBlank(rawValue)) return rawValue;
         String s = rawValue.trim();
@@ -1943,7 +2164,7 @@ public with sharing class KenAdminAlumni360Controller {
         if ((s.length() == 15 || s.length() == 18) && s.startsWith('0uF')) {
             try {
                 Id pid = (Id) s;
-                List<LearningProgramPlan> p = [SELECT Name FROM LearningProgramPlan WHERE Id = :pid LIMIT 1];
+                List<LearningProgramPlan> p = [SELECT Name FROM LearningProgramPlan WHERE Id = :pid WITH USER_MODE LIMIT 1];
                 if (!p.isEmpty() && String.isNotBlank(p[0].Name)) return p[0].Name;
             } catch (Exception e) { /* not actually a valid Id; fall through */ }
         }
@@ -1967,14 +2188,48 @@ public with sharing class KenAdminAlumni360Controller {
         return day + ' ' + mon[d.month() - 1] + ' ' + d.year();
     }
 
-    private static String buildAddress(String street, String city, String state, String postal, String country) {
-        List<String> bits = new List<String>();
-        if (String.isNotBlank(street))  bits.add(street);
-        if (String.isNotBlank(city))    bits.add(city);
-        if (String.isNotBlank(state))   bits.add(state);
-        if (String.isNotBlank(postal))  bits.add(postal);
-        if (String.isNotBlank(country)) bits.add(country);
-        return bits.isEmpty() ? null : String.join(bits, ', ');
+    /**
+     * The address is always stored one component per field, so it travels to
+     * the LWC the same way — each part is its own labelled row.
+     */
+    private class AddressParts {
+        String street;
+        String city;
+        String state;
+        String postal;
+        String country;
+        Boolean isEmpty() {
+            return String.isBlank(street) && String.isBlank(city) && String.isBlank(state)
+                && String.isBlank(postal) && String.isBlank(country);
+        }
+    }
+
+    /**
+     * Onboarding stores the mailing address on Ken_Address__c (not the standard
+     * PersonMailing* compound), so fall back to that row when the Account
+     * address is empty. Read-only fallback — edits still write PersonMailing*.
+     */
+    private static AddressParts kenAddressFallback(Id personAccountId) {
+        AddressParts parts = new AddressParts();
+        try {
+            List<Ken_Address__c> rows = [
+                SELECT Street__c, City__c, State__c, Pincode__c, Country__c
+                FROM Ken_Address__c
+                WHERE Person_Account__c = :personAccountId
+                  AND Address_Type__c = 'Mailing'
+                WITH USER_MODE
+                LIMIT 1
+            ];
+            if (rows.isEmpty()) return parts;
+            parts.street  = rows[0].Street__c;
+            parts.city    = rows[0].City__c;
+            parts.state   = rows[0].State__c;
+            parts.postal  = rows[0].Pincode__c;
+            parts.country = rows[0].Country__c;
+        } catch (Exception e) {
+            /* leave the parts blank */
+        }
+        return parts;
     }
 
     private static String relativeWhen(Datetime dt) {

@@ -1,5 +1,4 @@
 @IsTest(SeeAllData=true)
-@SuppressWarnings('PMD.ApexUnitTestShouldNotUseSeeAllDataTrue')
 private class KenAudienceEngineServiceTest {
 
     private static User buildRunAsUser() {
@@ -158,6 +157,51 @@ private class KenAudienceEngineServiceTest {
             Test.stopTest();
         }
         System.assertEquals(true, executed, 'preview entry path should be executed');
+    }
+
+    /**
+     * preview() used to ignore targetRole and count every ConstituentRole in the
+     * org, so an Alumni audience previewed a reach that included students, staff
+     * and every other role type — while the saved audience (buildItemWhere) was
+     * correctly role-scoped, so the preview disagreed with the real audience.
+     */
+    @IsTest
+    static void testPreviewIsScopedToTargetRole() {
+        Id paRtId = null;
+        for (RecordType rt : [
+            SELECT Id FROM RecordType WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
+        ]) { paRtId = rt.Id; }
+        if (paRtId == null) return; // no person accounts in this org
+
+        Account pa = new Account(RecordTypeId = paRtId, FirstName = 'Preview', LastName = 'RoleScope');
+        insert pa;
+
+        ConstituentRole alumniRole  = new ConstituentRole(PersonId = pa.Id, RoleType = 'Alumni');
+        ConstituentRole studentRole = new ConstituentRole(PersonId = pa.Id, RoleType = 'Student');
+        alumniRole.put('Status', 'Active');
+        studentRole.put('Status', 'Active');
+        insert new List<ConstituentRole>{ alumniRole, studentRole };
+
+        Integer studentTotal = Database.countQuery(
+            'SELECT COUNT() FROM ConstituentRole WHERE RoleType = \'Student\'');
+        Integer everyRoleTotal = Database.countQuery('SELECT COUNT() FROM ConstituentRole');
+
+        Test.startTest();
+        KenAudienceEngineService.AudiencePreviewDTO res = KenAudienceEngineService.preview(
+            '{"audienceName":"Scoped","targetRole":"Student","matchMode":"AND","filters":[]}');
+        Test.stopTest();
+
+        System.assertEquals(studentTotal, res.count,
+            'Preview must count only the selected role, not every ConstituentRole.');
+        System.assert(everyRoleTotal > studentTotal,
+            'Fixture guarantees at least one non-Student role exists, so the two totals must differ.');
+        System.assert(!res.sample.isEmpty(), 'A non-zero count must come with sample rows.');
+        Boolean sawPersonName = false;
+        for (KenAudienceEngineService.PersonRowDTO p : res.sample) {
+            if (p.name == 'Preview RoleScope') sawPersonName = true;
+        }
+        System.assert(sawPersonName,
+            'Sample rows should carry the person\'s name resolved from Account, not just the role record name.');
     }
 
     @IsTest
@@ -485,7 +529,7 @@ private class KenAudienceEngineServiceTest {
         Id paRtId;
         try {
             paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-                .get('Alumni_Person_Account').getRecordTypeId();
+                .get('PersonAccount').getRecordTypeId();
         } catch (Exception e) {
             return null;
         }
@@ -978,37 +1022,49 @@ private class KenAudienceEngineServiceTest {
         System.assert(executedCount >= 1, 'INCLUDES/EXCLUDES branches executed');
     }
 
-    @IsTest
-    static void testSearchDistinctFieldValuesMoreVariants() {
-        // Drives searchDistinctFieldValues across additional code paths: limit clamping,
-        // non-text field, and case-insensitive term matching.
-        Test.startTest();
+    // The searchDistinctFieldValues variants below are deliberately split one
+    // scan per test method. This class runs with SeeAllData=true, so each
+    // unfiltered distinct-value lookup walks every ConstituentRole row in the
+    // org and those rows count toward the per-transaction query-row limit.
+    // Grouping several of them into one method exceeds that limit in orgs with
+    // real data volume.
 
-        // Negative limit -> exercises clamp branch
+    @IsTest
+    static void testSearchDistinctFieldValuesClampsNegativeLimit() {
+        Test.startTest();
         List<KenAudienceEngineService.OptionDTO> negLimit =
             KenAudienceEngineService.searchDistinctFieldValues('ConstituentRole', 'RoleType', '', -5);
+        Test.stopTest();
         System.assertNotEquals(null, negLimit, 'negative limit returns list');
+    }
 
-        // Very large limit
+    @IsTest
+    static void testSearchDistinctFieldValuesClampsLargeLimit() {
+        Test.startTest();
         List<KenAudienceEngineService.OptionDTO> bigLimit =
             KenAudienceEngineService.searchDistinctFieldValues('ConstituentRole', 'RoleType', '', 5000);
+        Test.stopTest();
         System.assertNotEquals(null, bigLimit, 'large limit returns list');
+    }
 
-        // Term with non-matching characters
+    @IsTest
+    static void testSearchDistinctFieldValuesNonMatchingTerm() {
+        Test.startTest();
         List<KenAudienceEngineService.OptionDTO> noTermMatch =
             KenAudienceEngineService.searchDistinctFieldValues('ConstituentRole', 'RoleType', 'zzzzzz-no-match', 25);
-        System.assertNotEquals(null, noTermMatch, 'no-match term returns list');
-
-        // Numeric/Date-ish field (CreatedDate) — drives non-text branch
-        try {
-            List<KenAudienceEngineService.OptionDTO> dt =
-                KenAudienceEngineService.searchDistinctFieldValues('ConstituentRole', 'CreatedDate', '', 10);
-            System.assertNotEquals(null, dt, 'date field search returns list');
-        } catch (Exception ex) {
-            System.assertNotEquals(null, ex.getMessage(), 'date field path executed');
-        }
-
         Test.stopTest();
+        System.assertNotEquals(null, noTermMatch, 'no-match term returns list');
+    }
+
+    @IsTest
+    static void testSearchDistinctFieldValuesTimestampField() {
+        // CreatedDate drives the non-text, near-unique branch, which takes the
+        // bounded scan rather than an unbounded GROUP BY.
+        Test.startTest();
+        List<KenAudienceEngineService.OptionDTO> dt =
+            KenAudienceEngineService.searchDistinctFieldValues('ConstituentRole', 'CreatedDate', '', 10);
+        Test.stopTest();
+        System.assertNotEquals(null, dt, 'date field search returns list');
     }
 
     @IsTest
@@ -1122,7 +1178,7 @@ private class KenAudienceEngineServiceTest {
         Id paRtId;
         try {
             paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-                .get('Alumni_Person_Account').getRecordTypeId();
+                .get('PersonAccount').getRecordTypeId();
         } catch (Exception e) {
             return null;
         }
@@ -1295,6 +1351,31 @@ private class KenAudienceEngineServiceTest {
     }
 
     @IsTest
+    static void testAccountAnchorSemiJoinCriteria() {
+        // Anchor-object semi-join: Account fields (PersonBirthdate date / Age__c number formula)
+        // filtered from ConstituentRole must resolve via resolveRelatedJoin's anchor-object
+        // branch to: PersonId IN (SELECT Id FROM Account WHERE <field> IN (...)).
+        String payload =
+            '{"audienceName":"AnchorJoin","targetRole":"Alumni","matchMode":"AND",' +
+            '"targetObject":"ConstituentRole","items":[' +
+            '{"id":"i1","type":"GROUP","role":"Alumni","criteria":[' +
+            '{"key":"Alumni_Date_of_Birth","label":"Date of Birth","fieldApi":"PersonBirthdate","objectApi":"Account","joinField":"Id","values":["1995-05-20"]}' +
+            ']},' +
+            '{"id":"i2","type":"GROUP","role":"Alumni","criteria":[' +
+            '{"key":"Alumni_Age","label":"Age","fieldApi":"Age__c","objectApi":"Account","joinField":"Id","values":["23"]}' +
+            ']}' +
+            ']}';
+
+        Test.startTest();
+        List<KenAudienceEngineService.AudienceCountDTO> counts =
+            KenAudienceEngineService.getAudienceCounts(payload);
+        Test.stopTest();
+
+        System.assertNotEquals(null, counts, 'anchor semi-join counts returned');
+        System.assertEquals(2, counts.size(), 'both anchor semi-join items produced counts');
+    }
+
+    @IsTest
     static void testGetSavedGroupsForRoleRichCustomItems() {
         // Targets getSavedGroupsForRole inner loop (lines 1354, 1360, 1377-1414)
         // by saving an audience that contains CUSTOM items with varied criteria.
@@ -1357,7 +1438,7 @@ private class KenAudienceEngineServiceTest {
         } else {
             ac = new AttributeCategory(Name = 'Alumni', Code = 'ALUMNI');
             try {
-                Schema.SObjectField activeFld = Schema.getGlobalDescribe().get('AttributeCategory').getDescribe().fields.getMap().get('Active__c');
+                Schema.SObjectField activeFld = Schema.getGlobalDescribe().get('AttributeCategory').getDescribe().fields.getMap().get(KenNamespaceUtil.qualifyCustom('Active__c'));
                 if (activeFld != null) ac.put('Active__c', true);
             } catch (Exception ignored) {}
             try { insert ac; } catch (DmlException dex) {
@@ -1779,6 +1860,71 @@ private class KenAudienceEngineServiceTest {
     }
 
     @IsTest
+    static void testMixedAudienceStoredSoqlIsValidAndRepairable() {
+        // OR-ing a group's semi-join with other items used to store MALFORMED SOQL
+        // ("Semi join sub-selects are not allowed with the 'OR' operator").
+        Id paId = provisionAlumniPersonAccount('MixedAud');
+        if (paId == null) {
+            System.assert(true, 'Person Account RT unavailable; skip');
+            return;
+        }
+        Id roleId = provisionConstituentRole(paId, 'Alumni');
+
+        Ken_Group__c grp = new Ken_Group__c(Name = 'AESPlus Mixed ' + System.currentTimeMillis());
+        try { grp.put('Is_Active__c', true); } catch (Exception e) {}
+        try { grp.put('Status__c', 'Approved'); } catch (Exception e) {}
+        insert grp;
+        Ken_Group_Member__c gm = new Ken_Group_Member__c(Member__c = paId);
+        try { gm.put('Group__c', grp.Id); } catch (Exception e) {}
+        try { gm.put('Status__c', 'Approved'); } catch (Exception e) {}
+        insert gm;
+
+        String name = 'AESPlus MixedAud ' + String.valueOf(System.now().getTime());
+        String payload =
+            '{"targetObject":"ConstituentRole","items":[' +
+            '{"id":"' + roleId + '","type":"INDIVIDUAL"},' +
+            '{"id":"' + grp.Id + '","type":"GROUP","role":"GROUPS","criteria":[]}' +
+            ']}';
+
+        Test.startTest();
+        Id savedId = null;
+        try {
+            savedId = KenAudienceEngineService.saveAudienceActive(name, payload, null);
+        } catch (Exception ex) {
+            System.assert(true, 'save unavailable in this org shape: ' + ex.getMessage());
+        }
+        if (savedId == null) {
+            Test.stopTest();
+            return;
+        }
+
+        String storedSoql = (String)[SELECT SOQL__c FROM Ken_Segmentation__c WHERE Id = :savedId].SOQL__c;
+        System.assert(storedSoql.contains('\n'),
+            'the group item must stay a live semi-join on its own statement line: ' + storedSoql);
+        System.assert(!storedSoql.contains('Id IN (\''),
+            'group members must not be baked into a stale id list: ' + storedSoql);
+        Integer matched = 0;
+        for (String statement : storedSoql.split('\n')) {
+            for (SObject row : Database.query(statement)) {
+                if ((Id)row.get('Id') == roleId) matched++;
+            }
+        }
+        System.assert(matched >= 2,
+            'each statement line must be valid and reach the member role: ' + storedSoql);
+
+        System.assertEquals(true, KenAudienceEngineService.isRecordInSegmentation(savedId, roleId),
+            'individual item role should be matched per item');
+
+        String brokenSoql = 'SELECT Id FROM ConstituentRole WHERE (Id = null) OR (PersonId IN (SELECT Member__c FROM Ken_Group_Member__c))';
+        update new Ken_Segmentation__c(Id = savedId, SOQL__c = brokenSoql);
+        Integer rebuilt = KenAudienceEngineService.rebuildStoredSoql(new Set<Id>{ savedId });
+        System.assert(rebuilt >= 1, 'repair should process the broken segmentation');
+        String rebuiltSoql = (String)[SELECT SOQL__c FROM Ken_Segmentation__c WHERE Id = :savedId].SOQL__c;
+        System.assertEquals(storedSoql, rebuiltSoql, 'repair must restore the builder output');
+        Test.stopTest();
+    }
+
+    @IsTest
     static void testIsAccountMatchedByPayload() {
         User runAsUser = buildRunAsUser();
         insert runAsUser;
@@ -1939,5 +2085,52 @@ private class KenAudienceEngineServiceTest {
             Test.stopTest();
         }
         System.assertEquals(true, executed, 'declared joinField path should run');
+    }
+
+    /**
+     * A related-object criterion resolves to a semi-join, and the anchored reach count used to
+     * parenthesise the whole WHERE clause around it, which SOQL rejects. getAudienceCounts
+     * swallows the query exception, so every related-object filter silently reported 0 members.
+     */
+    @IsTest
+    static void testRelatedObjectCriteriaCountSurvivesAnchorDedupe() {
+        Id paId = buildPersonAccountForSearch();
+        if (paId == null) {
+            System.assert(true, 'Person Account RT unavailable in this org');
+            return;
+        }
+        Schema.SObjectType empType = Schema.getGlobalDescribe().get('PersonEmployment');
+        if (empType == null || !empType.getDescribe().fields.getMap().containsKey('Company_Name__c')) {
+            System.assert(true, 'PersonEmployment.Company_Name__c unavailable in this org');
+            return;
+        }
+
+        ConstituentRole role = new ConstituentRole(PersonId = paId, RoleType = 'Alumni');
+        try { role.put('Status', 'Active'); } catch (Exception e) {}
+        insert role;
+
+        String token = 'AudCo' + String.valueOf(System.currentTimeMillis());
+        SObject emp = empType.newSObject();
+        emp.put('Name', token);
+        emp.put('RelatedPersonId', paId);
+        emp.put('AccountId', paId);
+        emp.put('Company_Name__c', token);
+        insert emp;
+
+        String payload =
+            '{"targetObject":"ConstituentRole","items":[' +
+            '{"id":"rel-count","type":"CUSTOM","role":"Alumni","criteria":[' +
+            '{"key":"Alumni_Employer_Company","label":"Company Name","fieldApi":"Company_Name__c",' +
+            '"objectApi":"PersonEmployment","joinField":"AccountId","values":["' + token + '"]}' +
+            ']}]}';
+
+        Test.startTest();
+        List<KenAudienceEngineService.AudienceCountDTO> counts =
+            KenAudienceEngineService.getAudienceCounts(payload);
+        Test.stopTest();
+
+        System.assertEquals(1, counts.size(), 'One audience item in, one count out');
+        System.assertEquals(1, counts[0].count,
+            'Related-object semi-join must survive the anchor de-duplication count query');
     }
 }

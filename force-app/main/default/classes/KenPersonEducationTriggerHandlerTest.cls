@@ -1,14 +1,56 @@
 @IsTest
 private class KenPersonEducationTriggerHandlerTest {
 
-    private static Account createPersonAccount() {
-        Id paRtId;
-        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account']) {
-            if (rt.IsPersonType) {
-                paRtId = rt.Id;
-                break;
+    private static Id kenCampusId;
+
+    /**
+     * KJS orgs add a required Campus__c lookup (-> Location) on LearningProgram.
+     * Populate it only where the field exists so the tests still run in every
+     * other org, and reuse one Location so a helper called in a loop does not
+     * spend a DML statement per programme.
+     */
+    private static void kenAssignCampus(SObject record) {
+        if (!record.getSObjectType().getDescribe().fields.getMap().containsKey('campus__c')) {
+            return;
+        }
+        if (kenCampusId == null) {
+            Schema.Location campus = new Schema.Location(Name = 'Ken Test Campus');
+            for (Schema.PicklistEntry entry : Schema.Location.LocationType.getDescribe().getPicklistValues()) {
+                if (entry.isActive()) {
+                    campus.LocationType = entry.getValue();
+                    break;
+                }
+            }
+            insert campus;
+            kenCampusId = campus.Id;
+        }
+        record.put('Campus__c', kenCampusId);
+    }
+
+    /**
+     * A person-account RecordType the RUNNING USER can actually use. Querying
+     * RecordType.IsPersonType alone returns types the user has no access to,
+     * which fails with INVALID_CROSS_REFERENCE_KEY, so intersect that with the
+     * describe's isAvailable() infos. Schema.RecordTypeInfo has no
+     * isPersonType(), hence the two-source intersection by Id.
+     */
+    private static Id personAccountRecordTypeId() {
+        Set<Id> personTypeIds = new Set<Id>();
+        for (RecordType rt : [
+            SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true AND IsActive = true
+        ]) {
+            personTypeIds.add(rt.Id);
+        }
+        for (Schema.RecordTypeInfo info : Account.SObjectType.getDescribe().getRecordTypeInfos()) {
+            if (info.isAvailable() && !info.isMaster() && personTypeIds.contains(info.getRecordTypeId())) {
+                return info.getRecordTypeId();
             }
         }
+        return null;
+    }
+
+    private static Account createPersonAccount() {
+        Id paRtId = personAccountRecordTypeId();
         Account pa = new Account();
         if (paRtId != null) pa.RecordTypeId = paRtId;
         pa.FirstName = 'Edu';
@@ -22,6 +64,7 @@ private class KenPersonEducationTriggerHandlerTest {
         Learning lrn = new Learning(Name = name + ' Learning');
         insert lrn;
         LearningProgram lp = new LearningProgram(Name = name + ' Program', LearningId = lrn.Id);
+        kenAssignCampus(lp);
         insert lp;
         LearningProgramPlan lpp = new LearningProgramPlan(Name = name, LearningProgramId = lp.Id);
         insert lpp;
@@ -130,12 +173,20 @@ private class KenPersonEducationTriggerHandlerTest {
             PersonId = pa.Id, RoleType = 'Alumni', Status = 'Active',
             Registration_Status__c = 'Registered', Program_Plan__c = planId, Registration_Number__c = 'REG-DUP'
         );
-        insert new PersonEducation(
-            AccountId = pa.Id, Name = 'B.Tech', Degree_Name__c = 'B.Tech',
-            Institute_Name__c = 'Ken Institute', Institution_Type__c = 'Our Institute',
-            Program_Plan__c = planId, Registration_Number__c = 'REG-DUP'
+        Lead ld = new Lead(
+            RecordTypeId = Schema.SObjectType.Lead.getRecordTypeInfosByName().get('Alumni Lead').getRecordTypeId(),
+            FirstName = pa.FirstName,
+            LastName = pa.LastName,
+            Company = 'Alumni',
+            Email = pa.PersonEmail,
+            Status = 'new',
+            Existing_Account__c = pa.Id,
+            Constituent_Role_Type__c = 'Secondary',
+            Institution_Name__c = 'Ken Institute',
+            Program_Plan__c = planId,
+            Registration_Number__c = 'REG-DUP'
         );
-        Lead ld = [SELECT Id FROM Lead WHERE Existing_Account__c = :pa.Id LIMIT 1];
+        insert ld;
 
         Test.startTest();
         ld.Status = 'Verified';
@@ -150,5 +201,51 @@ private class KenPersonEducationTriggerHandlerTest {
             System.assertEquals('Registered', cr.Registration_Status__c,
                 'The new secondary role should mirror the primary role status (Registered)');
         }
+    }
+
+    @IsTest
+    static void test_ownInstitute_alreadyHeldProgramme_createsNoLead() {
+        Account pa = createPersonAccount();
+        Id planId = createProgramPlan('HeldProg');
+        insert new ConstituentRole(
+            PersonId = pa.Id, RoleType = 'Alumni', Status = 'Active',
+            Registration_Status__c = 'Onboarding In Progress', Program_Plan__c = planId
+        );
+
+        Test.startTest();
+        insert new PersonEducation(
+            AccountId = pa.Id, Name = 'B.Tech', Degree_Name__c = 'B.Tech',
+            Institute_Name__c = 'Ken Institute', Institution_Type__c = 'Our Institute',
+            Year_of_Completion__c = '2015', Program_Plan__c = planId
+        );
+        Test.stopTest();
+
+        System.assertEquals(0, [SELECT COUNT() FROM Lead WHERE Existing_Account__c = :pa.Id],
+            'The onboarding seed describes a programme the alumnus already holds, so no new-role lead should be raised');
+        System.assertEquals(1, [SELECT COUNT() FROM ConstituentRole WHERE PersonId = :pa.Id AND RoleType = 'Alumni'],
+            'The existing role must remain the only one');
+    }
+
+    @IsTest
+    static void test_ownInstitute_differentProgramme_stillCreatesLead() {
+        Account pa = createPersonAccount();
+        Id heldPlanId = createProgramPlan('HeldOther');
+        Id newPlanId = createProgramPlan('BrandNew');
+        insert new ConstituentRole(
+            PersonId = pa.Id, RoleType = 'Alumni', Status = 'Active',
+            Registration_Status__c = 'Registered', Program_Plan__c = heldPlanId
+        );
+
+        Test.startTest();
+        insert new PersonEducation(
+            AccountId = pa.Id, Name = 'MTech', Degree_Name__c = 'MTech',
+            Institute_Name__c = 'Ken Institute', Institution_Type__c = 'Our Institute',
+            Year_of_Completion__c = '2020', Program_Plan__c = newPlanId
+        );
+        Test.stopTest();
+
+        List<Lead> leads = [SELECT Program_Plan__c FROM Lead WHERE Existing_Account__c = :pa.Id];
+        System.assertEquals(1, leads.size(), 'A genuinely new programme must still raise a new-role lead');
+        System.assertEquals(newPlanId, leads[0].Program_Plan__c, 'The lead should carry the new programme');
     }
 }

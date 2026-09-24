@@ -18,8 +18,8 @@ private class KenAlumniSpotlightControllerTest {
 
     @TestSetup
     static void setupData() {
-        insert new List<KenAlumniSpotlight__c>{
-            new KenAlumniSpotlight__c(
+        insert new List<Ken_Alumni_Spotlight__c>{
+            new Ken_Alumni_Spotlight__c(
                 Name             = 'Spotlight Active',
                 Title__c         = 'Active Title',
                 Description__c   = 'Active Description',
@@ -30,19 +30,19 @@ private class KenAlumniSpotlightControllerTest {
                 Featured_From__c = Date.today().addDays(-1),
                 Featured_To__c   = Date.today().addDays(1)
             ),
-            new KenAlumniSpotlight__c(
+            new Ken_Alumni_Spotlight__c(
                 Name             = 'Spotlight No Dates',
                 Title__c         = 'No Dates Title',
                 Is_Active__c     = true,
                 Display_Order__c = 2
             ),
-            new KenAlumniSpotlight__c(
+            new Ken_Alumni_Spotlight__c(
                 Name             = 'Spotlight Inactive',
                 Title__c         = 'Inactive Title',
                 Is_Active__c     = false,
                 Display_Order__c = 3
             ),
-            new KenAlumniSpotlight__c(
+            new Ken_Alumni_Spotlight__c(
                 Name           = 'Spotlight Expired',
                 Title__c       = 'Expired Title',
                 Is_Active__c   = true,
@@ -56,6 +56,10 @@ private class KenAlumniSpotlightControllerTest {
     static void testGetAlumniSpotlightsReturnsActiveRecords() {
         User runAsUser = buildRunAsUser();
         insert runAsUser;
+        insert new PermissionSetAssignment(
+            AssigneeId = runAsUser.Id,
+            PermissionSetId = [SELECT Id FROM PermissionSet WHERE Name = 'Alumni_Admin' LIMIT 1].Id
+        );
 
         System.runAs(runAsUser) {
             Test.startTest();
@@ -96,7 +100,7 @@ private class KenAlumniSpotlightControllerTest {
 
     @IsTest
     static void testGetAlumniSpotlightsEmptyWhenNoneActive() {
-        delete [SELECT Id FROM KenAlumniSpotlight__c WHERE Is_Active__c = true];
+        delete [SELECT Id FROM Ken_Alumni_Spotlight__c WHERE Is_Active__c = true];
 
         Test.startTest();
         List<KenAlumniSpotlightController.SpotlightRow> rows = KenAlumniSpotlightController.getAlumniSpotlights();

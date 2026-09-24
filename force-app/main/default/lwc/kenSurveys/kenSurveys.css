@@ -53,8 +53,6 @@ lightning-combobox,
     height: 100%;
     min-height: 0;
     overflow: hidden;
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .section-header {
@@ -369,8 +367,6 @@ lightning-combobox,
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .your-surveys-title {
@@ -611,7 +607,6 @@ lightning-combobox,
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .view-all-btn:hover {

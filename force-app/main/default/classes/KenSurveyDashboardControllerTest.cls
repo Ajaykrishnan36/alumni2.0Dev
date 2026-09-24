@@ -3,79 +3,82 @@ private class KenSurveyDashboardControllerTest {
 
     @TestSetup
     static void makeData() {
-        // Questionnaires — one per survey (survey <-> questionnaire is 1:1; responses
-        // reach the survey only through Questionnaire_Parameter__r.Questionnaire__c).
-        Ken_Questionnaire__c q1 = new Ken_Questionnaire__c(Section_Name__c = 'Test Section 1');
-        Ken_Questionnaire__c q2 = new Ken_Questionnaire__c(Section_Name__c = 'Test Section 2');
-        insert new List<Ken_Questionnaire__c>{ q1, q2 };
-
-        // Questionnaire parameters
-        Ken_Questionnaire_Parameter__c q1p1 = new Ken_Questionnaire_Parameter__c(
-            Questionnaire__c = q1.Id, Question_Label__c = 'What is your favourite colour?',
-            Question_Type__c = 'Multiple Choice', Is_Required__c = true, Order__c = 1, Weightage__c = 10
-        );
-        Ken_Questionnaire_Parameter__c q1p2 = new Ken_Questionnaire_Parameter__c(
-            Questionnaire__c = q1.Id, Question_Label__c = 'Rate your experience',
-            Question_Type__c = 'Linear Scale', Is_Required__c = false, Order__c = 2, Weightage__c = 5
-        );
-        Ken_Questionnaire_Parameter__c q2p1 = new Ken_Questionnaire_Parameter__c(
-            Questionnaire__c = q2.Id, Question_Label__c = 'How was the faculty?',
-            Question_Type__c = 'Multiple Choice', Is_Required__c = true, Order__c = 1, Weightage__c = 10
-        );
-        insert new List<Ken_Questionnaire_Parameter__c>{ q1p1, q1p2, q2p1 };
-
-        // Respondent account (standard Account — no person account needed)
+        // Respondent account (standard Account â€” no person account needed)
         Account respondent = new Account(Name = 'Test Respondent Account');
         insert respondent;
 
-        // Surveys  — varied Approval_Status__c and Is_Active__c
+        Id set1 = KenAssessmentSurveyService.saveQuestionSet(null, 'Test Section 1',
+            new List<KenAssessmentSurveyService.QuestionInput>{
+                buildQuestion('What is your favourite colour?', 'Multiple Choice', true,
+                    new List<String>{ 'Blue', 'Red' }),
+                buildQuestion('Rate your experience', 'Linear Scale', false,
+                    new List<String>{ '1', '2', '3' })
+            }
+        );
+        Id set2 = KenAssessmentSurveyService.saveQuestionSet(null, 'Test Section 2',
+            new List<KenAssessmentSurveyService.QuestionInput>{
+                buildQuestion('How was the faculty?', 'Multiple Choice', true,
+                    new List<String>{ 'Excellent', 'Good' })
+            }
+        );
+
+        // Surveys  â€” varied Approval_Status__c and Is_Active__c
         Ken_Survey__c s1 = new Ken_Survey__c(
             Name               = 'Alumni Satisfaction Survey',
             Approval_Status__c = 'Approved',
             Is_Active__c       = true,
             Target_Audience__c = 'Alumni',
-            Ken_Questionnaire__c = q1.Id
+            Assessment_Question_Set__c = set1
         );
         Ken_Survey__c s2 = new Ken_Survey__c(
             Name               = 'Faculty Feedback Survey',
             Approval_Status__c = 'Pending Approval',
             Is_Active__c       = false,
             Target_Audience__c = 'Faculty',
-            Ken_Questionnaire__c = q2.Id
+            Assessment_Question_Set__c = set2
         );
         Ken_Survey__c s3 = new Ken_Survey__c(
             Name               = 'Rejected Test Survey',
             Approval_Status__c = 'Rejected',
             Is_Active__c       = false,
             Target_Audience__c = 'Students'
-            // intentionally no questionnaire linkage
+            // intentionally no question set linkage
         );
         insert new List<Ken_Survey__c>{ s1, s2, s3 };
 
-        // Responses — linked to the survey through its questionnaire's parameters
-        insert new List<Ken_Questionnaire_Parameter_Response__c>{
-            new Ken_Questionnaire_Parameter_Response__c(
-                Questionnaire_Parameter__c  = q1p1.Id,
-                Response__c                 = 'Blue',
-                Response_Category__c        = 'Survey',
-                Respondent__c               = respondent.Id
-            ),
-            new Ken_Questionnaire_Parameter_Response__c(
-                Questionnaire_Parameter__c  = q1p2.Id,
-                Response__c                 = '8',
-                Response_Category__c        = 'Survey',
-                Respondent__c               = respondent.Id
-            ),
-            new Ken_Questionnaire_Parameter_Response__c(
-                Questionnaire_Parameter__c  = q2p1.Id,
-                Response__c                 = 'Excellent',
-                Response_Category__c        = 'Survey',
-                Respondent__c               = respondent.Id
-            )
-        };
+        submitEveryQuestion(s1.Id, set1, respondent.Id);
+        submitEveryQuestion(s2.Id, set2, respondent.Id);
     }
 
-    // ── getSummaryStats ─────────────────────────────────────────────────────
+    private static KenAssessmentSurveyService.QuestionInput buildQuestion(
+        String text, String questionType, Boolean required, List<String> choices
+    ) {
+        KenAssessmentSurveyService.QuestionInput q = new KenAssessmentSurveyService.QuestionInput();
+        q.text = text;
+        q.questionType = questionType;
+        q.required = required;
+        q.choices = new List<KenAssessmentSurveyService.ChoiceRow>();
+        for (String choice : choices) {
+            KenAssessmentSurveyService.ChoiceRow row = new KenAssessmentSurveyService.ChoiceRow();
+            row.value = choice;
+            row.label = choice;
+            q.choices.add(row);
+        }
+        return q;
+    }
+
+    private static void submitEveryQuestion(Id surveyId, Id questionSetId, Id respondentId) {
+        List<KenAssessmentSurveyService.AnswerInput> answers = new List<KenAssessmentSurveyService.AnswerInput>();
+        for (KenAssessmentSurveyService.QuestionRow row : KenAssessmentSurveyService.questionsForSet(questionSetId)) {
+            KenAssessmentSurveyService.AnswerInput answer = new KenAssessmentSurveyService.AnswerInput();
+            answer.questionId = row.id;
+            answer.value = 'Blue';
+            answers.add(answer);
+        }
+        KenAssessmentSurveyService.submitResponses(surveyId, respondentId, 'Survey', answers);
+    }
+
+    // â”€â”€ getSummaryStats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetSummaryStats_noFilter() {
@@ -101,7 +104,7 @@ private class KenSurveyDashboardControllerTest {
         System.assert(s.active >= 1, 'Should be active');
     }
 
-    // ── getSurveysByApprovalStatus ──────────────────────────────────────────
+    // â”€â”€ getSurveysByApprovalStatus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetSurveysByApprovalStatus() {
@@ -118,7 +121,7 @@ private class KenSurveyDashboardControllerTest {
         System.assert(foundApproved, 'Approved status should appear');
     }
 
-    // ── getSurveysByActiveStatus ────────────────────────────────────────────
+    // â”€â”€ getSurveysByActiveStatus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetSurveysByActiveStatus() {
@@ -130,7 +133,7 @@ private class KenSurveyDashboardControllerTest {
         System.assert(pts.size() >= 1, 'Expected active/inactive breakdown');
     }
 
-    // ── getTopSurveysByResponses ────────────────────────────────────────────
+    // â”€â”€ getTopSurveysByResponses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetTopSurveysByResponses() {
@@ -146,7 +149,7 @@ private class KenSurveyDashboardControllerTest {
     @IsTest
     static void testGetTopSurveysByResponses_empty() {
         Test.startTest();
-        // Rejected + inactive → no surveys match → early return
+        // Rejected + inactive â†’ no surveys match â†’ early return
         List<KenSurveyDashboardController.ChartPoint> pts =
             KenSurveyDashboardController.getTopSurveysByResponses('Rejected', 'true', 'All');
         Test.stopTest();
@@ -154,7 +157,7 @@ private class KenSurveyDashboardControllerTest {
         System.assertEquals(0, pts.size(), 'No responses expected for rejected+active filter');
     }
 
-    // ── getQuestionTypeDistribution ────────────────────────────────────────
+    // â”€â”€ getQuestionTypeDistribution â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetQuestionTypeDistribution() {
@@ -169,15 +172,15 @@ private class KenSurveyDashboardControllerTest {
     @IsTest
     static void testGetQuestionTypeDistribution_empty() {
         Test.startTest();
-        // Rejected surveys have no questionnaire linkage → empty qIds → early return
+        // Rejected surveys have no question set â†’ nothing to group â†’ early return
         List<KenSurveyDashboardController.ChartPoint> pts =
             KenSurveyDashboardController.getQuestionTypeDistribution('Rejected', null, null);
         Test.stopTest();
         System.assertNotEquals(null, pts);
-        System.assertEquals(0, pts.size(), 'Expected empty list for Rejected-only surveys without questionnaire');
+        System.assertEquals(0, pts.size(), 'Expected empty list for Rejected-only surveys without a question set');
     }
 
-    // ── getResponseTrend ────────────────────────────────────────────────────
+    // â”€â”€ getResponseTrend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetResponseTrend() {
@@ -192,7 +195,7 @@ private class KenSurveyDashboardControllerTest {
     @IsTest
     static void testGetResponseTrend_empty() {
         Test.startTest();
-        // Non-existent year → no surveys → 12 zero-filled months still returned
+        // Non-existent year â†’ no surveys â†’ 12 zero-filled months still returned
         List<KenSurveyDashboardController.ChartPoint> pts =
             KenSurveyDashboardController.getResponseTrend(null, null, '1900');
         Test.stopTest();
@@ -203,7 +206,7 @@ private class KenSurveyDashboardControllerTest {
         }
     }
 
-    // ── getTopQuestionnaires ────────────────────────────────────────────────
+    // â”€â”€ getTopQuestionnaires â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetTopQuestionnaires() {
@@ -215,7 +218,7 @@ private class KenSurveyDashboardControllerTest {
         System.assert(pts.size() >= 1, 'Expected at least one questionnaire');
     }
 
-    // ── getFilterOptions ────────────────────────────────────────────────────
+    // â”€â”€ getFilterOptions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetFilterOptions() {
@@ -230,7 +233,7 @@ private class KenSurveyDashboardControllerTest {
         System.assert(opts.get('years').size() >= 1,            'Should have at least one year');
     }
 
-    // ── getSurveyList ────────────────────────────────────────────────────────
+    // â”€â”€ getSurveyList â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetSurveyList_noFilter() {
@@ -272,16 +275,20 @@ private class KenSurveyDashboardControllerTest {
 
     @IsTest
     static void testGetSurveyList_byQuestionnaire() {
-        Ken_Questionnaire__c q = [SELECT Name FROM Ken_Questionnaire__c LIMIT 1];
+        AssessmentQuestionSet qSet = [
+            SELECT Name FROM AssessmentQuestionSet WHERE Name = 'Test Section 1' LIMIT 1
+        ];
         Test.startTest();
         List<KenSurveyDashboardController.SurveyListRecord> recs =
-            KenSurveyDashboardController.getSurveyList('questionnaire', q.Name, null, null, null);
+            KenSurveyDashboardController.getSurveyList('questionnaire', qSet.Name, null, null, null);
         Test.stopTest();
         System.assertNotEquals(null, recs);
-        System.assert(recs.size() >= 1, 'Expected surveys linked to the questionnaire');
+        System.assert(recs.size() >= 1, 'Expected surveys linked to the question set');
+        System.assertEquals('Test Section 1', recs[0].questionnaire,
+            'The drill-down label comes from the question set name');
     }
 
-    // ── getResponseList ──────────────────────────────────────────────────────
+    // â”€â”€ getResponseList â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @IsTest
     static void testGetResponseList_noFilter() {

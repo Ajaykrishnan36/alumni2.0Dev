@@ -1,5 +1,9 @@
 import { LightningElement, api, wire } from "lwc";
-import { getRecord, getFieldValue, getRecordNotifyChange } from "lightning/uiRecordApi";
+import {
+  getRecord,
+  getFieldValue,
+  getRecordNotifyChange
+} from "lightning/uiRecordApi";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import syncAlumniSync from "@salesforce/apex/KenLinkedInController.syncAlumniSync";
 import LAST_SYNC from "@salesforce/schema/Account.Last_LinkedIn_Sync__c";
@@ -11,6 +15,11 @@ import LINKEDIN_URL from "@salesforce/schema/Account.Linkedin_Profile_URL__c";
  */
 export default class KenLinkedInSyncButton extends LightningElement {
   @api recordId;
+  // Off by default so the admin (Alumni 360) and record-page usages, which
+  // have their own way to edit the Account field, render exactly as before -
+  // only the portal profile opts in, since only it has a Settings page to
+  // send the alumnus to.
+  @api showSetupLink = false;
   isSyncing = false;
 
   @wire(getRecord, { recordId: "$recordId", fields: [LAST_SYNC, LINKEDIN_URL] })
@@ -29,6 +38,10 @@ export default class KenLinkedInSyncButton extends LightningElement {
     return this.isSyncing || !this.hasLinkedIn;
   }
 
+  handleSetupClick() {
+    this.dispatchEvent(new CustomEvent("setupclick"));
+  }
+
   handleSync() {
     this.isSyncing = true;
     // Synchronous sync: a 401 / missing key / empty response surfaces as a
@@ -38,18 +51,23 @@ export default class KenLinkedInSyncButton extends LightningElement {
         this.toast(
           "LinkedIn sync complete",
           "Updated employment, education and certifications from LinkedIn.",
-          "success",
+          "success"
         );
         // Re-fetch the record + related lists so the new rows appear on a
         // standard record page that hosts this card.
         getRecordNotifyChange([{ recordId: this.recordId }]);
         // Tell the parent (e.g. Alumni 360) so it can rerun its Apex wires
         // in place — no full page reload.
-        this.dispatchEvent(new CustomEvent("synccomplete", { detail: { accountId: this.recordId } }));
+        this.dispatchEvent(
+          new CustomEvent("synccomplete", {
+            detail: { accountId: this.recordId }
+          })
+        );
       })
       .catch((error) => {
         const message =
-          (error && error.body && error.body.message) || "Unable to sync from LinkedIn.";
+          (error && error.body && error.body.message) ||
+          "Unable to sync from LinkedIn.";
         this.toast("Sync failed", message, "error");
       })
       .finally(() => {

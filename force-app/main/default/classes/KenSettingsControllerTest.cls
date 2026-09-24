@@ -1,7 +1,7 @@
 @IsTest
 private class KenSettingsControllerTest {
 
-    private static final String ALUMNI_RT = 'Alumni_Person_Account';
+    private static final String ALUMNI_RT = 'PersonAccount';
 
     private static Id getPersonAccountRtId() {
         List<RecordType> rts = [
@@ -44,11 +44,7 @@ private class KenSettingsControllerTest {
             }
             insert cr;
 
-            insert new Ken_Alumni_CRM__c(
-                Person_Account__c    = pa.Id,
-                ConstituentRole__c   = cr.Id,
-                Profile_Photo_URL__c = 'https://example.com/photo.jpg'
-            );
+            update new Account(Id = pa.Id, Profile_Photo_URL__c = 'https://example.com/photo.jpg');
         }
 
         insert new Ken_Alumni_Preferences__c(
@@ -320,13 +316,8 @@ private class KenSettingsControllerTest {
             KenSettingsController.saveEngagementPreferences(null);
             Test.stopTest();
 
-            Ken_Alumni_CRM__c crm = [
-                SELECT Preferences__c
-                FROM Ken_Alumni_CRM__c
-                WHERE Person_Account__c = :pa.Id
-                LIMIT 1
-            ];
-            System.assertEquals(null, crm.Preferences__c,
+            System.assertEquals(null,
+                [SELECT Engagement_Preferences__c FROM Account WHERE Id = :pa.Id].Engagement_Preferences__c,
                 'Engagement preferences should accept a null update without throwing');
         } finally {
             KenSettingsController.testCurrentAccountId = null;

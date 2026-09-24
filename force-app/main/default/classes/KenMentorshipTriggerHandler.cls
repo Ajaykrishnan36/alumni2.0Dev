@@ -12,6 +12,14 @@ public class KenMentorshipTriggerHandler extends KenTriggerHandler {
     private static final String TPL_CALL_ACCEPTED = 'Mentorship_Call_Request_Accepted';
     private static final String TPL_CALL_REJECTED = 'Mentorship_Call_Request_Rejected';
 
+    public override void processBeforeInsert() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
+    public override void processBeforeUpdate() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
     public override void processAfterInsert() {
         notifyMentorOfRequest((List<Ken_Mentorship__c>) Trigger.new);
         notifyOtherPartyOfCallRequest((List<Ken_Mentorship__c>) Trigger.new, null);

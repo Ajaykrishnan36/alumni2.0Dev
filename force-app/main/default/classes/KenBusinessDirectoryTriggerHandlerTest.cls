@@ -1,6 +1,6 @@
 @IsTest
 private class KenBusinessDirectoryTriggerHandlerTest {
-    private static final String ALUMNI_RT   = 'Alumni_Person_Account';
+    private static final String ALUMNI_RT   = 'PersonAccount';
     private static final String BUSINESS_RT = 'Business';
     private static final String OWNER_RT    = 'Business_Owner';
 
@@ -12,7 +12,7 @@ private class KenBusinessDirectoryTriggerHandlerTest {
         if (!rts.isEmpty()) {
             return rts[0].Id;
         }
-        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account']) {
+        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account' AND IsActive = true]) {
             if (rt.IsPersonType) {
                 return rt.Id;
             }
@@ -28,11 +28,21 @@ private class KenBusinessDirectoryTriggerHandlerTest {
     }
 
     private static Id getOwnerJunctionRtId() {
-        List<RecordType> rts = [
-            SELECT Id FROM RecordType
-            WHERE SObjectType = 'Ken_Business_Directory__c' AND DeveloperName = :OWNER_RT LIMIT 1
-        ];
-        return rts.isEmpty() ? null : rts[0].Id;
+        return Schema.SObjectType.Ken_Business_Directory__c.getRecordTypeInfosByDeveloperName().get(OWNER_RT)?.getRecordTypeId();
+    }
+
+    private static Boolean hasPersonAccountField = Ken_Business_Directory__c.SObjectType
+        .getDescribe().fields.getMap().containsKey('Person_Account__c');
+
+    /**
+     * Stamps the person side of a business-directory junction. Person_Account__c is a
+     * required field in the KJS orgs but does not exist in every client org, so it is
+     * set dynamically to keep this class compiling and inserting everywhere.
+     */
+    private static void stampPersonAccount(Ken_Business_Directory__c link, Id personAccountId) {
+        if (hasPersonAccountField && personAccountId != null) {
+            link.put('Person_Account__c', personAccountId);
+        }
     }
 
     @IsTest
@@ -67,6 +77,7 @@ private class KenBusinessDirectoryTriggerHandlerTest {
         Ken_Business_Directory__c link = new Ken_Business_Directory__c(
             Constituent_Role__c = ownerRole.Id, Business_Account__c = biz.Id
         );
+        stampPersonAccount(link, owner.Id);
         Id ownerRt = getOwnerJunctionRtId();
         if (ownerRt != null) {
             link.RecordTypeId = ownerRt;

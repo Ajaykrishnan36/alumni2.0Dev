@@ -6,9 +6,8 @@
  *   - FeedItems whose ParentId isn't Ken_Group__c (other Chatter contexts)
  *   - TrackedChange / system-generated items (only TextPost / ContentPost / LinkPost)
  *   - Posts authored by the running user (no self-notification)
- *   - Polls (those fire Group_Poll_New from createPollPost instead — detected via
- *     Ken_Questionnaire_Parameter__c.Feed_Item__c set after the FeedItem insert
- *     within the same transaction).
+ *   - Polls (those fire Group_Poll_New from createPollPost instead, which raises
+ *     suppressBroadcastForPoll for the duration of that transaction).
  */
 public without sharing class KenFeedItemTriggerHandler extends KenTriggerHandler {
 

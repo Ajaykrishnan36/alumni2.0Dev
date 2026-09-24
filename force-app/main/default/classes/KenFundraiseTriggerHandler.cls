@@ -6,6 +6,14 @@ public without sharing class KenFundraiseTriggerHandler extends KenTriggerHandle
     private static final String TPL_APPROVED  = 'Fundraise_Approved';
     private static final String TPL_REJECTED  = 'Fundraise_Rejected';
 
+    public override void processBeforeInsert() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
+    public override void processBeforeUpdate() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
     public override void processAfterInsert() {
         submitNewCampaignsForApproval();
     }
@@ -21,7 +29,7 @@ public without sharing class KenFundraiseTriggerHandler extends KenTriggerHandle
             Ken_Fundraise__c old = oldMap != null ? oldMap.get(fr.Id) : null;
             Boolean isNewSubmission = (fr.Approval_Status__c == STATUS_IN_REVIEW)
                 && (old == null || old.Approval_Status__c != STATUS_IN_REVIEW);
-            if (!isNewSubmission || fr.Constituent_Role__c == null) continue;
+            if (!isNewSubmission) continue;
 
             KenApprovalProcessHelper.submitForApproval(
                 fr.Id,
@@ -49,6 +57,7 @@ public without sharing class KenFundraiseTriggerHandler extends KenTriggerHandle
 
         Map<Id, ConstituentRole> roles = new Map<Id, ConstituentRole>([
             SELECT Id, PersonId FROM ConstituentRole WHERE Id IN :roleIds
+        WITH SECURITY_ENFORCED
         ]);
 
         List<KenNotificationFactory.Context> approved = new List<KenNotificationFactory.Context>();

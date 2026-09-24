@@ -8,8 +8,6 @@
     flex-direction: column;
     overflow: hidden;
     height: calc(100vh - 146.5px);
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .registered-event-container.with-host {
@@ -124,7 +122,6 @@
     background: var(--secondary-color);
     border-radius: 2px;
     padding: 0.75rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;

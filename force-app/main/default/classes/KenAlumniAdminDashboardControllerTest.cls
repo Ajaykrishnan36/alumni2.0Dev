@@ -8,7 +8,7 @@ private class KenAlumniAdminDashboardControllerTest {
         Id paRtId = null;
         for (RecordType rt : [
             SELECT Id, DeveloperName, IsPersonType FROM RecordType
-            WHERE SobjectType = 'Account' AND IsPersonType = true LIMIT 1
+            WHERE SobjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
         ]) { paRtId = rt.Id; }
 
         List<Account> accs = new List<Account>();
@@ -30,7 +30,7 @@ private class KenAlumniAdminDashboardControllerTest {
         List<ConstituentRole> roles = new List<ConstituentRole>();
         // 5 alumni roles: Registered, Initial Login Done, Verified, Unregistered, Registered
         List<String> regStatuses = new List<String>{
-            'Registered', 'Initial Login Done', 'Verified', 'Unregistered', 'Registered'
+            'Registered', 'Initial Login Done', 'Onboarding In Progress', 'Unregistered', 'Registered'
         };
         for (Integer i = 0; i < 5; i++) {
             ConstituentRole cr = new ConstituentRole(
@@ -45,25 +45,6 @@ private class KenAlumniAdminDashboardControllerTest {
         }
         insert roles;
 
-        List<Ken_Alumni_CRM__c> rows = new List<Ken_Alumni_CRM__c>();
-        for (Integer i = 0; i < 5; i++) {
-            Ken_Alumni_CRM__c a = new Ken_Alumni_CRM__c();
-            a.Person_Account__c = accs[i].Id;
-            a.ConstituentRole__c = roles[i].Id;
-            a.Approval_Status__c = (Math.mod(i, 2) == 0) ? 'Approved' : 'Pending';
-            a.Has_Logged_In_Once__c = (Math.mod(i, 2) == 0);
-            a.Is_Active__c = (i == 0);
-            a.Program__c = 'B.Tech CS';
-            a.Year_of_Graduation__c = '2015';
-            a.Registration_Number__c = 'CS' + (110000 + i);
-            a.Current_Company__c = 'Acme';
-            a.Current_Location__c = 'Bangalore';
-            a.Industry__c = 'Technology';
-            a.Registration_Date__c = Date.today().addDays(-i);
-            a.Agree_to_T_C__c = true;
-            rows.add(a);
-        }
-        insert rows;
     }
 
     @IsTest
@@ -77,6 +58,24 @@ private class KenAlumniAdminDashboardControllerTest {
         System.assert(m.institutionVerified >= 0 && m.institutionVerified <= m.totalAlumni);
         System.assert(m.portalRegistered >= 0 && m.portalRegistered <= m.institutionVerified);
         System.assertEquals(m.institutionVerified - m.portalRegistered, m.pendingActivation);
+        System.assert(m.unverifiedLeads >= 0);
+        System.assertEquals(m.portalRegistered, m.registeredAlumni);
+        System.assert(m.activeAlumni >= 0 && m.activeAlumni <= m.registeredAlumni);
+    }
+
+    @IsTest
+    static void testGetLifecycleFunnel() {
+        Test.startTest();
+        KenAlumniAdminDashboardController.FunnelData f =
+            KenAlumniAdminDashboardController.getLifecycleFunnel();
+        Test.stopTest();
+        System.assertEquals('lifecycle', f.funnelKey);
+        System.assertEquals(4, f.steps.size(), 'Four uniform funnel steps expected.');
+        System.assertEquals('Leads', f.steps[0].label);
+        System.assertEquals('Active', f.steps[f.steps.size() - 1].label);
+        for (KenAlumniAdminDashboardController.FunnelStep s : f.steps) {
+            System.assert(s.value >= 0);
+        }
     }
 
     @IsTest
@@ -148,7 +147,7 @@ private class KenAlumniAdminDashboardControllerTest {
         List<KenAlumniAdminDashboardController.EngagementChannel> channels =
             KenAlumniAdminDashboardController.getEngagementSummary();
         Test.stopTest();
-        System.assertEquals(6, channels.size(), 'Events, Mentorship, Hiring Support, Donations, Surveys, Groups');
+        System.assertEquals(5, channels.size(), 'Events, Mentorship, Donations, Surveys, Groups');
     }
 
     @IsTest
@@ -263,19 +262,20 @@ private class KenAlumniAdminDashboardControllerTest {
 
     @IsTest
     static void testHealthBarOnEmptyOrg() {
-        delete [SELECT Id FROM Ken_Alumni_CRM__c];
+        delete [SELECT Id FROM ConstituentRole WHERE RoleType = 'Alumni'];
         Test.startTest();
         List<KenAlumniAdminDashboardController.HealthBar> bars =
             KenAlumniAdminDashboardController.getDataHealthBreakdown();
         Test.stopTest();
-        System.assertEquals(0, bars.size(), 'Empty list expected on empty org.');
+        System.assertEquals(0, bars.size(),
+            'With no Alumni ConstituentRole rows the breakdown should be empty.');
     }
 
     @IsTest
     static void testDashboardMetricsRunsAfterDeletingCrm() {
         // Triggers may auto-create ConstituentRole rows from upstream data,
         // so we can't assert zero — just verify the method still works.
-        delete [SELECT Id FROM Ken_Alumni_CRM__c];
+        delete [SELECT Id FROM ConstituentRole WHERE RoleType = 'Alumni'];
         Test.startTest();
         KenAlumniAdminDashboardController.DashboardMetrics m =
             KenAlumniAdminDashboardController.getDashboardMetrics();

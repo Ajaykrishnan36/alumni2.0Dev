@@ -550,10 +550,20 @@
    speaker opens the gap. That single distinction is what turns our evenly-spaced wall of
    messages into the design's grouped conversation. */
 .chat-msg-row {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: flex-start;
   gap: 10px;
   margin-top: 18px;
+}
+
+/* Rows stack in plain document order with no z-index of their own, so an open dropdown that
+   extends past its own bubble could otherwise be painted OVER by the next message row below
+   it - not invisible, just hidden behind a later sibling. Promoting the open row above the
+   rest avoids that regardless of which direction the menu opens. */
+.chat-msg-row-menu-open {
+  z-index: 50;
 }
 
 .chat-msg-row-cont {
@@ -622,6 +632,9 @@
  * colour beside the image. A column's max-content is the widest child, which is the thumbnail.
  */
 .chat-msg-bubble {
+  /* Anchors the kebab menu at a fixed corner regardless of what the bubble holds - text,
+     an image, a document chip - rather than the menu's position depending on content flow. */
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -1088,4 +1101,196 @@
   .ken-chat-single {
     display: flex;
   }
+}
+
+/* ── Edit / delete a message: one kebab, WhatsApp-style ──────────────────────────────────
+   The kebab BUTTON itself is inline, next to the timestamp, in normal document flow - not an
+   absolutely positioned overlay on the bubble corner. That overlay turned out to be
+   unreliable to click (something in the layout was intercepting the click before it reached
+   the button); normal flow has no such ambiguity. The DROPDOWN it opens is still absolutely
+   positioned (anchored to this inline wrapper), since that part only affects where the menu
+   is drawn, never whether the kebab itself can be clicked. The timestamp row also renders in
+   the same relative spot whether the bubble holds text, an image or a file, so anchoring here
+   gives consistent placement across all of them for free. */
+.chat-msg-menu-wrap {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.chat-msg-kebab {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 1px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: currentColor;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+/* Hidden until hover so the thread does not grow a kebab on every bubble at rest, but stays
+   visible while its own menu is open - moving the mouse to click a menu item must not make
+   the button (and therefore the menu anchored to it) disappear first. */
+.chat-msg-row:hover .chat-msg-kebab,
+.chat-msg-kebab-open {
+  opacity: 0.85;
+}
+
+.chat-msg-kebab:hover {
+  opacity: 1;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.chat-msg-kebab lightning-icon {
+  --slds-c-icon-color-foreground-default: currentColor;
+  --sds-c-icon-color-foreground-default: currentColor;
+  fill: currentColor;
+  color: currentColor;
+}
+
+/* ── The dropdown itself ───────────────────────────────────────────────────────────── */
+
+.chat-msg-menu {
+  position: absolute;
+  /* Opens upward into the gap above this bubble rather than downward over the next message -
+     every row but the very first has room above it, where almost none have room below. */
+  bottom: 100%;
+  margin-bottom: 4px;
+  right: 0;
+  min-width: 128px;
+  background: var(--chat-surface);
+  border-radius: var(--chat-field-radius);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  z-index: 3;
+}
+
+.chat-msg-menu-item {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: var(--chat-weight-medium);
+  color: var(--chat-ink);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.chat-msg-menu-item:hover {
+  background: var(--chat-tint);
+}
+
+.chat-msg-menu-item lightning-icon {
+  --slds-c-icon-color-foreground-default: currentColor;
+  --sds-c-icon-color-foreground-default: currentColor;
+  fill: currentColor;
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.chat-msg-text-deleted {
+  font-style: italic;
+  opacity: 0.7;
+}
+
+.chat-msg-edited-tag {
+  font-size: 10px;
+  opacity: 0.75;
+  margin-right: 2px;
+}
+
+/* ── "Editing message" banner above the composer ──────────────────────────────────── */
+
+.chat-editing-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--chat-tint);
+  border-radius: var(--chat-field-radius);
+  color: var(--chat-ink);
+  font-size: 13px;
+}
+
+.chat-editing-label {
+  flex: 1;
+}
+
+.chat-editing-cancel {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--chat-ink-muted);
+  padding: 0 4px;
+}
+
+/* ── Delete-message confirmation ─────────────────────────────────────────────────── */
+
+.chat-confirm-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--chat-ink) 45%, transparent);
+}
+
+.chat-confirm-card {
+  background: var(--chat-surface);
+  border-radius: var(--chat-radius);
+  padding: 20px;
+  width: min(320px, 90%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.chat-confirm-text {
+  margin: 0 0 16px;
+  color: var(--chat-ink);
+  font-size: 14px;
+}
+
+.chat-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.chat-confirm-cancel {
+  background: var(--chat-tint);
+  color: var(--chat-ink);
+  border: none;
+  border-radius: var(--chat-field-radius);
+  padding: 8px 16px;
+  font-weight: var(--chat-weight-semibold);
+  cursor: pointer;
+}
+
+.chat-confirm-delete {
+  background: var(--primary-color, #373a45);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--chat-field-radius);
+  padding: 8px 16px;
+  font-weight: var(--chat-weight-semibold);
+  cursor: pointer;
+}
+
+.chat-confirm-delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

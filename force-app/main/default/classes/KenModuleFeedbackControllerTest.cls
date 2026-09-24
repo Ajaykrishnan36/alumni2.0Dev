@@ -1,27 +1,32 @@
 @isTest
 private class KenModuleFeedbackControllerTest {
 
+    private static final String RESPONDENT_NAME = 'Module Feedback Respondent';
+
     @testSetup
     static void setup() {
-        Ken_Questionnaire__c qnr = new Ken_Questionnaire__c(
-            Section_Name__c = 'Mentorship Feedback',
-            Descripation__c = 'How was the call',
-            Target_Audience__c = 'Alumni'
-        );
-        insert qnr;
+        insert new Account(Name = RESPONDENT_NAME);
 
-        insert new List<Ken_Questionnaire_Parameter__c>{
-            new Ken_Questionnaire_Parameter__c(
-                Questionnaire__c = qnr.Id, Question_Label__c = 'How was the call?',
-                Question_Type__c = 'Linear Scale', Is_Required__c = true,
-                Min_Grade__c = 1, Max_Grade__c = 5, Order__c = 1, Section_Name__c = 'Mentorship Feedback'
-            ),
-            new Ken_Questionnaire_Parameter__c(
-                Questionnaire__c = qnr.Id, Question_Label__c = 'Any comments?',
-                Question_Type__c = 'Short Answer', Is_Required__c = false,
-                Order__c = 2, Section_Name__c = 'Mentorship Feedback'
-            )
-        };
+        KenAssessmentSurveyService.QuestionInput scale = new KenAssessmentSurveyService.QuestionInput();
+        scale.text = 'How was the call?';
+        scale.questionType = 'Linear Scale';
+        scale.required = true;
+        scale.choices = new List<KenAssessmentSurveyService.ChoiceRow>();
+        for (Integer i = 1; i <= 5; i++) {
+            KenAssessmentSurveyService.ChoiceRow point = new KenAssessmentSurveyService.ChoiceRow();
+            point.value = String.valueOf(i);
+            point.label = String.valueOf(i);
+            scale.choices.add(point);
+        }
+
+        KenAssessmentSurveyService.QuestionInput comments = new KenAssessmentSurveyService.QuestionInput();
+        comments.text = 'Any comments?';
+        comments.questionType = 'Short Answer';
+        comments.required = false;
+
+        Id questionSetId = KenAssessmentSurveyService.saveQuestionSet(null, 'Mentorship Feedback',
+            new List<KenAssessmentSurveyService.QuestionInput>{ scale, comments }
+        );
 
         Id tplRt = Schema.SObjectType.Ken_Survey__c
             .getRecordTypeInfosByDeveloperName().get('Default_Feedback_Template').getRecordTypeId();
@@ -29,10 +34,25 @@ private class KenModuleFeedbackControllerTest {
             Name = 'Mentorship Call Feedback',
             RecordTypeId = tplRt,
             Category__c = 'Mentorship',
-            Section_Name__c = 'Mentorship Feedback',
             Is_Active__c = true,
-            Ken_Questionnaire__c = qnr.Id
+            Assessment_Question_Set__c = questionSetId
         );
+    }
+
+    private static Id respondentAccountId() {
+        return [SELECT Id FROM Account WHERE Name = :RESPONDENT_NAME LIMIT 1].Id;
+    }
+
+    private static Ken_Mentorship__c buildCall(Id surveyId) {
+        Id callRt = Schema.SObjectType.Ken_Mentorship__c
+            .getRecordTypeInfosByDeveloperName().get('Call_Request').getRecordTypeId();
+        Ken_Mentorship__c call = new Ken_Mentorship__c(
+            RecordTypeId = callRt,
+            Call_Request_Status__c = 'Requested',
+            Survey__c = surveyId
+        );
+        insert call;
+        return call;
     }
 
     @isTest
@@ -48,11 +68,15 @@ private class KenModuleFeedbackControllerTest {
         System.assertNotEquals(tplId, instId, 'Instance is distinct from the template');
         System.assertEquals(null, none, 'No Event template configured');
 
+        Ken_Survey__c tpl = [SELECT Assessment_Question_Set__c FROM Ken_Survey__c WHERE Id = :tplId];
         Ken_Survey__c inst = [
-            SELECT Parent_Template__c, Ken_Questionnaire__c FROM Ken_Survey__c WHERE Id = :instId
+            SELECT Parent_Template__c, Assessment_Question_Set__c, Module__c
+            FROM Ken_Survey__c WHERE Id = :instId
         ];
         System.assertEquals(tplId, inst.Parent_Template__c, 'Instance points back to template');
-        System.assertNotEquals(null, inst.Ken_Questionnaire__c, 'Instance reuses the questionnaire');
+        System.assertEquals(tpl.Assessment_Question_Set__c, inst.Assessment_Question_Set__c,
+            'Instance reuses the template question set');
+        System.assertEquals('Alumni', inst.Module__c, 'Feedback instances belong to the Alumni module');
 
         // Template lookup must still return the TEMPLATE, never the instance.
         System.assertEquals(tplId, KenModuleFeedbackController.getDefaultTemplateId('Mentorship'),
@@ -62,20 +86,16 @@ private class KenModuleFeedbackControllerTest {
     @isTest
     static void testFormSubmitAndRead() {
         Id instId = KenModuleFeedbackController.createInstanceForCategory('Mentorship');
-        Id callRt = Schema.SObjectType.Ken_Mentorship__c
-            .getRecordTypeInfosByDeveloperName().get('Call_Request').getRecordTypeId();
-        Ken_Mentorship__c call = new Ken_Mentorship__c(
-            RecordTypeId = callRt,
-            Call_Request_Status__c = 'Requested',
-            Survey__c = instId
-        );
-        insert call;
+        Ken_Mentorship__c call = buildCall(instId);
+        KenModuleFeedbackController.testRespondentAccountId = respondentAccountId();
 
         Test.startTest();
         KenModuleFeedbackController.SurveyFormData form =
             KenModuleFeedbackController.getModuleFeedbackForm(call.Id);
         System.assertEquals(2, form.questions.size(), 'Form exposes both questions');
         System.assertEquals(instId, form.surveyId, 'Form resolves the per-call instance');
+        System.assertEquals(5, form.questions[0].choices.size(),
+            'Scale points travel to the client as choices');
 
         KenModuleFeedbackController.ModuleFeedbackRequest req = new KenModuleFeedbackController.ModuleFeedbackRequest();
         req.recordId = call.Id;
@@ -97,24 +117,44 @@ private class KenModuleFeedbackControllerTest {
         System.assertEquals(1, view.total, 'One respondent group');
         System.assertEquals(2, view.respondents[0].answers.size(), 'Two answers stored');
 
-        Id instQ = [SELECT Ken_Questionnaire__c FROM Ken_Survey__c WHERE Id = :instId LIMIT 1].Ken_Questionnaire__c;
-        Integer cnt = [
-            SELECT COUNT() FROM Ken_Questionnaire_Parameter_Response__c
-            WHERE Questionnaire_Parameter__r.Questionnaire__c = :instQ
-        ];
-        System.assertEquals(2, cnt, 'Responses scoped to the per-call instance');
+        System.assertEquals(2, [
+            SELECT COUNT() FROM AssessmentQuestionResponse WHERE Assessment.Ken_Survey__c = :instId
+        ], 'Responses scoped to the per-call instance');
+    }
+
+    @isTest
+    static void testGetResponsesOnSurveyRecordPage() {
+        Id instId = KenModuleFeedbackController.createInstanceForCategory('Mentorship');
+        Ken_Mentorship__c call = buildCall(instId);
+        KenModuleFeedbackController.testRespondentAccountId = respondentAccountId();
+
+        KenModuleFeedbackController.SurveyFormData form =
+            KenModuleFeedbackController.getModuleFeedbackForm(call.Id);
+        KenModuleFeedbackController.ModuleFeedbackRequest req = new KenModuleFeedbackController.ModuleFeedbackRequest();
+        req.recordId = call.Id;
+        KenModuleFeedbackController.QuestionResponse r1 = new KenModuleFeedbackController.QuestionResponse();
+        r1.questionId = form.questions[0].id;
+        r1.responseValue = '5';
+        req.responses = new List<KenModuleFeedbackController.QuestionResponse>{ r1 };
+        KenModuleFeedbackController.submitModuleFeedback(req);
+
+        Test.startTest();
+        KenModuleFeedbackController.ResponseView view =
+            KenModuleFeedbackController.getResponsesForRecord(instId);
+        Test.stopTest();
+
+        System.assertEquals(1, view.total,
+            'Responses must surface when the viewer sits on the Ken_Survey__c record page (recordId is the survey)');
+        System.assertEquals(1, view.respondents[0].answers.size(), 'Answer stored');
     }
 
     @isTest
     static void testBulkAndEmpty() {
         Id tplId = KenModuleFeedbackController.getDefaultTemplateId('Mentorship');
         Id instId = KenModuleFeedbackController.createInstanceForCategory('Mentorship');
-        Id callRt = Schema.SObjectType.Ken_Mentorship__c
-            .getRecordTypeInfosByDeveloperName().get('Call_Request').getRecordTypeId();
-        Ken_Mentorship__c call = new Ken_Mentorship__c(
-            RecordTypeId = callRt, Call_Request_Status__c = 'Requested', Survey__c = instId
-        );
-        insert call;
+        Ken_Mentorship__c call = buildCall(instId);
+        KenModuleFeedbackController.testRespondentAccountId = respondentAccountId();
+
         KenModuleFeedbackController.SurveyFormData form =
             KenModuleFeedbackController.getModuleFeedbackForm(call.Id);
         KenModuleFeedbackController.ModuleFeedbackRequest req = new KenModuleFeedbackController.ModuleFeedbackRequest();
@@ -138,12 +178,7 @@ private class KenModuleFeedbackControllerTest {
 
     @isTest
     static void testNoFormConfigured() {
-        Id callRt = Schema.SObjectType.Ken_Mentorship__c
-            .getRecordTypeInfosByDeveloperName().get('Call_Request').getRecordTypeId();
-        Ken_Mentorship__c call = new Ken_Mentorship__c(
-            RecordTypeId = callRt, Call_Request_Status__c = 'Requested'
-        );
-        insert call;
+        Ken_Mentorship__c call = buildCall(null);
 
         Test.startTest();
         Boolean threw = false;
@@ -158,5 +193,7 @@ private class KenModuleFeedbackControllerTest {
 
         System.assertEquals(true, threw, 'Expected exception when no form configured');
         System.assertEquals(0, v.total, 'No instance -> empty view');
+        System.assertEquals(false, KenModuleFeedbackController.hasCurrentUserResponded(call.Id),
+            'A record with no survey can never read as responded');
     }
 }

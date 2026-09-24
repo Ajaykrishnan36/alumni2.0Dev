@@ -68,6 +68,7 @@ global with sharing class KenNavigationMenuItemsController {
             FROM NavigationLinkSet
             WHERE NetworkId = :networkId
             AND MasterLabel = :navigationLinkSetMasterLabel
+            WITH SYSTEM_MODE
             LIMIT 1
         ];
         

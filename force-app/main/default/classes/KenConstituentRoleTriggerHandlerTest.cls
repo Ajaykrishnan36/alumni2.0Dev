@@ -5,7 +5,7 @@ private class KenConstituentRoleTriggerHandlerTest {
 
     private static String pickValue(Schema.SObjectType sObjType, String fieldApiName, List<String> preferred) {
         Schema.DescribeFieldResult dfr =
-            sObjType.getDescribe().fields.getMap().get(fieldApiName).getDescribe();
+            sObjType.getDescribe().fields.getMap().get(KenNamespaceUtil.qualifyCustom(fieldApiName)).getDescribe();
 
         List<Schema.PicklistEntry> entries = dfr.getPicklistValues();
         Set<String> active = new Set<String>();
@@ -25,7 +25,7 @@ private class KenConstituentRoleTriggerHandlerTest {
 
     private static String pickDifferentValue(Schema.SObjectType sObjType, String fieldApiName, String currentValue) {
         Schema.DescribeFieldResult dfr =
-            sObjType.getDescribe().fields.getMap().get(fieldApiName).getDescribe();
+            sObjType.getDescribe().fields.getMap().get(KenNamespaceUtil.qualifyCustom(fieldApiName)).getDescribe();
 
         for (Schema.PicklistEntry e : dfr.getPicklistValues()) {
             if (e.isActive() && e.getValue() != currentValue) return e.getValue();
@@ -36,14 +36,20 @@ private class KenConstituentRoleTriggerHandlerTest {
     // ---------- Data helpers ----------
 
     private static Account createPersonAccount() {
-        Id paRtId;
+        // Pick a person-account record type the RUNNING USER can actually use.
+        // Querying RecordType returns every one in the org, including ones this
+        // profile has no access to, which fails the insert with
+        // INVALID_CROSS_REFERENCE_KEY.
+        Set<Id> personTypeIds = new Set<Id>();
         for (RecordType rt : [
-            SELECT Id, IsPersonType
-            FROM RecordType
-            WHERE SObjectType = 'Account'
+            SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true AND IsActive = true
         ]) {
-            if (rt.IsPersonType) {
-                paRtId = rt.Id;
+            personTypeIds.add(rt.Id);
+        }
+        Id paRtId;
+        for (Schema.RecordTypeInfo info : Account.SObjectType.getDescribe().getRecordTypeInfos()) {
+            if (info.isAvailable() && !info.isMaster() && personTypeIds.contains(info.getRecordTypeId())) {
+                paRtId = info.getRecordTypeId();
                 break;
             }
         }
@@ -127,7 +133,7 @@ private class KenConstituentRoleTriggerHandlerTest {
         String verified = pickValue(
             ConstituentRole.SObjectType,
             'Registration_Status__c',
-            new List<String>{ 'Verified' }
+            new List<String>{ 'Onboarding In Progress' }
         );
 
         // choose a value that is NOT Verified (if possible)

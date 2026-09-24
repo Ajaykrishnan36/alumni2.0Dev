@@ -1,48 +1,58 @@
-@IsTest
-@SuppressWarnings('PMD.ApexUnitTestClassShouldHaveRunAs')
-public class KenExportCsvControllerTest {
+@isTest
+private class KenExportCsvControllerTest {
 
-    @IsTest
-    static void getDownloadUrl_happyPath_returnsShepherdUrl() {
+    @isTest
+    static void testGetDownloadUrl_success() {
+        String csvContent = 'Name,Email,Status\n"Alice","alice@example.com","Active"\n"Bob","bob@example.com","Alumni"';
+        String filename   = 'test_export.csv';
+
         Test.startTest();
-        String url = KenExportCsvController.getDownloadUrl(
-            'col1,col2\nval1,val2\nval3,val4',
-            'cases-export.csv'
-        );
+        String url = KenExportCsvController.getDownloadUrl(csvContent, filename);
         Test.stopTest();
-        System.assertNotEquals(null, url);
+
+        System.assertNotEquals(null, url, 'URL should not be null');
         System.assert(
             url.startsWith('/sfc/servlet.shepherd/version/download/'),
-            'URL should be a Shepherd download path; got: ' + url
+            'URL should be a Salesforce content download path'
         );
 
-        // Verify a ContentVersion was actually inserted
-        Integer cvCount = [SELECT COUNT() FROM ContentVersion WHERE Title = 'cases-export.csv'];
-        System.assert(cvCount >= 1, 'Expected at least one ContentVersion inserted');
+        List<ContentVersion> cvList = [
+            SELECT Title, PathOnClient, Origin, IsMajorVersion
+            FROM ContentVersion
+            WHERE Title = :filename
+        ];
+        System.assertEquals(1, cvList.size(), 'One ContentVersion should have been created');
+        System.assertEquals(filename,  cvList[0].Title);
+        System.assertEquals(filename,  cvList[0].PathOnClient);
+        System.assertEquals('H',       cvList[0].Origin);
+        System.assertEquals(true,      cvList[0].IsMajorVersion);
     }
 
-    @IsTest
-    static void getDownloadUrl_minimalContent_stillCreatesContentVersion() {
+    @isTest
+    static void testGetDownloadUrl_urlContainsContentVersionId() {
+        String csvContent = '"Col1","Col2"\n"val1","val2"';
+        String filename   = 'id_check.csv';
+
         Test.startTest();
-        String url = KenExportCsvController.getDownloadUrl('a', 'minimal.csv');
+        String url = KenExportCsvController.getDownloadUrl(csvContent, filename);
         Test.stopTest();
-        System.assertNotEquals(null, url);
-        System.assert(url.startsWith('/sfc/servlet.shepherd/version/download/'));
+
+        ContentVersion cv = [SELECT Id FROM ContentVersion WHERE Title = :filename LIMIT 1];
+        System.assert(url.contains(cv.Id), 'Returned URL should contain the ContentVersion Id');
     }
 
-    @IsTest
-    static void getDownloadUrl_nullFilename_throwsAuraHandledException() {
-        // ContentVersion requires Title — null should throw, caught and wrapped.
+    @isTest
+    static void testGetDownloadUrl_exception() {
+        Boolean exceptionThrown = false;
         Test.startTest();
         try {
-            KenExportCsvController.getDownloadUrl('data', null);
-            System.assert(false, 'Should have thrown for null filename');
+            // null csvContent causes Blob.valueOf(null) to throw NullPointerException
+            KenExportCsvController.getDownloadUrl(null, 'export.csv');
         } catch (AuraHandledException e) {
-            System.assert(true);
-        } catch (Exception e) {
-            // accept any exception type — the goal is to exercise the catch branch
-            System.assert(true);
+            exceptionThrown = true;
         }
         Test.stopTest();
+
+        System.assert(exceptionThrown, 'AuraHandledException should have been thrown for null csvContent');
     }
 }

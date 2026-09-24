@@ -11,7 +11,7 @@
  *
  * Adapted from the KIS LinkedInRestApi (Contact-based) to the EXP Cloud 2.0
  * Person-Account model. Provider contract unchanged: POST {urls:[...]} with
- * header X-API-Key, response { results:[ { url, profile:{ ... } } ] }. All
+ * Named Credential, response { results:[ { url, profile:{ ... } } ] }. All
  * callouts (enrichment + image downloads) run BEFORE any DML so the work is
  * callout-safe. Re-sync is safe: rows previously created by the sync
  * (LinkedIn_Sourced__c = true) are archived, then fresh rows inserted, so
@@ -19,7 +19,9 @@
  */
 public with sharing class KenLinkedInController {
 
-    private static final String DEFAULT_ENDPOINT = 'https://linkedin-api.pichainlabs.com/api/v1/enrich/batch';
+    private static final String ENRICH_PATH = '/api/v1/enrich/batch';
+    private static final String ENRICH_HEADER_NAME = 'X-API-Key';
+    private static final String ENRICH_HEADER_VALUE = '{!$Credential.Password}';
     @TestVisible private static final Integer MAX_URLS_PER_REQUEST = 25;
 
     public class KenLinkedInSyncException extends Exception {}
@@ -33,6 +35,23 @@ public with sharing class KenLinkedInController {
     }
 
     // ============================================================
+    /**
+     * What actually reached the database. Counts come from inspected DML results,
+     * never from the provider payload, so the UI can never report rows it did not
+     * save - that mismatch was the whole reason a sync could claim success while
+     * writing nothing.
+     */
+    public class SyncResult {
+        @AuraEnabled public Integer jobsSaved           { get; set; }
+        @AuraEnabled public Integer educationSaved      { get; set; }
+        @AuraEnabled public Integer certificationsSaved { get; set; }
+        @AuraEnabled public Integer rowsFailed          { get; set; }
+        @AuraEnabled public String  firstError          { get; set; }
+        public SyncResult() {
+            jobsSaved = 0; educationSaved = 0; certificationsSaved = 0; rowsFailed = 0;
+        }
+    }
+
     // @AuraEnabled entry points
     // ============================================================
 
@@ -66,9 +85,9 @@ public with sharing class KenLinkedInController {
      * @future failed silently.
      */
     @AuraEnabled
-    public static void syncAlumniSync(Id accountId) {
+    public static SyncResult syncAlumniSync(Id accountId) {
         try {
-            syncAccountSync(accountId);
+            return syncAccountSync(accountId);
         } catch (KenLinkedInSyncException kse) {
             throw new AuraHandledException(kse.getMessage());
         } catch (Exception e) {
@@ -77,12 +96,21 @@ public with sharing class KenLinkedInController {
     }
 
     @AuraEnabled
-    public static void syncCurrentUserFromLinkedIn(String linkedInUrl) {
-        syncForRoleFromLinkedIn(linkedInUrl, null);
+    public static SyncResult syncCurrentUserFromLinkedIn(String linkedInUrl) {
+        return syncForRoleFromLinkedIn(linkedInUrl, null);
     }
 
+    /**
+     * @description Syncs the alumnus behind roleId - or the running user's Person
+     *              Account - from a LinkedIn URL that is not stored yet. The URL is
+     *              passed down rather than saved first: any DML ahead of the provider
+     *              callout makes Salesforce throw "You have uncommitted work pending",
+     *              which silently failed every onboarding import. storeProfiles writes
+     *              the URL together with the synced rows, once all callouts are done.
+     * @return      What actually committed, never the provider's own counts.
+     */
     @AuraEnabled
-    public static void syncForRoleFromLinkedIn(String linkedInUrl, String roleId) {
+    public static SyncResult syncForRoleFromLinkedIn(String linkedInUrl, String roleId) {
         if (String.isBlank(linkedInUrl)) {
             throw new AuraHandledException('LinkedIn URL is required.');
         }
@@ -90,13 +118,15 @@ public with sharing class KenLinkedInController {
         if (String.isNotBlank(roleId)) {
             try {
                 Id parsed = (Id) roleId.trim();
-                List<ConstituentRole> roles = [SELECT PersonId FROM ConstituentRole WHERE Id = :parsed LIMIT 1];
-                if (!roles.isEmpty()) acctId = roles[0].PersonId;
+                if (Schema.sObjectType.ConstituentRole.isAccessible()) {
+                    List<ConstituentRole> roles = [SELECT PersonId FROM ConstituentRole WHERE Id = :parsed LIMIT 1];
+                    if (!roles.isEmpty()) acctId = roles[0].PersonId;
+                }
             } catch (Exception e) { /* fall through */ }
         }
         if (acctId == null) {
             try {
-                User u = [SELECT AccountId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
+                User u = [SELECT AccountId FROM User WHERE Id = :UserInfo.getUserId() WITH SYSTEM_MODE LIMIT 1];
                 acctId = u.AccountId;
             } catch (Exception e) { /* swallow */ }
         }
@@ -104,8 +134,8 @@ public with sharing class KenLinkedInController {
             throw new AuraHandledException('No alumni Person Account is linked to this user yet — try again after the first profile save.');
         }
         try {
-            update new Account(Id = acctId, Linkedin_Profile_URL__c = linkedInUrl.trim());
-            syncAccountSync(acctId);
+            return syncAccountSync(acctId, linkedInUrl.trim());
+
         } catch (KenLinkedInSyncException kse) {
             throw new AuraHandledException(kse.getMessage());
         } catch (Exception e) {
@@ -161,39 +191,51 @@ public with sharing class KenLinkedInController {
      * to the user instead of being swallowed by an @future. Performs all callouts
      * before any DML.
      */
-    public static void syncAccountSync(Id accountId) {
+    public static SyncResult syncAccountSync(Id accountId) {
+        return syncAccountSync(accountId, null);
+    }
+
+    /**
+     * @description overrideUrl lets a caller sync a URL that is not saved on the
+     *              Account yet, so no DML has to run before the provider callout.
+     */
+    public static SyncResult syncAccountSync(Id accountId, String overrideUrl) {
         if (accountId == null) {
             throw new KenLinkedInSyncException('No alumnus selected.');
         }
         List<Account> accounts = [
-            SELECT Id, PersonContactId, Linkedin_Profile_URL__c
-            FROM Account WHERE Id = :accountId AND IsPersonAccount = true LIMIT 1
+            SELECT Id, PersonContactId, Linkedin_Profile_URL__c, Profile_Photo_URL__c
+            FROM Account WHERE Id = :accountId AND IsPersonAccount = true
+            WITH USER_MODE
+            LIMIT 1
         ];
         if (accounts.isEmpty()) {
             throw new KenLinkedInSyncException('Alumnus record not found.');
         }
         Account acc = accounts[0];
-        if (String.isBlank(acc.Linkedin_Profile_URL__c)) {
+        String rawUrl = String.isNotBlank(overrideUrl) ? overrideUrl : acc.Linkedin_Profile_URL__c;
+        if (String.isBlank(rawUrl)) {
             throw new KenLinkedInSyncException('No LinkedIn URL set on this alumnus.');
         }
-        String rawUrl = acc.Linkedin_Profile_URL__c.trim();
+        rawUrl = rawUrl.trim();
         String urlKey = normalizeUrlKey(rawUrl);
 
         Map<String, Object> profile = callProviderStrict(rawUrl, urlKey);
 
         Blob imageBlob = null;
         String picUrl = str(profile.get('profile_pic_url'));
-        if (String.isNotBlank(picUrl)) {
+        if (String.isNotBlank(picUrl) && String.isBlank(acc.Profile_Photo_URL__c)) {
             imageBlob = fetchImageBlob(picUrl);
         }
         Map<Id, Blob> imageByAccount = imageBlob == null
             ? new Map<Id, Blob>()
             : new Map<Id, Blob>{ accountId => imageBlob };
 
-        storeProfiles(
+        return storeProfiles(
             new Map<Id, Map<String, Object>>{ accountId => profile },
             new Map<Id, Account>{ accountId => acc },
-            imageByAccount
+            imageByAccount,
+            new Map<Id, String>{ accountId => rawUrl }
         );
     }
 
@@ -219,9 +261,10 @@ public with sharing class KenLinkedInController {
         }
 
         Map<Id, Account> accountById = new Map<Id, Account>([
-            SELECT Id, PersonContactId, Linkedin_Profile_URL__c
+            SELECT Id, PersonContactId, Linkedin_Profile_URL__c, Profile_Photo_URL__c
             FROM Account
             WHERE Id IN :accountIds AND IsPersonAccount = true AND Linkedin_Profile_URL__c != null
+        WITH USER_MODE
         ]);
         if (accountById.isEmpty()) {
             return;
@@ -263,15 +306,17 @@ public with sharing class KenLinkedInController {
 
         Map<Id, Blob> imageByAccount = new Map<Id, Blob>();
         for (Id accId : profileByAccount.keySet()) {
+            Account existingAcct = accountById.get(accId);
+            Boolean alreadyHasPhoto = existingAcct != null && String.isNotBlank(existingAcct.Profile_Photo_URL__c);
             String picUrl = str(profileByAccount.get(accId).get('profile_pic_url'));
-            if (String.isNotBlank(picUrl)) {
+            if (String.isNotBlank(picUrl) && !alreadyHasPhoto) {
                 Blob imageBlob = fetchImageBlob(picUrl);
                 if (imageBlob != null) imageByAccount.put(accId, imageBlob);
             }
         }
 
         // ---- PHASE 2: all DML ----
-        storeProfiles(profileByAccount, accountById, imageByAccount);
+        storeProfiles(profileByAccount, accountById, imageByAccount, new Map<Id, String>());
     }
 
     // ============================================================
@@ -281,13 +326,17 @@ public with sharing class KenLinkedInController {
     private static Id resolveAccountId(String accountId, String email) {
         if (String.isNotBlank(accountId)) {
             List<Account> accounts = [
-                SELECT Id FROM Account WHERE Id = :accountId AND IsPersonAccount = true LIMIT 1
+                SELECT Id FROM Account WHERE Id = :accountId AND IsPersonAccount = true
+                WITH USER_MODE
+                LIMIT 1
             ];
             return accounts.isEmpty() ? null : accounts[0].Id;
         }
         if (String.isNotBlank(email)) {
             List<Account> accounts = [
-                SELECT Id FROM Account WHERE PersonEmail = :email AND IsPersonAccount = true LIMIT 1
+                SELECT Id FROM Account WHERE PersonEmail = :email AND IsPersonAccount = true
+                WITH USER_MODE
+                LIMIT 1
             ];
             return accounts.isEmpty() ? null : accounts[0].Id;
         }
@@ -295,19 +344,17 @@ public with sharing class KenLinkedInController {
     }
 
     private static Map<String, Object> callProviderStrict(String rawUrl, String urlKey) {
-        LinkedIn_Config__c config = LinkedIn_Config__c.getOrgDefaults();
-        String endpoint = (config != null && String.isNotBlank(config.LinkedIn_Endpoint__c))
-            ? config.LinkedIn_Endpoint__c
-            : DEFAULT_ENDPOINT;
-        if (config == null || String.isBlank(config.LinkedIn_Token__c)) {
-            throw new KenLinkedInSyncException('LinkedIn API key is not set. Configure LinkedIn_Config__c (LinkedIn_Token__c) and retry.');
+        String connection = KenSettings.linkedInEnrichmentConnection();
+        String endpoint = KenSettings.endpoint(connection, ENRICH_PATH);
+        if (endpoint == null) {
+            throw new KenLinkedInSyncException('LinkedIn enrichment is not configured. Set Ken_Alm_Org_Parameters__c.LinkedIn_Enrichment_Connection__c to a Named Credential and retry.');
         }
 
         HttpRequest request = new HttpRequest();
         request.setEndpoint(endpoint);
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json');
-        request.setHeader('X-API-Key', config.LinkedIn_Token__c);
+        request.setHeader(ENRICH_HEADER_NAME, ENRICH_HEADER_VALUE);
         request.setTimeout(120000);
         request.setBody(JSON.serialize(new Map<String, Object>{ 'urls' => new List<String>{ rawUrl } }));
 
@@ -316,9 +363,9 @@ public with sharing class KenLinkedInController {
         if (status < 200 || status >= 300) {
             String detail = '';
             if (status == 401 || status == 403) {
-                detail = ' Check the LinkedIn API key in LinkedIn_Config__c.';
+                detail = ' Check the credential behind LinkedIn_Enrichment_Connection__c.';
             } else if (status == 404) {
-                detail = ' Verify the endpoint URL in LinkedIn_Config__c.';
+                detail = ' Verify the Named Credential URL behind LinkedIn_Enrichment_Connection__c.';
             } else if (status == 429) {
                 detail = ' The provider is rate-limiting; try again shortly.';
             }
@@ -350,19 +397,20 @@ public with sharing class KenLinkedInController {
         Map<String, Map<String, Object>> profileByKey = new Map<String, Map<String, Object>>();
         if (urls == null || urls.isEmpty()) return profileByKey;
 
-        LinkedIn_Config__c config = LinkedIn_Config__c.getOrgDefaults();
-        String endpoint = (config != null && String.isNotBlank(config.LinkedIn_Endpoint__c))
-            ? config.LinkedIn_Endpoint__c
-            : DEFAULT_ENDPOINT;
+        String endpoint = KenSettings.endpoint(
+            KenSettings.linkedInEnrichmentConnection(),
+            ENRICH_PATH
+        );
+        if (endpoint == null) {
+            return profileByKey;
+        }
 
         HttpRequest request = new HttpRequest();
         request.setEndpoint(endpoint);
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json');
+        request.setHeader(ENRICH_HEADER_NAME, ENRICH_HEADER_VALUE);
         request.setTimeout(120000);
-        if (config != null && String.isNotBlank(config.LinkedIn_Token__c)) {
-            request.setHeader('X-API-Key', config.LinkedIn_Token__c);
-        }
         request.setBody(JSON.serialize(new Map<String, Object>{ 'urls' => urls }));
 
         HttpResponse response = new Http().send(request);
@@ -402,10 +450,11 @@ public with sharing class KenLinkedInController {
         }
     }
 
-    private static void storeProfiles(
+    private static SyncResult storeProfiles(
         Map<Id, Map<String, Object>> profileByAccount,
         Map<Id, Account> accountById,
-        Map<Id, Blob> imageByAccount
+        Map<Id, Blob> imageByAccount,
+        Map<Id, String> urlByAccount
     ) {
         Set<Id> accountIds = profileByAccount.keySet();
 
@@ -421,6 +470,7 @@ public with sharing class KenLinkedInController {
         for (PersonEmployment pe : [
             SELECT Id FROM PersonEmployment
             WHERE AccountId IN :accountIds AND LinkedIn_Sourced__c = true AND Is_Archived__c = false
+        WITH USER_MODE
         ]) {
             employmentsToArchive.add(new PersonEmployment(Id = pe.Id, Is_Archived__c = true));
         }
@@ -428,6 +478,7 @@ public with sharing class KenLinkedInController {
         for (PersonEducation ed : [
             SELECT Id FROM PersonEducation
             WHERE AccountId IN :accountIds AND LinkedIn_Sourced__c = true AND Is_Archived__c = false
+        WITH USER_MODE
         ]) {
             educationToArchive.add(new PersonEducation(Id = ed.Id, Is_Archived__c = true));
         }
@@ -436,6 +487,7 @@ public with sharing class KenLinkedInController {
             for (Ken_Certificate_Details__c cert : [
                 SELECT Id FROM Ken_Certificate_Details__c
                 WHERE Contact__c IN :contactIdByAccount.values() AND LinkedIn_Sourced__c = true AND Is_Archived__c = false
+            WITH USER_MODE
             ]) {
                 certsToArchive.add(new Ken_Certificate_Details__c(Id = cert.Id, Is_Archived__c = true));
             }
@@ -500,9 +552,9 @@ public with sharing class KenLinkedInController {
                     if (cert == null) continue;
                     certsToInsert.add(new Ken_Certificate_Details__c(
                         Contact__c = contactId,
-                        Uploaded_Cert_Name__c = truncateText(str(cert.get('name')), 255),
-                        Credential_Id__c = truncateText(str(cert.get('license_number')), 255),
-                        Certificate_URL__c = str(cert.get('url')),
+                        Uploaded_File_Name__c = truncateText(str(cert.get('name')), 255),
+                        Award_Id__c = truncateText(str(cert.get('license_number')), 255),
+                        Qualification_URL__c = str(cert.get('url')),
                         Issue_Date__c = toDate(cert.get('starts_at')),
                         Expiration_Date__c = toDate(cert.get('ends_at')),
                         LinkedIn_Sourced__c = true,
@@ -511,25 +563,90 @@ public with sharing class KenLinkedInController {
                 }
             }
 
-            accountsToUpdate.add(new Account(Id = accId, Last_LinkedIn_Sync__c = System.now()));
+            Account acctUpdate = new Account(Id = accId, Last_LinkedIn_Sync__c = System.now());
+            if (urlByAccount != null && String.isNotBlank(urlByAccount.get(accId))) {
+                acctUpdate.Linkedin_Profile_URL__c = urlByAccount.get(accId);
+            }
+            accountsToUpdate.add(acctUpdate);
         }
 
-        if (!employmentsToArchive.isEmpty()) { Database.update(employmentsToArchive, false); }
-        if (!educationToArchive.isEmpty())   { Database.update(educationToArchive, false); }
-        if (!certsToArchive.isEmpty())        { Database.update(certsToArchive, false); }
+        if (!employmentsToArchive.isEmpty()) {
+            if (!Schema.sObjectType.PersonEmployment.isUpdateable()) {
+                throw new KenCrudException('PersonEmployment is not updateable by the current user.');
+            }
+            Database.update(employmentsToArchive, false);
+        }
+        if (!educationToArchive.isEmpty()) {
+            if (!Schema.sObjectType.PersonEducation.isUpdateable()) {
+                throw new KenCrudException('PersonEducation is not updateable by the current user.');
+            }
+            Database.update(educationToArchive, false);
+        }
+        if (!certsToArchive.isEmpty()) {
+            if (!Schema.sObjectType.Ken_Certificate_Details__c.isUpdateable()) {
+                throw new KenCrudException('Ken_Certificate_Details__c is not updateable by the current user.');
+            }
+            Database.update(certsToArchive, false);
+        }
 
-        if (!employmentsToInsert.isEmpty()) { Database.insert(employmentsToInsert, false); }
-        if (!educationToInsert.isEmpty())   { Database.insert(educationToInsert, false); }
-        if (!certsToInsert.isEmpty())        { Database.insert(certsToInsert, false); }
-        if (!accountsToUpdate.isEmpty())     { Database.update(accountsToUpdate, false); }
+        SyncResult result = new SyncResult();
+        result.jobsSaved           = countSaved(Database.insert(employmentsToInsert, false), result);
+        result.educationSaved      = countSaved(Database.insert(educationToInsert, false), result);
+        result.certificationsSaved = countSaved(Database.insert(certsToInsert, false), result);
+        if (!accountsToUpdate.isEmpty()) {
+            if (!Schema.sObjectType.Account.isUpdateable()) {
+                throw new KenCrudException('Account is not updateable by the current user.');
+            }
+            Database.update(accountsToUpdate, false);
+        }
 
         storeProfilePhotos(imageByAccount);
+        return result;
     }
 
+    /**
+     * @description Counts the rows that actually committed and keeps the first
+     *              failure message. allOrNone = false stops one bad row from losing
+     *              the whole batch, but the results MUST be read - discarding them
+     *              is what let a sync report rows it never wrote.
+     */
+    private static Integer countSaved(List<Database.SaveResult> results, SyncResult result) {
+        Integer saved = 0;
+        for (Database.SaveResult sr : results) {
+            if (sr.isSuccess()) {
+                saved++;
+                continue;
+            }
+            result.rowsFailed++;
+            if (String.isBlank(result.firstError) && !sr.getErrors().isEmpty()) {
+                result.firstError = sr.getErrors()[0].getStatusCode() + ': ' + sr.getErrors()[0].getMessage();
+            }
+        }
+        return saved;
+    }
+
+    /**
+     * @description Stores the LinkedIn photo as a Salesforce public (ContentDistribution)
+     *              URL on Account.Profile_Photo_URL__c, but ONLY for people who have no
+     *              photo yet - an existing picture is never overwritten, because the one
+     *              the alumnus uploaded outranks whatever LinkedIn happens to hold. The
+     *              callers already skip the image download for these accounts; this is the
+     *              second guard that also covers the bulk path.
+     */
     private static void storeProfilePhotos(Map<Id, Blob> imageByAccount) {
         if (imageByAccount == null || imageByAccount.isEmpty()) return;
+
+        Set<Id> needsPhoto = new Set<Id>();
+        for (Account a : [
+            SELECT Id, Profile_Photo_URL__c FROM Account WHERE Id IN :imageByAccount.keySet()
+        WITH USER_MODE
+        ]) {
+            if (String.isBlank(a.Profile_Photo_URL__c)) needsPhoto.add(a.Id);
+        }
+        if (needsPhoto.isEmpty()) return;
+
         Map<Id, String> publicUrlByAccount = new Map<Id, String>();
-        for (Id accId : imageByAccount.keySet()) {
+        for (Id accId : needsPhoto) {
             try {
                 ContentVersion cv = new ContentVersion(
                     Title = 'LinkedIn Profile ' + accId,
@@ -537,7 +654,7 @@ public with sharing class KenLinkedInController {
                     VersionData = imageByAccount.get(accId),
                     IsMajorVersion = false
                 );
-                insert cv;
+                Database.insert(cv, true, AccessLevel.USER_MODE);
                 ContentDistribution cd = new ContentDistribution(
                     Name = 'LinkedIn Profile ' + accId,
                     ContentVersionId = cv.Id,
@@ -546,8 +663,8 @@ public with sharing class KenLinkedInController {
                     PreferencesNotifyOnVisit = false,
                     PreferencesPasswordRequired = false
                 );
-                insert cd;
-                ContentDistribution stored = [SELECT ContentDownloadUrl FROM ContentDistribution WHERE Id = :cd.Id LIMIT 1];
+                Database.insert(cd, false, AccessLevel.USER_MODE);
+                ContentDistribution stored = [SELECT ContentDownloadUrl FROM ContentDistribution WHERE Id = :cd.Id WITH SYSTEM_MODE LIMIT 1];
                 if (String.isNotBlank(stored.ContentDownloadUrl)) {
                     publicUrlByAccount.put(accId, stored.ContentDownloadUrl);
                 }
@@ -556,14 +673,16 @@ public with sharing class KenLinkedInController {
             }
         }
         if (publicUrlByAccount.isEmpty()) return;
-        List<Ken_Alumni_CRM__c> crmToUpdate = new List<Ken_Alumni_CRM__c>();
-        for (Ken_Alumni_CRM__c crm : [
-            SELECT Id, Person_Account__c FROM Ken_Alumni_CRM__c WHERE Person_Account__c IN :publicUrlByAccount.keySet()
-        ]) {
-            crm.Profile_Photo_URL__c = publicUrlByAccount.get(crm.Person_Account__c);
-            crmToUpdate.add(crm);
+        List<Account> accountsToUpdate = new List<Account>();
+        for (Id accId : publicUrlByAccount.keySet()) {
+            accountsToUpdate.add(new Account(Id = accId, Profile_Photo_URL__c = publicUrlByAccount.get(accId)));
         }
-        if (!crmToUpdate.isEmpty()) Database.update(crmToUpdate, false);
+        if (!accountsToUpdate.isEmpty()) {
+            if (!Schema.sObjectType.Account.isUpdateable()) {
+                throw new KenCrudException('Account is not updateable by the current user.');
+            }
+            Database.update(accountsToUpdate, false);
+        }
     }
 
     // ----------------------------------------------------------------------

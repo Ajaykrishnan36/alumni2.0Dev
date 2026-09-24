@@ -11,6 +11,8 @@ import getRoomForAlumnus from "@salesforce/apex/KenChatController.getRoomForAlum
 import getMessages from "@salesforce/apex/KenChatController.getMessages";
 import sendMessage from "@salesforce/apex/KenChatController.sendMessage";
 import markRead from "@salesforce/apex/KenChatController.markRead";
+import editMessageApex from "@salesforce/apex/KenChatController.editMessage";
+import deleteMessageApex from "@salesforce/apex/KenChatController.deleteMessage";
 import getChatConfig from "@salesforce/apex/KenChatController.getChatConfig";
 import uploadChatFile from "@salesforce/apex/KenChatController.uploadChatFile";
 
@@ -92,6 +94,22 @@ export async function postMessage(roomId, body, files) {
     });
   }
   return last;
+}
+
+/**
+ * Edits the sender's own message in place. `sentAt` must be the exact value the message
+ * arrived with from getMessages/postMessage - it is one third of the big object's index
+ * together with roomId and messageUid, so an altered value would edit a different row (or
+ * none) instead of this one.
+ */
+export function editChatMessage(roomId, messageUid, sentAt, newBody) {
+  return editMessageApex({ roomId, sentAt, messageUid, newBody: newBody.trim() });
+}
+
+/** Soft-deletes the sender's own message - see KenChatController.deleteMessage for why the
+ *  original content still needs a non-blank sentinel rather than actually going blank. */
+export function deleteChatMessage(roomId, messageUid, sentAt) {
+  return deleteMessageApex({ roomId, sentAt, messageUid });
 }
 
 /*
@@ -270,13 +288,23 @@ export function decorateMessages(rows, room) {
     const fallbackAvatar = !m.isOutgoing && isOneToOne ? room.avatarUrl : null;
     const avatarUrl = m.avatarUrl || fallbackAvatar || null;
 
+    const isDeleted = m.status === "Deleted";
+    const isEdited = m.status === "Edited";
+
     return {
       ...m,
       key: m.id || `msg-${i}`,
       dateLabel: showDay ? day : null,
       time: timeLabel(m.sentAt),
-      hasFiles: !!(m.files && m.files.length),
-      files: decorateFiles(m.files),
+      // A deleted message's text/files are already stripped server-side (KenChatController
+      // clears them once Status__c is 'Deleted'), so this is just the placeholder label -
+      // there is nothing left to accidentally show even if that check ever changed.
+      isDeleted,
+      isEdited,
+      displayText: isDeleted ? "This message was deleted" : m.text,
+      textClass: isDeleted ? "chat-msg-text chat-msg-text-deleted" : "chat-msg-text",
+      hasFiles: !isDeleted && !!(m.files && m.files.length),
+      files: isDeleted ? [] : decorateFiles(m.files),
       showAvatar: startsRun,
       avatarUrl,
       avatarInitial: initialOf(m.senderName),
@@ -286,8 +314,11 @@ export function decorateMessages(rows, room) {
       rowClass: startsRun ? "chat-msg-row" : "chat-msg-row chat-msg-row-cont",
       // A tick only means something on your own bubble, and only in a 1:1 - a group
       // records no read state, so a tick there would be a lie.
-      showTick: m.isOutgoing && isOneToOne,
-      tickClass: m.isRead ? "chat-msg-tick chat-msg-tick-read" : "chat-msg-tick"
+      showTick: m.isOutgoing && isOneToOne && !isDeleted,
+      tickClass: m.isRead ? "chat-msg-tick chat-msg-tick-read" : "chat-msg-tick",
+      // Only the sender may act on their own message, and a deleted one has nothing left
+      // to edit or delete again.
+      canManage: m.isOutgoing && !isDeleted
     };
   });
 }

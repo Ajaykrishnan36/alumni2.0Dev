@@ -1,9 +1,36 @@
 @IsTest
 private class KenPortalRegisterControllerTest {
+
+    private static Id kenCampusId;
+
+    /**
+     * KJS orgs add a required Campus__c lookup (-> Location) on LearningProgram.
+     * Populate it only where the field exists so the tests still run in every
+     * other org, and reuse one Location so a helper called in a loop does not
+     * spend a DML statement per programme.
+     */
+    private static void kenAssignCampus(SObject record) {
+        if (!record.getSObjectType().getDescribe().fields.getMap().containsKey('campus__c')) {
+            return;
+        }
+        if (kenCampusId == null) {
+            Schema.Location campus = new Schema.Location(Name = 'Ken Test Campus');
+            for (Schema.PicklistEntry entry : Schema.Location.LocationType.getDescribe().getPicklistValues()) {
+                if (entry.isActive()) {
+                    campus.LocationType = entry.getValue();
+                    break;
+                }
+            }
+            insert campus;
+            kenCampusId = campus.Id;
+        }
+        record.put('Campus__c', kenCampusId);
+    }
     private static final String DEFAULT_FIRST_NAME = 'Portal';
     private static final String DEFAULT_LAST_NAME = 'User';
     private static final String DEFAULT_PHONE = '9999999999';
     private static final String DEFAULT_GRAD_YEAR = '2020';
+    private static final String DEFAULT_ENROLL_YEAR = '2016';
 
     @IsTest
     static void testRequestAndVerifySignupOtpSuccessCreatesLead() {
@@ -44,13 +71,14 @@ private class KenPortalRegisterControllerTest {
         System.assertEquals(false, deactivatedOtp.IsActive__c, 'OTP should be deactivated after successful verification.');
 
         Lead lead = [
-            SELECT Registration_Number__c, Year_of_Graduation__c, Status, LeadSource
+            SELECT Registration_Number__c, Year_of_Graduation__c, Year_of_Enrollment__c, Status, LeadSource
             FROM Lead
             WHERE Email = :email
             LIMIT 1
         ];
         System.assertEquals(registrationNumber, lead.Registration_Number__c, 'Lead should use submitted registration number.');
         System.assertEquals(DEFAULT_GRAD_YEAR, lead.Year_of_Graduation__c, 'Lead should use submitted graduation year.');
+        System.assertEquals(DEFAULT_ENROLL_YEAR, lead.Year_of_Enrollment__c, 'Lead should use submitted year of enrollment.');
         System.assertEquals('New', lead.Status, 'Lead status should be New.');
         System.assertEquals('Web', lead.LeadSource, 'Lead source should be Web.');
     }
@@ -204,7 +232,7 @@ private class KenPortalRegisterControllerTest {
 
     @IsTest
     static void testGetRegistrationOptionsReturnsConfiguredFromGradYear() {
-        upsert new Alumni_Org_Parameters__c(
+        upsert new Ken_Alm_Org_Parameters__c(
             SetupOwnerId = UserInfo.getOrganizationId(),
             From_Graduation_Year__c = 2005,
             Default_Dial_Code__c = 'US'
@@ -225,6 +253,40 @@ private class KenPortalRegisterControllerTest {
         Test.stopTest();
         System.assertEquals('none', opts.defaultDialCountry, 'Default dial code should fall back to "none".');
         System.assertEquals(1980, opts.fromGradYear, 'From Graduation Year should fall back to 1980.');
+    }
+
+    @IsTest
+    static void testGetRegistrationOptionsInstitutesFromProvider() {
+        // Institutes must come from the Learning Program Plan PROVIDER, not from
+        // whatever ConstituentRoles happen to exist — so a fresh org with programs
+        // but no alumni still shows a full institute list.
+        Account provider = new Account(Name = 'KJS Test Institute');
+        insert provider;
+        Learning lrn = new Learning(Name = 'Provider Learning');
+        insert lrn;
+        LearningProgram lp = new LearningProgram(Name = 'Provider Program', LearningId = lrn.Id);
+        kenAssignCampus(lp);
+        insert lp;
+        insert new LearningProgramPlan(Name = 'Provider Plan', LearningProgramId = lp.Id, ProviderId = provider.Id);
+
+        Test.startTest();
+        KenPortalRegisterController.RegistrationOptions opts = KenPortalRegisterController.getRegistrationOptions();
+        Test.stopTest();
+
+        Boolean found = false;
+        for (KenPortalRegisterController.OptionDTO o : opts.institutes) {
+            if (o.label == 'KJS Test Institute' && o.value == 'KJS Test Institute') {
+                found = true;
+            }
+        }
+        System.assert(found, 'Institute options should be sourced from the learning program plan provider name.');
+
+        // Dependent picker data: the program must be grouped under its institute.
+        System.assert(opts.programsByInstitute != null, 'programsByInstitute should be populated.');
+        System.assert(opts.programsByInstitute.containsKey('KJS Test Institute'),
+            'programsByInstitute should be keyed by the provider (institute) name.');
+        System.assertEquals('Provider Plan', opts.programsByInstitute.get('KJS Test Institute')[0].label,
+            'The institute should map to its own learning program plan.');
     }
 
     @IsTest
@@ -264,6 +326,7 @@ private class KenPortalRegisterControllerTest {
         requestBody.phone = DEFAULT_PHONE;
         requestBody.regNumber = registrationNumber;
         requestBody.gradYear = DEFAULT_GRAD_YEAR;
+        requestBody.yearOfEnrollment = DEFAULT_ENROLL_YEAR;
         requestBody.otpEntered = otpEntered;
         requestBody.programPlan = programPlanId == null ? null : String.valueOf(programPlanId);
         return JSON.serialize(requestBody);
@@ -273,6 +336,7 @@ private class KenPortalRegisterControllerTest {
         Learning lrn = new Learning(Name = name + ' Learning');
         insert lrn;
         LearningProgram lp = new LearningProgram(Name = name + ' Program', LearningId = lrn.Id);
+        kenAssignCampus(lp);
         insert lp;
         LearningProgramPlan lpp = new LearningProgramPlan(Name = name, LearningProgramId = lp.Id);
         insert lpp;

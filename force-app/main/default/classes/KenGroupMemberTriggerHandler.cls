@@ -19,6 +19,14 @@ public without sharing class KenGroupMemberTriggerHandler extends KenTriggerHand
     private static final String TPL_INVITE_ACCEPTED     = 'Group_Invite_Accepted';
     private static final String TPL_INVITE_DECLINED     = 'Group_Invite_Declined';
 
+    public override void processBeforeInsert() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
+    public override void processBeforeUpdate() {
+        KenInstitutePopulationService.stampInstitute(Trigger.new, Trigger.oldMap);
+    }
+
     public override void processAfterInsert() {
         handle((List<Ken_Group_Member__c>) Trigger.new, null);
         recalculateMemberCounts(collectGroupIds((List<Ken_Group_Member__c>) Trigger.new));
@@ -62,6 +70,7 @@ public without sharing class KenGroupMemberTriggerHandler extends KenTriggerHand
 
         Map<Id, Ken_Group__c> groupById = new Map<Id, Ken_Group__c>([
             SELECT Id, Created_By__c FROM Ken_Group__c WHERE Id IN :groupIds
+        WITH SECURITY_ENFORCED
         ]);
         if (groupById.isEmpty()) return;
 
@@ -79,6 +88,7 @@ public without sharing class KenGroupMemberTriggerHandler extends KenTriggerHand
             SELECT Group__c gid, COUNT(Id) c
             FROM Ken_Group_Member__c
             WHERE Group__c IN :groupById.keySet() AND Status__c IN :COUNTED_STATUSES
+            WITH SECURITY_ENFORCED
             GROUP BY Group__c
         ]) {
             countByGroup.put((Id) ar.get('gid'), (Integer) ar.get('c'));
@@ -91,6 +101,7 @@ public without sharing class KenGroupMemberTriggerHandler extends KenTriggerHand
                 WHERE Group__c IN :groupById.keySet()
                   AND Status__c IN :COUNTED_STATUSES
                   AND Member__c IN :creatorIds
+            WITH SECURITY_ENFORCED
             ]) {
                 Ken_Group__c grp = groupById.get(gm.Group__c);
                 if (grp != null && gm.Member__c == grp.Created_By__c && countByGroup.containsKey(gm.Group__c)) {
@@ -104,6 +115,9 @@ public without sharing class KenGroupMemberTriggerHandler extends KenTriggerHand
             toUpdate.add(new Ken_Group__c(Id = gid, Member_Count__c = countByGroup.get(gid)));
         }
         if (!toUpdate.isEmpty()) {
+            if (!Schema.sObjectType.Ken_Group__c.isUpdateable()) {
+                throw new KenCrudException('Ken_Group__c is not updateable by the current user.');
+            }
             update toUpdate;
         }
     }
@@ -119,6 +133,7 @@ public without sharing class KenGroupMemberTriggerHandler extends KenTriggerHand
             ? new Map<Id, Ken_Group__c>()
             : new Map<Id, Ken_Group__c>([
                 SELECT Id, Name, Created_By__c FROM Ken_Group__c WHERE Id IN :groupIds
+            WITH SECURITY_ENFORCED
             ]);
 
         List<KenNotificationFactory.Context> joinReceived  = new List<KenNotificationFactory.Context>();

@@ -13,7 +13,7 @@ public with sharing class KenFileUploadController {
     private static final Map<String, String> OBJECT_TO_IMAGE_FIELD = new Map<String, String>{
         'Account' => 'Logo_File_URL__c',
         'Ken_Engagement_Preference__c' => 'Image_URL__c',
-        'KenAlumniSpotlight__c' => 'Content_Link__c'
+        'Ken_Alumni_Spotlight__c' => 'Content_Link__c'
     };
 
     /**
@@ -41,10 +41,10 @@ public with sharing class KenFileUploadController {
             String content = base64Data.contains(',') ? base64Data.substringAfter(',') : base64Data;
             String imageUrl = KenCreateContentVersion.createContentVersion(fileName, content);
 
-            SObject record = Schema.getGlobalDescribe().get(objectName).newSObject();
+            SObject record = KenNamespaceUtil.resolveSObjectType(objectName).newSObject();
             record.put('Id', recordId);
             record.put(fieldName, imageUrl);
-            update record;
+            Database.update(record, true, AccessLevel.USER_MODE);
         } catch (Exception e) {
             throw new AuraHandledException('Error uploading image: ' + e.getMessage());
         }

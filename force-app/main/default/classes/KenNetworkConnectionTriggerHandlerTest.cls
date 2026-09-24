@@ -5,7 +5,7 @@ private class KenNetworkConnectionTriggerHandlerTest {
     static void setupData() {
         Id paRtId = [
             SELECT Id FROM RecordType
-            WHERE SObjectType = 'Account' AND DeveloperName = 'Alumni_Person_Account' LIMIT 1
+            WHERE SObjectType = 'Account' AND DeveloperName = 'PersonAccount' LIMIT 1
         ].Id;
         List<Account> people = new List<Account>{
             new Account(RecordTypeId = paRtId, FirstName = 'Initiator', LastName = 'Test', PersonEmail = 'init@ttest.example'),
@@ -18,7 +18,7 @@ private class KenNetworkConnectionTriggerHandlerTest {
     static void afterInsert_bypass_suppresses_notification() {
         Account initiator = [SELECT Id FROM Account WHERE FirstName = 'Initiator' LIMIT 1];
         Account recipient = [SELECT Id FROM Account WHERE FirstName = 'Recipient' LIMIT 1];
-        insert new Alumni_Trigger_Settings__c(Network_Connection_Trigger__c = true);
+        insert new Ken_Alm_Bypass_Settings__c(Skip_Network_Connection_Trigger__c = true);
         Test.startTest();
         insert new Ken_Network_Connection__c(
             Initiator__c = initiator.Id,

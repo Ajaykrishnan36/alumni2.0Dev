@@ -42,10 +42,15 @@ public with sharing class KenSurveyDashboardController {
         return String.isBlank(v) || v.equalsIgnoreCase('All');
     }
 
-    private static List<String> buildConds(String approvalStatus, String isActive, String year) {
+    // Filter values travel as bind variables rather than being escaped into the query
+    // text. Each bind is added to the map in the same branch that adds the condition
+    // referencing it, so a clause can never name a bind the map is missing.
+    private static List<String> buildConds(String approvalStatus, String isActive, String year, Map<String, Object> binds) {
         List<String> conds = new List<String>();
-        if (!isBlankOrAll(approvalStatus))
-            conds.add('Approval_Status__c = \'' + String.escapeSingleQuotes(approvalStatus) + '\'');
+        if (!isBlankOrAll(approvalStatus)) {
+            binds.put('bApproval', approvalStatus);
+            conds.add('Approval_Status__c = :bApproval');
+        }
         if (!isBlankOrAll(isActive)) {
             if (isActive.equalsIgnoreCase('true'))
                 conds.add('Is_Active__c = true');
@@ -55,7 +60,8 @@ public with sharing class KenSurveyDashboardController {
         if (!isBlankOrAll(year)) {
             try {
                 Integer y = Integer.valueOf(year);
-                conds.add('CALENDAR_YEAR(CreatedDate) = ' + y);
+                binds.put('bYear', y);
+                conds.add('CALENDAR_YEAR(CreatedDate) = :bYear');
             } catch (Exception e) { /* ignore invalid year */ }
         }
         return conds;
@@ -66,20 +72,29 @@ public with sharing class KenSurveyDashboardController {
         return ' WHERE ' + String.join(conds, ' AND ');
     }
 
-    // Responses no longer link to a survey directly; they reach it through
-    // Questionnaire_Parameter__r.Questionnaire__c, and survey -> Ken_Questionnaire__c
-    // is 1:1. Resolve the survey-level filter to its matching questionnaire ids,
-    // optionally capturing each questionnaire's survey name for relabelling.
-    private static Set<Id> questionnaireIdsForSurveys(List<String> surveyConds, Map<Id, String> nameByQuestionnaireOut) {
-        Set<Id> qIds = new Set<Id>();
-        for (Ken_Survey__c s : Database.query(
-            'SELECT Name, Ken_Questionnaire__c FROM Ken_Survey__c' + toWhere(surveyConds) + ' LIMIT 50000'
+    // Submissions link straight to the survey, so a survey-level filter resolves to the
+    // matching survey ids, keeping each survey's name for relabelling.
+    private static Map<Id, String> assessmentSurveyNames(List<String> surveyConds, Map<String, Object> binds) {
+        Map<Id, String> nameBySurvey = new Map<Id, String>();
+        for (Ken_Survey__c s : (List<Ken_Survey__c>) Database.queryWithBinds(
+            'SELECT Id, Name, Assessment_Question_Set__c FROM Ken_Survey__c' + toWhere(surveyConds) + ' LIMIT 50000',
+            binds, AccessLevel.SYSTEM_MODE
         )) {
-            if (s.Ken_Questionnaire__c == null) continue;
-            qIds.add(s.Ken_Questionnaire__c);
-            if (nameByQuestionnaireOut != null) nameByQuestionnaireOut.put(s.Ken_Questionnaire__c, s.Name);
+            if (s.Assessment_Question_Set__c == null) continue;
+            nameBySurvey.put(s.Id, s.Name);
         }
-        return qIds;
+        return nameBySurvey;
+    }
+
+    private static Set<Id> assessmentQuestionSetIds(List<String> surveyConds, Map<String, Object> binds) {
+        Set<Id> setIds = new Set<Id>();
+        for (Ken_Survey__c s : (List<Ken_Survey__c>) Database.queryWithBinds(
+            'SELECT Assessment_Question_Set__c FROM Ken_Survey__c' + toWhere(surveyConds) + ' LIMIT 50000',
+            binds, AccessLevel.SYSTEM_MODE
+        )) {
+            if (s.Assessment_Question_Set__c != null) setIds.add(s.Assessment_Question_Set__c);
+        }
+        return setIds;
     }
 
     // ── Summary Stats ────────────────────────────────────────────────────────
@@ -88,7 +103,8 @@ public with sharing class KenSurveyDashboardController {
     public static SummaryStats getSummaryStats(String approvalStatus, String isActive, String year) {
         try {
             SummaryStats stats = new SummaryStats();
-            List<String> conds = buildConds(approvalStatus, isActive, year);
+            Map<String, Object> binds = new Map<String, Object>();
+            List<String> conds = buildConds(approvalStatus, isActive, year, binds);
             String whereClause = toWhere(conds);
 
             // total, active, pending via aggregation
@@ -96,7 +112,7 @@ public with sharing class KenSurveyDashboardController {
                      + ' FROM Ken_Survey__c'
                      + whereClause
                      + ' GROUP BY Is_Active__c, Approval_Status__c';
-            for (AggregateResult ar : Database.query(q)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 Integer cnt = (Integer) ar.get('cnt');
                 stats.total += cnt;
                 if (ar.get('isAct') == true) stats.active += cnt;
@@ -104,16 +120,18 @@ public with sharing class KenSurveyDashboardController {
                 if ('Pending Approval'.equalsIgnoreCase(st)) stats.pending += cnt;
             }
 
-            // response count — responses reach the survey via the questionnaire link
-            Set<Id> qIds = questionnaireIdsForSurveys(buildConds(approvalStatus, isActive, year), null);
-            if (!qIds.isEmpty()) {
+            Map<String, Object> nameBinds = new Map<String, Object>();
+            Map<Id, String> asmtSurveys = assessmentSurveyNames(buildConds(approvalStatus, isActive, year, nameBinds), nameBinds);
+            if (!asmtSurveys.isEmpty()) {
+                Set<Id> asmtIds = asmtSurveys.keySet();
                 for (AggregateResult ar : [
                     SELECT COUNT(Id) cnt
-                    FROM Ken_Questionnaire_Parameter_Response__c
+                    FROM AssessmentQuestionResponse
                     WHERE Response_Category__c = 'Survey'
-                      AND Questionnaire_Parameter__r.Questionnaire__c IN :qIds
+                      AND Assessment.Ken_Survey__c IN :asmtIds
+                WITH USER_MODE
                 ]) {
-                    stats.responses = (Integer) ar.get('cnt');
+                    stats.responses += (Integer) ar.get('cnt');
                 }
             }
 
@@ -128,6 +146,7 @@ public with sharing class KenSurveyDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getSurveysByApprovalStatus(String isActive, String year) {
         try {
+            Map<String, Object> binds = new Map<String, Object>();
             List<String> conds = new List<String>();
             if (!isBlankOrAll(isActive)) {
                 if (isActive.equalsIgnoreCase('true'))       conds.add('Is_Active__c = true');
@@ -136,7 +155,8 @@ public with sharing class KenSurveyDashboardController {
             if (!isBlankOrAll(year)) {
                 try {
                     Integer y = Integer.valueOf(year);
-                    conds.add('CALENDAR_YEAR(CreatedDate) = ' + y);
+                    binds.put('bYear', y);
+                    conds.add('CALENDAR_YEAR(CreatedDate) = :bYear');
                 } catch (Exception e) { /* ignore */ }
             }
             String whereClause = toWhere(conds);
@@ -144,7 +164,7 @@ public with sharing class KenSurveyDashboardController {
                      + whereClause
                      + ' GROUP BY Approval_Status__c ORDER BY COUNT(Id) DESC';
             List<ChartPoint> result = new List<ChartPoint>();
-            for (AggregateResult ar : Database.query(q)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 String lbl = (String) ar.get('st');
                 result.add(new ChartPoint(String.isBlank(lbl) ? 'Unknown' : lbl, (Integer) ar.get('cnt')));
             }
@@ -159,13 +179,17 @@ public with sharing class KenSurveyDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getSurveysByActiveStatus(String approvalStatus, String year) {
         try {
+            Map<String, Object> binds = new Map<String, Object>();
             List<String> conds = new List<String>();
-            if (!isBlankOrAll(approvalStatus))
-                conds.add('Approval_Status__c = \'' + String.escapeSingleQuotes(approvalStatus) + '\'');
+            if (!isBlankOrAll(approvalStatus)) {
+                binds.put('bApproval', approvalStatus);
+                conds.add('Approval_Status__c = :bApproval');
+            }
             if (!isBlankOrAll(year)) {
                 try {
                     Integer y = Integer.valueOf(year);
-                    conds.add('CALENDAR_YEAR(CreatedDate) = ' + y);
+                    binds.put('bYear', y);
+                    conds.add('CALENDAR_YEAR(CreatedDate) = :bYear');
                 } catch (Exception e) { /* ignore */ }
             }
             String whereClause = toWhere(conds);
@@ -173,7 +197,7 @@ public with sharing class KenSurveyDashboardController {
                      + whereClause
                      + ' GROUP BY Is_Active__c ORDER BY COUNT(Id) DESC';
             List<ChartPoint> result = new List<ChartPoint>();
-            for (AggregateResult ar : Database.query(q)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
                 Boolean actVal = (Boolean) ar.get('isAct');
                 String lbl = (actVal == true) ? 'Active' : 'Inactive';
                 result.add(new ChartPoint(lbl, (Integer) ar.get('cnt')));
@@ -189,21 +213,23 @@ public with sharing class KenSurveyDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getTopSurveysByResponses(String approvalStatus, String isActive, String year) {
         try {
-            Map<Id, String> nameByQ = new Map<Id, String>();
-            Set<Id> qIds = questionnaireIdsForSurveys(buildConds(approvalStatus, isActive, year), nameByQ);
-            if (qIds.isEmpty()) return new List<ChartPoint>();
-
+            Map<String, Object> nameBinds = new Map<String, Object>();
+            Map<Id, String> asmtSurveys = assessmentSurveyNames(buildConds(approvalStatus, isActive, year, nameBinds), nameBinds);
             List<ChartPoint> result = new List<ChartPoint>();
+            if (asmtSurveys.isEmpty()) return result;
+
+            Set<Id> asmtIds = asmtSurveys.keySet();
             for (AggregateResult ar : [
-                SELECT Questionnaire_Parameter__r.Questionnaire__c qId, COUNT(Id) cnt
-                FROM Ken_Questionnaire_Parameter_Response__c
-                WHERE Questionnaire_Parameter__r.Questionnaire__c IN :qIds
+                SELECT Assessment.Ken_Survey__c sid, COUNT(Id) cnt
+                FROM AssessmentQuestionResponse
+                WHERE Assessment.Ken_Survey__c IN :asmtIds
                   AND Response_Category__c = 'Survey'
-                GROUP BY Questionnaire_Parameter__r.Questionnaire__c
+                WITH USER_MODE
+                GROUP BY Assessment.Ken_Survey__c
                 ORDER BY COUNT(Id) DESC
                 LIMIT 10
             ]) {
-                String lbl = nameByQ.get((Id) ar.get('qId'));
+                String lbl = asmtSurveys.get((Id) ar.get('sid'));
                 result.add(new ChartPoint(String.isBlank(lbl) ? 'Unknown' : lbl, (Integer) ar.get('cnt')));
             }
             return result;
@@ -217,27 +243,26 @@ public with sharing class KenSurveyDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getQuestionTypeDistribution(String approvalStatus, String isActive, String year) {
         try {
-            List<String> conds = buildConds(approvalStatus, isActive, year);
-            conds.add('Ken_Questionnaire__c != null');
-            String whereClause = toWhere(conds);
-            String surveyQ = 'SELECT Ken_Questionnaire__c FROM Ken_Survey__c' + whereClause + ' LIMIT 500';
-            Set<Id> qIds = new Set<Id>();
-            for (SObject so : Database.query(surveyQ)) {
-                Id qId = (Id) so.get('Ken_Questionnaire__c');
-                if (qId != null) qIds.add(qId);
-            }
-            if (qIds.isEmpty()) return new List<ChartPoint>();
+            Map<String, Object> setBinds = new Map<String, Object>();
+            Set<Id> asmtSetIds = assessmentQuestionSetIds(buildConds(approvalStatus, isActive, year, setBinds), setBinds);
+            if (asmtSetIds.isEmpty()) return new List<ChartPoint>();
 
-            List<ChartPoint> result = new List<ChartPoint>();
+            Map<String, Integer> byType = new Map<String, Integer>();
             for (AggregateResult ar : [
-                SELECT Question_Type__c qtype, COUNT(Id) cnt
-                FROM Ken_Questionnaire_Parameter__c
-                WHERE Questionnaire__c IN :qIds
-                GROUP BY Question_Type__c
-                ORDER BY COUNT(Id) DESC
+                SELECT Ken_Question_Type__c qtype, COUNT(Id) cnt
+                FROM AssessmentQuestionVersion
+                WHERE AssessmentQuestion.Ken_Question_Set__c IN :asmtSetIds
+                AND IsActive = true
+                WITH USER_MODE
+                GROUP BY Ken_Question_Type__c
             ]) {
                 String lbl = (String) ar.get('qtype');
-                result.add(new ChartPoint(String.isBlank(lbl) ? 'Unknown' : lbl, (Integer) ar.get('cnt')));
+                String key = String.isBlank(lbl) ? 'Unknown' : lbl;
+                byType.put(key, (byType.containsKey(key) ? byType.get(key) : 0) + (Integer) ar.get('cnt'));
+            }
+            List<ChartPoint> result = new List<ChartPoint>();
+            for (String key : byType.keySet()) {
+                result.add(new ChartPoint(key, byType.get(key)));
             }
             return result;
         } catch (Exception e) {
@@ -250,22 +275,24 @@ public with sharing class KenSurveyDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getResponseTrend(String approvalStatus, String isActive, String year) {
         try {
-            Set<Id> qIds = questionnaireIdsForSurveys(buildConds(approvalStatus, isActive, year), null);
-
             Map<Integer, Integer> monthMap = new Map<Integer, Integer>();
             for (Integer m = 1; m <= 12; m++) monthMap.put(m, 0);
 
-            if (!qIds.isEmpty()) {
+            Map<String, Object> nameBinds = new Map<String, Object>();
+            Map<Id, String> asmtSurveys = assessmentSurveyNames(buildConds(approvalStatus, isActive, year, nameBinds), nameBinds);
+            if (!asmtSurveys.isEmpty()) {
+                Set<Id> asmtIds = asmtSurveys.keySet();
                 for (AggregateResult ar : [
                     SELECT CALENDAR_MONTH(CreatedDate) mo, COUNT(Id) cnt
-                    FROM Ken_Questionnaire_Parameter_Response__c
-                    WHERE Questionnaire_Parameter__r.Questionnaire__c IN :qIds
+                    FROM AssessmentQuestionResponse
+                    WHERE Assessment.Ken_Survey__c IN :asmtIds
                       AND Response_Category__c = 'Survey'
+                    WITH USER_MODE
                     GROUP BY CALENDAR_MONTH(CreatedDate)
                 ]) {
                     Integer mo  = (Integer) ar.get('mo');
                     Integer cnt = (Integer) ar.get('cnt');
-                    if (mo != null) monthMap.put(mo, cnt);
+                    if (mo != null) monthMap.put(mo, monthMap.get(mo) + cnt);
                 }
             }
 
@@ -287,22 +314,27 @@ public with sharing class KenSurveyDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartPoint> getTopQuestionnaires(String approvalStatus, String isActive, String year) {
         try {
-            List<String> conds = buildConds(approvalStatus, isActive, year);
-            conds.add('Ken_Questionnaire__c != null');
-            String whereClause = toWhere(conds);
+            Map<String, Object> binds = new Map<String, Object>();
+            List<String> conds = buildConds(approvalStatus, isActive, year, binds);
+            conds.add('Assessment_Question_Set__c != null');
             // AutoNumber Name cannot be grouped; group by ID instead, then look up names
             Map<Id, Integer> countMap = new Map<Id, Integer>();
-            for (AggregateResult ar : Database.query(
-                'SELECT Ken_Questionnaire__c qid, COUNT(Id) cnt FROM Ken_Survey__c'
-                + whereClause
-                + ' GROUP BY Ken_Questionnaire__c ORDER BY COUNT(Id) DESC LIMIT 10'
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(
+                'SELECT Assessment_Question_Set__c qid, COUNT(Id) cnt FROM Ken_Survey__c'
+                + toWhere(conds)
+                + ' GROUP BY Assessment_Question_Set__c ORDER BY COUNT(Id) DESC LIMIT 10',
+                binds, AccessLevel.SYSTEM_MODE
             )) {
                 countMap.put((Id) ar.get('qid'), (Integer) ar.get('cnt'));
             }
+
             if (countMap.isEmpty()) return new List<ChartPoint>();
             Map<Id, String> nameMap = new Map<Id, String>();
-            for (Ken_Questionnaire__c q : [SELECT Id, Name FROM Ken_Questionnaire__c WHERE Id IN :countMap.keySet()]) {
-                nameMap.put(q.Id, q.Name);
+            for (AssessmentQuestionSet qs : [
+                SELECT Id, Name FROM AssessmentQuestionSet WHERE Id IN :countMap.keySet()
+            WITH USER_MODE
+            ]) {
+                nameMap.put(qs.Id, qs.Name);
             }
             List<ChartPoint> result = new List<ChartPoint>();
             for (Id qId : countMap.keySet()) {
@@ -327,6 +359,7 @@ public with sharing class KenSurveyDashboardController {
             for (AggregateResult ar : [
                 SELECT Approval_Status__c st FROM Ken_Survey__c
                 WHERE Approval_Status__c != null
+                WITH USER_MODE
                 GROUP BY Approval_Status__c
                 ORDER BY Approval_Status__c
             ]) {
@@ -342,6 +375,7 @@ public with sharing class KenSurveyDashboardController {
             for (AggregateResult ar : [
                 SELECT CALENDAR_YEAR(CreatedDate) yr FROM Ken_Survey__c
                 WHERE CreatedDate != null
+                WITH USER_MODE
                 GROUP BY CALENDAR_YEAR(CreatedDate)
                 ORDER BY CALENDAR_YEAR(CreatedDate) DESC
             ]) {
@@ -370,49 +404,49 @@ public with sharing class KenSurveyDashboardController {
         String approvalStatus, String isActive, String year
     ) {
         try {
-            List<String> conds = buildConds(approvalStatus, isActive, year);
+            Map<String, Object> binds = new Map<String, Object>();
+            List<String> conds = buildConds(approvalStatus, isActive, year, binds);
 
             // Apply dimension filter
             if (!String.isBlank(dimension) && !String.isBlank(dimensionValue)
                     && !dimensionValue.equalsIgnoreCase('All')) {
-                String dv = String.escapeSingleQuotes(dimensionValue);
+                binds.put('bDim', dimensionValue);
                 if (dimension == 'approval') {
-                    conds.add('Approval_Status__c = \'' + dv + '\'');
+                    conds.add('Approval_Status__c = :bDim');
                 } else if (dimension == 'active') {
                     if (dimensionValue.equalsIgnoreCase('Active'))
                         conds.add('Is_Active__c = true');
                     else
                         conds.add('Is_Active__c = false');
                 } else if (dimension == 'questionnaire') {
-                    conds.add('Ken_Questionnaire__r.Name = \'' + dv + '\'');
+                    conds.add('Assessment_Question_Set__r.Name = :bDim');
                 }
             }
 
             String whereClause = toWhere(conds);
-            String q = 'SELECT Id, Name, Ken_Questionnaire__c, Ken_Questionnaire__r.Name, Approval_Status__c,'
-                     + ' Is_Active__c, Target_Audience__c, Start_Date__c, End_Date__c'
+            String q = 'SELECT Id, Name, Approval_Status__c,'
+                     + ' Is_Active__c, Target_Audience__c, Start_Date__c, End_Date__c,'
+                     + ' Assessment_Question_Set__c, Assessment_Question_Set__r.Name'
                      + ' FROM Ken_Survey__c'
                      + whereClause
                      + ' ORDER BY CreatedDate DESC LIMIT 500';
-            List<Ken_Survey__c> surveys = Database.query(q);
+            List<Ken_Survey__c> surveys = (List<Ken_Survey__c>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE);
 
-            // Build response count map — responses reach the survey via the questionnaire link
-            Map<Id, Id> surveyByQ = new Map<Id, Id>();
+            Set<Id> asmtSurveyIds = new Set<Id>();
             for (Ken_Survey__c s : surveys) {
-                if (s.Ken_Questionnaire__c != null) surveyByQ.put(s.Ken_Questionnaire__c, s.Id);
+                if (s.Assessment_Question_Set__c != null) asmtSurveyIds.add(s.Id);
             }
             Map<Id, Integer> respCountMap = new Map<Id, Integer>();
-            if (!surveyByQ.isEmpty()) {
-                Set<Id> qIds = surveyByQ.keySet();
+            if (!asmtSurveyIds.isEmpty()) {
                 for (AggregateResult ar : [
-                    SELECT Questionnaire_Parameter__r.Questionnaire__c qId, COUNT(Id) cnt
-                    FROM Ken_Questionnaire_Parameter_Response__c
-                    WHERE Questionnaire_Parameter__r.Questionnaire__c IN :qIds
+                    SELECT Assessment.Ken_Survey__c sid, COUNT(Id) cnt
+                    FROM AssessmentQuestionResponse
+                    WHERE Assessment.Ken_Survey__c IN :asmtSurveyIds
                       AND Response_Category__c = 'Survey'
-                    GROUP BY Questionnaire_Parameter__r.Questionnaire__c
+                    WITH USER_MODE
+                    GROUP BY Assessment.Ken_Survey__c
                 ]) {
-                    Id qId = (Id) ar.get('qId');
-                    if (surveyByQ.containsKey(qId)) respCountMap.put(surveyByQ.get(qId), (Integer) ar.get('cnt'));
+                    respCountMap.put((Id) ar.get('sid'), (Integer) ar.get('cnt'));
                 }
             }
 
@@ -421,7 +455,8 @@ public with sharing class KenSurveyDashboardController {
                 SurveyListRecord rec     = new SurveyListRecord();
                 rec.id                   = s.Id;
                 rec.name                 = s.Name;
-                rec.questionnaire        = s.Ken_Questionnaire__r != null ? s.Ken_Questionnaire__r.Name : null;
+                rec.questionnaire        = s.Assessment_Question_Set__r != null
+                    ? s.Assessment_Question_Set__r.Name : null;
                 rec.approvalStatus       = s.Approval_Status__c;
                 rec.isActive             = s.Is_Active__c;
                 rec.targetAudience       = s.Target_Audience__c;
@@ -446,31 +481,33 @@ public with sharing class KenSurveyDashboardController {
         String approvalStatus, String isActive, String year
     ) {
         try {
-            // Survey-level filter (responses reach the survey via the questionnaire link)
-            List<String> sConds = buildConds(approvalStatus, isActive, year);
-            if (!String.isBlank(surveyName))
-                sConds.add('Name = \'' + String.escapeSingleQuotes(surveyName) + '\'');
-            Map<Id, String> nameByQ = new Map<Id, String>();
-            Set<Id> qIds = questionnaireIdsForSurveys(sConds, nameByQ);
-            if (qIds.isEmpty()) return new List<ResponseListRecord>();
-
+            Map<String, Object> binds = new Map<String, Object>();
+            List<String> sConds = buildConds(approvalStatus, isActive, year, binds);
+            if (!String.isBlank(surveyName)) {
+                binds.put('bSurveyName', surveyName);
+                sConds.add('Name = :bSurveyName');
+            }
+            Map<Id, String> asmtSurveys = assessmentSurveyNames(sConds, binds);
             List<ResponseListRecord> result = new List<ResponseListRecord>();
-            for (Ken_Questionnaire_Parameter_Response__c r : [
-                SELECT Id, Respondent__r.Name, Questionnaire_Parameter__r.Questionnaire__c,
-                       Question_Label__c, Response__c, CreatedDate
-                FROM Ken_Questionnaire_Parameter_Response__c
+            if (asmtSurveys.isEmpty()) return result;
+
+            Set<Id> asmtIds = asmtSurveys.keySet();
+            for (AssessmentQuestionResponse r : [
+                SELECT Id, Assessment.Ken_Survey__c, Assessment.Respondent__r.Name,
+                       Question_Label__c, ResponseText, CreatedDate
+                FROM AssessmentQuestionResponse
                 WHERE Response_Category__c = 'Survey'
-                  AND Questionnaire_Parameter__r.Questionnaire__c IN :qIds
+                  AND Assessment.Ken_Survey__c IN :asmtIds
+                WITH USER_MODE
                 ORDER BY CreatedDate DESC
                 LIMIT 500
             ]) {
                 ResponseListRecord rec = new ResponseListRecord();
-                rec.id            = r.Id;
-                rec.respondentName = r.Respondent__r != null ? r.Respondent__r.Name : null;
-                rec.surveyName     = (r.Questionnaire_Parameter__r != null)
-                    ? nameByQ.get(r.Questionnaire_Parameter__r.Questionnaire__c) : null;
+                rec.id             = r.Id;
+                rec.respondentName = (r.Assessment.Respondent__r != null) ? r.Assessment.Respondent__r.Name : null;
+                rec.surveyName     = asmtSurveys.get(r.Assessment.Ken_Survey__c);
                 rec.questionLabel  = r.Question_Label__c;
-                rec.response       = r.Response__c;
+                rec.response       = r.ResponseText;
                 rec.createdDate    = r.CreatedDate != null ? String.valueOf(r.CreatedDate.date()) : null;
                 result.add(rec);
             }

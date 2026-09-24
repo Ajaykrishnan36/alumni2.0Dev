@@ -1,6 +1,26 @@
 public without sharing class KenReferralService {
 
     /**
+     * Lets a test state which Account the caller belongs to.
+     *
+     * The real lookup needs a running community user, and creating one means inserting a portal
+     * User against a person Account. Concurrent portal-user inserts contend on shared rows, so
+     * under a full parallel RunLocalTests that insert intermittently throws UNABLE_TO_LOCK_ROW
+     * and fails a test that has nothing wrong with it. getReferralLink_noAccount still runs the
+     * real query path with the seam unset.
+     */
+    @TestVisible
+    private static Id testRunningAccountId;
+
+    private static Id runningAccountId() {
+        if (Test.isRunningTest() && testRunningAccountId != null) {
+            return testRunningAccountId;
+        }
+        User u = [SELECT AccountId FROM User WHERE Id = :UserInfo.getUserId() WITH SYSTEM_MODE LIMIT 1];
+        return u.AccountId;
+    }
+
+    /**
      * Returns the full referral invite link for the currently logged-in community user.
      * On first call, generates and stores a random referral code on the user's Account.
      * Subsequent calls return the same link (code is stable).
@@ -9,17 +29,20 @@ public without sharing class KenReferralService {
     @AuraEnabled(cacheable=false)
     public static String getReferralLink() {
         try {
-            User u = [SELECT AccountId FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1];
-            if (u.AccountId == null) return null;
+            Id accountId = runningAccountId();
+            if (accountId == null) return null;
 
-            Account acct = [SELECT Id, Referral_Code__c FROM Account WHERE Id = :u.AccountId LIMIT 1];
+            Account acct = [SELECT Id, Referral_Code__c FROM Account WHERE Id = :accountId WITH SECURITY_ENFORCED LIMIT 1];
 
             if (String.isBlank(acct.Referral_Code__c)) {
                 acct.Referral_Code__c = generateCode();
+                if (!Schema.sObjectType.Account.isUpdateable()) {
+                    throw new KenCrudException('Account is not updateable by the current user.');
+                }
                 update acct;
             }
 
-            Alumni_Org_Parameters__c params = Alumni_Org_Parameters__c.getOrgDefaults();
+            Ken_Alm_Org_Parameters__c params = Ken_Alm_Org_Parameters__c.getOrgDefaults();
             String portalUrl = (params != null && String.isNotBlank(params.Portal_URL__c))
                 ? params.Portal_URL__c.removeEnd('/')
                 : null;
@@ -38,7 +61,9 @@ public without sharing class KenReferralService {
     public static Id resolveReferrerAccountId(String code) {
         if (String.isBlank(code)) return null;
         List<Account> matches = [
-            SELECT Id FROM Account WHERE Referral_Code__c = :code LIMIT 1
+            SELECT Id FROM Account WHERE Referral_Code__c = :code
+            WITH SECURITY_ENFORCED
+            LIMIT 1
         ];
         return matches.isEmpty() ? null : matches[0].Id;
     }

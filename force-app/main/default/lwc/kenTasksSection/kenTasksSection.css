@@ -14,8 +14,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .tasks-header {
@@ -88,7 +86,6 @@
     border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
     border-radius: var(--portal-radius, 12px);
     padding: 1.15rem 1.2rem 1rem;
-    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
     transition: box-shadow 0.2s;
 }
 

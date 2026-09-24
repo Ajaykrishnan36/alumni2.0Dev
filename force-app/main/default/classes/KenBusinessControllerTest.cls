@@ -1,7 +1,7 @@
 @IsTest
 private class KenBusinessControllerTest {
 
-    private static final String ALUMNI_RT   = 'Alumni_Person_Account';
+    private static final String ALUMNI_RT   = 'PersonAccount';
     private static final String BUSINESS_RT = 'Business';
     private static final String OWNER_RT    = 'Business_Owner';
 
@@ -13,7 +13,7 @@ private class KenBusinessControllerTest {
         if (!rts.isEmpty()) {
             return rts[0].Id;
         }
-        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account']) {
+        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account' AND IsActive = true]) {
             if (rt.IsPersonType) {
                 return rt.Id;
             }
@@ -30,11 +30,33 @@ private class KenBusinessControllerTest {
     }
 
     private static Id getOwnerJunctionRtId() {
-        List<RecordType> rts = [
-            SELECT Id FROM RecordType
-            WHERE SObjectType = 'Ken_Business_Directory__c' AND DeveloperName = :OWNER_RT LIMIT 1
-        ];
-        return rts.isEmpty() ? null : rts[0].Id;
+        return Schema.SObjectType.Ken_Business_Directory__c.getRecordTypeInfosByDeveloperName().get(OWNER_RT)?.getRecordTypeId();
+    }
+
+    private static Boolean hasPersonAccountField = Ken_Business_Directory__c.SObjectType
+        .getDescribe().fields.getMap().containsKey('Person_Account__c');
+
+    /**
+     * Stamps the person side of a business-directory junction. Person_Account__c is a
+     * required field in the KJS orgs but does not exist in every client org, so it is
+     * set dynamically to keep this class compiling and inserting everywhere.
+     */
+    private static void stampPersonAccount(Ken_Business_Directory__c link, Id personAccountId) {
+        if (hasPersonAccountField && personAccountId != null) {
+            link.put('Person_Account__c', personAccountId);
+        }
+    }
+
+    /**
+     * Resolves the person account behind a constituent role, only in orgs that
+     * actually have Person_Account__c so no query is burned elsewhere.
+     */
+    private static Id personAccountForRole(Id roleId) {
+        if (!hasPersonAccountField || roleId == null) {
+            return null;
+        }
+        List<ConstituentRole> roles = [SELECT PersonId FROM ConstituentRole WHERE Id = :roleId LIMIT 1];
+        return roles.isEmpty() ? null : roles[0].PersonId;
     }
 
     private static Id createAlumniRole(Id personAccountId) {
@@ -103,6 +125,7 @@ private class KenBusinessControllerTest {
             Constituent_Role__c = ownerRoleId,
             Business_Account__c = bizAcc.Id
         );
+        stampPersonAccount(link, ownerAcc.Id);
         if (ownerRtId != null) {
             link.RecordTypeId = ownerRtId;
         }
@@ -116,7 +139,7 @@ private class KenBusinessControllerTest {
 
         System.runAs(runAsUser) {
             Test.startTest();
-            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getAllBusinesses(null);
+            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getAllBusinesses();
             Test.stopTest();
 
             System.assertNotEquals(null, rows, 'getAllBusinesses should not return null');
@@ -127,26 +150,26 @@ private class KenBusinessControllerTest {
     @IsTest
     static void testGetMyBusinessesWithCurrentAccount() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         Test.startTest();
-        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses(null);
+        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses();
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assertNotEquals(null, rows, 'getMyBusinesses should not return null for an owner');
         System.assertEquals(true, rows.size() >= 1, 'Owner should see at least one business');
     }
 
     @IsTest
     static void testGetMyBusinessesNoCurrentAccount() {
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
 
         Test.startTest();
-        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses(null);
+        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses();
         Test.stopTest();
 
         System.assertNotEquals(null, rows, 'getMyBusinesses should return empty list, not null, for no user');
@@ -158,7 +181,7 @@ private class KenBusinessControllerTest {
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
 
         Test.startTest();
-        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(bizAcc.Id, null);
+        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(bizAcc.Id);
         Test.stopTest();
 
         System.assertNotEquals(null, row, 'getBusinessById should return a row for a valid business Id');
@@ -168,7 +191,7 @@ private class KenBusinessControllerTest {
     @IsTest
     static void testGetBusinessByIdNullId() {
         Test.startTest();
-        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(null, null);
+        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(null);
         Test.stopTest();
 
         System.assertEquals(null, row, 'getBusinessById should return null when Id is null');
@@ -177,8 +200,8 @@ private class KenBusinessControllerTest {
     @IsTest
     static void testCreateBusinessSuccess() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         Map<String, Object> req = new Map<String, Object>{
             'businessName' => 'New Test Business',
@@ -193,11 +216,11 @@ private class KenBusinessControllerTest {
         };
 
         Test.startTest();
-        Id bizId = KenBusinessController.createBusiness(req, null);
+        Id bizId = KenBusinessController.createBusiness(req);
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assertNotEquals(null, bizId, 'createBusiness should return the new business Id');
 
         Account created = [SELECT Name, Business_Approval__c FROM Account WHERE Id = :bizId LIMIT 1];
@@ -208,40 +231,40 @@ private class KenBusinessControllerTest {
     @IsTest
     static void testCreateBusinessNullRequestThrowsException() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         try {
             Test.startTest();
-            KenBusinessController.createBusiness(null, null);
+            KenBusinessController.createBusiness(null);
             Test.stopTest();
             System.assert(false, 'Expected AuraHandledException for null request');
         } catch (AuraHandledException ex) {
             System.assertNotEquals(null, ex.getMessage(), 'Exception message should not be null');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
     @IsTest
     static void testCreateBusinessMissingNameThrowsException() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         Map<String, Object> req = new Map<String, Object>{ 'businessType' => 'Retail' };
 
         try {
             Test.startTest();
-            KenBusinessController.createBusiness(req, null);
+            KenBusinessController.createBusiness(req);
             Test.stopTest();
             System.assert(false, 'Expected AuraHandledException when business name is missing');
         } catch (AuraHandledException ex) {
             System.assertNotEquals(null, ex.getMessage(), 'Exception message should not be null');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
@@ -249,8 +272,8 @@ private class KenBusinessControllerTest {
     static void testUpdateBusinessSuccess() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
         Account bizAcc   = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         Map<String, Object> req = new Map<String, Object>{
             'id'           => (String) bizAcc.Id,
@@ -263,11 +286,11 @@ private class KenBusinessControllerTest {
         };
 
         Test.startTest();
-        Id result = KenBusinessController.updateBusiness(req, null);
+        Id result = KenBusinessController.updateBusiness(req);
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assertEquals(bizAcc.Id, result, 'updateBusiness should return the updated business Id');
 
         Account updated = [SELECT Name FROM Account WHERE Id = :bizAcc.Id LIMIT 1];
@@ -282,8 +305,8 @@ private class KenBusinessControllerTest {
         bizAcc.Feature_Subject__c = 'Please feature us';
         bizAcc.Feature_Message__c = 'We are great';
         update bizAcc;
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         Map<String, Object> req = new Map<String, Object>{
             'id'           => (String) bizAcc.Id,
@@ -291,11 +314,11 @@ private class KenBusinessControllerTest {
             'businessType' => 'Technology'
         };
         Test.startTest();
-        KenBusinessController.updateBusiness(req, null);
+        KenBusinessController.updateBusiness(req);
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         Account after = [
             SELECT Business_Feature_Approval__c, Feature_Subject__c, Feature_Message__c
             FROM Account WHERE Id = :bizAcc.Id
@@ -314,8 +337,8 @@ private class KenBusinessControllerTest {
         }
         insert otherAcc;
         Id otherRoleId = createAlumniRole(otherAcc.Id);
-        KenBusinessController.testCurrentAccountId = otherAcc.Id;
-        KenBusinessController.testCurrentRoleId = otherRoleId;
+        KenConstituentRoleService.testCurrentAccountId = otherAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = otherRoleId;
 
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
         Map<String, Object> req = new Map<String, Object>{
@@ -325,14 +348,14 @@ private class KenBusinessControllerTest {
 
         try {
             Test.startTest();
-            KenBusinessController.updateBusiness(req, null);
+            KenBusinessController.updateBusiness(req);
             Test.stopTest();
             System.assert(false, 'Expected AuraHandledException for access denied');
         } catch (AuraHandledException ex) {
             System.assertNotEquals(null, ex.getMessage(), 'Exception message should not be null');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
@@ -355,7 +378,7 @@ private class KenBusinessControllerTest {
         insert hiddenBiz;
 
         Test.startTest();
-        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(hiddenBiz.Id, null);
+        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(hiddenBiz.Id);
         Test.stopTest();
 
         System.assertNotEquals(null, row, 'Row should not be null for valid business Id');
@@ -385,14 +408,14 @@ private class KenBusinessControllerTest {
         if (bizRt != null) { biz.RecordTypeId = bizRt; }
         insert biz;
 
-        KenBusinessController.testCurrentAccountId = interested.Id;
-        KenBusinessController.testCurrentRoleId = interestedRoleId;
+        KenConstituentRoleService.testCurrentAccountId = interested.Id;
+        KenConstituentRoleService.testCurrentRoleId = interestedRoleId;
         Test.startTest();
-        KenBusinessController.expressInterest(biz.Id, 'Interested in products', 'Please contact me', null);
+        KenBusinessController.expressInterest(biz.Id, 'Interested in products', 'Please contact me');
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         List<Ken_Business_Directory__c> prospects = [
             SELECT Subject__c, Message__c, Constituent_Role__c, RecordType.DeveloperName
             FROM Ken_Business_Directory__c
@@ -403,6 +426,86 @@ private class KenBusinessControllerTest {
         System.assertEquals('Interested in products', prospects[0].Subject__c, 'Subject stored');
         System.assertEquals('Please contact me', prospects[0].Message__c, 'Message stored');
     }
+    @IsTest
+    static void expressInterestNotifiesOwner() {
+        Id paRt = getPersonAccountRtId();
+        Account owner = new Account(FirstName = 'Biz', LastName = 'OwnerNotify', PersonEmail = 'biz.owner.notify@test.example.com');
+        if (paRt != null) { owner.RecordTypeId = paRt; }
+        insert owner;
+        Id ownerRoleId = createAlumniRole(owner.Id);
+
+        Account interested = new Account(FirstName = 'Keen', LastName = 'BuyerNotify', PersonEmail = 'keen.buyer.notify@test.example.com');
+        if (paRt != null) { interested.RecordTypeId = paRt; }
+        insert interested;
+        Id interestedRoleId = createAlumniRole(interested.Id);
+
+        Id bizRt = getBusinessRtId();
+        Account biz = new Account(
+            Name = 'Notify Biz', Business_Type__c = 'Technology',
+            Business_Approval__c = 'Approved', Is_Active__c = true,
+            Business_Owner_Role__c = ownerRoleId
+        );
+        if (bizRt != null) { biz.RecordTypeId = bizRt; }
+        insert biz;
+
+        KenConstituentRoleService.testCurrentAccountId = interested.Id;
+        KenConstituentRoleService.testCurrentRoleId = interestedRoleId;
+        Test.startTest();
+        KenBusinessController.expressInterest(biz.Id, 'Want to partner', 'Call me');
+        Test.stopTest();
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
+
+        List<Ken_Notification__c> notifs = [
+            SELECT Recipient__c, Category__c, Title__c, Body__c, Target_Url__c, Is_Read__c
+            FROM Ken_Notification__c
+            WHERE Recipient__c = :owner.Id
+        ];
+        System.assertEquals(1, notifs.size(), 'The business owner should get exactly one notification');
+        System.assertEquals('Business', notifs[0].Category__c, 'Category should be Business');
+        System.assert(notifs[0].Title__c.contains('Notify Biz'),
+            'Title should name the business, was: ' + notifs[0].Title__c);
+        System.assertEquals('Want to partner', notifs[0].Body__c, 'Body carries the subject the alumnus typed');
+        System.assert(notifs[0].Target_Url__c.contains(biz.Id),
+            'Target URL should deep-link to the business, was: ' + notifs[0].Target_Url__c);
+        System.assertEquals(false, notifs[0].Is_Read__c, 'A new notification starts unread');
+    }
+
+    @IsTest
+    static void expressInterestTwiceNotifiesOnlyOnce() {
+        Id paRt = getPersonAccountRtId();
+        Account owner = new Account(FirstName = 'Biz', LastName = 'OwnerOnce', PersonEmail = 'biz.owner.once@test.example.com');
+        if (paRt != null) { owner.RecordTypeId = paRt; }
+        insert owner;
+        Id ownerRoleId = createAlumniRole(owner.Id);
+
+        Account interested = new Account(FirstName = 'Repeat', LastName = 'BuyerOnce', PersonEmail = 'repeat.buyer.once@test.example.com');
+        if (paRt != null) { interested.RecordTypeId = paRt; }
+        insert interested;
+        Id interestedRoleId = createAlumniRole(interested.Id);
+
+        Id bizRt = getBusinessRtId();
+        Account biz = new Account(
+            Name = 'Once Biz', Business_Type__c = 'Technology',
+            Business_Approval__c = 'Approved', Is_Active__c = true,
+            Business_Owner_Role__c = ownerRoleId
+        );
+        if (bizRt != null) { biz.RecordTypeId = bizRt; }
+        insert biz;
+
+        KenConstituentRoleService.testCurrentAccountId = interested.Id;
+        KenConstituentRoleService.testCurrentRoleId = interestedRoleId;
+        Test.startTest();
+        KenBusinessController.expressInterest(biz.Id, 'First go', 'msg one');
+        KenBusinessController.expressInterest(biz.Id, 'Second go', 'msg two');
+        Test.stopTest();
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
+
+        System.assertEquals(1, [SELECT COUNT() FROM Ken_Notification__c WHERE Recipient__c = :owner.Id],
+            'Re-expressing interest edits the same prospect and must not notify the owner again');
+    }
+
 
     @IsTest
     static void ownerCannotExpressInterest() {
@@ -421,18 +524,18 @@ private class KenBusinessControllerTest {
         if (bizRt != null) { biz.RecordTypeId = bizRt; }
         insert biz;
 
-        KenBusinessController.testCurrentAccountId = owner.Id;
-        KenBusinessController.testCurrentRoleId = ownerRoleId;
+        KenConstituentRoleService.testCurrentAccountId = owner.Id;
+        KenConstituentRoleService.testCurrentRoleId = ownerRoleId;
         Test.startTest();
         Boolean threw = false;
         try {
-            KenBusinessController.expressInterest(biz.Id, 'x', 'y', null);
+            KenBusinessController.expressInterest(biz.Id, 'x', 'y');
         } catch (Exception e) {
             threw = true;
         }
         Test.stopTest();
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assert(threw, 'Owner should not be able to express interest in their own business');
         System.assertEquals(
             0,
@@ -461,7 +564,7 @@ private class KenBusinessControllerTest {
         insert diffCat;
 
         Test.startTest();
-        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getSimilarBusinesses(current.Id, 'Retail', null);
+        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getSimilarBusinesses(current.Id, 'Retail');
         Test.stopTest();
 
         Set<Id> ids = new Set<Id>();
@@ -491,7 +594,7 @@ private class KenBusinessControllerTest {
         insert new List<Account>{ feat, notFeat };
 
         Test.startTest();
-        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getFeaturedBusinesses(null);
+        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getFeaturedBusinesses();
         Test.stopTest();
 
         Set<Id> ids = new Set<Id>();
@@ -504,15 +607,15 @@ private class KenBusinessControllerTest {
     static void requestFeatureSetsPending() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         Test.startTest();
-        KenBusinessController.requestFeature(bizAcc.Id, 'Please feature us', 'We are launching a new product line.', Date.today().addDays(1), Date.today().addDays(15), null);
+        KenBusinessController.requestFeature(bizAcc.Id, 'Please feature us', 'We are launching a new product line.', Date.today().addDays(1), Date.today().addDays(15));
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         Account after = [SELECT Business_Feature_Approval__c, Feature_Subject__c, Feature_Message__c FROM Account WHERE Id = :bizAcc.Id];
         System.assertEquals('Pending Approval', after.Business_Feature_Approval__c, 'Feature request should set status to Pending Approval');
         System.assertEquals('Please feature us', after.Feature_Subject__c, 'Subject should be stored');
@@ -523,20 +626,20 @@ private class KenBusinessControllerTest {
     static void requestFeatureRequiresSubjectAndMessage() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         Boolean threw = false;
         Test.startTest();
         try {
-            KenBusinessController.requestFeature(bizAcc.Id, '', '', null, null, null);
+            KenBusinessController.requestFeature(bizAcc.Id, '', '', null, null);
         } catch (Exception e) {
             threw = true;
         }
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assertEquals(true, threw, 'Blank subject/message should be rejected');
     }
 
@@ -545,15 +648,15 @@ private class KenBusinessControllerTest {
     static void setBusinessActiveDeactivatesSuccess() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
         Account bizAcc   = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
 
         Test.startTest();
-        KenBusinessController.setBusinessActive(bizAcc.Id, false, null);
+        KenBusinessController.setBusinessActive(bizAcc.Id, false);
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assertEquals(false, [SELECT Is_Active__c FROM Account WHERE Id = :bizAcc.Id].Is_Active__c, 'Business should be de-activated');
     }
 
@@ -564,14 +667,14 @@ private class KenBusinessControllerTest {
         bizAcc.Is_Active__c = false;
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Test.startTest();
-        KenBusinessController.setBusinessActive(bizAcc.Id, true, null);
+        KenBusinessController.setBusinessActive(bizAcc.Id, true);
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assertEquals(true, [SELECT Is_Active__c FROM Account WHERE Id = :bizAcc.Id].Is_Active__c, 'Business should be re-activated');
     }
 
@@ -582,15 +685,15 @@ private class KenBusinessControllerTest {
         bizAcc.Business_Approval__c = 'Pending';
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Boolean threw = false;
         Test.startTest();
-        try { KenBusinessController.setBusinessActive(bizAcc.Id, false, null); } catch (Exception e) { threw = true; }
+        try { KenBusinessController.setBusinessActive(bizAcc.Id, false); } catch (Exception e) { threw = true; }
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assert(threw, 'setBusinessActive must throw when business is in review');
     }
 
@@ -601,15 +704,15 @@ private class KenBusinessControllerTest {
         bizAcc.Business_Feature_Approval__c = 'Pending Approval';
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Boolean threw = false;
         Test.startTest();
-        try { KenBusinessController.setBusinessActive(bizAcc.Id, false, null); } catch (Exception e) { threw = true; }
+        try { KenBusinessController.setBusinessActive(bizAcc.Id, false); } catch (Exception e) { threw = true; }
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assert(threw, 'setBusinessActive must throw when feature approval is pending');
     }
 
@@ -632,17 +735,18 @@ private class KenBusinessControllerTest {
 
         Ken_Business_Directory__c link = new Ken_Business_Directory__c(
             Constituent_Role__c = delOwnerRoleId, Business_Account__c = delBiz.Id);
+        stampPersonAccount(link, delOwner.Id);
         if (ownerRtId != null) { link.RecordTypeId = ownerRtId; }
         insert link;
 
-        KenBusinessController.testCurrentAccountId = delOwner.Id;
-        KenBusinessController.testCurrentRoleId = delOwnerRoleId;
+        KenConstituentRoleService.testCurrentAccountId = delOwner.Id;
+        KenConstituentRoleService.testCurrentRoleId = delOwnerRoleId;
         Test.startTest();
-        KenBusinessController.deleteBusiness(delBiz.Id, null);
+        KenBusinessController.deleteBusiness(delBiz.Id);
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         Account afterDelete = [SELECT Business_Approval__c FROM Account WHERE Id = :delBiz.Id];
         System.assertEquals('Pending Deletion', afterDelete.Business_Approval__c, 'Business should be marked Pending Deletion');
         System.assertEquals(1, [SELECT COUNT() FROM Ken_Business_Directory__c WHERE Business_Account__c = :delBiz.Id], 'Junction records should remain until deletion is approved');
@@ -655,15 +759,15 @@ private class KenBusinessControllerTest {
         bizAcc.Business_Approval__c = 'Pending';
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Boolean threw = false;
         Test.startTest();
-        try { KenBusinessController.deleteBusiness(bizAcc.Id, null); } catch (Exception e) { threw = true; }
+        try { KenBusinessController.deleteBusiness(bizAcc.Id); } catch (Exception e) { threw = true; }
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assert(threw, 'deleteBusiness must throw when business is in review');
         System.assertEquals(1, [SELECT COUNT() FROM Account WHERE Id = :bizAcc.Id], 'Business must not be deleted');
     }
@@ -675,15 +779,15 @@ private class KenBusinessControllerTest {
         bizAcc.Business_Feature_Approval__c = 'Pending Approval';
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Boolean threw = false;
         Test.startTest();
-        try { KenBusinessController.deleteBusiness(bizAcc.Id, null); } catch (Exception e) { threw = true; }
+        try { KenBusinessController.deleteBusiness(bizAcc.Id); } catch (Exception e) { threw = true; }
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assert(threw, 'deleteBusiness must throw when feature approval is pending');
         System.assertEquals(1, [SELECT COUNT() FROM Account WHERE Id = :bizAcc.Id], 'Business must not be deleted');
     }
@@ -697,15 +801,15 @@ private class KenBusinessControllerTest {
         Id nonOwnerRoleId = createAlumniRole(nonOwner.Id);
 
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = nonOwner.Id;
-        KenBusinessController.testCurrentRoleId = nonOwnerRoleId;
+        KenConstituentRoleService.testCurrentAccountId = nonOwner.Id;
+        KenConstituentRoleService.testCurrentRoleId = nonOwnerRoleId;
         Boolean threw = false;
         Test.startTest();
-        try { KenBusinessController.deleteBusiness(bizAcc.Id, null); } catch (Exception e) { threw = true; }
+        try { KenBusinessController.deleteBusiness(bizAcc.Id); } catch (Exception e) { threw = true; }
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assert(threw, 'Non-owner must not be able to delete');
         System.assertEquals(1, [SELECT COUNT() FROM Account WHERE Id = :bizAcc.Id], 'Business must remain');
     }
@@ -720,14 +824,14 @@ private class KenBusinessControllerTest {
         bizAcc.Feature_Message__c = 'Old message';
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Test.startTest();
-        KenBusinessController.removeFeature(bizAcc.Id, null);
+        KenBusinessController.removeFeature(bizAcc.Id);
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         Account after = [SELECT Business_Feature_Approval__c, Feature_Subject__c, Feature_Message__c FROM Account WHERE Id = :bizAcc.Id];
         System.assertEquals(null, after.Business_Feature_Approval__c, 'Feature status should be cleared');
         System.assertEquals(null, after.Feature_Subject__c, 'Feature subject should be cleared');
@@ -741,15 +845,15 @@ private class KenBusinessControllerTest {
         bizAcc.Business_Feature_Approval__c = 'Pending Approval';
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Boolean threw = false;
         Test.startTest();
-        try { KenBusinessController.removeFeature(bizAcc.Id, null); } catch (Exception e) { threw = true; }
+        try { KenBusinessController.removeFeature(bizAcc.Id); } catch (Exception e) { threw = true; }
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assert(threw, 'removeFeature must throw when feature approval is pending');
     }
 
@@ -758,15 +862,15 @@ private class KenBusinessControllerTest {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
         Account bizAcc   = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Boolean threw = false;
         Test.startTest();
-        try { KenBusinessController.removeFeature(bizAcc.Id, null); } catch (Exception e) { threw = true; }
+        try { KenBusinessController.removeFeature(bizAcc.Id); } catch (Exception e) { threw = true; }
         Test.stopTest();
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         System.assert(threw, 'removeFeature must throw when business is not featured');
     }
 
@@ -784,7 +888,7 @@ private class KenBusinessControllerTest {
 
         System.runAs(runAsUser) {
             Test.startTest();
-            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getAllBusinesses(null);
+            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getAllBusinesses();
             Test.stopTest();
 
             for (KenBusinessController.BusinessRow r : rows) {
@@ -813,7 +917,7 @@ private class KenBusinessControllerTest {
         insert active;
 
         Test.startTest();
-        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getSimilarBusinesses(current.Id, 'Finance', null);
+        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getSimilarBusinesses(current.Id, 'Finance');
         Test.stopTest();
 
         Set<Id> ids = new Set<Id>();
@@ -824,11 +928,7 @@ private class KenBusinessControllerTest {
     }
 
     private static Id getProspectJunctionRtId() {
-        List<RecordType> rts = [
-            SELECT Id FROM RecordType
-            WHERE SObjectType = 'Ken_Business_Directory__c' AND DeveloperName = 'Business_Prospect' LIMIT 1
-        ];
-        return rts.isEmpty() ? null : rts[0].Id;
+        return Schema.SObjectType.Ken_Business_Directory__c.getRecordTypeInfosByDeveloperName().get('Business_Prospect')?.getRecordTypeId();
     }
 
     private static Account createPerson(String firstName, String lastName) {
@@ -857,6 +957,7 @@ private class KenBusinessControllerTest {
             Constituent_Role__c = roleId,
             Business_Account__c = accountId
         );
+        stampPersonAccount(link, personAccountForRole(roleId));
         Id ownerRtId = getOwnerJunctionRtId();
         if (ownerRtId != null) { link.RecordTypeId = ownerRtId; }
         insert link;
@@ -866,16 +967,16 @@ private class KenBusinessControllerTest {
     static void getMyBusinessesEmptyWhenNoOwnerLinks() {
         Account lone = createPerson('Lone', 'RoleNoBiz');
         Id loneRoleId = createAlumniRole(lone.Id);
-        KenBusinessController.testCurrentAccountId = lone.Id;
-        KenBusinessController.testCurrentRoleId = loneRoleId;
+        KenConstituentRoleService.testCurrentAccountId = lone.Id;
+        KenConstituentRoleService.testCurrentRoleId = loneRoleId;
         try {
             Test.startTest();
-            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses(null);
+            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses();
             Test.stopTest();
             System.assertEquals(0, rows.size(), 'Role with no owner junctions should get an empty list');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
@@ -890,11 +991,11 @@ private class KenBusinessControllerTest {
         linkOwner(roleId, featRej.Id);
         linkOwner(roleId, bizRej.Id);
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = roleId;
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = roleId;
         try {
             Test.startTest();
-            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses(null);
+            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses();
             Test.stopTest();
             Map<Id, KenBusinessController.BusinessRow> byId = new Map<Id, KenBusinessController.BusinessRow>();
             for (KenBusinessController.BusinessRow r : rows) { byId.put(r.id, r); }
@@ -905,8 +1006,8 @@ private class KenBusinessControllerTest {
             System.assertEquals(null, byId.get(featRej.Id).featureRejectionReason, 'No approval steps exist so no feature rejection comment');
             System.assertEquals(null, byId.get(bizRej.Id).rejectionReason, 'No approval steps exist so no business rejection comment');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
@@ -914,7 +1015,7 @@ private class KenBusinessControllerTest {
     static void getBusinessByIdReturnsNullForNonBusinessAccount() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
         Test.startTest();
-        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(ownerAcc.Id, null);
+        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(ownerAcc.Id);
         Test.stopTest();
         System.assertEquals(null, row, 'A non-business account Id should return null');
     }
@@ -927,8 +1028,8 @@ private class KenBusinessControllerTest {
         Account bizRej = createBiz('ById Business Rejected', 'Technology', 'Rejected', true);
 
         Test.startTest();
-        KenBusinessController.BusinessRow featRow = KenBusinessController.getBusinessById(featRej.Id, null);
-        KenBusinessController.BusinessRow rejRow = KenBusinessController.getBusinessById(bizRej.Id, null);
+        KenBusinessController.BusinessRow featRow = KenBusinessController.getBusinessById(featRej.Id);
+        KenBusinessController.BusinessRow rejRow = KenBusinessController.getBusinessById(bizRej.Id);
         Test.stopTest();
 
         System.assertEquals('Rejected', featRow.featureStatus, 'Feature status should be Rejected');
@@ -949,48 +1050,50 @@ private class KenBusinessControllerTest {
             Subject__c = 'Hi',
             Message__c = 'Interested'
         );
+        stampPersonAccount(prospect, viewer.Id);
         Id prospectRtId = getProspectJunctionRtId();
         if (prospectRtId != null) { prospect.RecordTypeId = prospectRtId; }
         insert prospect;
 
-        KenBusinessController.testCurrentAccountId = viewer.Id;
-        KenBusinessController.testCurrentRoleId = viewerRoleId;
+        KenConstituentRoleService.testCurrentAccountId = viewer.Id;
+        KenConstituentRoleService.testCurrentRoleId = viewerRoleId;
         try {
             Test.startTest();
-            KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(bizAcc.Id, null);
+            KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(bizAcc.Id);
             Test.stopTest();
             System.assertEquals(false, row.isOwner, 'Viewer is not the owner');
             System.assertEquals(true, row.interestExpressed, 'Existing prospect junction should mark interest as expressed');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
     @IsTest
-    static void getBusinessByIdWithExplicitRoleParam() {
+    static void getBusinessByIdResolvesRoleFromService() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
         Id roleId = getRoleIdFor(ownerAcc.Id);
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
         bizAcc.Business_Owner_Role__c = roleId;
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = roleId;
         Test.startTest();
-        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(bizAcc.Id, roleId);
+        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(bizAcc.Id);
         Test.stopTest();
+        KenConstituentRoleService.testCurrentRoleId = null;
 
-        System.assertNotEquals(null, row, 'Row should resolve when role is passed explicitly');
-        System.assertEquals(true, row.isOwner, 'Explicit role matching Business_Owner_Role__c should mark owner');
+        System.assertNotEquals(null, row, 'Row should resolve when the service resolves the role');
+        System.assertEquals(true, row.isOwner, 'Resolved role matching Business_Owner_Role__c should mark owner');
     }
 
     @IsTest
     static void getSimilarBusinessesBlankOrUnknownCategory() {
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
         Test.startTest();
-        List<KenBusinessController.BusinessRow> blankRows = KenBusinessController.getSimilarBusinesses(bizAcc.Id, '', null);
-        List<KenBusinessController.BusinessRow> unknownRows = KenBusinessController.getSimilarBusinesses(bizAcc.Id, 'ZZZ No Such Category', null);
+        List<KenBusinessController.BusinessRow> blankRows = KenBusinessController.getSimilarBusinesses(bizAcc.Id, '');
+        List<KenBusinessController.BusinessRow> unknownRows = KenBusinessController.getSimilarBusinesses(bizAcc.Id, 'ZZZ No Such Category');
         Test.stopTest();
         System.assertEquals(0, blankRows.size(), 'Blank category should short-circuit to an empty list');
         System.assertEquals(0, unknownRows.size(), 'Unknown category should return an empty list');
@@ -999,16 +1102,16 @@ private class KenBusinessControllerTest {
     @IsTest
     static void createBusinessMissingTypeThrows() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Boolean threw = false;
         try {
-            KenBusinessController.createBusiness(new Map<String, Object>{ 'businessName' => 'No Type Biz' }, null);
+            KenBusinessController.createBusiness(new Map<String, Object>{ 'businessName' => 'No Type Biz' });
         } catch (AuraHandledException e) {
             threw = true;
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
         System.assert(threw, 'Missing business type must throw');
     }
@@ -1016,8 +1119,8 @@ private class KenBusinessControllerTest {
     @IsTest
     static void createBusinessWithImagesAndStringBooleans() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Map<String, Object> req = new Map<String, Object>{
             'businessName'       => 'Image Upload Biz',
             'businessType'       => 'Technology',
@@ -1030,7 +1133,7 @@ private class KenBusinessControllerTest {
         };
         try {
             Test.startTest();
-            Id bizId = KenBusinessController.createBusiness(req, null);
+            Id bizId = KenBusinessController.createBusiness(req);
             Test.stopTest();
             System.assertNotEquals(null, bizId, 'Business should be created');
             Account created = [SELECT Hide_Business_Phone__c, Hide_Business_Email__c FROM Account WHERE Id = :bizId];
@@ -1038,8 +1141,8 @@ private class KenBusinessControllerTest {
             System.assertEquals(true, created.Hide_Business_Email__c, 'String yes should coerce to boolean true');
             System.assertEquals(2, [SELECT COUNT() FROM ContentVersion WHERE Title IN ('cover.png', 'logo.png')], 'Cover and logo files should be uploaded');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
@@ -1049,17 +1152,17 @@ private class KenBusinessControllerTest {
         Boolean threwNoId = false;
         Boolean threwBadId = false;
         try {
-            KenBusinessController.updateBusiness(null, null);
+            KenBusinessController.updateBusiness(null);
         } catch (AuraHandledException e) {
             threwNullReq = true;
         }
         try {
-            KenBusinessController.updateBusiness(new Map<String, Object>{ 'businessName' => 'X' }, null);
+            KenBusinessController.updateBusiness(new Map<String, Object>{ 'businessName' => 'X' });
         } catch (AuraHandledException e) {
             threwNoId = true;
         }
         try {
-            KenBusinessController.updateBusiness(new Map<String, Object>{ 'id' => 'not-a-valid-id' }, null);
+            KenBusinessController.updateBusiness(new Map<String, Object>{ 'id' => 'not-a-valid-id' });
         } catch (AuraHandledException e) {
             threwBadId = true;
         }
@@ -1075,16 +1178,16 @@ private class KenBusinessControllerTest {
         Account target = createPerson('Not', 'ABusiness');
         linkOwner(editorRoleId, target.Id);
 
-        KenBusinessController.testCurrentAccountId = editor.Id;
-        KenBusinessController.testCurrentRoleId = editorRoleId;
+        KenConstituentRoleService.testCurrentAccountId = editor.Id;
+        KenConstituentRoleService.testCurrentRoleId = editorRoleId;
         Boolean threw = false;
         try {
-            KenBusinessController.updateBusiness(new Map<String, Object>{ 'id' => (String) target.Id, 'businessName' => 'X' }, null);
+            KenBusinessController.updateBusiness(new Map<String, Object>{ 'id' => (String) target.Id, 'businessName' => 'X' });
         } catch (AuraHandledException e) {
             threw = true;
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
         System.assert(threw, 'Junction pointing at a non-business account must throw Business not found');
     }
@@ -1096,8 +1199,8 @@ private class KenBusinessControllerTest {
         bizAcc.Business_Approval__c = 'Pending';
         update bizAcc;
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = getRoleIdFor(ownerAcc.Id);
         Map<String, Object> req = new Map<String, Object>{
             'id'                 => (String) bizAcc.Id,
             'businessName'       => 'Alpha Pending Edit',
@@ -1109,7 +1212,7 @@ private class KenBusinessControllerTest {
         };
         try {
             Test.startTest();
-            Id result = KenBusinessController.updateBusiness(req, null);
+            Id result = KenBusinessController.updateBusiness(req);
             Test.stopTest();
             System.assertEquals(bizAcc.Id, result, 'Update should return the business Id');
             Account after = [SELECT Name, Business_Approval__c FROM Account WHERE Id = :bizAcc.Id];
@@ -1117,8 +1220,8 @@ private class KenBusinessControllerTest {
             System.assertEquals('Pending', after.Business_Approval__c, 'Pending business should stay Pending after resubmit');
             System.assertEquals(2, [SELECT COUNT() FROM ContentVersion WHERE Title IN ('ucover.png', 'ulogo.png')], 'Updated cover and logo files should be uploaded');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
@@ -1129,17 +1232,17 @@ private class KenBusinessControllerTest {
         Boolean threwNullDates = false;
         Boolean threwReversedDates = false;
         try {
-            KenBusinessController.requestFeature(null, 's', 'm', Date.today(), Date.today().addDays(5), null);
+            KenBusinessController.requestFeature(null, 's', 'm', Date.today(), Date.today().addDays(5));
         } catch (AuraHandledException e) {
             threwNullBiz = true;
         }
         try {
-            KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', null, null, null);
+            KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', null, null);
         } catch (AuraHandledException e) {
             threwNullDates = true;
         }
         try {
-            KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', Date.today().addDays(5), Date.today(), null);
+            KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', Date.today().addDays(5), Date.today());
         } catch (AuraHandledException e) {
             threwReversedDates = true;
         }
@@ -1151,12 +1254,12 @@ private class KenBusinessControllerTest {
     @IsTest
     static void requestFeatureAccessDeniedForInternalUserWithoutRole() {
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = null;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = null;
+        KenConstituentRoleService.testCurrentRoleId = null;
         Boolean threw = false;
         Test.startTest();
         try {
-            KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', Date.today(), Date.today().addDays(5), null);
+            KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', Date.today(), Date.today().addDays(5));
         } catch (AuraHandledException e) {
             threw = true;
         }
@@ -1172,21 +1275,21 @@ private class KenBusinessControllerTest {
         Account target = createPerson('Feat', 'NotABiz');
         linkOwner(roleId, target.Id);
 
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = roleId;
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = roleId;
         Boolean threwNotFound = false;
         Boolean threwNotApproved = false;
         Boolean threwAlreadyPending = false;
         try {
             try {
-                KenBusinessController.requestFeature(target.Id, 's', 'm', Date.today(), Date.today().addDays(5), null);
+                KenBusinessController.requestFeature(target.Id, 's', 'm', Date.today(), Date.today().addDays(5));
             } catch (AuraHandledException e) {
                 threwNotFound = true;
             }
             bizAcc.Business_Approval__c = 'Pending';
             update bizAcc;
             try {
-                KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', Date.today(), Date.today().addDays(5), null);
+                KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', Date.today(), Date.today().addDays(5));
             } catch (AuraHandledException e) {
                 threwNotApproved = true;
             }
@@ -1194,13 +1297,13 @@ private class KenBusinessControllerTest {
             bizAcc.Business_Feature_Approval__c = 'Pending Approval';
             update bizAcc;
             try {
-                KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', Date.today(), Date.today().addDays(5), null);
+                KenBusinessController.requestFeature(bizAcc.Id, 's', 'm', Date.today(), Date.today().addDays(5));
             } catch (AuraHandledException e) {
                 threwAlreadyPending = true;
             }
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
         System.assert(threwNotFound, 'Non-business junction target must throw not found');
         System.assert(threwNotApproved, 'Non-approved business must not request feature');
@@ -1219,26 +1322,26 @@ private class KenBusinessControllerTest {
         Boolean threwDenied = false;
         Boolean threwNotFound = false;
         try {
-            KenBusinessController.setBusinessActive(null, true, null);
+            KenBusinessController.setBusinessActive(null, true);
         } catch (AuraHandledException e) {
             threwNullId = true;
         }
-        KenBusinessController.testCurrentAccountId = stranger.Id;
-        KenBusinessController.testCurrentRoleId = strangerRoleId;
+        KenConstituentRoleService.testCurrentAccountId = stranger.Id;
+        KenConstituentRoleService.testCurrentRoleId = strangerRoleId;
         try {
             try {
-                KenBusinessController.setBusinessActive(bizAcc.Id, false, null);
+                KenBusinessController.setBusinessActive(bizAcc.Id, false);
             } catch (AuraHandledException e) {
                 threwDenied = true;
             }
             try {
-                KenBusinessController.setBusinessActive(target.Id, true, null);
+                KenBusinessController.setBusinessActive(target.Id, true);
             } catch (AuraHandledException e) {
                 threwNotFound = true;
             }
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
         System.assert(threwNullId, 'Null business must throw');
         System.assert(threwDenied, 'Non-owner must be denied');
@@ -1257,28 +1360,28 @@ private class KenBusinessControllerTest {
         Boolean threwNotFound = false;
         Boolean threwAlreadyPending = false;
         try {
-            KenBusinessController.deleteBusiness(null, null);
+            KenBusinessController.deleteBusiness(null);
         } catch (AuraHandledException e) {
             threwNullId = true;
         }
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = roleId;
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = roleId;
         try {
             try {
-                KenBusinessController.deleteBusiness(target.Id, null);
+                KenBusinessController.deleteBusiness(target.Id);
             } catch (AuraHandledException e) {
                 threwNotFound = true;
             }
             bizAcc.Business_Approval__c = 'Pending Deletion';
             update bizAcc;
             try {
-                KenBusinessController.deleteBusiness(bizAcc.Id, null);
+                KenBusinessController.deleteBusiness(bizAcc.Id);
             } catch (AuraHandledException e) {
                 threwAlreadyPending = true;
             }
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
         System.assert(threwNullId, 'Null business must throw');
         System.assert(threwNotFound, 'Non-business junction target must throw not found');
@@ -1295,18 +1398,18 @@ private class KenBusinessControllerTest {
         Boolean threwNullId = false;
         Boolean threwNotFound = false;
         try {
-            KenBusinessController.approveBusinessDeletion(null, null);
+            KenBusinessController.approveBusinessDeletion(null);
         } catch (AuraHandledException e) {
             threwNullId = true;
         }
         try {
-            KenBusinessController.approveBusinessDeletion(ownerAcc.Id, null);
+            KenBusinessController.approveBusinessDeletion(ownerAcc.Id);
         } catch (AuraHandledException e) {
             threwNotFound = true;
         }
 
         Test.startTest();
-        KenBusinessController.approveBusinessDeletion(bizAcc.Id, null);
+        KenBusinessController.approveBusinessDeletion(bizAcc.Id);
         Test.stopTest();
 
         Account after = [SELECT Business_Approval__c, Is_Active__c FROM Account WHERE Id = :bizAcc.Id];
@@ -1326,18 +1429,18 @@ private class KenBusinessControllerTest {
         Boolean threwNullId = false;
         Boolean threwNotFound = false;
         try {
-            KenBusinessController.dismissBusinessDeletion(null, null);
+            KenBusinessController.dismissBusinessDeletion(null);
         } catch (AuraHandledException e) {
             threwNullId = true;
         }
         try {
-            KenBusinessController.dismissBusinessDeletion(ownerAcc.Id, null);
+            KenBusinessController.dismissBusinessDeletion(ownerAcc.Id);
         } catch (AuraHandledException e) {
             threwNotFound = true;
         }
 
         Test.startTest();
-        KenBusinessController.dismissBusinessDeletion(bizAcc.Id, null);
+        KenBusinessController.dismissBusinessDeletion(bizAcc.Id);
         Test.stopTest();
 
         Account after = [SELECT Business_Approval__c FROM Account WHERE Id = :bizAcc.Id];
@@ -1358,26 +1461,26 @@ private class KenBusinessControllerTest {
         Boolean threwDenied = false;
         Boolean threwNotFound = false;
         try {
-            KenBusinessController.removeFeature(null, null);
+            KenBusinessController.removeFeature(null);
         } catch (AuraHandledException e) {
             threwNullId = true;
         }
-        KenBusinessController.testCurrentAccountId = stranger.Id;
-        KenBusinessController.testCurrentRoleId = strangerRoleId;
+        KenConstituentRoleService.testCurrentAccountId = stranger.Id;
+        KenConstituentRoleService.testCurrentRoleId = strangerRoleId;
         try {
             try {
-                KenBusinessController.removeFeature(bizAcc.Id, null);
+                KenBusinessController.removeFeature(bizAcc.Id);
             } catch (AuraHandledException e) {
                 threwDenied = true;
             }
             try {
-                KenBusinessController.removeFeature(target.Id, null);
+                KenBusinessController.removeFeature(target.Id);
             } catch (AuraHandledException e) {
                 threwNotFound = true;
             }
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
         System.assert(threwNullId, 'Null business must throw');
         System.assert(threwDenied, 'Non-owner must be denied');
@@ -1394,7 +1497,7 @@ private class KenBusinessControllerTest {
         Account activeBiz = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
 
         Test.startTest();
-        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getAdminBusinessList(null);
+        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getAdminBusinessList();
         Test.stopTest();
 
         Map<Id, String> statusById = new Map<Id, String>();
@@ -1421,7 +1524,7 @@ private class KenBusinessControllerTest {
         Account noFeature = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
 
         Test.startTest();
-        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getAdminFeatureList(null);
+        List<KenBusinessController.BusinessRow> rows = KenBusinessController.getAdminFeatureList();
         Test.stopTest();
 
         Map<Id, KenBusinessController.BusinessRow> byId = new Map<Id, KenBusinessController.BusinessRow>();
@@ -1442,24 +1545,24 @@ private class KenBusinessControllerTest {
         Id ghostId = ghost.Id;
         delete ghost;
 
-        KenBusinessController.testCurrentAccountId = viewer.Id;
-        KenBusinessController.testCurrentRoleId = viewerRoleId;
+        KenConstituentRoleService.testCurrentAccountId = viewer.Id;
+        KenConstituentRoleService.testCurrentRoleId = viewerRoleId;
         Boolean threwNullId = false;
         Boolean threwNotFound = false;
         try {
             try {
-                KenBusinessController.expressInterest(null, 's', 'm', null);
+                KenBusinessController.expressInterest(null, 's', 'm');
             } catch (AuraHandledException e) {
                 threwNullId = true;
             }
             try {
-                KenBusinessController.expressInterest(ghostId, 's', 'm', null);
+                KenBusinessController.expressInterest(ghostId, 's', 'm');
             } catch (AuraHandledException e) {
                 threwNotFound = true;
             }
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
         System.assert(threwNullId, 'Null business must throw');
         System.assert(threwNotFound, 'Deleted business must throw not found');
@@ -1471,16 +1574,16 @@ private class KenBusinessControllerTest {
         Id viewerRoleId = createAlumniRole(viewer.Id);
         Account bizAcc = [SELECT Id FROM Account WHERE Name = 'Test Business Alpha' LIMIT 1];
 
-        KenBusinessController.testCurrentAccountId = viewer.Id;
-        KenBusinessController.testCurrentRoleId = viewerRoleId;
+        KenConstituentRoleService.testCurrentAccountId = viewer.Id;
+        KenConstituentRoleService.testCurrentRoleId = viewerRoleId;
         try {
             Test.startTest();
-            KenBusinessController.expressInterest(bizAcc.Id, 'First subject', 'First message', null);
-            KenBusinessController.expressInterest(bizAcc.Id, 'Second subject', 'Second message', null);
+            KenBusinessController.expressInterest(bizAcc.Id, 'First subject', 'First message');
+            KenBusinessController.expressInterest(bizAcc.Id, 'Second subject', 'Second message');
             Test.stopTest();
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
         List<Ken_Business_Directory__c> prospects = [
             SELECT Subject__c, Message__c FROM Ken_Business_Directory__c
@@ -1494,16 +1597,16 @@ private class KenBusinessControllerTest {
     @IsTest
     static void getMyBusinessesResolvesRoleFromAccountSeam() {
         Account ownerAcc = [SELECT Id FROM Account WHERE LastName = 'Owner' LIMIT 1];
-        KenBusinessController.testCurrentAccountId = ownerAcc.Id;
-        KenBusinessController.testCurrentRoleId = null;
+        KenConstituentRoleService.testCurrentAccountId = ownerAcc.Id;
+        KenConstituentRoleService.testCurrentRoleId = null;
         try {
             Test.startTest();
-            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses(null);
+            List<KenBusinessController.BusinessRow> rows = KenBusinessController.getMyBusinesses();
             Test.stopTest();
             System.assert(rows.size() >= 1, 'Role resolved from the account seam should find the owned business');
         } finally {
-            KenBusinessController.testCurrentAccountId = null;
-            KenBusinessController.testCurrentRoleId = null;
+            KenConstituentRoleService.testCurrentAccountId = null;
+            KenConstituentRoleService.testCurrentRoleId = null;
         }
     }
 
@@ -1531,8 +1634,8 @@ private class KenBusinessControllerTest {
         insert new List<Account>{ shortPhoneBiz, blankPhoneBiz };
 
         Test.startTest();
-        KenBusinessController.BusinessRow shortRow = KenBusinessController.getBusinessById(shortPhoneBiz.Id, null);
-        KenBusinessController.BusinessRow blankRow = KenBusinessController.getBusinessById(blankPhoneBiz.Id, null);
+        KenBusinessController.BusinessRow shortRow = KenBusinessController.getBusinessById(shortPhoneBiz.Id);
+        KenBusinessController.BusinessRow blankRow = KenBusinessController.getBusinessById(blankPhoneBiz.Id);
         Test.stopTest();
 
         System.assertEquals('**', shortRow.phone, 'Phones of 2 or fewer digits should mask to **');
@@ -1549,13 +1652,14 @@ private class KenBusinessControllerTest {
         Ken_Business_Directory__c nullRoleLink = new Ken_Business_Directory__c(
             Business_Account__c = biz.Id
         );
+        stampPersonAccount(nullRoleLink, solo.Id);
         Id ownerRtId = getOwnerJunctionRtId();
         if (ownerRtId != null) { nullRoleLink.RecordTypeId = ownerRtId; }
         insert nullRoleLink;
         linkOwner(soloRoleId, biz.Id);
 
         Test.startTest();
-        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(biz.Id, null);
+        KenBusinessController.BusinessRow row = KenBusinessController.getBusinessById(biz.Id);
         Test.stopTest();
 
         System.assertNotEquals(null, row.ownerName, 'Owner name should resolve from the junction');

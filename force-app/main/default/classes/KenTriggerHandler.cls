@@ -53,22 +53,16 @@ public virtual class KenTriggerHandler {
     }
   }
     
-  @SuppressWarnings('PMD.EmptyStatementBlock')
   protected virtual void processBeforeInsert() {
   }
-  @SuppressWarnings('PMD.EmptyStatementBlock')
   protected virtual void processAfterInsert() {
   }
-  @SuppressWarnings('PMD.EmptyStatementBlock')
   protected virtual void processBeforeUpdate() {
   }
-  @SuppressWarnings('PMD.EmptyStatementBlock')
   protected virtual void processAfterUpdate() {
   }
-  @SuppressWarnings('PMD.EmptyStatementBlock')
   protected virtual void processAfterDelete() {
   }
-  @SuppressWarnings('PMD.EmptyStatementBlock')
   protected virtual void processAfterUndelete() {
   }
 }

@@ -12,23 +12,27 @@ public with sharing class KenApprovalProcessHelper {
       * @param comments                     Optional. Defaults to 'Auto-submitted for approval' when blank.
       * @throws IllegalArgumentException    When required parameters are missing.
       */
-     @SuppressWarnings('PMD.ExcessiveParameterList')
     
     // Test seam: lets tests bypass the Approval.process() call which can take minutes when
     // ProcessInstance/Workitem inserts fail repeatedly on prod-style profile restrictions.
     @TestVisible private static Boolean testBypassApprovalSubmission = true;
 
+    // Records what WOULD have been submitted while the bypass above is on, so tests can assert
+    // that a record reached the approval process without paying for a real Approval.process().
+    @TestVisible private static List<Id> testSubmittedRecordIds = new List<Id>();
+
     public static void submitForApproval(Id recordId, String processDefinitionNameOrId, Id submitterId, String comments){
         try{
-            if (Test.isRunningTest() && testBypassApprovalSubmission) {
-                return;
-            }
             Approval.ProcessSubmitRequest req = new Approval.ProcessSubmitRequest();
             req.setObjectId(recordId);
             req.setSubmitterId(submitterId != null ? submitterId : UserInfo.getUserId());
             req.setComments(String.isBlank(comments) ? 'Auto-submitted for approval' : comments);
-            req.setProcessDefinitionNameOrId(processDefinitionNameOrId); req.setComments(comments != null ? comments : 'Auto-submitted for approval');
             req.setProcessDefinitionNameOrId(processDefinitionNameOrId);
+
+            if (Test.isRunningTest() && testBypassApprovalSubmission) {
+                testSubmittedRecordIds.add(recordId);
+                return;
+            }
 
             Approval.process(req);
 

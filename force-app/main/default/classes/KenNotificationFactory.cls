@@ -52,6 +52,7 @@ public without sharing class KenNotificationFactory {
             : new Map<Id, Account>([
                 SELECT Id, Name, FirstName, LastName, PhotoUrl
                 FROM Account WHERE Id IN :acctIds
+            WITH SECURITY_ENFORCED
             ]);
         Map<Id, String> imageByAcct = lookupProfileImages(acctIds);
 
@@ -72,6 +73,9 @@ public without sharing class KenNotificationFactory {
             Target_Url__c    = resolveTargetUrl(tpl.Target_Url__c, ctx),
             Is_Read__c       = false
         );
+        if (!Schema.sObjectType.Ken_Notification__c.isCreateable()) {
+            throw new KenCrudException('Ken_Notification__c is not createable by the current user.');
+        }
         insert row;
         return row.Id;
     }
@@ -103,6 +107,7 @@ public without sharing class KenNotificationFactory {
             : new Map<Id, Account>([
                 SELECT Id, Name, FirstName, LastName, PhotoUrl
                 FROM Account WHERE Id IN :acctIds
+            WITH SECURITY_ENFORCED
             ]);
         Map<Id, String> imageByAcct = lookupProfileImages(acctIds);
         Set<Id> recipientIds = new Set<Id>();
@@ -138,6 +143,9 @@ public without sharing class KenNotificationFactory {
         if (rows.isEmpty()) {
             return resultIds;
         }
+        if (!Schema.sObjectType.Ken_Notification__c.isCreateable()) {
+            throw new KenCrudException('Ken_Notification__c is not createable by the current user.');
+        }
         insert rows;
         for (Ken_Notification__c n : rows) {
             resultIds.add(n.Id);
@@ -166,6 +174,7 @@ public without sharing class KenNotificationFactory {
                   AND Is_Read__c = false
                   AND Is_Broadcast__c = false
                   AND Target_Url__c != null
+                WITH SECURITY_ENFORCED
                 LIMIT 2000
             ]) {
                 for (Id sourceId : sourceRecordIds) {
@@ -177,6 +186,9 @@ public without sharing class KenNotificationFactory {
                 }
             }
             if (!toUpdate.isEmpty()) {
+                if (!Schema.sObjectType.Ken_Notification__c.isUpdateable()) {
+                    throw new KenCrudException('Ken_Notification__c is not updateable by the current user.');
+                }
                 update toUpdate;
             }
         } catch (Exception e) {
@@ -263,6 +275,7 @@ public without sharing class KenNotificationFactory {
                    Mute_Notifications_Start_Time__c, Mute_Notifications_End_Time__c
             FROM Ken_Alumni_Preferences__c
             WHERE Person_Account__c IN :acctIds
+        WITH SECURITY_ENFORCED
         ]) {
             if (p.Person_Account__c != null) out.put(p.Person_Account__c, p);
         }
@@ -301,7 +314,11 @@ public without sharing class KenNotificationFactory {
         Time muteStart = pref.Mute_Notifications_Start_Time__c;
         Time muteEnd   = pref.Mute_Notifications_End_Time__c;
         if (muteStart != null && muteEnd != null) {
-            Time now = Datetime.now().time();
+            // The window is stored as a UTC wall clock (see the "UTC wall-clock
+            // Time fields" note in KenProfileSettingsController), so compare
+            // against UTC. Datetime.now().time() would return the running user's
+            // local time and mute notifications 5:30 off in this org.
+            Time now = Datetime.now().timeGmt();
             Boolean wraps = muteStart > muteEnd; // crosses midnight
             Boolean inWindow = wraps
                 ? (now >= muteStart || now < muteEnd)
@@ -312,26 +329,6 @@ public without sharing class KenNotificationFactory {
     }
 
     private static Map<Id, String> lookupProfileImages(Set<Id> acctIds) {
-        Map<Id, String> out = new Map<Id, String>();
-        if (acctIds == null || acctIds.isEmpty()) return out;
-        Map<Id, String> crmByAcct = new Map<Id, String>();
-        for (Ken_Alumni_CRM__c crm : [
-            SELECT Person_Account__c, Profile_Photo_URL__c
-            FROM Ken_Alumni_CRM__c
-            WHERE Person_Account__c IN :acctIds
-        ]) {
-            if (String.isNotBlank(crm.Profile_Photo_URL__c)) {
-                crmByAcct.put(crm.Person_Account__c, crm.Profile_Photo_URL__c);
-            }
-        }
-        String orgDomain = URL.getOrgDomainUrl().toExternalForm();
-        for (Account a : [SELECT Id, PhotoUrl FROM Account WHERE Id IN :acctIds]) {
-            if (crmByAcct.containsKey(a.Id)) {
-                out.put(a.Id, crmByAcct.get(a.Id));
-            } else if (String.isNotBlank(a.PhotoUrl)) {
-                out.put(a.Id, orgDomain + a.PhotoUrl);
-            }
-        }
-        return out;
+        return KenGroupFeedService.lookupProfileImages(acctIds);
     }
 }

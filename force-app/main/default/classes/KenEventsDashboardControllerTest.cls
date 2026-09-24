@@ -4,7 +4,7 @@ private class KenEventsDashboardControllerTest {
     @TestSetup
     static void makeData() {
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account').getRecordTypeId();
+            .get('PersonAccount').getRecordTypeId();
         Account attendee = new Account(
             RecordTypeId = paRtId,
             LastName = 'Test Attendee',
@@ -32,13 +32,13 @@ private class KenEventsDashboardControllerTest {
 
         Ken_Schedule_Sessions__c sess1 = new Ken_Schedule_Sessions__c(
             Name='Session 1', Event_Reference__c=evt1.Id,
-            Start_Date__c=Date.newInstance(2024,3,10),
-            End_Date__c=Date.newInstance(2024,3,11), No_Fee__c=false
+            Start_DateTime__c=DateTime.newInstance(Date.newInstance(2024,3,10), Time.newInstance(10,0,0,0)),
+            End_DateTime__c=DateTime.newInstance(Date.newInstance(2024,3,11), Time.newInstance(11,0,0,0)), No_Fee__c=false
         );
         Ken_Schedule_Sessions__c sess2 = new Ken_Schedule_Sessions__c(
             Name='Session 2', Event_Reference__c=evt2.Id,
-            Start_Date__c=Date.newInstance(2023,6,15),
-            End_Date__c=Date.newInstance(2023,6,16), No_Fee__c=true
+            Start_DateTime__c=DateTime.newInstance(Date.newInstance(2023,6,15), Time.newInstance(10,0,0,0)),
+            End_DateTime__c=DateTime.newInstance(Date.newInstance(2023,6,16), Time.newInstance(11,0,0,0)), No_Fee__c=true
         );
         insert new List<Ken_Schedule_Sessions__c>{ sess1, sess2 };
 

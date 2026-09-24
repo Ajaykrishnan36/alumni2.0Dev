@@ -185,7 +185,7 @@ private class KenNotificationFactoryTest {
     private static Account createAlumniPersonAccount(String firstName, String lastName, String email) {
         Id paRtId = [
             SELECT Id FROM RecordType
-            WHERE SObjectType = 'Account' AND DeveloperName = 'Alumni_Person_Account' LIMIT 1
+            WHERE SObjectType = 'Account' AND DeveloperName = 'PersonAccount' LIMIT 1
         ].Id;
         return new Account(
             RecordTypeId = paRtId,

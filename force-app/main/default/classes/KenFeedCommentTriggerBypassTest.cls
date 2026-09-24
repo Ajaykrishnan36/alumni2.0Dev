@@ -1,5 +1,5 @@
 /**
- * Covers the KenFeedCommentTrigger bypass path (Alumni_Trigger_Settings__c.Feed_Comment_Trigger__c).
+ * Covers the KenFeedCommentTrigger bypass path (Ken_Alm_Bypass_Settings__c.Skip_Feed_Comment_Trigger__c).
  * The real handler behaviour is covered by KenFeedCommentTriggerHandlerTest (separate module);
  * this only exercises the trigger's early-return guard so the trigger reaches full coverage.
  */
@@ -10,7 +10,7 @@ private class KenFeedCommentTriggerBypassTest {
     static void bypassFlagSuppressesProcessing() {
         Id paRtId = [
             SELECT Id FROM RecordType
-            WHERE SObjectType = 'Account' AND DeveloperName = 'Alumni_Person_Account' LIMIT 1
+            WHERE SObjectType = 'Account' AND DeveloperName = 'PersonAccount' LIMIT 1
         ].Id;
         Account admin = new Account(
             RecordTypeId = paRtId, FirstName = 'FeedC', LastName = 'Admin',
@@ -30,7 +30,7 @@ private class KenFeedCommentTriggerBypassTest {
         insert fi;
 
         // Enable the bypass flag → trigger should early-return without invoking the handler.
-        insert new Alumni_Trigger_Settings__c(Feed_Comment_Trigger__c = true);
+        insert new Ken_Alm_Bypass_Settings__c(Skip_Feed_Comment_Trigger__c = true);
 
         Test.startTest();
         FeedComment fc = new FeedComment(FeedItemId = fi.Id, CommentBody = 'bypassed comment');

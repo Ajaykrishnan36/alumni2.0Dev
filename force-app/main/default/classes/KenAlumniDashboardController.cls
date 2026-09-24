@@ -66,6 +66,7 @@ public with sharing class KenAlumniDashboardController {
         for (ConstituentRole cr : [
             SELECT PersonId FROM ConstituentRole
             WHERE RoleType = 'Alumni' AND PersonId != null
+            WITH USER_MODE
             LIMIT :MAX_ROWS
         ]) {
             ids.add(cr.PersonId);
@@ -73,18 +74,28 @@ public with sharing class KenAlumniDashboardController {
         return ids;
     }
 
+    // Filter values travel as bind variables rather than being escaped into the query
+    // text. Each bind is added to the map in the same branch that adds the condition
+    // referencing it, so a clause can never name a bind the map is missing.
     private static Set<Id> getFilteredAlumniIds(String fb, String fy, String fs) {
+        Map<String, Object> binds = new Map<String, Object>();
         List<String> conds = new List<String>{ 'RoleType = \'Alumni\'', 'PersonId != null' };
-        if (!String.isBlank(fb) && fb != 'All')
-            conds.add('Program_Plan__c = \'' + String.escapeSingleQuotes(fb) + '\'');
-        if (!String.isBlank(fy) && fy != 'All')
-            conds.add('Graduation_Year__c = \'' + String.escapeSingleQuotes(fy) + '\'');
-        if (!String.isBlank(fs) && fs != 'All')
-            conds.add('Status = \'' + String.escapeSingleQuotes(fs) + '\'');
+        if (!String.isBlank(fb) && fb != 'All') {
+            binds.put('bBatch', fb);
+            conds.add('Program_Plan__c = :bBatch');
+        }
+        if (!String.isBlank(fy) && fy != 'All') {
+            binds.put('bYear', fy);
+            conds.add('Graduation_Year__c = :bYear');
+        }
+        if (!String.isBlank(fs) && fs != 'All') {
+            binds.put('bStatus', fs);
+            conds.add('Status = :bStatus');
+        }
         String q = 'SELECT PersonId FROM ConstituentRole WHERE '
             + String.join(conds, ' AND ') + ' LIMIT ' + MAX_ROWS;
         Set<Id> ids = new Set<Id>();
-        for (SObject so : Database.query(q)) {
+        for (SObject so : Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE)) {
             Id pid = (Id) so.get('PersonId');
             if (pid != null) ids.add(pid);
         }
@@ -105,7 +116,9 @@ public with sharing class KenAlumniDashboardController {
 
         Map<Id, Account> accMap = new Map<Id, Account>([
             SELECT Id, Name, PersonMobilePhone, Phone, PersonEmail, BillingCountry
-            FROM Account WHERE Id IN :ids LIMIT :MAX_ALUMNI_LIST
+            FROM Account WHERE Id IN :ids
+            WITH USER_MODE
+            LIMIT :MAX_ALUMNI_LIST
         ]);
 
         Map<Id, ConstituentRole> crMap = new Map<Id, ConstituentRole>();
@@ -113,6 +126,7 @@ public with sharing class KenAlumniDashboardController {
             SELECT PersonId, Program_Plan__r.Name, Graduation_Year__c, Status
             FROM ConstituentRole
             WHERE PersonId IN :ids AND RoleType = 'Alumni'
+            WITH USER_MODE
             LIMIT :MAX_ALUMNI_LIST
         ]) {
             crMap.put(cr.PersonId, cr);
@@ -147,31 +161,37 @@ public with sharing class KenAlumniDashboardController {
         for (Id id : alumniIds) scoreMap.put(id, 0);
 
         for (Account acc : [
-            SELECT Id, PersonEmail, PersonMobilePhone, Description, Linkedin_Profile_URL__c
-            FROM Account WHERE Id IN :alumniIds LIMIT :MAX_ROWS
+            SELECT Id, PersonEmail, PersonMobilePhone, Description, Linkedin_Profile_URL__c, Profile_Photo_URL__c
+            FROM Account WHERE Id IN :alumniIds
+            WITH USER_MODE
+            LIMIT :MAX_ROWS
         ]) {
             Integer s = 0;
             if (!String.isBlank(acc.PersonEmail))               s++;
             if (!String.isBlank(acc.PersonMobilePhone))         s++;
             if (!String.isBlank(acc.Description))               s++;
             if (!String.isBlank(acc.Linkedin_Profile_URL__c))   s++;
+            if (!String.isBlank(acc.Profile_Photo_URL__c))      s++;
             scoreMap.put(acc.Id, s);
         }
 
-        for (Ken_Alumni_CRM__c crm : [
-            SELECT Person_Account__c, Profile_Photo_URL__c, Specialization__c, Year_of_Graduation__c
-            FROM Ken_Alumni_CRM__c WHERE Person_Account__c IN :alumniIds LIMIT :MAX_ROWS
+        for (ConstituentRole role : [
+            SELECT PersonId, Graduation_Year__c, Program_Plan__c
+            FROM ConstituentRole
+            WHERE PersonId IN :alumniIds AND RoleType = 'Alumni'
+            WITH USER_MODE
+            LIMIT :MAX_ROWS
         ]) {
-            Integer cur = scoreMap.containsKey(crm.Person_Account__c) ? scoreMap.get(crm.Person_Account__c) : 0;
-            if (!String.isBlank(crm.Profile_Photo_URL__c))    cur++;
-            if (!String.isBlank(crm.Specialization__c))       cur++;
-            if (!String.isBlank(crm.Year_of_Graduation__c))   cur++;
-            scoreMap.put(crm.Person_Account__c, cur);
+            Integer cur = scoreMap.containsKey(role.PersonId) ? scoreMap.get(role.PersonId) : 0;
+            if (role.Program_Plan__c != null)                  cur++;
+            if (!String.isBlank(role.Graduation_Year__c))      cur++;
+            scoreMap.put(role.PersonId, cur);
         }
 
         for (AggregateResult ar : [
             SELECT AccountId rid, COUNT(Id) cnt FROM PersonEducation
             WHERE AccountId IN :alumniIds AND (Is_Archived__c = false OR Is_Archived__c = null)
+            WITH USER_MODE
             GROUP BY AccountId
         ]) {
             Id aid = (Id) ar.get('rid');
@@ -182,6 +202,7 @@ public with sharing class KenAlumniDashboardController {
         for (AggregateResult ar : [
             SELECT AccountId rid, COUNT(Id) cnt FROM PersonEmployment
             WHERE AccountId IN :alumniIds AND (Is_Archived__c = false OR Is_Archived__c = null)
+            WITH USER_MODE
             GROUP BY AccountId
         ]) {
             Id aid = (Id) ar.get('rid');
@@ -192,6 +213,7 @@ public with sharing class KenAlumniDashboardController {
         for (ConstituentRole cr : [
             SELECT PersonId FROM ConstituentRole
             WHERE PersonId IN :alumniIds AND RoleType = 'Alumni' AND Program_Plan__c != null
+            WITH USER_MODE
             LIMIT :MAX_ROWS
         ]) {
             if (scoreMap.containsKey(cr.PersonId))
@@ -215,6 +237,7 @@ public with sharing class KenAlumniDashboardController {
                 SELECT Program_Plan__c, Program_Plan__r.Name
                 FROM ConstituentRole
                 WHERE RoleType = 'Alumni' AND Program_Plan__c != null
+                WITH USER_MODE
                 LIMIT 50000
             ]) {
                 batchMap.put(cr.Program_Plan__c, cr.Program_Plan__r.Name);
@@ -232,6 +255,7 @@ public with sharing class KenAlumniDashboardController {
                 SELECT Graduation_Year__c
                 FROM ConstituentRole
                 WHERE RoleType = 'Alumni' AND Graduation_Year__c != null
+                WITH USER_MODE
                 LIMIT 50000
             ]) {
                 yearSet.add(cr.Graduation_Year__c);
@@ -253,19 +277,24 @@ public with sharing class KenAlumniDashboardController {
     public static SummaryStats getSummaryStats(String filterBatch, String filterYear, String filterStatus) {
         try {
             SummaryStats stats = new SummaryStats();
+            Map<String, Object> binds = new Map<String, Object>();
             List<String> conds = new List<String>{ 'RoleType = \'Alumni\'' };
-            if (!String.isBlank(filterBatch) && filterBatch != 'All')
-                conds.add('Program_Plan__c = \'' + String.escapeSingleQuotes(filterBatch) + '\'');
-            if (!String.isBlank(filterYear) && filterYear != 'All')
-                conds.add('Graduation_Year__c = \'' + String.escapeSingleQuotes(filterYear) + '\'');
+            if (!String.isBlank(filterBatch) && filterBatch != 'All') {
+                binds.put('bBatch', filterBatch);
+                conds.add('Program_Plan__c = :bBatch');
+            }
+            if (!String.isBlank(filterYear) && filterYear != 'All') {
+                binds.put('bYear', filterYear);
+                conds.add('Graduation_Year__c = :bYear');
+            }
 
             String baseWhere = String.join(conds, ' AND ');
-            for (AggregateResult ar : Database.query(
-                    'SELECT COUNT(Id) cnt FROM ConstituentRole WHERE ' + baseWhere)) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(
+                    'SELECT COUNT(Id) cnt FROM ConstituentRole WHERE ' + baseWhere, binds, AccessLevel.SYSTEM_MODE)) {
                 stats.totalAlumni = (Integer) ar.get('cnt');
             }
-            for (AggregateResult ar : Database.query(
-                    'SELECT COUNT(Id) cnt FROM ConstituentRole WHERE ' + baseWhere + ' AND Status = \'Active\'')) {
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(
+                    'SELECT COUNT(Id) cnt FROM ConstituentRole WHERE ' + baseWhere + ' AND Status = \'Active\'', binds, AccessLevel.SYSTEM_MODE)) {
                 stats.activeAlumni = (Integer) ar.get('cnt');
             }
             stats.activePercent = stats.totalAlumni > 0
@@ -292,16 +321,21 @@ public with sharing class KenAlumniDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getActiveAlumniByBatch(String filterBatch, String filterYear, String filterStatus) {
         try {
+            Map<String, Object> binds = new Map<String, Object>();
             List<String> conds = new List<String>{ 'RoleType = \'Alumni\'', 'Status = \'Active\'' };
-            if (!String.isBlank(filterBatch) && filterBatch != 'All')
-                conds.add('Program_Plan__c = \'' + String.escapeSingleQuotes(filterBatch) + '\'');
-            if (!String.isBlank(filterYear) && filterYear != 'All')
-                conds.add('Graduation_Year__c = \'' + String.escapeSingleQuotes(filterYear) + '\'');
+            if (!String.isBlank(filterBatch) && filterBatch != 'All') {
+                binds.put('bBatch', filterBatch);
+                conds.add('Program_Plan__c = :bBatch');
+            }
+            if (!String.isBlank(filterYear) && filterYear != 'All') {
+                binds.put('bYear', filterYear);
+                conds.add('Graduation_Year__c = :bYear');
+            }
             String q = 'SELECT Program_Plan__r.Name plan, COUNT(Id) cnt FROM ConstituentRole WHERE '
                 + String.join(conds, ' AND ')
                 + ' GROUP BY Program_Plan__r.Name ORDER BY COUNT(Id) DESC LIMIT ' + MAX_CHART_ITEMS;
             List<ChartItem> result = new List<ChartItem>();
-            for (AggregateResult ar : Database.query(q))
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE))
                 result.add(new ChartItem(String.valueOf(ar.get('plan')), (Integer) ar.get('cnt')));
             return result;
         } catch (Exception e) {
@@ -314,16 +348,21 @@ public with sharing class KenAlumniDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getGraduationYearDistribution(String filterBatch, String filterYear, String filterStatus) {
         try {
+            Map<String, Object> binds = new Map<String, Object>();
             List<String> conds = new List<String>{ 'RoleType = \'Alumni\'', 'Graduation_Year__c != null' };
-            if (!String.isBlank(filterBatch) && filterBatch != 'All')
-                conds.add('Program_Plan__c = \'' + String.escapeSingleQuotes(filterBatch) + '\'');
-            if (!String.isBlank(filterStatus) && filterStatus != 'All')
-                conds.add('Status = \'' + String.escapeSingleQuotes(filterStatus) + '\'');
+            if (!String.isBlank(filterBatch) && filterBatch != 'All') {
+                binds.put('bBatch', filterBatch);
+                conds.add('Program_Plan__c = :bBatch');
+            }
+            if (!String.isBlank(filterStatus) && filterStatus != 'All') {
+                binds.put('bStatus', filterStatus);
+                conds.add('Status = :bStatus');
+            }
             String q = 'SELECT Graduation_Year__c yr, COUNT(Id) cnt FROM ConstituentRole WHERE '
                 + String.join(conds, ' AND ')
                 + ' GROUP BY Graduation_Year__c ORDER BY Graduation_Year__c ASC LIMIT 20';
             List<ChartItem> result = new List<ChartItem>();
-            for (AggregateResult ar : Database.query(q))
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE))
                 result.add(new ChartItem(String.valueOf(ar.get('yr')), (Integer) ar.get('cnt')));
             return result;
         } catch (Exception e) {
@@ -347,6 +386,7 @@ public with sharing class KenAlumniDashboardController {
             for (Account acc : [
                 SELECT PersonBirthdate FROM Account
                 WHERE Id IN :alumniIds AND PersonBirthdate != null AND IsPersonAccount = true
+                WITH USER_MODE
                 LIMIT :MAX_ROWS
             ]) {
                 Integer age = currentYear - acc.PersonBirthdate.year();
@@ -378,6 +418,7 @@ public with sharing class KenAlumniDashboardController {
                 SELECT EmploymentStatus status, COUNT(Id) cnt
                 FROM PersonEmployment
                 WHERE RelatedPersonId IN :alumniIds AND Is_Archived__c = false
+                WITH USER_MODE
                 GROUP BY EmploymentStatus ORDER BY COUNT(Id) DESC LIMIT :MAX_CHART_ITEMS
             ]) {
                 result.add(new ChartItem((String) ar.get('status'), (Integer) ar.get('cnt')));
@@ -401,6 +442,7 @@ public with sharing class KenAlumniDashboardController {
                     FROM Ken_Alumni_Preferences__c
                     WHERE Person_Account__c IN :alumniIds
                     AND (Skill_set__c != null OR Mentorship_Expertise_Areas__c != null)
+                    WITH USER_MODE
                     LIMIT :MAX_ROWS
                 ]) {
                     tallyMultiSelect(tally, pref.Skill_set__c);
@@ -454,20 +496,24 @@ public with sharing class KenAlumniDashboardController {
         Map<Id, String> result = new Map<Id, String>();
         if (alumniIds == null || alumniIds.isEmpty()) return result;
 
-        Map<Id, Ken_Alumni_CRM__c> crmByPa = new Map<Id, Ken_Alumni_CRM__c>();
-        for (Ken_Alumni_CRM__c c : [
-            SELECT Person_Account__c, Has_Logged_In_Once__c, Is_Active__c,
-                   Last_Login_DateTime__c, Approval_Status__c
-            FROM Ken_Alumni_CRM__c
-            WHERE Person_Account__c IN :alumniIds
+        Map<Id, ConstituentRole> roleByPa = new Map<Id, ConstituentRole>();
+        for (ConstituentRole role : [
+            SELECT PersonId, Status, Registration_Status__c, Last_Login__c
+            FROM ConstituentRole
+            WHERE PersonId IN :alumniIds AND RoleType = 'Alumni'
+            WITH USER_MODE
+            ORDER BY Last_Login__c DESC NULLS LAST
         ]) {
-            if (c.Person_Account__c != null) crmByPa.put(c.Person_Account__c, c);
+            if (role.PersonId != null && !roleByPa.containsKey(role.PersonId)) {
+                roleByPa.put(role.PersonId, role);
+            }
         }
 
         Set<Id> mentors = new Set<Id>();
         for (Ken_Mentorship__c m : [
             SELECT Mentor__c FROM Ken_Mentorship__c
             WHERE Mentor__c IN :alumniIds
+        WITH USER_MODE
         ]) {
             if (m.Mentor__c != null) mentors.add(m.Mentor__c);
         }
@@ -477,6 +523,7 @@ public with sharing class KenAlumniDashboardController {
             SELECT Person_Account__c pa, COUNT(Id) cnt
             FROM Ken_Event_Booking__c
             WHERE Person_Account__c IN :alumniIds
+            WITH USER_MODE
             GROUP BY Person_Account__c
         ]) {
             Id pa = (Id) ar.get('pa');
@@ -489,6 +536,7 @@ public with sharing class KenAlumniDashboardController {
             SELECT Person_Account__c, Willing_to_be_a_mentor__c, Open_to_work__c
             FROM Ken_Alumni_Preferences__c
             WHERE Person_Account__c IN :alumniIds
+        WITH USER_MODE
         ]) {
             if (p.Person_Account__c == null) continue;
             if (p.Willing_to_be_a_mentor__c == true) willingMentors.add(p.Person_Account__c);
@@ -498,12 +546,13 @@ public with sharing class KenAlumniDashboardController {
         Datetime ninetyDaysAgo = Datetime.now().addDays(-90);
 
         for (Id aId : alumniIds) {
-            Ken_Alumni_CRM__c crm = crmByPa.get(aId);
-            Boolean approved      = crm != null && crm.Approval_Status__c == 'Approved';
-            Boolean hasLoggedIn   = crm != null && crm.Has_Logged_In_Once__c == true;
-            Boolean isActiveFlag  = crm != null && crm.Is_Active__c == true;
-            Boolean recentLogin   = crm != null && crm.Last_Login_DateTime__c != null
-                                    && crm.Last_Login_DateTime__c >= ninetyDaysAgo;
+            ConstituentRole role  = roleByPa.get(aId);
+            Boolean approved      = role != null && role.Registration_Status__c != null
+                                    && role.Registration_Status__c != 'Unregistered';
+            Boolean hasLoggedIn   = role != null && role.Last_Login__c != null;
+            Boolean isActiveFlag  = role != null && role.Status != 'Former';
+            Boolean recentLogin   = role != null && role.Last_Login__c != null
+                                    && role.Last_Login__c >= ninetyDaysAgo;
             Boolean isMentor      = mentors.contains(aId);
             Integer eventsTotal   = eventsByPa.containsKey(aId) ? eventsByPa.get(aId) : 0;
             Boolean wantsMentor   = willingMentors.contains(aId);
@@ -544,6 +593,7 @@ public with sharing class KenAlumniDashboardController {
                 SELECT Country__c country, COUNT(Id) cnt
                 FROM Ken_Address__c
                 WHERE Person_Account__c IN :alumniIds AND Country__c != null
+                WITH USER_MODE
                 GROUP BY Country__c ORDER BY COUNT(Id) DESC LIMIT :MAX_CHART_ITEMS
             ]) {
                 result.add(new ChartItem((String) ar.get('country'), (Integer) ar.get('cnt')));
@@ -567,6 +617,7 @@ public with sharing class KenAlumniDashboardController {
                 FROM Ken_Address__c
                 WHERE Person_Account__c IN :alumniIds
                 AND Country__c = 'India' AND State__c != null
+                WITH USER_MODE
                 GROUP BY State__c ORDER BY COUNT(Id) DESC LIMIT :MAX_CHART_ITEMS
             ]) {
                 result.add(new ChartItem((String) ar.get('state'), (Integer) ar.get('cnt')));
@@ -610,16 +661,21 @@ public with sharing class KenAlumniDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getBatchDemographics(String filterBatch, String filterYear, String filterStatus) {
         try {
+            Map<String, Object> binds = new Map<String, Object>();
             List<String> conds = new List<String>{ 'RoleType = \'Alumni\'', 'Program_Plan__c != null' };
-            if (!String.isBlank(filterYear) && filterYear != 'All')
-                conds.add('Graduation_Year__c = \'' + String.escapeSingleQuotes(filterYear) + '\'');
-            if (!String.isBlank(filterStatus) && filterStatus != 'All')
-                conds.add('Status = \'' + String.escapeSingleQuotes(filterStatus) + '\'');
+            if (!String.isBlank(filterYear) && filterYear != 'All') {
+                binds.put('bYear', filterYear);
+                conds.add('Graduation_Year__c = :bYear');
+            }
+            if (!String.isBlank(filterStatus) && filterStatus != 'All') {
+                binds.put('bStatus', filterStatus);
+                conds.add('Status = :bStatus');
+            }
             String q = 'SELECT Program_Plan__r.Name plan, COUNT(Id) cnt FROM ConstituentRole WHERE '
                 + String.join(conds, ' AND ')
                 + ' GROUP BY Program_Plan__r.Name ORDER BY COUNT(Id) DESC LIMIT ' + MAX_CHART_ITEMS;
             List<ChartItem> result = new List<ChartItem>();
-            for (AggregateResult ar : Database.query(q))
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE))
                 result.add(new ChartItem(String.valueOf(ar.get('plan')), (Integer) ar.get('cnt')));
             return result;
         } catch (Exception e) {
@@ -639,6 +695,7 @@ public with sharing class KenAlumniDashboardController {
                 SELECT PersonGenderIdentity gender, COUNT(Id) cnt
                 FROM Account
                 WHERE Id IN :alumniIds AND IsPersonAccount = true
+                WITH USER_MODE
                 GROUP BY PersonGenderIdentity ORDER BY COUNT(Id) DESC
             ]) {
                 result.add(new ChartItem((String) ar.get('gender'), (Integer) ar.get('cnt')));
@@ -654,18 +711,25 @@ public with sharing class KenAlumniDashboardController {
     @AuraEnabled(cacheable=true)
     public static List<ChartItem> getMultiDimensionalInsights(String filterBatch, String filterYear, String filterStatus) {
         try {
+            Map<String, Object> binds = new Map<String, Object>();
             List<String> conds = new List<String>{ 'RoleType = \'Alumni\'' };
-            if (!String.isBlank(filterBatch) && filterBatch != 'All')
-                conds.add('Program_Plan__c = \'' + String.escapeSingleQuotes(filterBatch) + '\'');
-            if (!String.isBlank(filterYear) && filterYear != 'All')
-                conds.add('Graduation_Year__c = \'' + String.escapeSingleQuotes(filterYear) + '\'');
-            if (!String.isBlank(filterStatus) && filterStatus != 'All')
-                conds.add('Status = \'' + String.escapeSingleQuotes(filterStatus) + '\'');
+            if (!String.isBlank(filterBatch) && filterBatch != 'All') {
+                binds.put('bBatch', filterBatch);
+                conds.add('Program_Plan__c = :bBatch');
+            }
+            if (!String.isBlank(filterYear) && filterYear != 'All') {
+                binds.put('bYear', filterYear);
+                conds.add('Graduation_Year__c = :bYear');
+            }
+            if (!String.isBlank(filterStatus) && filterStatus != 'All') {
+                binds.put('bStatus', filterStatus);
+                conds.add('Status = :bStatus');
+            }
             String q = 'SELECT Registration_Status__c regStatus, COUNT(Id) cnt FROM ConstituentRole WHERE '
                 + String.join(conds, ' AND ')
                 + ' GROUP BY Registration_Status__c ORDER BY COUNT(Id) DESC LIMIT ' + MAX_CHART_ITEMS;
             List<ChartItem> result = new List<ChartItem>();
-            for (AggregateResult ar : Database.query(q))
+            for (AggregateResult ar : (List<AggregateResult>) Database.queryWithBinds(q, binds, AccessLevel.SYSTEM_MODE))
                 result.add(new ChartItem((String) ar.get('regStatus'), (Integer) ar.get('cnt')));
             return result;
         } catch (Exception e) {
@@ -686,6 +750,7 @@ public with sharing class KenAlumniDashboardController {
                 FROM PersonEmployment
                 WHERE RelatedPersonId IN :alumniIds AND Is_Archived__c = false
                 AND Occupation != null
+                WITH USER_MODE
                 GROUP BY Occupation ORDER BY COUNT(Id) DESC LIMIT :MAX_CHART_ITEMS
             ]) {
                 result.add(new ChartItem((String) ar.get('industry'), (Integer) ar.get('cnt')));
@@ -711,6 +776,7 @@ public with sharing class KenAlumniDashboardController {
                 FROM Ken_Address__c
                 WHERE Person_Account__c IN :alumniIds
                 AND Country__c != null AND Country__c != 'India'
+                WITH USER_MODE
                 GROUP BY Country__c, State__c ORDER BY COUNT(Id) DESC LIMIT :MAX_CHART_ITEMS
             ]) {
                 String lbl = (String) ar.get('country');
@@ -736,7 +802,6 @@ public with sharing class KenAlumniDashboardController {
             if (baseIds.isEmpty()) return new List<AlumniRecord>();
 
             Set<Id> filteredIds = new Set<Id>();
-            String dv = String.escapeSingleQuotes(dimensionValue == null ? '' : dimensionValue);
 
             Boolean isNS = (dimensionValue == null || dimensionValue == 'Not Specified');
 
@@ -745,13 +810,17 @@ public with sharing class KenAlumniDashboardController {
                     for (ConstituentRole cr : [
                         SELECT PersonId FROM ConstituentRole
                         WHERE PersonId IN :baseIds AND RoleType = 'Alumni'
-                        AND Program_Plan__c = null LIMIT :MAX_ALUMNI_LIST
+                        AND Program_Plan__c = null
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(cr.PersonId);
                 } else {
                     for (ConstituentRole cr : [
                         SELECT PersonId FROM ConstituentRole
                         WHERE PersonId IN :baseIds AND RoleType = 'Alumni'
-                        AND Program_Plan__r.Name = :dimensionValue LIMIT :MAX_ALUMNI_LIST
+                        AND Program_Plan__r.Name = :dimensionValue
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(cr.PersonId);
                 }
 
@@ -760,13 +829,17 @@ public with sharing class KenAlumniDashboardController {
                     for (ConstituentRole cr : [
                         SELECT PersonId FROM ConstituentRole
                         WHERE PersonId IN :baseIds AND RoleType = 'Alumni'
-                        AND Graduation_Year__c = null LIMIT :MAX_ALUMNI_LIST
+                        AND Graduation_Year__c = null
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(cr.PersonId);
                 } else {
                     for (ConstituentRole cr : [
                         SELECT PersonId FROM ConstituentRole
                         WHERE PersonId IN :baseIds AND RoleType = 'Alumni'
-                        AND Graduation_Year__c = :dimensionValue LIMIT :MAX_ALUMNI_LIST
+                        AND Graduation_Year__c = :dimensionValue
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(cr.PersonId);
                 }
 
@@ -775,12 +848,14 @@ public with sharing class KenAlumniDashboardController {
                     for (Account acc : [
                         SELECT Id FROM Account
                         WHERE Id IN :baseIds AND (PersonGenderIdentity = null OR PersonGenderIdentity = '')
+                        WITH USER_MODE
                         LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(acc.Id);
                 } else {
                     for (Account acc : [
                         SELECT Id FROM Account
                         WHERE Id IN :baseIds AND PersonGenderIdentity = :dimensionValue
+                        WITH USER_MODE
                         LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(acc.Id);
                 }
@@ -789,6 +864,7 @@ public with sharing class KenAlumniDashboardController {
                 for (Ken_Address__c addr : [
                     SELECT Person_Account__c FROM Ken_Address__c
                     WHERE Person_Account__c IN :baseIds AND Country__c = :dimensionValue
+                    WITH USER_MODE
                     LIMIT :MAX_ALUMNI_LIST
                 ]) filteredIds.add(addr.Person_Account__c);
 
@@ -801,6 +877,7 @@ public with sharing class KenAlumniDashboardController {
                     for (Ken_Address__c addr : [
                         SELECT Person_Account__c FROM Ken_Address__c
                         WHERE Person_Account__c IN :baseIds AND Country__c = :regionCountry
+                        WITH USER_MODE
                         LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(addr.Person_Account__c);
                 } else {
@@ -808,6 +885,7 @@ public with sharing class KenAlumniDashboardController {
                         SELECT Person_Account__c FROM Ken_Address__c
                         WHERE Person_Account__c IN :baseIds
                         AND Country__c = :regionCountry AND State__c = :regionState
+                        WITH USER_MODE
                         LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(addr.Person_Account__c);
                 }
@@ -816,6 +894,7 @@ public with sharing class KenAlumniDashboardController {
                 for (Ken_Address__c addr : [
                     SELECT Person_Account__c FROM Ken_Address__c
                     WHERE Person_Account__c IN :baseIds AND State__c = :dimensionValue
+                    WITH USER_MODE
                     LIMIT :MAX_ALUMNI_LIST
                 ]) filteredIds.add(addr.Person_Account__c);
 
@@ -825,13 +904,17 @@ public with sharing class KenAlumniDashboardController {
                         SELECT RelatedPersonId FROM PersonEmployment
                         WHERE RelatedPersonId IN :baseIds
                         AND (EmploymentStatus = null OR EmploymentStatus = '')
-                        AND Is_Archived__c = false LIMIT :MAX_ALUMNI_LIST
+                        AND Is_Archived__c = false
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(pe.RelatedPersonId);
                 } else {
                     for (PersonEmployment pe : [
                         SELECT RelatedPersonId FROM PersonEmployment
                         WHERE RelatedPersonId IN :baseIds AND EmploymentStatus = :dimensionValue
-                        AND Is_Archived__c = false LIMIT :MAX_ALUMNI_LIST
+                        AND Is_Archived__c = false
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(pe.RelatedPersonId);
                 }
 
@@ -841,13 +924,17 @@ public with sharing class KenAlumniDashboardController {
                         SELECT RelatedPersonId FROM PersonEmployment
                         WHERE RelatedPersonId IN :baseIds
                         AND (Occupation = null OR Occupation = '')
-                        AND Is_Archived__c = false LIMIT :MAX_ALUMNI_LIST
+                        AND Is_Archived__c = false
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(pe.RelatedPersonId);
                 } else {
                     for (PersonEmployment pe : [
                         SELECT RelatedPersonId FROM PersonEmployment
                         WHERE RelatedPersonId IN :baseIds AND Occupation = :dimensionValue
-                        AND Is_Archived__c = false LIMIT :MAX_ALUMNI_LIST
+                        AND Is_Archived__c = false
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(pe.RelatedPersonId);
                 }
 
@@ -869,25 +956,32 @@ public with sharing class KenAlumniDashboardController {
                     for (ConstituentRole cr : [
                         SELECT PersonId FROM ConstituentRole
                         WHERE PersonId IN :baseIds AND RoleType = 'Alumni'
-                        AND (Registration_Status__c = null OR Registration_Status__c = '') LIMIT :MAX_ALUMNI_LIST
+                        AND (Registration_Status__c = null OR Registration_Status__c = '')
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(cr.PersonId);
                 } else {
                     for (ConstituentRole cr : [
                         SELECT PersonId FROM ConstituentRole
                         WHERE PersonId IN :baseIds AND RoleType = 'Alumni'
-                        AND Registration_Status__c = :dimensionValue LIMIT :MAX_ALUMNI_LIST
+                        AND Registration_Status__c = :dimensionValue
+                        WITH USER_MODE
+                        LIMIT :MAX_ALUMNI_LIST
                     ]) filteredIds.add(cr.PersonId);
                 }
 
             } else if (dimension == 'interests') {
-                String safeVal = String.escapeSingleQuotes(dimensionValue);
+                Map<String, Object> binds = new Map<String, Object>{
+                    'baseIds' => baseIds,
+                    'bInterest' => dimensionValue
+                };
                 String interestsQ = 'SELECT Person_Account__c FROM Ken_Alumni_Preferences__c'
                     + ' WHERE Person_Account__c IN :baseIds'
-                    + ' AND (Skill_set__c INCLUDES (\'' + safeVal + '\')'
-                    + ' OR Mentorship_Expertise_Areas__c INCLUDES (\'' + safeVal + '\'))'
+                    + ' AND (Skill_set__c INCLUDES (:bInterest)'
+                    + ' OR Mentorship_Expertise_Areas__c INCLUDES (:bInterest))'
                     + ' LIMIT ' + MAX_ALUMNI_LIST;
-                for (SObject so : Database.query(interestsQ))
-                    filteredIds.add((Id) so.get('Person_Account__c'));
+                for (SObject so : Database.queryWithBinds(interestsQ, binds, AccessLevel.SYSTEM_MODE))
+                    filteredIds.add((Id) so.get(KenNamespaceUtil.qualifyCustom('Person_Account__c')));
 
             } else if (dimension == 'age') {
                 Integer currentYear = Date.today().year();
@@ -899,7 +993,9 @@ public with sharing class KenAlumniDashboardController {
                 else if (dimensionValue == '55+')         { minAge = 55; maxAge = 999; }
                 for (Account acc : [
                     SELECT Id, PersonBirthdate FROM Account
-                    WHERE Id IN :baseIds AND PersonBirthdate != null LIMIT :MAX_ROWS
+                    WHERE Id IN :baseIds AND PersonBirthdate != null
+                    WITH USER_MODE
+                    LIMIT :MAX_ROWS
                 ]) {
                     Integer age = currentYear - acc.PersonBirthdate.year();
                     if (age >= minAge && age <= maxAge) filteredIds.add(acc.Id);

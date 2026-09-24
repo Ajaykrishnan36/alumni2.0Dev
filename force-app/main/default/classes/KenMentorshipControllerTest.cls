@@ -1,5 +1,33 @@
 @IsTest
 private class KenMentorshipControllerTest {
+
+    private static Id kenCampusId;
+
+    /**
+     * KJS orgs add a required Campus__c lookup (-> Location) on LearningProgram.
+     * Populate it only where the field exists so the tests still run in every
+     * other org, and reuse one Location so a helper called in a loop does not
+     * spend a DML statement per programme.
+     */
+    private static void kenAssignCampus(SObject record) {
+        if (!record.getSObjectType().getDescribe().fields.getMap().containsKey('campus__c')) {
+            return;
+        }
+        if (kenCampusId == null) {
+            Schema.Location campus = new Schema.Location(Name = 'Ken Test Campus');
+            for (Schema.PicklistEntry entry : Schema.Location.LocationType.getDescribe().getPicklistValues()) {
+                if (entry.isActive()) {
+                    campus.LocationType = entry.getValue();
+                    break;
+                }
+            }
+            insert campus;
+            kenCampusId = campus.Id;
+        }
+        record.put('Campus__c', kenCampusId);
+    }
+    // Fixture day for the UTC instants that replaced the old Date+Time pairs.
+    private static final Date TZ_TEST_DAY = Date.today();
     private static final String CONNECTION_RECORD_TYPE = 'Connection_Request';
     private static final String CALL_RECORD_TYPE = 'Call_Request';
 
@@ -16,21 +44,9 @@ private class KenMentorshipControllerTest {
         );
         insert networkConnection;
 
-        Id connectionRecordTypeId = [
-            SELECT Id
-            FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = :CONNECTION_RECORD_TYPE
-            LIMIT 1
-        ].Id;
+        Id connectionRecordTypeId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CONNECTION_RECORD_TYPE)?.getRecordTypeId();
 
-        Id callRecordTypeId = [
-            SELECT Id
-            FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = :CALL_RECORD_TYPE
-            LIMIT 1
-        ].Id;
+        Id callRecordTypeId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CALL_RECORD_TYPE)?.getRecordTypeId();
 
         insert new Ken_Mentorship__c(
             RecordTypeId          = connectionRecordTypeId,
@@ -46,9 +62,8 @@ private class KenMentorshipControllerTest {
             Mentee__c              = mentee.Id,
             MeetingRequestedBy__c  = mentee.Id,
             Meeting_Title__c       = 'Generic Existing Scheduled Call',
-            Meet_Date__c           = Date.today().addDays(1),
-            Meet_Start_Time__c     = Time.newInstance(10, 0, 0, 0),
-            Meet_End_Time__c       = Time.newInstance(11, 0, 0, 0),
+            Meet_Start_DateTime__c     = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(10, 0, 0, 0)),
+            Meet_End_DateTime__c       = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(11, 0, 0, 0)),
             Meeting_Mode__c        = 'Online',
             Call_Request_Status__c = 'Requested',
             Network_Connection__c  = networkConnection.Id
@@ -238,12 +253,13 @@ private class KenMentorshipControllerTest {
         Test.stopTest();
 
         Ken_Mentorship__c insertedCall = [
-            SELECT Id, Meet_Date__c
+            SELECT Id, Meet_Start_DateTime__c
             FROM Ken_Mentorship__c
             WHERE Id = :recordId
             LIMIT 1
         ];
-        System.assertEquals(targetDate, insertedCall.Meet_Date__c, 'Meeting date should parse from datetime format.');
+        System.assertEquals(targetDate, insertedCall.Meet_Start_DateTime__c.date(),
+            'Meeting day should be derivable from the stored instant.');
         KenMentorshipController.testCurrentAccountId = null;
     }
 
@@ -337,22 +353,15 @@ private class KenMentorshipControllerTest {
             LIMIT 1
         ];
 
-        Id callRecordTypeId = [
-            SELECT Id
-            FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = :CALL_RECORD_TYPE
-            LIMIT 1
-        ].Id;
+        Id callRecordTypeId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CALL_RECORD_TYPE)?.getRecordTypeId();
 
         Ken_Mentorship__c rejectCandidate = new Ken_Mentorship__c(
             RecordTypeId           = callRecordTypeId,
             Mentor__c              = mentor.Id,
             Mentee__c              = mentee.Id,
             MeetingRequestedBy__c  = mentee.Id,
-            Meet_Date__c           = Date.today().addDays(5),
-            Meet_Start_Time__c     = Time.newInstance(10, 0, 0, 0),
-            Meet_End_Time__c       = Time.newInstance(10, 30, 0, 0),
+            Meet_Start_DateTime__c     = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(10, 0, 0, 0)),
+            Meet_End_DateTime__c       = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(10, 30, 0, 0)),
             Meeting_Mode__c        = 'Online',
             Call_Request_Status__c = 'Requested',
             Mentorship_Status__c   = 'Requested'
@@ -394,13 +403,7 @@ private class KenMentorshipControllerTest {
         Account mentee = [SELECT Id FROM Account WHERE Name = 'Generic Test Mentee' LIMIT 1];
         Account mentor = [SELECT Id FROM Account WHERE Name = 'Generic Test Mentor Accepted' LIMIT 1];
 
-        Id callRecordTypeId = [
-            SELECT Id
-            FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = :CALL_RECORD_TYPE
-            LIMIT 1
-        ].Id;
+        Id callRecordTypeId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CALL_RECORD_TYPE)?.getRecordTypeId();
 
         // Mentor raises the request, so the mentee is the legitimate responder.
         Ken_Mentorship__c mentorInitiated = new Ken_Mentorship__c(
@@ -408,9 +411,8 @@ private class KenMentorshipControllerTest {
             Mentor__c              = mentor.Id,
             Mentee__c              = mentee.Id,
             MeetingRequestedBy__c  = mentor.Id,
-            Meet_Date__c           = Date.today().addDays(3),
-            Meet_Start_Time__c     = Time.newInstance(14, 0, 0, 0),
-            Meet_End_Time__c       = Time.newInstance(14, 30, 0, 0),
+            Meet_Start_DateTime__c     = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(14, 0, 0, 0)),
+            Meet_End_DateTime__c       = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(14, 30, 0, 0)),
             Meeting_Mode__c        = 'Online',
             Call_Request_Status__c = 'Requested',
             Mentorship_Status__c   = 'Requested'
@@ -438,22 +440,15 @@ private class KenMentorshipControllerTest {
         Account mentee = [SELECT Id FROM Account WHERE Name = 'Generic Test Mentee' LIMIT 1];
         Account mentor = [SELECT Id FROM Account WHERE Name = 'Generic Test Mentor Accepted' LIMIT 1];
 
-        Id callRecordTypeId = [
-            SELECT Id
-            FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = :CALL_RECORD_TYPE
-            LIMIT 1
-        ].Id;
+        Id callRecordTypeId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CALL_RECORD_TYPE)?.getRecordTypeId();
 
         Ken_Mentorship__c ownRequest = new Ken_Mentorship__c(
             RecordTypeId           = callRecordTypeId,
             Mentor__c              = mentor.Id,
             Mentee__c              = mentee.Id,
             MeetingRequestedBy__c  = mentee.Id,
-            Meet_Date__c           = Date.today().addDays(4),
-            Meet_Start_Time__c     = Time.newInstance(15, 0, 0, 0),
-            Meet_End_Time__c       = Time.newInstance(15, 30, 0, 0),
+            Meet_Start_DateTime__c     = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(15, 0, 0, 0)),
+            Meet_End_DateTime__c       = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(15, 30, 0, 0)),
             Meeting_Mode__c        = 'Online',
             Call_Request_Status__c = 'Requested',
             Mentorship_Status__c   = 'Requested'
@@ -482,11 +477,7 @@ private class KenMentorshipControllerTest {
     static void testRespondToMentorshipRequest_AcceptAndReject() {
         Account mentor = [SELECT Id FROM Account WHERE Name = 'Generic Test Mentor Accepted' LIMIT 1];
         Account mentee = [SELECT Id FROM Account WHERE Name = 'Generic Test Mentee' LIMIT 1];
-        Id connRtId = [
-            SELECT Id FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c' AND DeveloperName = :CONNECTION_RECORD_TYPE
-            LIMIT 1
-        ].Id;
+        Id connRtId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CONNECTION_RECORD_TYPE)?.getRecordTypeId();
         Ken_Mentorship__c acc = new Ken_Mentorship__c(
             RecordTypeId = connRtId,
             Mentor__c = mentor.Id,
@@ -533,22 +524,15 @@ private class KenMentorshipControllerTest {
             LIMIT 1
         ];
 
-        Id callRecordTypeId = [
-            SELECT Id
-            FROM RecordType
-            WHERE SObjectType = 'Ken_Mentorship__c'
-              AND DeveloperName = :CALL_RECORD_TYPE
-            LIMIT 1
-        ].Id;
+        Id callRecordTypeId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CALL_RECORD_TYPE)?.getRecordTypeId();
 
         Ken_Mentorship__c rescheduleCandidate = new Ken_Mentorship__c(
             RecordTypeId           = callRecordTypeId,
             Mentor__c              = mentor.Id,
             Mentee__c              = mentee.Id,
             MeetingRequestedBy__c  = mentee.Id,
-            Meet_Date__c           = Date.today().addDays(7),
-            Meet_Start_Time__c     = Time.newInstance(9, 0, 0, 0),
-            Meet_End_Time__c       = Time.newInstance(9, 30, 0, 0),
+            Meet_Start_DateTime__c     = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(9, 0, 0, 0)),
+            Meet_End_DateTime__c       = DateTime.newInstanceGmt(TZ_TEST_DAY, Time.newInstance(9, 30, 0, 0)),
             Meeting_Mode__c        = 'Online',
             Call_Request_Status__c = 'Requested',
             Mentorship_Status__c   = 'Requested'
@@ -558,23 +542,32 @@ private class KenMentorshipControllerTest {
         Date newDate = Date.today().addDays(10);
         Test.startTest();
         KenMentorshipController.testCurrentAccountId = mentor.Id;
+        // The trailing pair are the UTC instants the reschedule panel now sends;
+        // 11:00-11:45 IST is 05:30-06:15 GMT. Passing both mirrors the real call
+        // and covers the branch that prefers the instant over the legacy pair.
         KenMentorshipController.rescheduleCallRequest(
             String.valueOf(rescheduleCandidate.Id),
             String.valueOf(newDate),
             '11:00',
-            '11:45'
+            '11:45',
+            String.valueOf(newDate) + 'T05:30:00.000Z',
+            String.valueOf(newDate) + 'T06:15:00.000Z'
         );
         Test.stopTest();
 
         Ken_Mentorship__c updated = [
-            SELECT Id, Meet_Date__c, Meet_Start_Time__c, Meet_End_Time__c, Call_Request_Status__c, Mentorship_Status__c
+            SELECT Id, Meet_Start_DateTime__c, Meet_End_DateTime__c, Call_Request_Status__c, Mentorship_Status__c
             FROM Ken_Mentorship__c
             WHERE Id = :rescheduleCandidate.Id
             LIMIT 1
         ];
-        System.assertEquals(newDate, updated.Meet_Date__c, 'Rescheduled date should be saved.');
-        System.assertEquals(Time.newInstance(11, 0, 0, 0), updated.Meet_Start_Time__c, 'Rescheduled start time should be saved.');
-        System.assertEquals(Time.newInstance(11, 45, 0, 0), updated.Meet_End_Time__c, 'Rescheduled end time should be saved.');
+        System.assertEquals(newDate, updated.Meet_Start_DateTime__c.date(), 'Rescheduled day should be derivable from the instant.');
+        // Asserted on the instant: the legacy Time column is gone, and only an
+        // instant says which day a wall-clock time belongs to.
+        System.assertEquals(DateTime.newInstanceGmt(newDate, Time.newInstance(5, 30, 0, 0)),
+            updated.Meet_Start_DateTime__c, 'Rescheduled start should be saved as a UTC instant.');
+        System.assertEquals(DateTime.newInstanceGmt(newDate, Time.newInstance(6, 15, 0, 0)),
+            updated.Meet_End_DateTime__c, 'Rescheduled end should be saved as a UTC instant.');
         System.assertEquals('Accepted', updated.Call_Request_Status__c, 'Reschedule flow should accept the request.');
         System.assertEquals('Accepted', updated.Mentorship_Status__c, 'Reschedule flow should align mentorship status.');
         KenMentorshipController.testCurrentAccountId = null;
@@ -737,7 +730,7 @@ private class KenMentorshipControllerTest {
     static void testConnectionEnrichmentFromCrmPreferencesAndMailingAddress() {
         Account mentee = fetchAccount('Generic Test Mentee');
         Id personRtId = [
-            SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true LIMIT 1
+            SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
         ].Id;
 
         Account mailingMentor = new Account(
@@ -756,14 +749,29 @@ private class KenMentorshipControllerTest {
         );
         insert new List<Account>{ mailingMentor, crmMentor };
 
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c = crmMentor.Id,
-            Profile_Photo_URL__c = 'https://example.com/photo.png',
-            Current_Location__c = 'Bangalore, Karnataka',
-            Current_Company__c = 'TestCorp',
-            Program__c = 'MBA',
-            Year_of_Graduation__c = '2018'
+        insert new PersonEmployment(
+            AccountId = crmMentor.Id, RelatedPersonId = crmMentor.Id,
+            Name = 'TestCorp', Company_Name__c = 'TestCorp',
+            Currently_Employed__c = true, Is_Archived__c = false
         );
+        insert new Ken_Address__c(
+            Person_Account__c = crmMentor.Id,
+            Address_Type__c = 'Mailing',
+            City__c = 'Bangalore',
+            State__c = 'Karnataka'
+        );
+        Learning mbaLearning = new Learning(Name = 'MBA Learning');
+        insert mbaLearning;
+        LearningProgram mbaProgram = new LearningProgram(Name = 'MBA', LearningId = mbaLearning.Id);
+        kenAssignCampus(mbaProgram);
+        insert mbaProgram;
+        LearningProgramPlan mbaPlan = new LearningProgramPlan(Name = 'MBA Plan', LearningProgramId = mbaProgram.Id);
+        insert mbaPlan;
+        insert new ConstituentRole(
+            PersonId = crmMentor.Id, RoleType = 'Alumni', Status = 'Active',
+            Graduation_Year__c = '2018', Program_Plan__c = mbaPlan.Id
+        );
+        update new Account(Id = crmMentor.Id, Profile_Photo_URL__c = 'https://example.com/photo.png');
         insert new Ken_Alumni_Preferences__c(
             Person_Account__c = crmMentor.Id,
             Willing_to_be_a_mentor__c = true
@@ -808,13 +816,14 @@ private class KenMentorshipControllerTest {
         System.assertEquals('Director', mailingRow.title, 'Title should come from PersonTitle.');
         System.assertEquals(false, mailingRow.willingToHelp, 'Mentor without preferences should not be willing to help.');
 
-        System.assertNotEquals(null, crmRow, 'CRM enriched mentor should be returned.');
+        System.assertNotEquals(null, crmRow, 'Enriched mentor should be returned.');
         System.assertEquals('https://example.com/photo.png', crmRow.profileImage,
-            'Profile image should come from the alumni CRM record.');
-        System.assertEquals('Bangalore, Karnataka', crmRow.location, 'Location should come from the alumni CRM record.');
-        System.assertEquals('TestCorp', crmRow.company, 'Company should come from the alumni CRM record.');
-        System.assertEquals('MBA', crmRow.programLastAttended, 'Program should come from the alumni CRM record.');
-        System.assertEquals('2018', crmRow.graduationYear, 'Graduation year should come from the alumni CRM record.');
+            'Profile image should come from the Person Account.');
+        System.assertEquals('Bangalore, Karnataka', crmRow.location,
+            'Location should come from the Mailing address.');
+        System.assertEquals('TestCorp', crmRow.company, 'Company should come from the current employment.');
+        System.assertEquals('MBA', crmRow.programLastAttended, 'Program should come from the ConstituentRole.');
+        System.assertEquals('2018', crmRow.graduationYear, 'Graduation year should come from the ConstituentRole.');
         System.assertEquals(true, crmRow.willingToHelp, 'Mentor preference should flow through to the row.');
         KenMentorshipController.testCurrentAccountId = null;
     }
@@ -828,8 +837,13 @@ private class KenMentorshipControllerTest {
 
         Ken_Mentorship__c completedByDate = buildCall(mentor.Id, mentee.Id, mentee.Id,
             Date.today().addDays(-1), tenAm, elevenAm, 'Online', 'Accepted');
+        completedByDate.Meet_End_DateTime__c = Datetime.now().addDays(-1);
+        // Straddle "now" explicitly rather than assuming a whole-day window lands
+        // right â€” the status is decided on instants, so the fixture must be one.
         Ken_Mentorship__c happeningNow = buildCall(mentor.Id, mentee.Id, mentee.Id,
-            Date.today(), Time.newInstance(0, 0, 0, 0), Time.newInstance(23, 59, 59, 0), 'Online', 'Accepted');
+            Date.today(), tenAm, elevenAm, 'Online', 'Accepted');
+        happeningNow.Meet_Start_DateTime__c = Datetime.now().addMinutes(-30);
+        happeningNow.Meet_End_DateTime__c = Datetime.now().addMinutes(30);
         Ken_Mentorship__c futureOnline = buildCall(mentor.Id, mentee.Id, mentee.Id,
             Date.today().addDays(5), tenAm, elevenAm, 'Online', 'Accepted');
         futureOnline.Meeting_Description__c = '<p>' + 'a'.repeat(130) + '</p>';
@@ -876,12 +890,19 @@ private class KenMentorshipControllerTest {
             'Completed status should fall through to request.');
         System.assertEquals(false, rowById.containsKey(rejectedHidden.Id),
             'Rejected calls should be hidden from the schedule.');
-        System.assertEquals('', rowById.get(noTimes.Id).timeLabel,
-            'Call without times should have an empty time label.');
-        System.assertEquals(null, rowById.get(noTimes.Id).startTime,
-            'Call without a start time should return null start time.');
-        System.assertEquals('10:00 AM', rowById.get(startOnly.Id).timeLabel,
-            'Call with only a start time should label just that time.');
+        // Behaviour change from retiring Meet_Date__c: a call with no start
+        // instant has nothing to place it on a calendar, so it is no longer
+        // listed. Previously the bare Meet_Date__c let a timeless call show with
+        // an empty time. Exactly one such record exists in AlumniDev (MN-0060,
+        // no title, no times, still 'Requested'), i.e. an incomplete draft.
+        System.assertEquals(false, rowById.containsKey(noTimes.Id),
+            'A call with no start instant cannot be placed on the schedule.');
+        // timeLabel is retired â€” a server-built label is stuck in the running
+        // user's zone. The component formats startInstant instead.
+        System.assertNotEquals(null, rowById.get(startOnly.Id).startInstant,
+            'Call with a start time should travel as a UTC instant.');
+        System.assertEquals(null, rowById.get(startOnly.Id).endInstant,
+            'No end time means no end instant.');
         System.assert(rowById.get(futureOnline.Id).topic.endsWith('...'),
             'Long descriptions should be truncated in the topic.');
         System.assert(String.isNotBlank(rowById.get(futureOnline.Id).meetingDescription),
@@ -894,39 +915,29 @@ private class KenMentorshipControllerTest {
         Account mentee = fetchAccount('Generic Test Mentee');
         Account mentor = fetchAccount('Generic Test Mentor Accepted');
 
-        Ken_Questionnaire__c answeredQnr = new Ken_Questionnaire__c(
-            Section_Name__c = 'Mentorship Feedback Answered',
-            Descripation__c = 'Answered feedback questionnaire',
-            Target_Audience__c = 'Alumni'
-        );
-        Ken_Questionnaire__c openQnr = new Ken_Questionnaire__c(
-            Section_Name__c = 'Mentorship Feedback Open',
-            Descripation__c = 'Open feedback questionnaire',
-            Target_Audience__c = 'Alumni'
-        );
-        insert new List<Ken_Questionnaire__c>{ answeredQnr, openQnr };
+        KenAssessmentSurveyService.QuestionInput question = new KenAssessmentSurveyService.QuestionInput();
+        question.text = 'How was the call?';
+        question.questionType = 'Short Answer';
+        question.required = false;
 
-        Ken_Questionnaire_Parameter__c question = new Ken_Questionnaire_Parameter__c(
-            Questionnaire__c = answeredQnr.Id,
-            Question_Label__c = 'How was the call?',
-            Question_Type__c = 'Short Answer',
-            Is_Required__c = false,
-            Order__c = 1,
-            Section_Name__c = 'Mentorship Feedback Answered'
+        Id answeredSetId = KenAssessmentSurveyService.saveQuestionSet(null, 'Mentorship Feedback Answered',
+            new List<KenAssessmentSurveyService.QuestionInput>{ question }
         );
-        insert question;
+        Id openSetId = KenAssessmentSurveyService.saveQuestionSet(null, 'Mentorship Feedback Open',
+            new List<KenAssessmentSurveyService.QuestionInput>{ question }
+        );
 
         Ken_Survey__c answeredSurvey = new Ken_Survey__c(
             Name = 'Answered Call Feedback',
             Type__c = 'Feedback',
             Is_Active__c = true,
-            Ken_Questionnaire__c = answeredQnr.Id
+            Assessment_Question_Set__c = answeredSetId
         );
         Ken_Survey__c openSurvey = new Ken_Survey__c(
             Name = 'Open Call Feedback',
             Type__c = 'Feedback',
             Is_Active__c = true,
-            Ken_Questionnaire__c = openQnr.Id
+            Assessment_Question_Set__c = openSetId
         );
         insert new List<Ken_Survey__c>{ answeredSurvey, openSurvey };
 
@@ -938,11 +949,14 @@ private class KenMentorshipControllerTest {
         openCall.Survey__c = openSurvey.Id;
         insert new List<Ken_Mentorship__c>{ answeredCall, openCall };
 
-        insert new Ken_Questionnaire_Parameter_Response__c(
-            Questionnaire_Parameter__c = question.Id,
-            Respondent__c = mentee.Id,
-            Response__c = 'Great session',
-            Response_Category__c = 'Feedback'
+        List<KenAssessmentSurveyService.QuestionRow> answeredQuestions =
+            KenAssessmentSurveyService.questionsForSet(answeredSetId);
+        KenAssessmentSurveyService.AnswerInput answer = new KenAssessmentSurveyService.AnswerInput();
+        answer.questionId = answeredQuestions[0].id;
+        answer.value = 'Great session';
+        KenAssessmentSurveyService.submitResponses(
+            answeredSurvey.Id, mentee.Id, 'Feedback',
+            new List<KenAssessmentSurveyService.AnswerInput>{ answer }
         );
 
         Test.startTest();
@@ -1033,12 +1047,12 @@ private class KenMentorshipControllerTest {
         Test.stopTest();
 
         Ken_Mentorship__c saved = [
-            SELECT Meet_Date__c, Meeting_Link__c, Meeting_Location__c, Meeting_Mode__c
+            SELECT Meet_Start_DateTime__c, Meeting_Link__c, Meeting_Location__c, Meeting_Mode__c
             FROM Ken_Mentorship__c
             WHERE Id = :callId
             LIMIT 1
         ];
-        System.assertEquals(Date.today().addDays(5), saved.Meet_Date__c,
+        System.assertEquals(Date.today().addDays(5), saved.Meet_Start_DateTime__c.date(),
             'Date with a time suffix should parse to the date portion.');
         System.assertEquals('In-person', saved.Meeting_Mode__c, 'Meeting mode should be preserved.');
         System.assertEquals(null, saved.Meeting_Link__c, 'In-person calls should not store a meeting link.');
@@ -1330,9 +1344,11 @@ private class KenMentorshipControllerTest {
     static void testCurrentUserCityAndMentorPreferenceWithData() {
         Account cityAccount = new Account(Name = 'Generic City Account');
         insert cityAccount;
-        insert new Ken_Alumni_CRM__c(
+        insert new Ken_Address__c(
             Person_Account__c = cityAccount.Id,
-            Current_Location__c = 'Bangalore, Karnataka'
+            Address_Type__c = 'Mailing',
+            City__c = 'Bangalore',
+            State__c = 'Karnataka'
         );
         insert new Ken_Alumni_Preferences__c(
             Person_Account__c = cityAccount.Id,
@@ -1375,22 +1391,14 @@ private class KenMentorshipControllerTest {
 
     private static Id callRtId() {
         if (cachedCallRtId == null) {
-            cachedCallRtId = [
-                SELECT Id FROM RecordType
-                WHERE SObjectType = 'Ken_Mentorship__c' AND DeveloperName = :CALL_RECORD_TYPE
-                LIMIT 1
-            ].Id;
+            cachedCallRtId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CALL_RECORD_TYPE)?.getRecordTypeId();
         }
         return cachedCallRtId;
     }
 
     private static Id connectionRtId() {
         if (cachedConnectionRtId == null) {
-            cachedConnectionRtId = [
-                SELECT Id FROM RecordType
-                WHERE SObjectType = 'Ken_Mentorship__c' AND DeveloperName = :CONNECTION_RECORD_TYPE
-                LIMIT 1
-            ].Id;
+            cachedConnectionRtId = Schema.SObjectType.Ken_Mentorship__c.getRecordTypeInfosByDeveloperName().get(CONNECTION_RECORD_TYPE)?.getRecordTypeId();
         }
         return cachedConnectionRtId;
     }
@@ -1406,9 +1414,10 @@ private class KenMentorshipControllerTest {
             Mentee__c = menteeId,
             MeetingRequestedBy__c = requestedById,
             Meeting_Title__c = 'Matrix Call',
-            Meet_Date__c = meetDate,
-            Meet_Start_Time__c = startTime,
-            Meet_End_Time__c = endTime,
+            // Stored as instants. The Time args are read as the UTC wall clock on
+            // meetDate, which is what the app now persists.
+            Meet_Start_DateTime__c = startTime == null ? null : DateTime.newInstanceGmt(meetDate, startTime),
+            Meet_End_DateTime__c = endTime == null ? null : DateTime.newInstanceGmt(meetDate, endTime),
             Meeting_Mode__c = mode,
             Call_Request_Status__c = callStatus
         );
@@ -1436,7 +1445,10 @@ private class KenMentorshipControllerTest {
 
     private static Boolean rescheduleThrows(String callRequestId, String meetingDate, String startTime, String endTime) {
         try {
-            KenMentorshipController.rescheduleCallRequest(callRequestId, meetingDate, startTime, endTime);
+            // No instants here on purpose: these cases assert the validation that
+            // runs before any of them are read, and they also exercise the fallback
+            // for components that have not been updated yet.
+            KenMentorshipController.rescheduleCallRequest(callRequestId, meetingDate, startTime, endTime, null, null);
             return false;
         } catch (AuraHandledException ex) {
             return true;

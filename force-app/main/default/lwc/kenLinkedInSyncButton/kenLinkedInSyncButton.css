@@ -1,5 +1,69 @@
 /* Pad only the inner content slot of the card — the lightning-card's own
    chrome (white background, border, shadow) stays flush with the rail. */
 .linkedin-sync-content {
-    padding: 12px 0px 0px 12px;
+  padding: 12px 0px 0px 12px;
+}
+
+/* Portal profile variant - mirrors kenMyProfile's .section / .card-heading /
+   .ken-edit-icon-btn classes exactly (this component is its own Shadow DOM,
+   so those classes can't be inherited) so the card lines up with Record
+   Health and Recent Activity instead of using lightning-card's SLDS chrome. */
+.linkedin-sync-section {
+  background-color: var(--portal-surface, #ffffff);
+  border: var(--portal-border-width, 1px) solid
+    var(--portal-border-color, #e6e8ee);
+  border-radius: var(--portal-radius, 12px);
+  padding: 24px;
+  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+}
+
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.card-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-heading-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--portal-surface-hover, #f9fafb);
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.ken-edit-icon-btn {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border: 1px solid var(--primary-color);
+  background: var(--secoundry-color, #f3f4f6);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  flex: none;
+}
+
+.ken-edit-icon-btn:hover {
+  filter: brightness(0.98);
 }

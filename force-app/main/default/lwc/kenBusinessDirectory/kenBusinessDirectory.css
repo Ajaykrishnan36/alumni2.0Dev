@@ -50,7 +50,6 @@
     height: 100%;
     min-height: 0;
     overflow: hidden;
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
 }
 
 .section-header {
@@ -153,7 +152,6 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
 }
 
 .my-businesses-title {

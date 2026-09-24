@@ -16,6 +16,7 @@ public with sharing class KenModuleFeedbackController {
               AND Category__c = :category
               AND Parent_Template__c = null
               AND Is_Active__c = true
+            WITH USER_MODE
             ORDER BY LastModifiedDate DESC
             LIMIT 1
         ];
@@ -33,8 +34,13 @@ public with sharing class KenModuleFeedbackController {
         if (recordId == null) {
             return null;
         }
+        // On the Ken_Survey__c record page the recordId IS the survey instance; there is
+        // no Survey__c lookup to follow, so use it directly.
+        if (recordId.getSObjectType() == Ken_Survey__c.SObjectType) {
+            return recordId;
+        }
         Schema.DescribeSObjectResult dsr = recordId.getSObjectType().getDescribe();
-        if (!dsr.fields.getMap().containsKey('Survey__c')) {
+        if (!dsr.fields.getMap().containsKey(KenNamespaceUtil.qualifyCustom('Survey__c'))) {
             return null;
         }
         // Read in system context: a community respondent (e.g. an event registrant)
@@ -56,35 +62,35 @@ public with sharing class KenModuleFeedbackController {
         return buildFormFromSurvey(surveyId, recId);
     }
 
+    /**
+     * @description Builds the form a respondent fills in.
+     *
+     *              Reads in system context: a community respondent (e.g. an event
+     *              registrant) typically has no sharing access to the host's
+     *              Ken_Survey__c, which would otherwise make the form load empty.
+     * @param surveyId Survey instance to render.
+     * @param recordId Host record the form was opened from.
+     * @return Form definition for the client.
+     */
     private static SurveyFormData buildFormFromSurvey(Id surveyId, Id recordId) {
-        // Read in system context: a community respondent (e.g. an event registrant)
-        // typically has no sharing access to the host's Ken_Survey__c, which would
-        // otherwise make the form load empty.
-        Wos wos = new Wos();
-        List<Ken_Survey__c> surveys = wos.surveyById(surveyId);
-        if (surveys.isEmpty() || surveys[0].Ken_Questionnaire__c == null) {
+        List<Ken_Survey__c> surveys = new Wos().surveyById(surveyId);
+        if (surveys.isEmpty() || surveys[0].Assessment_Question_Set__c == null) {
             throw new AuraHandledException('Feedback form is missing its questionnaire.');
         }
-        Id questionnaireId = surveys[0].Ken_Questionnaire__c;
-        List<Ken_Questionnaire_Parameter__c> params = wos.paramsByQuestionnaire(questionnaireId);
 
         SurveyFormData data = new SurveyFormData();
         data.surveyId = surveyId;
         data.recordId = recordId;
         data.name = surveys[0].Name;
-        data.sectionName = surveys[0].Section_Name__c;
         data.questions = new List<QuestionData>();
-        for (Ken_Questionnaire_Parameter__c p : params) {
+        for (KenAssessmentSurveyService.QuestionRow row
+                : KenAssessmentSurveyService.questionsForSet(surveys[0].Assessment_Question_Set__c)) {
             QuestionData q = new QuestionData();
-            q.id = p.Id;
-            q.label = p.Question_Label__c;
-            q.type = p.Question_Type__c;
-            q.options = p.MCQ_Options__c;
-            q.minGrade = p.Min_Grade__c;
-            q.maxGrade = p.Max_Grade__c;
-            q.minGradeLabel = p.Min_Grade_Label__c;
-            q.maxGradeLabel = p.Max_Grade_Label__c;
-            q.required = p.Is_Required__c == true;
+            q.id = row.id;
+            q.label = row.questionLabel;
+            q.type = row.questionType;
+            q.choices = row.choices;
+            q.required = row.required == true;
             data.questions.add(q);
         }
         return data;
@@ -100,9 +106,6 @@ public with sharing class KenModuleFeedbackController {
         if (request == null || String.isBlank(request.recordId)) {
             throw new AuraHandledException('Record id is required.');
         }
-        if (!Schema.sObjectType.Ken_Questionnaire_Parameter_Response__c.isCreateable()) {
-            throw new AuraHandledException('Insufficient access to save feedback.');
-        }
         Id recId = (Id) request.recordId;
         Id surveyId = String.isNotBlank(request.surveyId) ? (Id) request.surveyId : resolveSurveyId(recId);
         if (surveyId == null) {
@@ -110,137 +113,73 @@ public with sharing class KenModuleFeedbackController {
         }
 
         Id respondentAccountId = fetchCurrentAccountId();
-        List<Ken_Questionnaire_Parameter_Response__c> inserts = new List<Ken_Questionnaire_Parameter_Response__c>();
+
+        List<KenAssessmentSurveyService.AnswerInput> answers = new List<KenAssessmentSurveyService.AnswerInput>();
         if (request.responses != null) {
             for (QuestionResponse qr : request.responses) {
                 if (qr == null || String.isBlank(qr.questionId) || String.isBlank(qr.responseValue)) {
                     continue;
                 }
-                // The question links to the instance's own questionnaire, which is how the
-                // response reaches the survey instance (no direct survey lookup on the response).
-                inserts.add(new Ken_Questionnaire_Parameter_Response__c(
-                    Questionnaire_Parameter__c = (Id) qr.questionId,
-                    Respondent__c = respondentAccountId,
-                    Response__c = qr.responseValue,
-                    Response_Category__c = RESPONSE_CATEGORY
-                ));
+                KenAssessmentSurveyService.AnswerInput answer = new KenAssessmentSurveyService.AnswerInput();
+                answer.questionId = (Id) qr.questionId;
+                answer.value = qr.responseValue;
+                answers.add(answer);
             }
         }
-        if (inserts.isEmpty()) {
+        if (answers.isEmpty()) {
             throw new AuraHandledException('Please answer at least one question.');
         }
-        // Insert in system context: the response references the survey/question, which
-        // a community respondent may not have sharing access to.
-        new Wos().insertResponses(inserts);
+        KenAssessmentSurveyService.submitResponses(
+            surveyId, respondentAccountId, RESPONSE_CATEGORY, answers
+        );
     }
 
-    // System-context reads/writes so community respondents (no sharing on the host's
-    // survey) can still load and submit a module feedback/survey form.
+    // System-context reads so community respondents (no sharing on the host's survey)
+    // can still load a module feedback/survey form.
     private without sharing class Wos {
         Id surveyIdForRecord(String objApi, Id recordId) {
             List<SObject> recs = Database.query(
                 'SELECT Survey__c FROM ' + String.escapeSingleQuotes(objApi) + ' WHERE Id = :recordId LIMIT 1'
             );
-            return recs.isEmpty() ? null : (Id) recs[0].get('Survey__c');
+            return recs.isEmpty() ? null : (Id) recs[0].get(KenNamespaceUtil.qualifyCustom('Survey__c'));
         }
         List<Ken_Survey__c> surveyById(Id surveyId) {
             return [
-                SELECT Id, Name, Section_Name__c, Ken_Questionnaire__c
-                FROM Ken_Survey__c WHERE Id = :surveyId LIMIT 1
+                SELECT Id, Name, Assessment_Question_Set__c
+                FROM Ken_Survey__c WHERE Id = :surveyId
+                WITH SECURITY_ENFORCED
+                LIMIT 1
             ];
-        }
-        List<Ken_Questionnaire_Parameter__c> paramsByQuestionnaire(Id questionnaireId) {
-            return [
-                SELECT Id, Question_Label__c, Question_Type__c, MCQ_Options__c,
-                       Min_Grade__c, Max_Grade__c, Min_Grade_Label__c, Max_Grade_Label__c,
-                       Order__c, Is_Required__c
-                FROM Ken_Questionnaire_Parameter__c
-                WHERE Questionnaire__c = :questionnaireId
-                ORDER BY Order__c ASC NULLS LAST
-            ];
-        }
-        void insertResponses(List<Ken_Questionnaire_Parameter_Response__c> recs) {
-            insert recs;
         }
         Id createInstance(String category, String templateRecordType) {
             List<Ken_Survey__c> templates = [
-                SELECT Id, Name, Section_Name__c, Ken_Questionnaire__c, Category__c
+                SELECT Id, Name, Assessment_Question_Set__c, Category__c
                 FROM Ken_Survey__c
                 WHERE RecordType.DeveloperName = :templateRecordType
                   AND Category__c = :category
                   AND Parent_Template__c = null
                   AND Is_Active__c = true
+                WITH SECURITY_ENFORCED
                 ORDER BY LastModifiedDate DESC
                 LIMIT 1
             ];
-            if (templates.isEmpty() || templates[0].Ken_Questionnaire__c == null) {
+            if (templates.isEmpty() || templates[0].Assessment_Question_Set__c == null) {
                 return null;
             }
             Ken_Survey__c tpl = templates[0];
-            // Each instance gets its OWN cloned questionnaire. Responses link to a survey
-            // only through the questionnaire, so sharing the template's questionnaire would
-            // make every instance's responses indistinguishable from its siblings'.
-            Id instanceQuestionnaireId = cloneQuestionnaire(tpl.Ken_Questionnaire__c);
             Ken_Survey__c instance = new Ken_Survey__c(
                 Name = String.isNotBlank(tpl.Name) ? tpl.Name : category + ' Feedback',
                 Category__c = category,
                 Parent_Template__c = tpl.Id,
-                Ken_Questionnaire__c = instanceQuestionnaireId,
-                Section_Name__c = tpl.Section_Name__c,
+                Assessment_Question_Set__c = tpl.Assessment_Question_Set__c,
+                Module__c = 'Alumni',
                 Is_Active__c = true
             );
+            if (!Schema.sObjectType.Ken_Survey__c.isCreateable()) {
+                throw new KenCrudException('Ken_Survey__c is not createable by the current user.');
+            }
             insert instance;
             return instance.Id;
-        }
-
-        // Deep-clones a questionnaire and its parameters; returns the new questionnaire id.
-        Id cloneQuestionnaire(Id sourceQuestionnaireId) {
-            if (sourceQuestionnaireId == null) {
-                return null;
-            }
-            List<Ken_Questionnaire__c> sources = [
-                SELECT Id, Section_Name__c, Descripation__c, Target_Audience__c, Questions_JSON__c
-                FROM Ken_Questionnaire__c WHERE Id = :sourceQuestionnaireId LIMIT 1
-            ];
-            if (sources.isEmpty()) {
-                return null;
-            }
-            Ken_Questionnaire__c src = sources[0];
-            Ken_Questionnaire__c clone = new Ken_Questionnaire__c(
-                Section_Name__c = src.Section_Name__c,
-                Descripation__c = src.Descripation__c,
-                Target_Audience__c = src.Target_Audience__c,
-                Questions_JSON__c = src.Questions_JSON__c
-            );
-            insert clone;
-
-            List<Ken_Questionnaire_Parameter__c> newParams = new List<Ken_Questionnaire_Parameter__c>();
-            for (Ken_Questionnaire_Parameter__c p : [
-                SELECT Question_Label__c, Question_Type__c, MCQ_Options__c,
-                       Min_Grade__c, Max_Grade__c, Min_Grade_Label__c, Max_Grade_Label__c,
-                       Order__c, Is_Required__c, Section_Name__c
-                FROM Ken_Questionnaire_Parameter__c
-                WHERE Questionnaire__c = :sourceQuestionnaireId
-                ORDER BY Order__c ASC NULLS LAST
-            ]) {
-                newParams.add(new Ken_Questionnaire_Parameter__c(
-                    Questionnaire__c = clone.Id,
-                    Question_Label__c = p.Question_Label__c,
-                    Question_Type__c = p.Question_Type__c,
-                    MCQ_Options__c = p.MCQ_Options__c,
-                    Min_Grade__c = p.Min_Grade__c,
-                    Max_Grade__c = p.Max_Grade__c,
-                    Min_Grade_Label__c = p.Min_Grade_Label__c,
-                    Max_Grade_Label__c = p.Max_Grade_Label__c,
-                    Order__c = p.Order__c,
-                    Is_Required__c = p.Is_Required__c,
-                    Section_Name__c = p.Section_Name__c
-                ));
-            }
-            if (!newParams.isEmpty()) {
-                insert newParams;
-            }
-            return clone.Id;
         }
     }
 
@@ -258,18 +197,11 @@ public with sharing class KenModuleFeedbackController {
             return false;
         }
         Id acc = fetchCurrentAccountId();
-        // Read the questionnaire in system context — a community respondent may have no
-        // sharing on the host's survey, which would otherwise hide their own response.
         List<Ken_Survey__c> svy = new Wos().surveyById(surveyId);
-        Id questionnaireId = svy.isEmpty() ? null : svy[0].Ken_Questionnaire__c;
-        if (questionnaireId == null) {
+        if (svy.isEmpty() || svy[0].Assessment_Question_Set__c == null) {
             return false;
         }
-        return [
-            SELECT COUNT()
-            FROM Ken_Questionnaire_Parameter_Response__c
-            WHERE Questionnaire_Parameter__r.Questionnaire__c = :questionnaireId AND Respondent__c = :acc
-        ] > 0;
+        return !KenAssessmentSurveyService.surveysAnsweredBy(new Set<Id>{ surveyId }, acc).isEmpty();
     }
 
     // ============================================================
@@ -298,6 +230,7 @@ public with sharing class KenModuleFeedbackController {
         Set<Id> surveyIds = new Set<Id>();
         for (Ken_Survey__c s : [
             SELECT Id FROM Ken_Survey__c WHERE Parent_Template__c = :templateId
+        WITH USER_MODE
         ]) {
             surveyIds.add(s.Id);
         }
@@ -319,57 +252,41 @@ public with sharing class KenModuleFeedbackController {
         if (surveyIds == null || surveyIds.isEmpty()) {
             return view;
         }
-        if (!Schema.sObjectType.Ken_Questionnaire_Parameter_Response__c.isAccessible()) {
-            return view;
-        }
-        // Responses reach a survey only via the questionnaire link; resolve the surveys'
-        // questionnaires (1:1 per instance) and scope the responses through them.
-        Set<Id> qIds = new Set<Id>();
-        for (Ken_Survey__c s : [
-            SELECT Ken_Questionnaire__c FROM Ken_Survey__c
-            WHERE Id IN :surveyIds AND Ken_Questionnaire__c != null
-        ]) {
-            qIds.add(s.Ken_Questionnaire__c);
-        }
-        if (qIds.isEmpty()) {
-            return view;
-        }
-        List<Ken_Questionnaire_Parameter_Response__c> rows = [
-            SELECT Id, Question_Label__c, Response__c, Respondent__c, Respondent__r.Name, CreatedDate,
-                   Questionnaire_Parameter__r.Order__c, Questionnaire_Parameter__r.Question_Label__c
-            FROM Ken_Questionnaire_Parameter_Response__c
-            WHERE Questionnaire_Parameter__r.Questionnaire__c IN :qIds
-            ORDER BY Respondent__c NULLS LAST, CreatedDate ASC, Questionnaire_Parameter__r.Order__c ASC NULLS LAST
-        ];
         Map<Id, RespondentResponses> byRespondent = new Map<Id, RespondentResponses>();
-        for (Ken_Questionnaire_Parameter_Response__c r : rows) {
-            Id key = r.Respondent__c;
+        for (AssessmentQuestionResponse answer : KenAssessmentSurveyService.answersForSurveys(surveyIds)) {
+            Id key = answer.Assessment.Respondent__c;
             RespondentResponses rr = byRespondent.get(key);
             if (rr == null) {
                 rr = new RespondentResponses();
                 rr.respondentId = key;
-                rr.respondentName = (r.Respondent__r != null && r.Respondent__r.Name != null)
-                    ? r.Respondent__r.Name : 'Anonymous';
-                rr.submittedDate = r.CreatedDate;
+                rr.respondentName = (answer.Assessment.Respondent__r != null && answer.Assessment.Respondent__r.Name != null)
+                    ? answer.Assessment.Respondent__r.Name : 'Anonymous';
+                rr.submittedDate = answer.Assessment.Submitted_Date__c != null
+                    ? answer.Assessment.Submitted_Date__c : answer.CreatedDate;
                 rr.answers = new List<AnswerData>();
                 byRespondent.put(key, rr);
                 view.respondents.add(rr);
             }
             AnswerData a = new AnswerData();
-            a.question = String.isNotBlank(r.Question_Label__c)
-                ? r.Question_Label__c
-                : (r.Questionnaire_Parameter__r != null ? r.Questionnaire_Parameter__r.Question_Label__c : null);
-            a.answer = r.Response__c;
+            a.question = answer.Question_Label__c;
+            a.answer = answer.ResponseText;
             rr.answers.add(a);
         }
         view.total = view.respondents.size();
         return view;
     }
 
+    @TestVisible private static Id testRespondentAccountId;
+
     private static Id fetchCurrentAccountId() {
+        if (Test.isRunningTest() && testRespondentAccountId != null) {
+            return testRespondentAccountId;
+        }
         List<User> us = [
             SELECT AccountId, Contact.AccountId
-            FROM User WHERE Id = :UserInfo.getUserId() LIMIT 1
+            FROM User WHERE Id = :UserInfo.getUserId()
+            WITH SYSTEM_MODE
+            LIMIT 1
         ];
         if (us.isEmpty()) {
             return null;
@@ -396,18 +313,13 @@ public with sharing class KenModuleFeedbackController {
         @AuraEnabled public Id surveyId;
         @AuraEnabled public Id recordId;
         @AuraEnabled public String name;
-        @AuraEnabled public String sectionName;
         @AuraEnabled public List<QuestionData> questions;
     }
     public class QuestionData {
         @AuraEnabled public Id id;
         @AuraEnabled public String label;
         @AuraEnabled public String type;
-        @AuraEnabled public String options;
-        @AuraEnabled public Decimal minGrade;
-        @AuraEnabled public Decimal maxGrade;
-        @AuraEnabled public String minGradeLabel;
-        @AuraEnabled public String maxGradeLabel;
+        @AuraEnabled public List<KenAssessmentSurveyService.ChoiceRow> choices;
         @AuraEnabled public Boolean required;
     }
     public class ResponseView {

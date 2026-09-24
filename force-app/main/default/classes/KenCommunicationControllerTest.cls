@@ -3,8 +3,9 @@
  * The module stores no per-recipient custom records: recipients are an
  * Account-Id snapshot on the campaign, sent via setTargetObjectId, and
  * analytics are read from standard objects. Tests therefore verify the
- * snapshot send pipeline and the campaign counters; open data (EmailStatus)
- * is system-populated and not assertable in Apex tests, so it degrades to 0.
+ * snapshot send pipeline and the campaign counters; open data
+ * (EmailMessage.IsOpened / FirstOpenedDate) is system-populated and not
+ * assertable in Apex tests, so it degrades to 0.
  */
 @IsTest(SeeAllData=false)
 private class KenCommunicationControllerTest {
@@ -13,7 +14,7 @@ private class KenCommunicationControllerTest {
     static void seed() {
         Id paRtId;
         for (RecordType rt : [
-            SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true LIMIT 1
+            SELECT Id FROM RecordType WHERE SObjectType = 'Account' AND IsPersonType = true AND IsActive = true LIMIT 1
         ]) { paRtId = rt.Id; }
 
         List<Account> accts = new List<Account>();

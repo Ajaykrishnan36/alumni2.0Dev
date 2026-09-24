@@ -1,7 +1,7 @@
 @IsTest
 private class KenBusinessTriggerHandlerTest {
     private static final String BUSINESS_RT = 'Business';
-    private static final String ALUMNI_RT   = 'Alumni_Person_Account';
+    private static final String ALUMNI_RT   = 'PersonAccount';
 
     private static Id getBusinessRtId() {
         List<RecordType> rts = [
@@ -19,7 +19,7 @@ private class KenBusinessTriggerHandlerTest {
         if (!rts.isEmpty()) {
             return rts[0].Id;
         }
-        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account']) {
+        for (RecordType rt : [SELECT Id, IsPersonType FROM RecordType WHERE SObjectType = 'Account' AND IsActive = true]) {
             if (rt.IsPersonType) {
                 return rt.Id;
             }

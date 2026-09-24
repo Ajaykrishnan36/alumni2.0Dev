@@ -5,7 +5,7 @@ private class KenEventTriggerHandlerTest {
     static void testSubmitEventForApproval() {
 		
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account')
+            .get('PersonAccount')
             .getRecordTypeId();
         Account pa = new Account(RecordTypeId = paRtId, LastName = 'Test');
         insert pa;
@@ -30,7 +30,7 @@ private class KenEventTriggerHandlerTest {
     static void testNoApprovalWhenStatusNotPending() {
 
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account')
+            .get('PersonAccount')
             .getRecordTypeId();
         Account pa = new Account(RecordTypeId = paRtId, LastName = 'Test');
         insert pa;
@@ -54,7 +54,7 @@ private class KenEventTriggerHandlerTest {
     static void testNotification() {
 
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account')
+            .get('PersonAccount')
             .getRecordTypeId();
         Account pa = new Account(RecordTypeId = paRtId, LastName = 'Test');
         insert pa;
@@ -79,7 +79,7 @@ private class KenEventTriggerHandlerTest {
     @isTest
     static void testNotifyOnRejected() {
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account').getRecordTypeId();
+            .get('PersonAccount').getRecordTypeId();
         Account pa = new Account(RecordTypeId = paRtId, LastName = 'Test');
         insert pa;
         ConstituentRole cr = createConstituentRole(pa.Id);
@@ -105,7 +105,7 @@ private class KenEventTriggerHandlerTest {
     @isTest
     static void testNotifyOnCancelled() {
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account').getRecordTypeId();
+            .get('PersonAccount').getRecordTypeId();
         Account pa = new Account(RecordTypeId = paRtId, LastName = 'Test');
         insert pa;
         ConstituentRole cr = createConstituentRole(pa.Id);
@@ -131,7 +131,7 @@ private class KenEventTriggerHandlerTest {
     @isTest
     static void testSubmittedTriggersApproval() {
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account').getRecordTypeId();
+            .get('PersonAccount').getRecordTypeId();
         Account pa = new Account(RecordTypeId = paRtId, LastName = 'Test');
         insert pa;
         ConstituentRole cr = createConstituentRole(pa.Id);
@@ -155,11 +155,11 @@ private class KenEventTriggerHandlerTest {
     @isTest
     static void testBypass() {
 
-		Alumni_Trigger_Settings__c triggerSettings = new Alumni_Trigger_Settings__c(Event_Trigger__c = true);
+		Ken_Alm_Bypass_Settings__c triggerSettings = new Ken_Alm_Bypass_Settings__c(Skip_Event_Trigger__c = true);
 		insert triggerSettings;
 
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account')
+            .get('PersonAccount')
             .getRecordTypeId();
         Account pa = new Account(RecordTypeId = paRtId, LastName = 'Test');
         insert pa;
@@ -174,8 +174,8 @@ private class KenEventTriggerHandlerTest {
 		insert eventRecord;
         Test.stopTest();
         
-        Alumni_Trigger_Settings__c setting = [SELECT Id, Event_Trigger__c FROM Alumni_Trigger_Settings__c LIMIT 1];
-        System.assert(setting.Event_Trigger__c, 'Event trigger should be enabled as per trigger settings.');
+        Ken_Alm_Bypass_Settings__c setting = [SELECT Id, Skip_Event_Trigger__c FROM Ken_Alm_Bypass_Settings__c LIMIT 1];
+        System.assert(setting.Skip_Event_Trigger__c, 'Event trigger should be enabled as per trigger settings.');
 
         Ken_Event_Master__c insertedEvent = [SELECT Id, Name FROM Ken_Event_Master__c WHERE Id = :eventRecord.Id];
         System.assertNotEquals(null, insertedEvent, 'Event record should be inserted when trigger bypass setting is enabled.');

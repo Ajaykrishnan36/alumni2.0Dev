@@ -3,7 +3,7 @@ private class KenModuleVisibilityControllerTest {
 
     @IsTest
     static void defaultsToAllShownWhenNoSettingExists() {
-        // No Alumni_Module_Settings__c record inserted => every module shown.
+        // No Ken_Alm_Module_Settings__c record inserted => every module shown.
         Test.startTest();
         KenModuleVisibilityController.ModuleVisibility mv =
             KenModuleVisibilityController.getModuleVisibility();
@@ -25,7 +25,7 @@ private class KenModuleVisibilityControllerTest {
 
     @IsTest
     static void hidesModulesWhenExplicitlyUnchecked() {
-        insert new Alumni_Module_Settings__c(
+        insert new Ken_Alm_Module_Settings__c(
             SetupOwnerId = UserInfo.getOrganizationId(),
             Show_Home__c = true,
             Show_Events__c = false,
@@ -55,12 +55,12 @@ private class KenModuleVisibilityControllerTest {
         System.assertEquals(false, mv.gallery, 'Gallery should be hidden when unchecked.');
         System.assertEquals(false, mv.businessDirectory, 'Business Directory should be hidden when unchecked.');
         System.assertEquals(false, mv.feedbackSurvey, 'Feedback and Survey should be hidden when unchecked.');
-        System.assertEquals(false, mv.serviceSupport, 'Service and Support should be hidden when unchecked.');
+        System.assertEquals(false, mv.serviceSupport, 'Service and Support should stay hidden when unchecked.');
     }
 
     @IsTest
     static void hidesOnlySelectedModules() {
-        insert new Alumni_Module_Settings__c(
+        insert new Ken_Alm_Module_Settings__c(
             SetupOwnerId = UserInfo.getOrganizationId(),
             Show_Events__c = true,
             Show_Jobs__c = false,
@@ -77,5 +77,20 @@ private class KenModuleVisibilityControllerTest {
         System.assertEquals(false, mv.fundraise, 'Fundraise should be hidden.');
         System.assertEquals(true, mv.network, 'Untouched modules should remain shown.');
         System.assertEquals(true, mv.groups, 'Untouched modules should remain shown.');
+    }
+
+    @IsTest
+    static void showsServiceSupportWhenChecked() {
+        insert new Ken_Alm_Module_Settings__c(
+            SetupOwnerId = UserInfo.getOrganizationId(),
+            Show_Service_Support__c = true
+        );
+
+        Test.startTest();
+        KenModuleVisibilityController.ModuleVisibility mv =
+            KenModuleVisibilityController.getModuleVisibility();
+        Test.stopTest();
+
+        System.assertEquals(true, mv.serviceSupport, 'Service and Support should be shown when checked.');
     }
 }

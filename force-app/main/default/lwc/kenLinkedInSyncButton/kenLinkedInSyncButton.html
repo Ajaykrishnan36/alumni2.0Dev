@@ -1,11 +1,59 @@
 <template>
-  <lightning-card title="LinkedIn Sync" icon-name="standard:contact">
-    <div class="linkedin-sync-content slds-p-horizontal_medium slds-p-bottom_medium">
+  <!-- Portal profile (showSetupLink=true): a plain card matching the other
+       Personal Details tab cards (Record Health, Recent Activity) - small
+       heading icon + title on the left, edit icon on the right - instead of
+       lightning-card's own SLDS header chrome, which never quite lined up
+       with the rest of the tab. Admin / record-page usages keep the
+       original lightning-card exactly as before. -->
+  <template if:true={showSetupLink}>
+    <div class="section linkedin-sync-section">
+      <div class="section-header-row">
+        <div class="card-heading">
+          <span class="card-heading-icon">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--primary-color)"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+              <path d="M21 3v6h-6" />
+            </svg>
+          </span>
+          <p class="section-title">LinkedIn Sync</p>
+        </div>
+        <button
+          type="button"
+          class="ken-edit-icon-btn"
+          onclick={handleSetupClick}
+          title="Add or update LinkedIn URL in your profile"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M11.7167 7.51667L12.4833 8.28333L4.93333 15.8333H4.16667V15.0667L11.7167 7.51667ZM14.7167 2.5C14.5083 2.5 14.2917 2.58333 14.1333 2.74167L12.6083 4.26667L15.7333 7.39167L17.2583 5.86667C17.5833 5.54167 17.5833 5.01667 17.2583 4.69167L15.3083 2.74167C15.1417 2.575 14.9333 2.5 14.7167 2.5ZM11.7167 5.15833L2.5 14.375V17.5H5.625L14.8417 8.28333L11.7167 5.15833Z"
+              fill="var(--primary-color)"
+            />
+          </svg>
+        </button>
+      </div>
+
       <p class="slds-text-body_small slds-m-bottom_x-small">
         Last synced: <strong>{lastSyncLabel}</strong>
       </p>
       <template if:false={hasLinkedIn}>
-        <p class="slds-text-color_weak slds-text-body_small slds-m-bottom_x-small">
+        <p
+          class="slds-text-color_weak slds-text-body_small slds-m-bottom_x-small"
+        >
           Add a LinkedIn Profile URL to enable sync.
         </p>
       </template>
@@ -14,8 +62,36 @@
         icon-name="utility:sync"
         variant="brand"
         onclick={handleSync}
-        disabled={syncDisabled}>
+        disabled={syncDisabled}
+      >
       </lightning-button>
     </div>
-  </lightning-card>
+  </template>
+
+  <template if:false={showSetupLink}>
+    <lightning-card title="LinkedIn Sync" icon-name="standard:contact">
+      <div
+        class="linkedin-sync-content slds-p-horizontal_medium slds-p-bottom_medium"
+      >
+        <p class="slds-text-body_small slds-m-bottom_x-small">
+          Last synced: <strong>{lastSyncLabel}</strong>
+        </p>
+        <template if:false={hasLinkedIn}>
+          <p
+            class="slds-text-color_weak slds-text-body_small slds-m-bottom_x-small"
+          >
+            Add a LinkedIn Profile URL to enable sync.
+          </p>
+        </template>
+        <lightning-button
+          label="Sync from LinkedIn"
+          icon-name="utility:sync"
+          variant="brand"
+          onclick={handleSync}
+          disabled={syncDisabled}
+        >
+        </lightning-button>
+      </div>
+    </lightning-card>
+  </template>
 </template>

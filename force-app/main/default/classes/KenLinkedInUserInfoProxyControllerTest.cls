@@ -10,14 +10,14 @@ private class KenLinkedInUserInfoProxyControllerTest {
     private class NonCompliantUserInfoMock implements HttpCalloutMock {
         public HttpResponse respond(HttpRequest req) {
             System.assertEquals(
-                'https://api.linkedin.com/v2/userinfo',
+                'https://api.linkedin.com/v2/userinfo?oauth2_access_token=fake-access-token',
                 req.getEndpoint(),
-                'Proxy must call LinkedIn userinfo endpoint.'
+                'Proxy must call LinkedIn userinfo endpoint with the forwarded token.'
             );
             System.assertEquals(
-                true,
-                req.getHeader('Authorization').startsWithIgnoreCase('Bearer '),
-                'Proxy must forward the bearer token to LinkedIn.'
+                null,
+                req.getHeader('Authorization'),
+                'Proxy must not send the token in an Authorization header.'
             );
             HttpResponse res = new HttpResponse();
             res.setStatusCode(200);

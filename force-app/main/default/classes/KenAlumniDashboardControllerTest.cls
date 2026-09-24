@@ -4,7 +4,7 @@ private class KenAlumniDashboardControllerTest {
     @TestSetup
     static void makeData() {
         Id paRtId = Schema.SObjectType.Account.getRecordTypeInfosByDeveloperName()
-            .get('Alumni_Person_Account').getRecordTypeId();
+            .get('PersonAccount').getRecordTypeId();
 
         Account a1 = new Account(
             RecordTypeId=paRtId, LastName='Test Alumni One',
@@ -14,7 +14,7 @@ private class KenAlumniDashboardControllerTest {
         );
         Account a2 = new Account(
             RecordTypeId=paRtId, LastName='Test Alumni Two',
-            PersonEmail='alumni2_dash@test.com', BillingCountry='USA',
+            PersonEmail='alumni2_dash@test.com', BillingCountry='United States',
             PersonBirthdate=Date.newInstance(1985,6,20)
         );
         insert new List<Account>{ a1, a2 };
@@ -48,12 +48,6 @@ private class KenAlumniDashboardControllerTest {
             Skill_set__c='Leadership;Innovation'
         );
 
-        insert new Ken_Alumni_CRM__c(
-            Person_Account__c=a1.Id,
-            Specialization__c='Engineering',
-            Year_of_Graduation__c='2015',
-            Profile_Photo_URL__c='https://test.com/photo.jpg'
-        );
     }
 
     // ── Filter options ──────────────────────────────────────────────────────

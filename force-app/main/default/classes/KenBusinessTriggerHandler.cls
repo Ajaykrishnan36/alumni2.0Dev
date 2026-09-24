@@ -26,16 +26,20 @@ public without sharing class KenBusinessTriggerHandler extends KenTriggerHandler
         if (!approverResolved) {
             approverResolved = true;
             List<Group> groups = [
-                SELECT Id FROM Group WHERE DeveloperName = :APPROVER_GROUP AND Type = 'Queue' LIMIT 1
+                SELECT Id FROM Group WHERE DeveloperName = :APPROVER_GROUP AND Type = 'Queue'
+                WITH SYSTEM_MODE
+                LIMIT 1
             ];
             if (!groups.isEmpty()) {
                 Set<Id> memberIds = new Set<Id>();
-                for (GroupMember gm : [SELECT UserOrGroupId FROM GroupMember WHERE GroupId = :groups[0].Id]) {
+                for (GroupMember gm : [SELECT UserOrGroupId FROM GroupMember WHERE GroupId = :groups[0].Id WITH SYSTEM_MODE]) {
                     memberIds.add(gm.UserOrGroupId);
                 }
                 if (!memberIds.isEmpty()) {
                     List<User> users = [
-                        SELECT Id FROM User WHERE Id IN :memberIds AND IsActive = true ORDER BY Name LIMIT 1
+                        SELECT Id FROM User WHERE Id IN :memberIds AND IsActive = true
+                        WITH SYSTEM_MODE
+                        ORDER BY Name LIMIT 1
                     ];
                     if (!users.isEmpty()) {
                         cachedApproverId = users[0].Id;

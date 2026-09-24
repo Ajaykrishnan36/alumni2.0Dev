@@ -10,7 +10,7 @@ public with sharing class KenExportCsvController {
                 IsMajorVersion = true,
                 Origin         = 'H'
             );
-            insert cv;
+            Database.insert(cv, true, AccessLevel.USER_MODE);
             return '/sfc/servlet.shepherd/version/download/' + cv.Id;
         } catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
