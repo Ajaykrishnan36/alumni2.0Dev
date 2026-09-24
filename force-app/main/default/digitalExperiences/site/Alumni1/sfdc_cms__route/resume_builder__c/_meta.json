@@ -1,0 +1,6 @@
+{
+  "apiName" : "resume_builder__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/jobs__c",
+  "path" : "routes"
+}

@@ -1,0 +1,15 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "setting",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "attributes" : {
+          "columnGutterWidth" : "0rem"
+        },
+        "id" : "3e4ceb52-6fb0-46a4-afcf-199f17a27424"
+      } ]
+    }
+  },
+  "urlName" : "setting"
+}

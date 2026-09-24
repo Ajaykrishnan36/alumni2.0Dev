@@ -13,15 +13,18 @@
     z-index: auto;
 }
 
+/* Optional theming hooks (defaults = original look): a host form can set
+   --ken-phone-min-height / --ken-phone-bg / --ken-phone-border-color /
+   --ken-phone-input-padding / --ken-phone-line-height to match its own inputs */
 .phone-input-wrapper {
     position: relative;
     display: flex;
     align-items: stretch;
     width: 100%;
-    min-height: 32px;
-    border: 1px solid #D8D8D8;
+    min-height: var(--ken-phone-min-height, 32px);
+    border: 1px solid var(--ken-phone-border-color, #D8D8D8);
     border-radius: 8px;
-    background: #ffffff;
+    background: var(--ken-phone-bg, #ffffff);
     /* Clip the inner white selector/input to the rounded corners so the
        background doesn't poke out past the border radius */
     overflow: hidden;
@@ -62,8 +65,8 @@
     padding-left: 16px;
     cursor: pointer;
     user-select: none;
-    border-right: 1px solid #D8D8D8;
-    background: #ffffff;
+    border-right: 1px solid var(--ken-phone-border-color, #D8D8D8);
+    background: var(--ken-phone-bg, #ffffff);
     flex-shrink: 0;
     position: relative;
     /* Low z-index - selector should be below dropdown when open */
@@ -107,11 +110,11 @@
     flex: 1;
     border: none;
     outline: none;
-    padding: 0.3rem 0.75rem;
+    padding: var(--ken-phone-input-padding, 0.3rem 0.75rem);
     font-size: 0.875rem;
-    line-height: 1.5;
+    line-height: var(--ken-phone-line-height, 1.5);
     color: #373A45;
-    background: #ffffff;
+    background: var(--ken-phone-bg, #ffffff);
     font-family: 'General Sans', sans-serif;
     min-width: 0;
     border-bottom-right-radius: 8px;

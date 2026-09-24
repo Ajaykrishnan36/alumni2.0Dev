@@ -1,0 +1,148 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Survey Detail",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"67e02e35-4bef-47cc-af21-7fb4aa7df996\",\"columns\":[{\"UUID\":\"ecdc62d7-3ed2-49de-b130-b5bf69ed207d\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"23de0ffa-306e-4c1f-8a60-2e9855d86bbe\",\"columns\":[{\"UUID\":\"3b798887-9561-4c67-ba44-e9ff9821c193\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"61f37858-dfcb-4b97-a190-8bd0c7b1af14\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "bb4f572e-9b74-4048-b10d-0070da41ae26",
+                  "type" : "component"
+                } ],
+                "id" : "3b798887-9561-4c67-ba44-e9ff9821c193",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"312bbcdf-ec15-4c7e-af13-8486d616c4c8\",\"columns\":[{\"UUID\":\"c24d212a-1b8f-45e3-acec-99101573949e\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"32c52c15-0c02-4567-9958-b9ad49ac0b23\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "de166d35-a36b-41de-9720-c8f89a4a02ff",
+                      "type" : "component"
+                    } ],
+                    "id" : "c24d212a-1b8f-45e3-acec-99101573949e",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenSurveyDetails",
+                      "id" : "74e67508-fa69-453e-b5bd-2a74c4a1840f",
+                      "type" : "component"
+                    } ],
+                    "id" : "32c52c15-0c02-4567-9958-b9ad49ac0b23",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "312bbcdf-ec15-4c7e-af13-8486d616c4c8",
+                  "type" : "component"
+                } ],
+                "id" : "61f37858-dfcb-4b97-a190-8bd0c7b1af14",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "23de0ffa-306e-4c1f-8a60-2e9855d86bbe",
+              "type" : "component"
+            } ],
+            "id" : "ecdc62d7-3ed2-49de-b130-b5bf69ed207d",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "67e02e35-4bef-47cc-af21-7fb4aa7df996",
+          "type" : "component"
+        } ],
+        "id" : "29bea7c3-e70b-416c-8696-59ebdd8b7740",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "survey_detail__c",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "800bc8c4-dfa1-4d49-9668-8d13359e4d2c",
+          "type" : "component"
+        } ],
+        "id" : "788eaa10-e4a0-49b0-be49-de5f16211018",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "1bd920d4-031a-4123-8ed8-8658666172e1",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-survey-detail"
+  },
+  "urlName" : "survey-details-c"
+}

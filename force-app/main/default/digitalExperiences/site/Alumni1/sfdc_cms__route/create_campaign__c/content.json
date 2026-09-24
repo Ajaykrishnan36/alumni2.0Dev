@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Create Campaign",
+  "contentBody" : {
+    "activeViewId" : "create_campaign",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-create-campaign",
+    "urlPrefix" : "create-campaign"
+  },
+  "urlName" : "create-campaign"
+}

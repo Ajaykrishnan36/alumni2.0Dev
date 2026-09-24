@@ -419,6 +419,8 @@
     height: 100%;
     overflow: hidden;
     min-height: 500px;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 /* Banner Section */

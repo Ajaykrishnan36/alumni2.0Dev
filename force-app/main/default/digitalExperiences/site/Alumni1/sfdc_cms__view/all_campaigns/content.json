@@ -1,0 +1,151 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "All Campaigns",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"7b6d375f-fe6a-4ca5-9fd2-8441a72a6310\",\"columns\":[{\"UUID\":\"050daaf9-64fa-47d5-b2d6-b58087df4461\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"5b20578e-1738-4fc0-9e6d-607956dc53a6\",\"columns\":[{\"UUID\":\"5bad759f-f19c-4723-820c-629efc9e8174\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"a112d998-e044-4d60-b458-40c683b787bf\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "742795df-5a55-4148-a913-00e5d2bc0384",
+                  "type" : "component"
+                } ],
+                "id" : "5bad759f-f19c-4723-820c-629efc9e8174",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"3b039be2-2535-41c2-a9b7-9e320dc6b1de\",\"columns\":[{\"UUID\":\"4906ab97-e027-48b7-ae72-63c033491a0a\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"2e05af96-cfc0-4624-be9b-fa5a8822e706\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "calendarPageApiName" : "Calendar__c",
+                        "chatPageApiName" : "",
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : "",
+                        "settingsPageApiName" : "settings__c"
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "dbaac9f8-71e8-4892-b842-dc8a0bbbc6ed",
+                      "type" : "component"
+                    } ],
+                    "id" : "4906ab97-e027-48b7-ae72-63c033491a0a",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenCampaignsShowcase",
+                      "id" : "c43e62a0-d3e9-48c0-9516-155e4c73e991",
+                      "type" : "component"
+                    } ],
+                    "id" : "2e05af96-cfc0-4624-be9b-fa5a8822e706",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "3b039be2-2535-41c2-a9b7-9e320dc6b1de",
+                  "type" : "component"
+                } ],
+                "id" : "a112d998-e044-4d60-b458-40c683b787bf",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "5b20578e-1738-4fc0-9e6d-607956dc53a6",
+              "type" : "component"
+            } ],
+            "id" : "050daaf9-64fa-47d5-b2d6-b58087df4461",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "7b6d375f-fe6a-4ca5-9fd2-8441a72a6310",
+          "type" : "component"
+        } ],
+        "id" : "60a81ac8-47a4-4311-a58a-3073cb0f799d",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Active Campaigns",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "f82c7fc3-a570-41ec-8bfd-cd63590abdf8",
+          "type" : "component"
+        } ],
+        "id" : "c5f6addb-3f5f-473a-a741-19124a6f2422",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "5dd1dbb4-d1c6-4a20-af09-45704452e299",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-all-campaigns"
+  },
+  "urlName" : "active-campaigns"
+}

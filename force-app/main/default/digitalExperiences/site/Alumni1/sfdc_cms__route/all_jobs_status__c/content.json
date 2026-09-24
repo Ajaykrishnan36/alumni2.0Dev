@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "All Jobs Status",
+  "contentBody" : {
+    "activeViewId" : "all_jobs_status",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-all-jobs-status",
+    "urlPrefix" : "all-jobs-status"
+  },
+  "urlName" : "all-jobs-status"
+}

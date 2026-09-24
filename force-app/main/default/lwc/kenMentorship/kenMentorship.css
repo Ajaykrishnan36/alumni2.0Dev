@@ -26,6 +26,8 @@
     background: var(--portal-surface, #ffffff);
     border-radius: var(--portal-radius, 12px);
     overflow: hidden;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .mentorship-empty-content {

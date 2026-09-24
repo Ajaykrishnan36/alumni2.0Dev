@@ -1,3 +1,10 @@
+:host {
+    /* fill the card it sits in so .spotlight-wrapper (height:100%) and the scroll area can size */
+    display: block;
+    height: 100%;
+    min-height: 0;
+}
+
 .spotlight-loading {
     display: flex;
     align-items: center;

@@ -1,0 +1,121 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Created Fundraise",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"d5984894-50b1-4bf9-ad2d-e891b730077d\",\"columns\":[{\"UUID\":\"8731b33c-3861-4efd-a468-e528ef6bcc51\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"db095212-e126-41c4-9e84-9f83ca01bed7\",\"columns\":[{\"UUID\":\"6e42605a-cbab-4e27-99f9-e1241392ee64\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"b39e4bf7-bd3f-406c-bd72-6153ffbf91af\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "d2a0e6fe-dd60-426b-ba56-b22a03ba5ed2",
+                  "type" : "component"
+                } ],
+                "id" : "6e42605a-cbab-4e27-99f9-e1241392ee64",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "childPageName" : "",
+                    "childPageUrl" : "",
+                    "dxpStyle" : { },
+                    "headerLabel" : "",
+                    "linkSetMasterLabel" : "Default Navigation",
+                    "parentPageName" : "Home",
+                    "parentPageUrl" : ""
+                  },
+                  "definition" : "c:kenPageHeader",
+                  "id" : "f2dec874-fbaf-45ec-8e6e-872f7d570d91",
+                  "type" : "component"
+                }, {
+                  "attributes" : {
+                    "dxpStyle" : { }
+                  },
+                  "definition" : "c:kenFundraiseTabs",
+                  "id" : "7d28c4a4-91c2-4a1a-a847-9813c1aeabe1",
+                  "type" : "component"
+                } ],
+                "id" : "b39e4bf7-bd3f-406c-bd72-6153ffbf91af",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "db095212-e126-41c4-9e84-9f83ca01bed7",
+              "type" : "component"
+            } ],
+            "id" : "8731b33c-3861-4efd-a468-e528ef6bcc51",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "d5984894-50b1-4bf9-ad2d-e891b730077d",
+          "type" : "component"
+        } ],
+        "id" : "0abc0776-347b-4cb4-86e4-f9fa0d9fc689",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "FundraiseTabs",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "51271c73-a381-4580-a284-a954b8ed9c39",
+          "type" : "component"
+        } ],
+        "id" : "90f10e4d-3bcf-40c1-91dd-fe9079dc2b5d",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "86ff8cf6-8184-458c-9e07-32371216ba71",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-created-fundraise"
+  },
+  "urlName" : "fundraisetabs"
+}

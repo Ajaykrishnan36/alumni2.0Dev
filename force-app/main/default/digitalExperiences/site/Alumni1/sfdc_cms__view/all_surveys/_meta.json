@@ -1,0 +1,5 @@
+{
+  "apiName" : "all_surveys",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

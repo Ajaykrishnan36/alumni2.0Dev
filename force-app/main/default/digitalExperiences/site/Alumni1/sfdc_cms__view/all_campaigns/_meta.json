@@ -1,0 +1,5 @@
+{
+  "apiName" : "all_campaigns",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

@@ -1,0 +1,5 @@
+{
+  "apiName" : "my_feed",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

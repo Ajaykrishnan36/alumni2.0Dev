@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Select Role",
+  "contentBody" : {
+    "activeViewId" : "select_role",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-select-role",
+    "urlPrefix" : "select-role"
+  },
+  "urlName" : "select-role"
+}

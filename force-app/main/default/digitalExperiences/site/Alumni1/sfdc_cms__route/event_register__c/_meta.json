@@ -1,0 +1,6 @@
+{
+  "apiName" : "event_register__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/event__c",
+  "path" : "routes"
+}

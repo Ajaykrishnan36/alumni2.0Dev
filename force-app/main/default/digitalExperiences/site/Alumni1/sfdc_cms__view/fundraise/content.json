@@ -1,0 +1,196 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Fundraise",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"3e5bf152-82de-4aec-80fc-20f266a71db8\",\"columns\":[{\"UUID\":\"5c8b0ad5-8fe0-4fde-a478-7e0b6921ea4f\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"a196e8ef-ce28-45f4-a0bd-695fd1210058\",\"columns\":[{\"UUID\":\"6a0b30a2-0a52-4d53-9000-259118a12cc9\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"fbe03b9f-ae8a-4178-a584-923e496a662e\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "8f49e9cb-84bc-46cb-821e-1f18390b0a89",
+                  "type" : "component"
+                } ],
+                "id" : "6a0b30a2-0a52-4d53-9000-259118a12cc9",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"f2a3b4c5-d6e7-4890-abcd-ef1234567891\",\"columns\":[{\"UUID\":\"a1b2c3d4-e5f6-4789-abcd-ef1234567892\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"b2c3d4e5-f6a7-4890-bcde-f12345678901\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "c3d4e5f6-a7b8-4901-cdef-123456789012",
+                      "type" : "component"
+                    } ],
+                    "id" : "a1b2c3d4-e5f6-4789-abcd-ef1234567892",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "columnGutterWidth" : "",
+                        "columnMinHeight" : "",
+                        "columnVerticalAlign" : "flex-start",
+                        "dxpStyle" : { },
+                        "layoutDirectionDesktop" : "row",
+                        "layoutDirectionMobile" : "column",
+                        "layoutDirectionTablet" : "column",
+                        "sectionConfig" : "{\"UUID\":\"d7a91c44-3b2f-4e6a-9c1d-52f8ab30e711\",\"columns\":[{\"UUID\":\"e8b02d55-4c30-4f7b-8d2e-63a9bc41f822\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"9\",\"seedComponents\":[]},{\"UUID\":\"f9c13e66-5d41-4a8c-9e3f-74babd52a933\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"3\",\"seedComponents\":[]}]}"
+                      },
+                      "children" : [ {
+                        "children" : [ {
+                          "attributes" : {
+                            "dxpStyle" : { }
+                          },
+                          "definition" : "c:kenDonorImpact",
+                          "id" : "a0d24f77-6e52-4b9d-af40-85cbce63ba44",
+                          "type" : "component"
+                        }, {
+                          "attributes" : {
+                            "dxpStyle" : { }
+                          },
+                          "definition" : "c:kenFundraiseCategories",
+                          "id" : "b1e35a88-7f63-4cae-b051-96dcdf74cb55",
+                          "type" : "component"
+                        } ],
+                        "id" : "e8b02d55-4c30-4f7b-8d2e-63a9bc41f822",
+                        "name" : "col1",
+                        "title" : "Column 1",
+                        "type" : "region"
+                      }, {
+                        "children" : [ {
+                          "attributes" : {
+                            "dxpStyle" : { }
+                          },
+                          "definition" : "c:kenMyCampaignsWidget",
+                          "id" : "c2f46b99-8a74-4dbf-a162-a7edea85dc66",
+                          "type" : "component"
+                        }, {
+                          "attributes" : {
+                            "dxpStyle" : { }
+                          },
+                          "definition" : "c:kenCreateCampaignCta",
+                          "id" : "d3a57caa-9b85-4eca-b273-b8fefb96ed77",
+                          "type" : "component"
+                        } ],
+                        "id" : "f9c13e66-5d41-4a8c-9e3f-74babd52a933",
+                        "name" : "col2",
+                        "title" : "Column 2",
+                        "type" : "region"
+                      } ],
+                      "definition" : "dxp_layout:columns",
+                      "id" : "d7a91c44-3b2f-4e6a-9c1d-52f8ab30e711",
+                      "type" : "component"
+                    } ],
+                    "id" : "b2c3d4e5-f6a7-4890-bcde-f12345678901",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "f2a3b4c5-d6e7-4890-abcd-ef1234567891",
+                  "type" : "component"
+                } ],
+                "id" : "fbe03b9f-ae8a-4178-a584-923e496a662e",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "a196e8ef-ce28-45f4-a0bd-695fd1210058",
+              "type" : "component"
+            } ],
+            "id" : "5c8b0ad5-8fe0-4fde-a478-7e0b6921ea4f",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "3e5bf152-82de-4aec-80fc-20f266a71db8",
+          "type" : "component"
+        } ],
+        "id" : "49f653d5-5959-4bdc-bc62-3a22a556406c",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Fundraise",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "f07f1b67-f082-4039-aad6-8bb48a5559ae",
+          "type" : "component"
+        } ],
+        "id" : "56ec66d3-8ae6-4e45-b592-60a19e3ae655",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "1fc0aa57-c835-4ee9-b9b0-cd5ab1afb3c7",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-fundraise"
+  },
+  "urlName" : "fundraise"
+}

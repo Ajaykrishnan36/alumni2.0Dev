@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Business Detail",
+  "contentBody" : {
+    "activeViewId" : "business_detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-business-detail",
+    "urlPrefix" : "business-detail"
+  },
+  "urlName" : "business-detail"
+}

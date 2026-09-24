@@ -1,0 +1,142 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Service Support",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"3e90355e-6b70-4165-a921-965563e3d906\",\"columns\":[{\"UUID\":\"95f9951f-3bf6-4f47-92c1-2522ee88c9a7\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"c2ddcf24-2d33-4d06-9aa8-bfb35a72f306\",\"columns\":[{\"UUID\":\"56713b64-9e82-41e2-a26d-8dbb5e6c4077\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"9409e978-da8a-4d33-932e-a510ba45ab77\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "1767f6b2-5f96-40c5-90e3-0e221fffe6ee",
+                  "type" : "component"
+                } ],
+                "id" : "56713b64-9e82-41e2-a26d-8dbb5e6c4077",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"d56bd123-ac8d-4fc5-8fcf-ca423e26186b\",\"columns\":[{\"UUID\":\"edfa4c34-709f-4e4b-bee8-17deb5046f62\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"11333901-5c6c-4094-83c7-60c6ec429676\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "99f2cdc8-15be-482e-a143-6ef4fec1abca",
+                      "type" : "component"
+                    } ],
+                    "id" : "edfa4c34-709f-4e4b-bee8-17deb5046f62",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenPortalServiceSupport",
+                      "id" : "ca9bd532-847a-4ac4-a3a7-91a5fc0bd608",
+                      "type" : "component"
+                    } ],
+                    "id" : "11333901-5c6c-4094-83c7-60c6ec429676",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "d56bd123-ac8d-4fc5-8fcf-ca423e26186b",
+                  "type" : "component"
+                } ],
+                "id" : "9409e978-da8a-4d33-932e-a510ba45ab77",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "c2ddcf24-2d33-4d06-9aa8-bfb35a72f306",
+              "type" : "component"
+            } ],
+            "id" : "95f9951f-3bf6-4f47-92c1-2522ee88c9a7",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "3e90355e-6b70-4165-a921-965563e3d906",
+          "type" : "component"
+        } ],
+        "id" : "a127423b-d2f3-4336-b66a-6b83be78a862",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Service Support",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "d1afd6ad-8400-4cae-9b99-0efa1c531b2b",
+          "type" : "component"
+        } ],
+        "id" : "95dd6824-e52f-4106-b8af-e0d7601ca32f",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "a74fed69-e839-4c8d-9bac-f16610fc8c05",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-service-support"
+  },
+  "urlName" : "service-support"
+}

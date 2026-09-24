@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Mentorship",
+  "contentBody" : {
+    "activeViewId" : "mentorship",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-mentorship",
+    "urlPrefix" : "mentorship"
+  },
+  "urlName" : "mentorship"
+}

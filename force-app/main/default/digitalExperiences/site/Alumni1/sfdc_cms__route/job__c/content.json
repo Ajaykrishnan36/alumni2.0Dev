@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Job",
+  "contentBody" : {
+    "activeViewId" : "job",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-job",
+    "urlPrefix" : "job"
+  },
+  "urlName" : "job"
+}

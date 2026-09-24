@@ -1,0 +1,6 @@
+{
+  "apiName" : "all_surveys__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/survey__c",
+  "path" : "routes"
+}

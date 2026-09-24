@@ -1,0 +1,148 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Alumni",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"60289759-cdaf-47c3-9fb9-667b3759dcbe\",\"columns\":[{\"UUID\":\"ea1fbbaa-8858-4654-9189-ff1194a021f9\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"9c8ef201-c9f8-41fd-9013-e7b1aaed22a5\",\"columns\":[{\"UUID\":\"0e636d94-5268-4516-a854-8a456c22f76f\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"923055c9-0ddb-4a62-84db-b729a4dbe81b\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "f76958ec-915b-416a-b7a1-c387b6a41934",
+                  "type" : "component"
+                } ],
+                "id" : "0e636d94-5268-4516-a854-8a456c22f76f",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"86e991b4-feb8-4344-8dba-2933d481d48d\",\"columns\":[{\"UUID\":\"361b1ccd-11e0-4562-98c3-b8dd3a26c757\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"98bbad89-46d8-43ef-b419-8d001d07babf\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "72ae3e35-4ed1-4d76-8faf-4ce7c375ea58",
+                      "type" : "component"
+                    } ],
+                    "id" : "361b1ccd-11e0-4562-98c3-b8dd3a26c757",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenAlumniDetailView",
+                      "id" : "c8bdecc7-7bea-4009-ac26-2a4e6342d11d",
+                      "type" : "component"
+                    } ],
+                    "id" : "98bbad89-46d8-43ef-b419-8d001d07babf",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "86e991b4-feb8-4344-8dba-2933d481d48d",
+                  "type" : "component"
+                } ],
+                "id" : "923055c9-0ddb-4a62-84db-b729a4dbe81b",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "9c8ef201-c9f8-41fd-9013-e7b1aaed22a5",
+              "type" : "component"
+            } ],
+            "id" : "ea1fbbaa-8858-4654-9189-ff1194a021f9",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "60289759-cdaf-47c3-9fb9-667b3759dcbe",
+          "type" : "component"
+        } ],
+        "id" : "85932042-25d6-41de-9b71-e7558c35ddc6",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Alumni",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "aa000880-201b-4733-87af-9b6ce00d37a4",
+          "type" : "component"
+        } ],
+        "id" : "eefe5dbe-8034-4e4e-97a6-7a6e4f4ea29d",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "f40fcfb0-901f-40d9-9f42-317eff3305a9",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-alumni"
+  },
+  "urlName" : "alumni"
+}

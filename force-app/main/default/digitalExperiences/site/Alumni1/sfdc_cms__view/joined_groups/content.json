@@ -1,0 +1,143 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Joined Groups",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"b4c5d6e7-f8a9-0123-bcde-f45678901201\",\"columns\":[{\"UUID\":\"c4d5e6f7-a8b9-0123-cdef-045678901201\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"d4e5f6a7-b8c9-0123-def0-145678901201\",\"columns\":[{\"UUID\":\"e4f5a6b7-c8d9-0123-ef01-245678901201\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"f4a5b6c7-d8e9-0123-f012-345678901201\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "a4b5c6d7-e8f9-0123-abcd-456789012001",
+                  "type" : "component"
+                } ],
+                "id" : "e4f5a6b7-c8d9-0123-ef01-245678901201",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"b5c6d7e8-f9a0-1234-bcde-567890123001\",\"columns\":[{\"UUID\":\"c5d6e7f8-a9b0-1234-cdef-067890123001\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "d5e6f7a8-b9c0-1234-def0-167890123001",
+                      "type" : "component"
+                    }, {
+                      "attributes" : {
+                        "dxpStyle" : { },
+                        "viewType" : "joined"
+                      },
+                      "definition" : "c:kenGroupsViewAll",
+                      "id" : "e5f6a7b8-c9d0-1234-ef01-267890123001",
+                      "type" : "component"
+                    } ],
+                    "id" : "c5d6e7f8-a9b0-1234-cdef-067890123001",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "b5c6d7e8-f9a0-1234-bcde-567890123001",
+                  "type" : "component"
+                } ],
+                "id" : "f4a5b6c7-d8e9-0123-f012-345678901201",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "d4e5f6a7-b8c9-0123-def0-145678901201",
+              "type" : "component"
+            } ],
+            "id" : "c4d5e6f7-a8b9-0123-cdef-045678901201",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "b4c5d6e7-f8a9-0123-bcde-f45678901201",
+          "type" : "component"
+        } ],
+        "id" : "f5a6b7c8-d9e0-1234-f012-367890123001",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Groups Joined All",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "a5b6c7d8-e9f0-1234-abcd-567890123001",
+          "type" : "component"
+        } ],
+        "id" : "b6c7d8e9-f0a1-2345-bcde-678901234001",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "c6d7e8f9-a0b1-2345-cdef-078901234001",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-joined-groups"
+  },
+  "urlName" : "groups-joined-all"
+}

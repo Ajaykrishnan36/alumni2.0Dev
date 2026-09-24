@@ -1,0 +1,5 @@
+{
+  "apiName" : "album_detail",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

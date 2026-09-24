@@ -1,0 +1,121 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Posted Jobs",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"456ca437-167a-40c5-adb9-658f7b4e0029\",\"columns\":[{\"UUID\":\"5dd7e474-4ae7-4a9b-98f6-48b1685f2865\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"259be225-fca9-40ec-b6c6-b1edc12d6039\",\"columns\":[{\"UUID\":\"0aae04af-3781-4e30-ad24-20c0b7408f2f\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"4abcf0b4-7999-4e30-9046-3e9e6dfa5b56\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "92b9077c-5a3b-45de-ab6a-833789d7380b",
+                  "type" : "component"
+                } ],
+                "id" : "0aae04af-3781-4e30-ad24-20c0b7408f2f",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "childPageName" : "",
+                    "childPageUrl" : "",
+                    "dxpStyle" : { },
+                    "headerLabel" : "",
+                    "linkSetMasterLabel" : "Default Navigation",
+                    "parentPageName" : "Home",
+                    "parentPageUrl" : ""
+                  },
+                  "definition" : "c:kenPageHeader",
+                  "id" : "9fc1513c-e165-4771-b36a-6b85f443b605",
+                  "type" : "component"
+                }, {
+                  "attributes" : {
+                    "dxpStyle" : { }
+                  },
+                  "definition" : "c:kenManualJobFlow",
+                  "id" : "25414268-7e8d-4580-98cf-3ee1ac9f5f18",
+                  "type" : "component"
+                } ],
+                "id" : "4abcf0b4-7999-4e30-9046-3e9e6dfa5b56",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "259be225-fca9-40ec-b6c6-b1edc12d6039",
+              "type" : "component"
+            } ],
+            "id" : "5dd7e474-4ae7-4a9b-98f6-48b1685f2865",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "456ca437-167a-40c5-adb9-658f7b4e0029",
+          "type" : "component"
+        } ],
+        "id" : "fa74a47f-ae7c-4172-aaa6-548da95df3a9",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "PostJob",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "deb096c2-cda3-4457-827e-545eef9ac35b",
+          "type" : "component"
+        } ],
+        "id" : "2f9b42a1-cdbc-4983-a11e-838793d2fe8d",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "30a45bc0-5c66-4afe-8774-df955c205a31",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-posted-jobs"
+  },
+  "urlName" : "postjob"
+}

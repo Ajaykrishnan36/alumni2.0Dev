@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Network",
+  "contentBody" : {
+    "activeViewId" : "network",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-network",
+    "urlPrefix" : "network"
+  },
+  "urlName" : "network"
+}

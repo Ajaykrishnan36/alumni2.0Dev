@@ -1,0 +1,144 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Event Registration",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"aaaaaaaa-0001-0001-0001-000000000001\",\"columns\":[{\"UUID\":\"aaaaaaaa-0001-0001-0001-000000000002\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"aaaaaaaa-0001-0001-0001-000000000003\",\"columns\":[{\"UUID\":\"aaaaaaaa-0001-0001-0001-000000000004\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"aaaaaaaa-0001-0001-0001-000000000005\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "aaaaaaaa-0001-0001-0001-000000000006",
+                  "type" : "component"
+                } ],
+                "id" : "aaaaaaaa-0001-0001-0001-000000000004",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"aaaaaaaa-0001-0001-0001-000000000007\",\"columns\":[{\"UUID\":\"aaaaaaaa-0001-0001-0001-000000000008\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"1\",\"seedComponents\":[]},{\"UUID\":\"aaaaaaaa-0001-0001-0001-000000000009\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"11\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { },
+                        "headerLabel" : "Event Registration",
+                        "parentPageName" : "Home"
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "aaaaaaaa-0001-0001-0001-000000000010",
+                      "type" : "component"
+                    } ],
+                    "id" : "aaaaaaaa-0001-0001-0001-000000000008",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenEventRegistrationPage",
+                      "id" : "aaaaaaaa-0001-0001-0001-000000000011",
+                      "type" : "component"
+                    } ],
+                    "id" : "aaaaaaaa-0001-0001-0001-000000000009",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "aaaaaaaa-0001-0001-0001-000000000007",
+                  "type" : "component"
+                } ],
+                "id" : "aaaaaaaa-0001-0001-0001-000000000005",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "aaaaaaaa-0001-0001-0001-000000000003",
+              "type" : "component"
+            } ],
+            "id" : "aaaaaaaa-0001-0001-0001-000000000002",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "aaaaaaaa-0001-0001-0001-000000000001",
+          "type" : "component"
+        } ],
+        "id" : "aaaaaaaa-0001-0001-0001-000000000012",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Event Registration",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "aaaaaaaa-0001-0001-0001-000000000013",
+          "type" : "component"
+        } ],
+        "id" : "aaaaaaaa-0001-0001-0001-000000000014",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "aaaaaaaa-0001-0001-0001-000000000015",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-event-register"
+  },
+  "urlName" : "event-register"
+}

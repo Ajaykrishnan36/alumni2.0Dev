@@ -1,0 +1,121 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Job Detail",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"051d75a2-7c9e-495c-9e69-8a60646d6c07\",\"columns\":[{\"UUID\":\"72cc8a70-3844-4de9-99a7-8691c47a4ab4\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"b6b1a15d-61ac-424b-8eae-0f6aa8c0e113\",\"columns\":[{\"UUID\":\"4799f013-11d3-46a9-9970-536c49938ee2\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"444c91c7-98b0-4705-a94c-59e7142701b3\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "f6393caf-6e96-4a29-9dcb-ea88e07f39d6",
+                  "type" : "component"
+                } ],
+                "id" : "4799f013-11d3-46a9-9970-536c49938ee2",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "childPageName" : "",
+                    "childPageUrl" : "",
+                    "dxpStyle" : { },
+                    "headerLabel" : "",
+                    "linkSetMasterLabel" : "Default Navigation",
+                    "parentPageName" : "Home",
+                    "parentPageUrl" : ""
+                  },
+                  "definition" : "c:kenPageHeader",
+                  "id" : "f853b7d4-9402-4570-b40d-dd3d8efea81c",
+                  "type" : "component"
+                }, {
+                  "attributes" : {
+                    "dxpStyle" : { }
+                  },
+                  "definition" : "c:kenJobDetailsPage",
+                  "id" : "f646f20d-ebc1-48d0-bdf4-5ad3d7612af2",
+                  "type" : "component"
+                } ],
+                "id" : "444c91c7-98b0-4705-a94c-59e7142701b3",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "b6b1a15d-61ac-424b-8eae-0f6aa8c0e113",
+              "type" : "component"
+            } ],
+            "id" : "72cc8a70-3844-4de9-99a7-8691c47a4ab4",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "051d75a2-7c9e-495c-9e69-8a60646d6c07",
+          "type" : "component"
+        } ],
+        "id" : "dd6006e3-4105-4e28-b728-20bea4034c46",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "KenJobsDetailView",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "1cf014bf-ca72-420a-8b95-323f634ae649",
+          "type" : "component"
+        } ],
+        "id" : "3c97dc88-9fbb-484c-8009-d3d4e1507a6f",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "9619d477-f38d-4216-84ad-95e05c90c28d",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-job-detail"
+  },
+  "urlName" : "kenjobsdetailview"
+}

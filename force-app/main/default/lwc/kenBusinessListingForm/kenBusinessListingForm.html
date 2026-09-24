@@ -56,108 +56,99 @@
 
             <!-- Business Details Form -->
             <div class="business-details-form">
+                <!-- Logo | Business name -->
                 <div class="form-row">
-                    <!-- Left Column -->
-                    <div class="form-column">
-                        <!-- Upload Logo -->
-                        <div class="form-field">
-                            <label class="field-label">Upload your logo (optional)</label>
-                            <div class="file-input-wrapper">
-                                <input type="file" class="file-input-field" accept="image/png,image/jpeg" onchange={handleLogoChange} data-field="logo" />
-                                <div class="file-input-display">
-                                    <span class="file-placeholder">Choose file</span>
-                                    <lightning-icon icon-name="utility:upload" size="x-small" class="file-upload-icon"></lightning-icon>
-                                </div>
-                            </div>
-                            <div class="field-specs">
-                                <span class="spec-text">Max image size: <strong>1 MB</strong> | Image format: <strong>PNG, JPEG</strong></span>
+                    <!-- Upload Logo -->
+                    <div class="form-field">
+                        <label class="field-label">Upload your logo (optional)</label>
+                        <div class="file-input-wrapper">
+                            <input type="file" class="file-input-field" accept="image/png,image/jpeg" onchange={handleLogoChange} data-field="logo" />
+                            <div class="file-input-display">
+                                <span class="file-placeholder">Choose file</span>
+                                <lightning-icon icon-name="utility:upload" size="x-small" class="file-upload-icon"></lightning-icon>
                             </div>
                         </div>
-
-                        <!-- Business Type -->
-                        <div class="form-field">
-                            <label class="field-label">Business type<span class="required-asterisk">*</span></label>
-                            <div class="select-wrapper">
-                                <select class="form-select" onchange={handleBusinessTypeChange}>
-                                    <option value="">Select</option>
-                                    <option value="Food & beverage">Food & beverage</option>
-                                    <option value="Technology & Software">Technology & Software</option>
-                                    <option value="Immersive experiences">Immersive experiences</option>
-                                    <option value="Wooden toys">Wooden toys</option>
-                                </select>
-                                <lightning-icon icon-name="utility:down" size="x-small" class="select-arrow"></lightning-icon>
-                            </div>
-                            <template if:true={typeError}>
-                                <div class="error-text">{typeError}</div>
-                            </template>
+                        <div class="field-specs">
+                            <span class="spec-text">Max image size: <strong>1 MB</strong> | Image format: <strong>PNG, JPEG</strong></span>
                         </div>
                     </div>
 
-                    <!-- Right Column -->
-                    <div class="form-column">
-                        <!-- Business Name -->
-                        <div class="form-field">
-                            <label class="field-label">Name of your business<span class="required-asterisk">*</span></label>
-                            <input type="text" class="form-input" placeholder="Enter name" value={formData.businessName} onchange={handleBusinessNameChange} />
-                            <template if:true={nameError}>
-                                <div class="error-text">{nameError}</div>
-                            </template>
-                        </div>
+                    <!-- Business Name -->
+                    <div class="form-field">
+                        <label class="field-label">Name of your business<span class="required-asterisk">*</span></label>
+                        <input type="text" class="form-input" placeholder="Enter name" value={formData.businessName} onchange={handleBusinessNameChange} />
+                        <template if:true={nameError}>
+                            <div class="error-text">{nameError}</div>
+                        </template>
                     </div>
                 </div>
 
-                <!-- Phone Number and Email ID Row -->
+                <!-- Business type | Website (paired so neither side is left empty) -->
+                <div class="form-row">
+                    <!-- Business Type -->
+                    <div class="form-field">
+                        <label class="field-label">Business type<span class="required-asterisk">*</span></label>
+                        <div class="select-wrapper">
+                            <select class="form-select" onchange={handleBusinessTypeChange}>
+                                <option value="">Select</option>
+                                <option value="Food & beverage">Food & beverage</option>
+                                <option value="Technology & Software">Technology & Software</option>
+                                <option value="Immersive experiences">Immersive experiences</option>
+                                <option value="Wooden toys">Wooden toys</option>
+                            </select>
+                            <lightning-icon icon-name="utility:down" size="x-small" class="select-arrow"></lightning-icon>
+                        </div>
+                        <template if:true={typeError}>
+                            <div class="error-text">{typeError}</div>
+                        </template>
+                    </div>
+
+                    <!-- Website -->
+                    <div class="form-field">
+                        <label class="field-label">Website</label>
+                        <input type="url" class="form-input" placeholder="https://www.example.com" value={formData.website} onchange={handleWebsiteChange} />
+                        <template if:true={websiteError}>
+                            <div class="error-text">{websiteError}</div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Phone number | Email ID -->
                 <div class="form-row phone-email-row">
-                    <!-- Left Column: Phone Number and Website -->
-                    <div class="form-column">
-                        <!-- Phone Number -->
-                        <div class="form-field">
-                            <label class="field-label">Phone number</label>
-                            <div class="phone-input-wrapper">
-                                <c-ken-custom-phone-input
-                                    value={phoneE164}
-                                    placeholder="0000 0000 00"
-                                    initial-country="in"
-                                    has-error={phoneError}
-                                    onphonechange={handlePhoneChange}>
-                                </c-ken-custom-phone-input>
-                            </div>
-                            <template if:true={phoneError}>
-                                <div class="error-text">{phoneError}</div>
-                            </template>
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" class="form-checkbox" checked={formData.hidePhone} onchange={handleHidePhoneChange} />
-                                <label class="checkbox-label">Hide From My Profile</label>
-                            </div>
+                    <!-- Phone Number -->
+                    <div class="form-field">
+                        <label class="field-label">Phone number</label>
+                        <div class="phone-input-wrapper">
+                            <c-ken-custom-phone-input
+                                value={phoneE164}
+                                placeholder="0000 0000 00"
+                                initial-country="in"
+                                has-error={phoneError}
+                                onphonechange={handlePhoneChange}>
+                            </c-ken-custom-phone-input>
                         </div>
-
-                        <!-- Website -->
-                        <div class="form-field">
-                            <label class="field-label">Website</label>
-                            <input type="url" class="form-input" placeholder="https://www.example.com" value={formData.website} onchange={handleWebsiteChange} />
-                            <template if:true={websiteError}>
-                                <div class="error-text">{websiteError}</div>
-                            </template>
+                        <template if:true={phoneError}>
+                            <div class="error-text">{phoneError}</div>
+                        </template>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" class="form-checkbox" checked={formData.hidePhone} onchange={handleHidePhoneChange} />
+                            <label class="checkbox-label">Hide From My Profile</label>
                         </div>
                     </div>
 
-                    <!-- Right Column: Email ID -->
-                    <div class="form-column">
-                        <!-- Email ID -->
-                        <div class="form-field">
-                            <label class="field-label">Email ID</label>
-                            <input type="email" class="form-input" placeholder="Enter email ID" value={formData.email} onchange={handleEmailChange} />
-                            <template if:true={emailError}>
-                                <div class="error-text">{emailError}</div>
-                            </template>
-                            <div class="checkbox-wrapper">
-                                <input type="checkbox" class="form-checkbox" checked={formData.hideEmail} onchange={handleHideEmailChange} />
-                                <label class="checkbox-label">Hide From My Profile</label>
-                            </div>
+                    <!-- Email ID -->
+                    <div class="form-field">
+                        <label class="field-label">Email ID</label>
+                        <input type="email" class="form-input" placeholder="Enter email ID" value={formData.email} onchange={handleEmailChange} />
+                        <template if:true={emailError}>
+                            <div class="error-text">{emailError}</div>
+                        </template>
+                        <div class="checkbox-wrapper">
+                            <input type="checkbox" class="form-checkbox" checked={formData.hideEmail} onchange={handleHideEmailChange} />
+                            <label class="checkbox-label">Hide From My Profile</label>
                         </div>
                     </div>
                 </div>
-
                 <!-- Address and Map URL Row -->
                 <div class="form-row address-map-row">
                     <!-- Address -->

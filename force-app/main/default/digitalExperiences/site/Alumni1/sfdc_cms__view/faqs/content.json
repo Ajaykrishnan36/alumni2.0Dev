@@ -1,0 +1,127 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "FAQs",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"1c7cf2d4-8566-4d75-9dbf-bcc956f57968\",\"columns\":[{\"UUID\":\"48f985c6-4595-499e-b4de-a8b3d3df96bf\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"ed7272ea-fa9f-418e-877f-444b37cae9df\",\"columnName\":\"Column 2\",\"columnKey\":\"6dfb2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "addHomeMenuItem" : false,
+                "dxpStyle" : { },
+                "includeImageUrls" : false,
+                "linkSetMasterLabel" : "Default Navigation"
+              },
+              "definition" : "c:kenNavBar",
+              "id" : "85c40743-f218-43ae-8ab4-c04e1274ddf7",
+              "type" : "component"
+            } ],
+            "id" : "48f985c6-4595-499e-b4de-a8b3d3df96bf",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          }, {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "column",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"557cb224-75b4-46fc-979a-7fcc78f54731\",\"columns\":[{\"UUID\":\"56afd013-69fa-4484-ac18-9c532d17a080\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"b7764b0e-ff32-4390-8b02-5742511029e4\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "childPageName" : "",
+                    "childPageUrl" : "",
+                    "dxpStyle" : { },
+                    "headerLabel" : "",
+                    "linkSetMasterLabel" : "Default Navigation",
+                    "parentPageName" : "Home",
+                    "parentPageUrl" : ""
+                  },
+                  "definition" : "c:kenPageHeader",
+                  "id" : "4d42f39b-9f7c-4c39-87d2-2fb0bc918f87",
+                  "type" : "component"
+                } ],
+                "id" : "56afd013-69fa-4484-ac18-9c532d17a080",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "dxpStyle" : { }
+                  },
+                  "definition" : "c:kenFaq",
+                  "id" : "519ba503-9f83-4607-89bb-6f6aa8f24d4d",
+                  "type" : "component"
+                } ],
+                "id" : "b7764b0e-ff32-4390-8b02-5742511029e4",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "557cb224-75b4-46fc-979a-7fcc78f54731",
+              "type" : "component"
+            } ],
+            "id" : "ed7272ea-fa9f-418e-877f-444b37cae9df",
+            "name" : "6dfb2",
+            "title" : "Column 2",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "1c7cf2d4-8566-4d75-9dbf-bcc956f57968",
+          "type" : "component"
+        } ],
+        "id" : "ab0c06a4-97ed-4027-b002-8f68ced5ea8b",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "FAQs",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "f84a4f5f-652c-46ed-8615-a3b6e6ae2f69",
+          "type" : "component"
+        } ],
+        "id" : "214c2247-c12d-4947-9a69-73b9e0a41033",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "daa476ce-3013-459c-8ae0-d3b6257ebafa",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-faqs"
+  },
+  "urlName" : "faqs"
+}

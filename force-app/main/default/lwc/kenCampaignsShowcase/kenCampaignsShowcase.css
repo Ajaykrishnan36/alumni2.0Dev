@@ -16,6 +16,8 @@
     font-family: var(--portal-font-family, 'Inter', Arial, sans-serif);
     color: var(--portal-text-primary, #1f2333);
     box-sizing: border-box;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .campaigns-header {
@@ -370,6 +372,7 @@
     border-radius: 14px;
     background: #f5f7fb;
     cursor: pointer;
+    box-shadow: 0 1px 2px rgba(29, 41, 62, 0.03);
 }
 
 .image-frame {

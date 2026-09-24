@@ -1,0 +1,5 @@
+{
+  "apiName" : "verify_link",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

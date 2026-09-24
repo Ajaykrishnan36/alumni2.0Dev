@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Posted Jobs",
+  "contentBody" : {
+    "activeViewId" : "posted_jobs",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-posted-jobs",
+    "urlPrefix" : "posted-jobs"
+  },
+  "urlName" : "posted-jobs"
+}

@@ -5,6 +5,7 @@
         <members>kenAllEvents</members>
         <members>kenAlumniCard</members>
         <members>kenAlumniDetailView</members>
+        <members>kenAlumniSpotlight</members>
         <members>kenBusinessCard</members>
         <members>kenBusinessDetailView</members>
         <members>kenBusinessDirectory</members>
@@ -12,6 +13,7 @@
         <members>kenCalendarSchedule</members>
         <members>kenCampaignsShowcase</members>
         <members>kenCreateCampaignCta</members>
+        <members>kenCustomPhoneInput</members>
         <members>kenDonorImpact</members>
         <members>kenEducationCard</members>
         <members>kenEventDetails</members>

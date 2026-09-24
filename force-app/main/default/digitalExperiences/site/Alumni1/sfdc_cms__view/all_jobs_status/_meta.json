@@ -1,0 +1,5 @@
+{
+  "apiName" : "all_jobs_status",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

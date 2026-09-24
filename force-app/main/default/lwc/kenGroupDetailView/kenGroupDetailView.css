@@ -7,6 +7,8 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 /* Loading */
@@ -189,6 +191,7 @@
   border-radius: var(--portal-radius, 12px);
   border: var(--portal-border-width, 1px) solid
     var(--portal-border-color, #e6e8ee);
+  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .rules-title {
@@ -497,6 +500,7 @@
   transition:
     box-shadow 0.15s ease,
     transform 0.15s ease;
+  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .event-card:hover {
@@ -615,6 +619,8 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
+  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .member-avatar {
@@ -915,6 +921,8 @@
   background: #f8f9fa;
   border-radius: var(--portal-radius, 12px);
   overflow: hidden;
+  border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .admin-panel-tabs {

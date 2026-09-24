@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Chat",
+  "contentBody" : {
+    "activeViewId" : "chat",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-chat",
+    "urlPrefix" : "chat"
+  },
+  "urlName" : "chat"
+}

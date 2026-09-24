@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "All Surveys",
+  "contentBody" : {
+    "activeViewId" : "all_surveys",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-all-surveys",
+    "urlPrefix" : "all-surveys"
+  },
+  "urlName" : "all-surveys"
+}

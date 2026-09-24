@@ -26,6 +26,8 @@
     min-height: 0;
     box-sizing: border-box;
     height: 100%;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 /* Tabs and Search Filter Row */
@@ -247,6 +249,8 @@
     min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .widget-title {
@@ -1167,4 +1171,22 @@
 
 .map-modal-close:hover {
     background: #f3f4f6;
+}
+
+/* Desktop rail: fixed 3 : 2 split between Spotlight and Businesses (flex-basis 0), so a slide with an
+   image/video no longer grows the Spotlight card and squeezes the cards below; overflow scrolls inside.
+   Desktop only: below 969px the rail is height:auto and a 0 basis would collapse the widgets. */
+@media (min-width: 969px) {
+    .spotlight-widget {
+        flex: 3 1 0;
+    }
+
+    .business-widget {
+        flex: 2 1 0;
+    }
+
+    .spotlight-widget > c-ken-alumni-spotlight {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
 }

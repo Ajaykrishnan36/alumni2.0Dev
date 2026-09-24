@@ -10,6 +10,8 @@
     /* thin scrollbar — only the content scrolls (matches kenGroups) */
     scrollbar-width: thin;
     scrollbar-color: #d1d5db transparent;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .all-events-container::-webkit-scrollbar {
@@ -104,6 +106,7 @@
     width: 90%;
     position: relative;
     height: 280px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .event-card:hover {

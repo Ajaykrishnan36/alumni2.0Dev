@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Ticket Detail",
+  "contentBody" : {
+    "activeViewId" : "ticket_detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-ticket-detail",
+    "urlPrefix" : "ticket-detail"
+  },
+  "urlName" : "ticket-detail"
+}

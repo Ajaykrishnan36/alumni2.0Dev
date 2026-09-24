@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Campaign Detail",
+  "contentBody" : {
+    "activeViewId" : "campaign_detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-campaign-detail",
+    "urlPrefix" : "campaign-detail"
+  },
+  "urlName" : "campaign-detail"
+}

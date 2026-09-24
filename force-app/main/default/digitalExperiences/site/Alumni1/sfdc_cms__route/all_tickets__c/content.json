@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "All Tickets",
+  "contentBody" : {
+    "activeViewId" : "all_tickets",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-all-tickets",
+    "urlPrefix" : "all-tickets"
+  },
+  "urlName" : "all-tickets"
+}

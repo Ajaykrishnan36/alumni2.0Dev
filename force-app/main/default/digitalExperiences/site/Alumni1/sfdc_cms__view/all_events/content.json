@@ -1,0 +1,142 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "All Events",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"abe495f4-e256-436a-a744-9a70d80445f6\",\"columns\":[{\"UUID\":\"659aa849-bd5d-44a3-926b-23c450e4dd3a\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"3b8a3761-9335-4aa7-b007-8b8e7e8140ee\",\"columns\":[{\"UUID\":\"93c5bed4-be51-4a2a-af86-b0cf429acfab\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"dc4e8ee4-12d8-4815-ad22-ad0edf9d46f2\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "c57cfc36-5eeb-4f89-af62-06d76e2adaed",
+                  "type" : "component"
+                } ],
+                "id" : "93c5bed4-be51-4a2a-af86-b0cf429acfab",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"3e7c850e-16a7-4990-ab46-a656d1dbc659\",\"columns\":[{\"UUID\":\"3ddcd4ff-1b6c-4423-a0c6-a9ab0f6ed6d4\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"1\",\"seedComponents\":[]},{\"UUID\":\"a823d716-52ca-4485-b8b0-09b43939c162\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"11\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "24fa4f6d-a898-46ce-8cca-4e27d2f4d877",
+                      "type" : "component"
+                    } ],
+                    "id" : "3ddcd4ff-1b6c-4423-a0c6-a9ab0f6ed6d4",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenAllEvents",
+                      "id" : "8361db30-40e4-4a3a-8701-f3dbd90483f7",
+                      "type" : "component"
+                    } ],
+                    "id" : "a823d716-52ca-4485-b8b0-09b43939c162",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "3e7c850e-16a7-4990-ab46-a656d1dbc659",
+                  "type" : "component"
+                } ],
+                "id" : "dc4e8ee4-12d8-4815-ad22-ad0edf9d46f2",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "3b8a3761-9335-4aa7-b007-8b8e7e8140ee",
+              "type" : "component"
+            } ],
+            "id" : "659aa849-bd5d-44a3-926b-23c450e4dd3a",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "abe495f4-e256-436a-a744-9a70d80445f6",
+          "type" : "component"
+        } ],
+        "id" : "6b0f5b5b-612f-4343-ab72-21789f9efb90",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "AllEventsView",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "e932762b-3ae3-4fba-9dbb-6facf0b6b216",
+          "type" : "component"
+        } ],
+        "id" : "6b9318fa-45c6-4d8c-a7f3-a1363382c8a6",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "f023b7ce-1636-4ce3-b851-00a9b99e6e49",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-all-events"
+  },
+  "urlName" : "alleventsview"
+}

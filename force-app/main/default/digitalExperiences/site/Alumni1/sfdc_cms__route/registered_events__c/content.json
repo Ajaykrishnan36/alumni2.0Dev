@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Registered Events",
+  "contentBody" : {
+    "activeViewId" : "registered_events",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-registered-events",
+    "urlPrefix" : "registered-events"
+  },
+  "urlName" : "registered-events"
+}

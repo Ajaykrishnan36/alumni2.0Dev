@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Group",
+  "contentBody" : {
+    "activeViewId" : "group",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-group",
+    "urlPrefix" : "group"
+  },
+  "urlName" : "group"
+}

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Business",
+  "contentBody" : {
+    "activeViewId" : "business",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-business",
+    "urlPrefix" : "business"
+  },
+  "urlName" : "business"
+}

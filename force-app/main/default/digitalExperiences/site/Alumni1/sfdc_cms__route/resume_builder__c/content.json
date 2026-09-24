@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Resume Builder",
+  "contentBody" : {
+    "activeViewId" : "resume_builder",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-resume-builder",
+    "urlPrefix" : "resume-builder"
+  },
+  "urlName" : "resume-builder"
+}

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Discover Groups",
+  "contentBody" : {
+    "activeViewId" : "discover_groups",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-discover-groups",
+    "urlPrefix" : "discover-groups"
+  },
+  "urlName" : "discover-groups"
+}

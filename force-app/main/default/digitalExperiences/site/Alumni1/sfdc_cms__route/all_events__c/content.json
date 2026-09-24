@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "All Events",
+  "contentBody" : {
+    "activeViewId" : "all_events",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-all-events",
+    "urlPrefix" : "all-events"
+  },
+  "urlName" : "all-events"
+}

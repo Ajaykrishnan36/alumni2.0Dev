@@ -10,6 +10,8 @@
     overflow: visible;
     align-items: start;
     box-sizing: border-box;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .calendar-section {
@@ -21,6 +23,7 @@
     border: 1px solid #e1e4e8;
     border-radius: 10px;
     padding: 1.5rem 1.25rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 }
 
 .calendar-header {
@@ -235,6 +238,7 @@
     border: 1px solid #e6e9ef;
     background: #ffffff;
     font-family: 'GeneralSansCustom', sans-serif;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .schedule-card:last-child {

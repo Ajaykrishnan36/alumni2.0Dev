@@ -1,0 +1,6 @@
+{
+  "apiName" : "group_detail__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/group__c",
+  "path" : "routes"
+}

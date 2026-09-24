@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Album Detail",
+  "contentBody" : {
+    "activeViewId" : "album_detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-album-detail",
+    "urlPrefix" : "album-detail"
+  },
+  "urlName" : "album-detail"
+}

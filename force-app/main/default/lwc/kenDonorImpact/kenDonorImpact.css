@@ -8,6 +8,8 @@
     padding: var(--portal-card-padding, 24px);
     font-family: var(--portal-font-family, 'Inter', Arial, sans-serif);
     flex-shrink: 0;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .impact-header {
@@ -48,6 +50,7 @@
     padding: 20px 16px;
     background: var(--primary-color-tint, #eff6ff);
     border-radius: var(--portal-radius, 12px);
+    border: 1.5px solid #bfdbfe;
 }
 
 .stat-number {

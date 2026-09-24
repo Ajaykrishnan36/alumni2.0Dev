@@ -1,0 +1,155 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Chat",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"17eeaf79-8ed5-4570-92b9-c290d051f746\",\"columns\":[{\"UUID\":\"14c44d23-221a-482c-adf1-6410d8f7ab2b\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"db2643c5-65cd-4740-971f-e512ad513c61\",\"columns\":[{\"UUID\":\"fd593b66-cafa-4275-9c38-2a242fc37596\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"67fc77ab-b823-4fc9-b8e1-d007b45f2cbc\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "c7783225-3646-49c5-9e55-5e7f7421295a",
+                  "type" : "component"
+                } ],
+                "id" : "fd593b66-cafa-4275-9c38-2a242fc37596",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"6c160e19-c2a2-4555-9b9c-6990f84f3d17\",\"columns\":[{\"UUID\":\"5e4a547a-a18b-4572-83a8-5e8ea9f4522c\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"b522d55f-ba2b-48d4-bdb2-738ba0e23bc3\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "bc23971d-72ce-4b67-a7e1-15b50da6337d",
+                      "type" : "component"
+                    } ],
+                    "id" : "5e4a547a-a18b-4572-83a8-5e8ea9f4522c",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenChat",
+                      "id" : "c6dab8b9-0729-4c99-9f0d-eda78224e190",
+                      "type" : "component"
+                    }, {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenMobileChat",
+                      "id" : "fa08859f-6447-4b54-98fb-89a7a6beafc1",
+                      "type" : "component"
+                    } ],
+                    "id" : "b522d55f-ba2b-48d4-bdb2-738ba0e23bc3",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "6c160e19-c2a2-4555-9b9c-6990f84f3d17",
+                  "type" : "component"
+                } ],
+                "id" : "67fc77ab-b823-4fc9-b8e1-d007b45f2cbc",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "db2643c5-65cd-4740-971f-e512ad513c61",
+              "type" : "component"
+            } ],
+            "id" : "14c44d23-221a-482c-adf1-6410d8f7ab2b",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "17eeaf79-8ed5-4570-92b9-c290d051f746",
+          "type" : "component"
+        } ],
+        "id" : "c513f03e-aa88-4941-97ab-589e409c46c7",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "chat",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "1c5e169d-9ab4-48a7-9628-3c0b64a9cf4f",
+          "type" : "component"
+        } ],
+        "id" : "ed80396c-7f9e-4e1b-a26e-aed5b064194c",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "1562f65f-fa88-4493-844e-67b0e7b7eb8e",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-chat"
+  },
+  "urlName" : "chat"
+}

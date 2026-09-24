@@ -23,6 +23,8 @@
   gap: 0.35rem;
   width: 100%;
   box-sizing: border-box;
+  border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .my-feed-card.has-breadcrumb {
@@ -156,6 +158,8 @@
   gap: 0.5rem;
   width: 100%;
   box-sizing: border-box;
+  border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+  box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 /* Column 1: option icons (calendar, chat, settings, bell) — sized to content, gap shrinks with width */

@@ -1,0 +1,127 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "All Surveys",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"99ec0c60-d063-4597-a152-7c4e3ea60a81\",\"columns\":[{\"UUID\":\"4593f6e4-65f0-4dfc-81c2-c49b07cae432\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"8744c34d-0308-4ee8-9f8c-ce78f544b704\",\"columnName\":\"Column 2\",\"columnKey\":\"2ec56\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "addHomeMenuItem" : false,
+                "dxpStyle" : { },
+                "includeImageUrls" : false,
+                "linkSetMasterLabel" : "Default Navigation"
+              },
+              "definition" : "c:kenNavBar",
+              "id" : "817232ae-3831-4274-a613-23154c389d89",
+              "type" : "component"
+            } ],
+            "id" : "4593f6e4-65f0-4dfc-81c2-c49b07cae432",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          }, {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "column",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"b8062c88-b375-46d3-996d-ece7118d0de3\",\"columns\":[{\"UUID\":\"aba8ac50-748f-4b78-8345-c26354bbdb70\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"e4dc8ca9-8cd8-4a94-b06b-3f819c2e3ac6\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "childPageName" : "",
+                    "childPageUrl" : "",
+                    "dxpStyle" : { },
+                    "headerLabel" : "",
+                    "linkSetMasterLabel" : "Default Navigation",
+                    "parentPageName" : "Home",
+                    "parentPageUrl" : ""
+                  },
+                  "definition" : "c:kenPageHeader",
+                  "id" : "e1293567-afca-45cf-ad0a-f8f6e90ac584",
+                  "type" : "component"
+                } ],
+                "id" : "aba8ac50-748f-4b78-8345-c26354bbdb70",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "dxpStyle" : { }
+                  },
+                  "definition" : "c:kenSurveysList",
+                  "id" : "e28b7326-486b-4c3b-8d1e-ac6f80d9df5b",
+                  "type" : "component"
+                } ],
+                "id" : "e4dc8ca9-8cd8-4a94-b06b-3f819c2e3ac6",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "b8062c88-b375-46d3-996d-ece7118d0de3",
+              "type" : "component"
+            } ],
+            "id" : "8744c34d-0308-4ee8-9f8c-ce78f544b704",
+            "name" : "2ec56",
+            "title" : "Column 2",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "99ec0c60-d063-4597-a152-7c4e3ea60a81",
+          "type" : "component"
+        } ],
+        "id" : "f72ed3d9-1ad3-42fa-bea2-f1c3ef5502ed",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Surveys List",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "acd2951d-144c-4d03-880a-7d318a784d8a",
+          "type" : "component"
+        } ],
+        "id" : "f33f50bd-2c3e-4741-b6cc-7ff8bf7c5040",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "15f4cb4b-a850-487f-aa92-feec2e2c4d88",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-all-surveys"
+  },
+  "urlName" : "surveys-list"
+}

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Hosted Events",
+  "contentBody" : {
+    "activeViewId" : "hosted_events",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-hosted-events",
+    "urlPrefix" : "hosted-events"
+  },
+  "urlName" : "hosted-events"
+}

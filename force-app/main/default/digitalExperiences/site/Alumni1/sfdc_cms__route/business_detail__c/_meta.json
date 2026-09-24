@@ -1,0 +1,6 @@
+{
+  "apiName" : "business_detail__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/business__c",
+  "path" : "routes"
+}

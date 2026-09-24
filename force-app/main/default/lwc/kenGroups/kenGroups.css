@@ -96,6 +96,7 @@
     overflow: hidden;
     border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
     transition: transform 0.2s;
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .discover-card:hover {
@@ -214,6 +215,8 @@
     border-radius: var(--portal-radius, 12px);
     padding: 24px 14px 0 24px;
     box-sizing: border-box;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
 }
 
 .filter-btn {

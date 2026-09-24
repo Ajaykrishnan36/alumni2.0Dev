@@ -1,0 +1,5 @@
+{
+  "apiName" : "resume_builder",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

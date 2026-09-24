@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Survey Form",
+  "contentBody" : {
+    "activeViewId" : "survey_form",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-survey-form",
+    "urlPrefix" : "survey-form"
+  },
+  "urlName" : "survey-form"
+}

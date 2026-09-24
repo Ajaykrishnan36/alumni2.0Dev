@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Verify Link",
+  "contentBody" : {
+    "activeViewId" : "verify_link",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-verify-link",
+    "urlPrefix" : "verify-link"
+  },
+  "urlName" : "verify-link"
+}

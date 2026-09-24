@@ -1,0 +1,148 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Calendar",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"6f9e5574-c9c8-4ffb-96eb-21605452c436\",\"columns\":[{\"UUID\":\"c6f7badf-f072-4726-93f3-508ace0e79ef\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"c67587f9-d46c-4335-9ea9-dc89c8534d54\",\"columns\":[{\"UUID\":\"57af377a-8445-442f-a25f-a1590a76760d\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"4c9838dc-6682-4c65-9ca8-1bafceaa9ef3\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "e3ff3773-7054-4ce4-a0f5-682b9f710264",
+                  "type" : "component"
+                } ],
+                "id" : "57af377a-8445-442f-a25f-a1590a76760d",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"4684d8a2-f7ba-4ed0-8880-5d5a17686130\",\"columns\":[{\"UUID\":\"e3f287d4-0b75-42c4-b6bf-f4dd7c595172\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"9ac0281e-52c6-441d-afca-3418bc782a62\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "16ffa736-1669-4ec0-bb52-ac2ea15b3427",
+                      "type" : "component"
+                    } ],
+                    "id" : "e3f287d4-0b75-42c4-b6bf-f4dd7c595172",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenCalendar",
+                      "id" : "21c95513-f18e-42a5-bd4d-d99449077f49",
+                      "type" : "component"
+                    } ],
+                    "id" : "9ac0281e-52c6-441d-afca-3418bc782a62",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "4684d8a2-f7ba-4ed0-8880-5d5a17686130",
+                  "type" : "component"
+                } ],
+                "id" : "4c9838dc-6682-4c65-9ca8-1bafceaa9ef3",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "c67587f9-d46c-4335-9ea9-dc89c8534d54",
+              "type" : "component"
+            } ],
+            "id" : "c6f7badf-f072-4726-93f3-508ace0e79ef",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "6f9e5574-c9c8-4ffb-96eb-21605452c436",
+          "type" : "component"
+        } ],
+        "id" : "1aabae8f-6754-4746-9f14-e3ab78e307f0",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Calendar",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "bd3e0101-a1d6-4861-9ae4-4de6a5a1fc7f",
+          "type" : "component"
+        } ],
+        "id" : "11ac0029-2e57-47f6-b547-a75b5d8b2578",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "42794b4a-c874-4415-89e3-aa52e6aa194c",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-calendar"
+  },
+  "urlName" : "calendar"
+}

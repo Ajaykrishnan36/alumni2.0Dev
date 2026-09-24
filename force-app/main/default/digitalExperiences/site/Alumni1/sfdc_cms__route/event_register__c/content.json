@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Event Registration",
+  "contentBody" : {
+    "activeViewId" : "event_register",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-event-register",
+    "urlPrefix" : "event-register"
+  },
+  "urlName" : "event-register"
+}

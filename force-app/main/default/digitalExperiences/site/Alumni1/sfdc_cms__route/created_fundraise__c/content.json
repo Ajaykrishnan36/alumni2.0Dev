@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Created Fundraise",
+  "contentBody" : {
+    "activeViewId" : "created_fundraise",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-created-fundraise",
+    "urlPrefix" : "created-fundraise"
+  },
+  "urlName" : "created-fundraise"
+}

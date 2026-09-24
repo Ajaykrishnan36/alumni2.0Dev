@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Registration Summary",
+  "contentBody" : {
+    "activeViewId" : "registration_summary",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-registration-summary",
+    "urlPrefix" : "registration-summary"
+  },
+  "urlName" : "registration-summary"
+}

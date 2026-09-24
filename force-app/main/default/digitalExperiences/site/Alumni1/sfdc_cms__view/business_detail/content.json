@@ -1,0 +1,149 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Business Detail",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"bf29d9ca-dd26-401f-84c9-e1446c681b93\",\"columns\":[{\"UUID\":\"3aa645e6-7116-4d83-a322-e6856d8dea8c\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"87fef679-9967-4515-b3e6-1dbc3bb24355\",\"columns\":[{\"UUID\":\"706bc6e2-6484-4832-953c-79fc35cf183b\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"753fd390-2239-456b-a3de-740d9fc9a35e\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "6e16d416-ef80-4678-8eac-5394fbc97653",
+                  "type" : "component"
+                } ],
+                "id" : "706bc6e2-6484-4832-953c-79fc35cf183b",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"980dbf55-244e-4358-b0c2-339d5935b739\",\"columns\":[{\"UUID\":\"46e57ddc-fd2a-4d3c-b608-5f9f42848bf8\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"1\",\"seedComponents\":[]},{\"UUID\":\"08dbeda4-41f5-43bc-8f8b-f4b1c5b87503\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"11\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageApiName" : "business__c",
+                        "parentPageName" : "Business Directory",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "984cd9d7-0b71-4f39-b78f-bfe06a6cf12f",
+                      "type" : "component"
+                    } ],
+                    "id" : "46e57ddc-fd2a-4d3c-b608-5f9f42848bf8",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenBusinessDetailView",
+                      "id" : "ce267225-a767-4cb8-a862-4b989ed7ad0e",
+                      "type" : "component"
+                    } ],
+                    "id" : "08dbeda4-41f5-43bc-8f8b-f4b1c5b87503",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "980dbf55-244e-4358-b0c2-339d5935b739",
+                  "type" : "component"
+                } ],
+                "id" : "753fd390-2239-456b-a3de-740d9fc9a35e",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "87fef679-9967-4515-b3e6-1dbc3bb24355",
+              "type" : "component"
+            } ],
+            "id" : "3aa645e6-7116-4d83-a322-e6856d8dea8c",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "bf29d9ca-dd26-401f-84c9-e1446c681b93",
+          "type" : "component"
+        } ],
+        "id" : "2c98b90d-c87c-4a21-ae47-2711f6cccc5b",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Business Detail",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "c2fd2318-a1df-4b33-a104-370233ccde47",
+          "type" : "component"
+        } ],
+        "id" : "c501d3ed-6917-4299-b7b4-10398bfe367d",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "225701de-6a29-443e-8535-550a415f4f84",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-business-detail"
+  },
+  "urlName" : "business-detail"
+}

@@ -1,0 +1,148 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Resume Builder",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"152fca8e-bca2-4f56-bd30-fc890c8f3b6d\",\"columns\":[{\"UUID\":\"ff32eb1f-cfc7-437c-926e-ca0706e853b1\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"9f757956-824d-4663-b31e-482152893e42\",\"columns\":[{\"UUID\":\"fb84a647-b0c6-4ea1-a3b6-bca599e1863a\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"e0b081fb-b2e6-4f30-8d63-37100cd4cb3a\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "8cbe6c70-85e9-4ca2-b7c9-d5d68fc93ed9",
+                  "type" : "component"
+                } ],
+                "id" : "fb84a647-b0c6-4ea1-a3b6-bca599e1863a",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"4f656996-6924-4919-b28c-e67df099be50\",\"columns\":[{\"UUID\":\"f977ae7a-6deb-4287-a684-c11251b06782\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"6\",\"seedComponents\":[]},{\"UUID\":\"3533b0b6-5df5-4f77-a11f-0100dc3508e9\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"6\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "67d28091-8b15-4119-b8a5-8bf5e35eb6bf",
+                      "type" : "component"
+                    } ],
+                    "id" : "f977ae7a-6deb-4287-a684-c11251b06782",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenResumeBuilder",
+                      "id" : "060ddd95-5397-4f26-847e-9979dea492e3",
+                      "type" : "component"
+                    } ],
+                    "id" : "3533b0b6-5df5-4f77-a11f-0100dc3508e9",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "4f656996-6924-4919-b28c-e67df099be50",
+                  "type" : "component"
+                } ],
+                "id" : "e0b081fb-b2e6-4f30-8d63-37100cd4cb3a",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "9f757956-824d-4663-b31e-482152893e42",
+              "type" : "component"
+            } ],
+            "id" : "ff32eb1f-cfc7-437c-926e-ca0706e853b1",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "152fca8e-bca2-4f56-bd30-fc890c8f3b6d",
+          "type" : "component"
+        } ],
+        "id" : "0aa6675a-7928-46bc-896c-ea95e4afde7f",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "Resume Builder",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "c1b997d0-1c07-44f0-a0b9-56322e91950a",
+          "type" : "component"
+        } ],
+        "id" : "580e3455-bb18-4a25-b9a1-3420d7c2a3a4",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "f104851f-3cc6-447e-9917-0d4f2a31ad7d",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-resume-builder"
+  },
+  "urlName" : "resume-builder"
+}

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Host Event",
+  "contentBody" : {
+    "activeViewId" : "host_event",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-host-event",
+    "urlPrefix" : "host-event"
+  },
+  "urlName" : "host-event"
+}

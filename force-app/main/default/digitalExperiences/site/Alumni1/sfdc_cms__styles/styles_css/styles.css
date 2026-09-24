@@ -1,0 +1,90 @@
+/*
+ * Your global styles here
+ */
+
+:root {
+  /* ── Surfaces ── */
+  --portal-bg: #f6f8fb;
+  --portal-surface: #ffffff;
+  --portal-border-color: #e6e8ee;
+  --portal-border-width: 1px;
+  --portal-divider-color: #f3f4f6; /* structural dividers (section rules) — lighter than portal-border-color, which is for interactive field borders */
+  --portal-shadow: 0 1px 3px rgba(16, 24, 40, 0.08);
+  --portal-popover-shadow: 0 16px 40px rgba(16, 24, 40, 0.18); /* floating panels (filters, menus) — portal-shadow is too flat once something lifts off the page */
+
+  /* ── Layout ── */
+  --portal-rail-width: 25%;
+  --portal-gap-x: 1rem;
+  --portal-gap-y: 1.5rem;
+  --portal-radius: 12px; /* cards, popover containers */
+  --portal-field-radius: 8px; /* inputs, selects, buttons — tighter than card radius */
+  --portal-field-height: 44px; /* single source of truth for field/button height */
+  --portal-field-padding-x: 0.75rem; /* horizontal padding inside inputs/selects */
+  --portal-btn-padding-x: 1.2rem; /* horizontal padding inside Reset/Apply-style buttons */
+  --portal-popover-padding: 20px 20px 16px; /* outer padding of a floating panel (filters, menus) */
+  --portal-field-gap: 14px; /* vertical gap between one field (label+box) and the next */
+  --portal-label-gap: 4px; /* gap between a field's label and its own input/select box */
+  --portal-trigger-height: 40px; /* icon+label trigger chips (Filters, Sort by) — a different box than a form field, own height */
+  --portal-trigger-padding-x: 0.75rem; /* horizontal padding inside those trigger chips */
+  --portal-icon-size: 16px; /* utility icon size (filter/sort/chevron glyphs) */
+  --portal-filters-popup-width: 400px; /* fixed width for every "Filters" popover, regardless of field count */
+  --portal-filters-popup-max-height: 500px; /* caps popover height; the field list scrolls internally instead of growing the box */
+
+  /* ── Typography ── */
+  --portal-font-family: "GeneralSansCustom", "Inter", Arial, sans-serif;
+  --portal-font-size: 14px;
+  --portal-title-size: 1rem; /* panel/section headings, e.g. "Filters" */
+  --portal-label-size: 0.78rem; /* small field-label captions */
+  --portal-text-primary: #1f2937;
+  --portal-text-muted: #4b5563;
+  --portal-on-primary: #ffffff; /* text/icon color on top of --primary-color fills */
+
+  /* ── Interaction ── */
+  --portal-focus-ring: 0 0 0 3px rgba(15, 23, 42, 0.08);
+  --portal-surface-hover: #f9fafb; /* hover tint for outline/secondary buttons */
+
+  /* ── Weights ── */
+  /* Named rather than inlined because "bold" is a portal-level decision: a client that wants a
+       flatter, lighter portal changes these three and every list, name and active tab follows. */
+  --portal-font-weight-medium: 500;
+  --portal-font-weight-semibold: 600;
+  --portal-font-weight-bold: 700;
+
+  /* ── Status ── */
+  /* The only colours in this file with no org field behind them, because they state a fact and
+       not a brand: a warning is amber everywhere, presence is green everywhere. One definition
+       each, so an org that wants them different still has one place to change. */
+  --portal-warning-bg: #fef3c7;
+  --portal-warning-border: #fde68a;
+  --portal-warning-text: #92400e;
+  --portal-presence: #10b981; /* the value kenOnlineUserItem, kenAlumniCard and
+                                                 kenConnectionRequestItem already use */
+
+  /* ── Chat ── */
+  /* Sizes only. Chat colours are NOT re-declared here: the components read --primary-color,
+       --secondary-color, --portal-text-muted, --portal-presence and --portal-warning-* straight
+       from above, so there is nothing in between to fall out of step with them. */
+  --portal-chat-rail-width: 344px; /* the cap on the conversation rail; it is fluid below this */
+  --portal-chat-badge-size: 10px; /* the role pill's caption */
+  --portal-chat-bubble-radius: 10px; /* tighter than --portal-field-radius - a bubble is sized to its text, not to a 44px field */
+  --portal-chat-selected-border-width: 1.5px; /* thicker than --portal-border-width: a selection ring, not a field edge */
+
+  --dxp-g-root: var(--portal-bg);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  background: var(--portal-bg);
+}
+
+body {
+  margin: 0;
+  background: var(--portal-bg);
+  font-family: var(--portal-font-family);
+  font-size: var(--portal-font-size);
+  color: var(--portal-text-primary);
+}

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Create Group",
+  "contentBody" : {
+    "activeViewId" : "create_group",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-create-group",
+    "urlPrefix" : "create-group"
+  },
+  "urlName" : "create-group"
+}

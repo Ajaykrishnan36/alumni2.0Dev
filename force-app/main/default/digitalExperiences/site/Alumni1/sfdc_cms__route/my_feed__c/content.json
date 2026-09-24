@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "My Feed",
+  "contentBody" : {
+    "activeViewId" : "my_feed",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-my-feed",
+    "urlPrefix" : "my-feed"
+  },
+  "urlName" : "my-feed"
+}

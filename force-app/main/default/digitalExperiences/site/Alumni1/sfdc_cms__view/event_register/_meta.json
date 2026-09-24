@@ -1,0 +1,5 @@
+{
+  "apiName" : "event_register",
+  "type" : "sfdc_cms__view",
+  "path" : "views"
+}

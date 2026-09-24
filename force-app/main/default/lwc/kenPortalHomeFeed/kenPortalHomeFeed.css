@@ -4,6 +4,9 @@
     flex-direction: column;
     background-color: #f5f7fa;
     overflow-y: auto;
+    border: var(--portal-border-width, 1px) solid var(--portal-border-color, #e6e8ee);
+    box-shadow: var(--portal-shadow, 0 1px 3px rgba(16, 24, 40, 0.08));
+    border-radius: var(--portal-radius, 12px);
 }
 
 .feed-header {
@@ -345,6 +348,7 @@
     text-align: center;
     background: var(--portal-surface, white);
     border-radius: var(--portal-radius, 12px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .feed-empty-img {

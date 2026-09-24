@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "All Applications",
+  "contentBody" : {
+    "activeViewId" : "all_applications",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-all-applications",
+    "urlPrefix" : "all-applications"
+  },
+  "urlName" : "all-applications"
+}

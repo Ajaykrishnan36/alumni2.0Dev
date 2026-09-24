@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Joined Groups",
+  "contentBody" : {
+    "activeViewId" : "joined_groups",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-joined-groups",
+    "urlPrefix" : "joined-groups"
+  },
+  "urlName" : "joined-groups"
+}

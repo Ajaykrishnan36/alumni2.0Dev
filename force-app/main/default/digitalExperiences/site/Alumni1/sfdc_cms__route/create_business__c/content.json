@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Create Business",
+  "contentBody" : {
+    "activeViewId" : "create_business",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-create-business",
+    "urlPrefix" : "create-business"
+  },
+  "urlName" : "create-business"
+}

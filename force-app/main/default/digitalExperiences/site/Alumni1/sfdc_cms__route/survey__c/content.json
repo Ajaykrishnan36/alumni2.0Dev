@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Survey",
+  "contentBody" : {
+    "activeViewId" : "survey",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-survey",
+    "urlPrefix" : "survey"
+  },
+  "urlName" : "survey"
+}

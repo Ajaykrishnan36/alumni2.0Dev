@@ -1,0 +1,148 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "All Tickets",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"7e095efa-992d-4a0d-990f-b5ddc65f40a1\",\"columns\":[{\"UUID\":\"ba1c8560-d811-4c1b-b290-ac58eac76b6f\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"f86d049a-84e8-419c-875d-3d81dcba6b64\",\"columns\":[{\"UUID\":\"56eb8604-160e-4f79-a0b8-e31bacd1e3c4\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"4effbe74-0e9c-4496-923b-8e972cb2b8ca\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "25b09d58-1677-4b9b-9287-6a40fd0b47f3",
+                  "type" : "component"
+                } ],
+                "id" : "56eb8604-160e-4f79-a0b8-e31bacd1e3c4",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"e6b0c9b9-209e-49b0-a6da-92850d4b755e\",\"columns\":[{\"UUID\":\"f74cb5cd-d019-4e2f-9113-a45e162e4354\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"1\",\"seedComponents\":[]},{\"UUID\":\"b7cde228-86fc-4cfb-8d1b-0333db78912e\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"11\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "childPageName" : "",
+                        "childPageUrl" : "",
+                        "dxpStyle" : { },
+                        "headerLabel" : "",
+                        "linkSetMasterLabel" : "Default Navigation",
+                        "parentPageName" : "Home",
+                        "parentPageUrl" : ""
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "a84e32df-ca2f-429d-9c45-abe9fc05a82b",
+                      "type" : "component"
+                    } ],
+                    "id" : "f74cb5cd-d019-4e2f-9113-a45e162e4354",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenServiceHistory",
+                      "id" : "eaae5369-32e0-4252-8c77-65dc243ed04f",
+                      "type" : "component"
+                    } ],
+                    "id" : "b7cde228-86fc-4cfb-8d1b-0333db78912e",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "e6b0c9b9-209e-49b0-a6da-92850d4b755e",
+                  "type" : "component"
+                } ],
+                "id" : "4effbe74-0e9c-4496-923b-8e972cb2b8ca",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "f86d049a-84e8-419c-875d-3d81dcba6b64",
+              "type" : "component"
+            } ],
+            "id" : "ba1c8560-d811-4c1b-b290-ac58eac76b6f",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "7e095efa-992d-4a0d-990f-b5ddc65f40a1",
+          "type" : "component"
+        } ],
+        "id" : "7ecff53a-1be2-4a9f-8e9d-3acbf399b333",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "View All Tickets",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "4249c799-6e96-46c7-883a-a0cfaf340d09",
+          "type" : "component"
+        } ],
+        "id" : "d090fb2f-bcfd-4b45-bb35-518a08d8f1f1",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "3557de15-f79e-4d5a-b30b-b7835fb9a223",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-all-tickets"
+  },
+  "urlName" : "view-all-tickets"
+}

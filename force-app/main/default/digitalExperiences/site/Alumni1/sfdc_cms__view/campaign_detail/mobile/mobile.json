@@ -1,0 +1,17 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "FundRaiseViewPage",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "attributes" : {
+          "dxpStyle" : {
+            "isVisible" : false
+          }
+        },
+        "id" : "4983065d-936b-4691-8349-27a786a13bf1"
+      } ]
+    }
+  },
+  "urlName" : "campaign-detail"
+}

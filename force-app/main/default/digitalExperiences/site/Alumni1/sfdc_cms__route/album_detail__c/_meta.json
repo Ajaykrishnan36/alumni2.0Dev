@@ -1,0 +1,6 @@
+{
+  "apiName" : "album_detail__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/gallery__c",
+  "path" : "routes"
+}

@@ -1,0 +1,6 @@
+{
+  "apiName" : "alumni__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/network__c",
+  "path" : "routes"
+}

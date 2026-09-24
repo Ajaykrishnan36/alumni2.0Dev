@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Request Service Detail",
+  "contentBody" : {
+    "activeViewId" : "request_service_detail",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-request-service-detail",
+    "urlPrefix" : "request-service-detail"
+  },
+  "urlName" : "request-service-detail"
+}

@@ -1,0 +1,16 @@
+{
+  "type" : "sfdc_cms__trustedSites",
+  "title" : "trustedSites",
+  "contentBody" : {
+    "trustedSites" : [ {
+      "isActive" : true,
+      "source" : "https://*.linkedin.com",
+      "sourceName" : "Linkedin"
+    }, {
+      "isActive" : true,
+      "source" : "https://storage.googleapis.com",
+      "sourceName" : "KaiChatbotSdk"
+    } ]
+  },
+  "urlName" : "trustedsites"
+}

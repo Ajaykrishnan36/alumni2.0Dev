@@ -1,0 +1,142 @@
+{
+  "type" : "sfdc_cms__view",
+  "title" : "Ticket Detail",
+  "contentBody" : {
+    "component" : {
+      "children" : [ {
+        "children" : [ {
+          "attributes" : {
+            "backgroundImageConfig" : "",
+            "backgroundImageOverlay" : "rgba(0,0,0,0)",
+            "componentSpacerSize" : "",
+            "dxpStyle" : { },
+            "layoutDirectionDesktop" : "row",
+            "layoutDirectionMobile" : "column",
+            "layoutDirectionTablet" : "column",
+            "maxContentWidth" : "",
+            "sectionColumnGutterWidth" : "",
+            "sectionConfig" : "{\"UUID\":\"2d297b10-2cd3-47a8-8eb2-41a8948c871f\",\"columns\":[{\"UUID\":\"70fa059f-5d3d-40a2-87fc-b87323a657f4\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"12\",\"seedComponents\":[]}]}",
+            "sectionMinHeight" : "",
+            "sectionVerticalAlign" : "flex-start"
+          },
+          "children" : [ {
+            "children" : [ {
+              "attributes" : {
+                "columnGutterWidth" : "",
+                "columnMinHeight" : "",
+                "columnVerticalAlign" : "flex-start",
+                "dxpStyle" : { },
+                "layoutDirectionDesktop" : "row",
+                "layoutDirectionMobile" : "column",
+                "layoutDirectionTablet" : "column",
+                "sectionConfig" : "{\"UUID\":\"a7789676-dc88-4913-9781-107f8abfec18\",\"columns\":[{\"UUID\":\"50790510-05e9-4961-ade3-1e598aa38e41\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"2\",\"seedComponents\":[]},{\"UUID\":\"273adae9-dccc-4445-856d-853161af92c9\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"10\",\"seedComponents\":[]}]}"
+              },
+              "children" : [ {
+                "children" : [ {
+                  "attributes" : {
+                    "addHomeMenuItem" : false,
+                    "dxpStyle" : { },
+                    "includeImageUrls" : false,
+                    "linkSetMasterLabel" : "Default Navigation"
+                  },
+                  "definition" : "c:kenNavBar",
+                  "id" : "6db20fe2-9ce0-4fc4-b6b9-0dc8eb682a12",
+                  "type" : "component"
+                } ],
+                "id" : "50790510-05e9-4961-ade3-1e598aa38e41",
+                "name" : "col1",
+                "title" : "Column 1",
+                "type" : "region"
+              }, {
+                "children" : [ {
+                  "attributes" : {
+                    "columnGutterWidth" : "",
+                    "columnMinHeight" : "",
+                    "columnVerticalAlign" : "flex-start",
+                    "dxpStyle" : { },
+                    "layoutDirectionDesktop" : "column",
+                    "layoutDirectionMobile" : "column",
+                    "layoutDirectionTablet" : "column",
+                    "sectionConfig" : "{\"UUID\":\"31153cda-599d-4ff7-9f1e-8dfe1daf98e8\",\"columns\":[{\"UUID\":\"3773559a-d3b1-4afe-b136-40eb0fe13508\",\"columnName\":\"Column 1\",\"columnKey\":\"col1\",\"columnWidth\":\"1\",\"seedComponents\":[]},{\"UUID\":\"6bd23bb0-3d7f-4e08-bc25-db7175adbec7\",\"columnName\":\"Column 2\",\"columnKey\":\"col2\",\"columnWidth\":\"11\",\"seedComponents\":[]}]}"
+                  },
+                  "children" : [ {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenPageHeader",
+                      "id" : "c9036ad9-2dc6-444d-9d9d-7c59e81c1ea6",
+                      "type" : "component"
+                    } ],
+                    "id" : "3773559a-d3b1-4afe-b136-40eb0fe13508",
+                    "name" : "col1",
+                    "title" : "Column 1",
+                    "type" : "region"
+                  }, {
+                    "children" : [ {
+                      "attributes" : {
+                        "dxpStyle" : { }
+                      },
+                      "definition" : "c:kenTicketDetailVew",
+                      "id" : "af90f011-ae0c-4499-919d-ca11570290f5",
+                      "type" : "component"
+                    } ],
+                    "id" : "6bd23bb0-3d7f-4e08-bc25-db7175adbec7",
+                    "name" : "col2",
+                    "title" : "Column 2",
+                    "type" : "region"
+                  } ],
+                  "definition" : "dxp_layout:columns",
+                  "id" : "31153cda-599d-4ff7-9f1e-8dfe1daf98e8",
+                  "type" : "component"
+                } ],
+                "id" : "273adae9-dccc-4445-856d-853161af92c9",
+                "name" : "col2",
+                "title" : "Column 2",
+                "type" : "region"
+              } ],
+              "definition" : "dxp_layout:columns",
+              "id" : "a7789676-dc88-4913-9781-107f8abfec18",
+              "type" : "component"
+            } ],
+            "id" : "70fa059f-5d3d-40a2-87fc-b87323a657f4",
+            "name" : "col1",
+            "title" : "Column 1",
+            "type" : "region"
+          } ],
+          "definition" : "community_layout:section",
+          "id" : "2d297b10-2cd3-47a8-8eb2-41a8948c871f",
+          "type" : "component"
+        } ],
+        "id" : "2407a76d-6ff1-46cf-83dc-939da1a70ef8",
+        "name" : "content",
+        "title" : "Content",
+        "type" : "region"
+      }, {
+        "children" : [ {
+          "attributes" : {
+            "customHeadTags" : "",
+            "description" : "",
+            "dxpStyle" : { },
+            "pageTitle" : "TicketDetailView",
+            "recordId" : "{!recordId}"
+          },
+          "definition" : "community_builder:seoAssistant",
+          "id" : "819350e7-945a-45e5-99a9-cca6713d87f6",
+          "type" : "component"
+        } ],
+        "id" : "e9a316be-4174-407a-bbd7-017baefcbe77",
+        "name" : "sfdcHiddenRegion",
+        "title" : "sfdcHiddenRegion",
+        "type" : "region"
+      } ],
+      "definition" : "community_layout:sldsFlexibleLayout",
+      "id" : "1e58fa71-a052-4b2e-97c5-18766e6f5f4c",
+      "type" : "component"
+    },
+    "dataProviders" : [ ],
+    "themeLayoutType" : "Inner",
+    "viewType" : "custom-ticket-detail"
+  },
+  "urlName" : "ticketdetailview"
+}

@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Create Survey",
+  "contentBody" : {
+    "activeViewId" : "create_survey",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-create-survey",
+    "urlPrefix" : "create-survey"
+  },
+  "urlName" : "create-survey"
+}

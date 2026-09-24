@@ -1,0 +1,5 @@
+{
+  "apiName" : "landing_page__c",
+  "type" : "sfdc_cms__route",
+  "path" : "routes"
+}

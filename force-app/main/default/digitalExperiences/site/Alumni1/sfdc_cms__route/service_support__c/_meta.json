@@ -1,0 +1,5 @@
+{
+  "apiName" : "service_support__c",
+  "type" : "sfdc_cms__route",
+  "path" : "routes"
+}

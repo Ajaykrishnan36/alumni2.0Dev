@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "All Campaigns",
+  "contentBody" : {
+    "activeViewId" : "all_campaigns",
+    "configurationTags" : [ ],
+    "pageAccess" : "UseParent",
+    "routeType" : "custom-all-campaigns",
+    "urlPrefix" : "all-campaigns"
+  },
+  "urlName" : "all-campaigns"
+}

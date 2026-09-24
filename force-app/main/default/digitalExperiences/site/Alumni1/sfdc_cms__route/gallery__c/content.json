@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Gallery",
+  "contentBody" : {
+    "activeViewId" : "gallery",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-gallery",
+    "urlPrefix" : "gallery"
+  },
+  "urlName" : "gallery"
+}

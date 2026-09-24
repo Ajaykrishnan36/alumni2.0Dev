@@ -1,0 +1,6 @@
+{
+  "apiName" : "request_service_detail__c",
+  "type" : "sfdc_cms__route",
+  "parentId" : "sfdc_cms__route/service_support__c",
+  "path" : "routes"
+}

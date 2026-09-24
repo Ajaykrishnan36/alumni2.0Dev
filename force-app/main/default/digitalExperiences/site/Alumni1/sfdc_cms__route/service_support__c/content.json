@@ -1,0 +1,12 @@
+{
+  "type" : "sfdc_cms__route",
+  "title" : "Service Support",
+  "contentBody" : {
+    "activeViewId" : "service_support",
+    "configurationTags" : [ ],
+    "pageAccess" : "RequiresLogin",
+    "routeType" : "custom-service-support",
+    "urlPrefix" : "service-support"
+  },
+  "urlName" : "service-support"
+}
